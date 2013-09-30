@@ -14,4 +14,6 @@ typedef struct shaderprogram_s
 	shader_t vertex;
 	shader_t fragment;
 } shaderprogram_t;
+int initShaderSystem(void);
+int createAndLoadShader(const char * name, char type);
 #endif
