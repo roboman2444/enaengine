@@ -15,6 +15,12 @@ int initShaderSystem(void){
 	if(!programlist) memset(programlist, 0 , programnumber * sizeof(shaderprogram_t));
 	return TRUE; // todo error check
 }
+//no idea if this works
+shaderprogram_t findShader(char * name){
+	for(int i = 0; i<programnumber, i++){
+		if(programlist[i].name == name) return programlist[i];
+	}
+}
 
 int createAndLoadShader(char * name){
 	int current = programnumber;

@@ -10,4 +10,5 @@ typedef struct shaderprogram_s
 } shaderprogram_t;
 int initShaderSystem(void);
 int createAndLoadShader(char * name);
+shaderprogram_t findShader(char * name);
 #endif
