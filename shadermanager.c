@@ -17,7 +17,8 @@ int initShaderSystem(void){
 }
 //no idea if this works
 shaderprogram_t findShader(char * name){
-	for(int i = 0; i<programnumber, i++){
+	int i;
+	for(i=0; i<programnumber; i++){
 		if(programlist[i].name == name) return programlist[i];
 	}
 }
