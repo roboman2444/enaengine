@@ -14,15 +14,15 @@ int initShaderSystem(void){
 	if(programlist) free(programlist);
 	programlist = malloc(programnumber * sizeof(shaderprogram_t));
 	if(!programlist) memset(programlist, 0 , programnumber * sizeof(shaderprogram_t));
-	addProgramToList("none", 0, 0, 0);
+	addProgramToList("default", 0, 0, 0);
 	return TRUE; // todo error check
 }
-//no idea if this works
 shaderprogram_t findShader(char * name){
 	int i;
 	for(i=0; i<programnumber; i++){
 		if(programlist[i].name == name) return programlist[i];
 	}
+	//return the default if not found
 	return programlist[0];
 }
 
@@ -31,6 +31,9 @@ int addProgramToList(char *name, GLuint id, GLuint vertexid, GLuint fragmentid){
 	programnumber++;
 	programlist = realloc(programlist, (programnumber)*sizeof(shaderprogram_t));
 	programlist[current].name = name;
+	programlist[current].id = id;
+	programlist[current].vertexid = vertexid;
+	programlist[current].fragmentid = fragmentid;
 	//todo
 	return current;
 }
@@ -42,7 +45,7 @@ int createAndLoadShader(char * name){
 	int vertlength;
 	loadFileString(vertname, &vertstring, &vertlength, 2);
 	free(vertname);
-	if(vertlength ==0){	//error
+	if(vertlength == 0){	//error
 		free(vertstring);
 		return FALSE;
 	}
@@ -52,7 +55,7 @@ int createAndLoadShader(char * name){
 	int fraglength;
 	loadFileString(fragname, &fragstring, &fraglength, 2);
 	free(fragname);
-	if(fraglength ==0){	//error
+	if(fraglength == 0){	//error
 		free(fragstring);
 		return FALSE;
 	}
