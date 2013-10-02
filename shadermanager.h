@@ -12,5 +12,6 @@ int initShaderSystem(void);
 int createAndLoadShader(char * name);
 int addProgramToList(char * name,GLuint id, GLuint vertexid, GLuint fragmentid);
 int printProgramLogStatus(int id);
+int getProgramLogStatus(int id, char ** output);
 shaderprogram_t findShader(char * name);
 #endif

@@ -91,12 +91,12 @@ int printProgramLogStatus(int id){
 	return TRUE;
 }
 //UNTESTED
-int getProgramLogStatus(shaderprogram_t program, char ** output){
+int getProgramLogStatus(int id, char ** output){
 	GLint length = 0;
-	glGetProgramiv(program.id, GL_INFO_LOG_LENGTH, &length);
+	glGetProgramiv(id, GL_INFO_LOG_LENGTH, &length);
 	if(length > 1){
 		*output = malloc(length);
-		glGetProgramInfoLog(program.id, length, 0, *output);
+		glGetProgramInfoLog(id, length, 0, *output);
 	}
 	return length;
 }
