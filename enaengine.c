@@ -4,10 +4,12 @@
 #include "globaldefs.h"
 #include "enaengine.h"
 #include "glmanager.h"
+#include "sdlmanager.h"
 
 //main
 
 int main(int argc, char *argv[]){
+	sdlInit(800, 600, 24, 1);
 	glInit();
 	return FALSE;
 }

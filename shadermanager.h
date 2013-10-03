@@ -13,6 +13,7 @@ int initShaderSystem(void);
 int createAndLoadShader(char * name);
 //resizes and adds the shader to the list
 int addProgramToList(char * name,GLuint id, GLuint vertexid, GLuint fragmentid);
+
 int printProgramLogStatus(int id);
 int getProgramLogStatus(int id, char ** output);
 shaderprogram_t findShader(char * name);
