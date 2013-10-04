@@ -8,16 +8,20 @@ typedef struct particle_s {
 	float life;
 	float friction;
 	float fade;
-	char type;
+	char type; //0 is inactive/dead
 } particle_t;
 
 typedef struct particlesystem_s {
 	vec3_t spawnpos; //todo maybe not
 	float lifespan;
 	particle_t * particlelist;
+	char * name; //just because reasons
 	int particlecount;
-	char type;
+	int max;
+	char type; //0 is inactive/dead
 } particlesystem_t;
+
+int particleSysCount = 0;
 
 int particleSystemInit(int maxSystems);
 
