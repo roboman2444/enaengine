@@ -3,18 +3,33 @@
 
 //#include "texturemanager.h" //todo
 
+/* particle math
+
+
+*/
+//TODO
+
+/* particle management
+
+
+*/
+#define clearpartlist(point, num) if(point) memset(point, 0, num*sizeof(particle_t))
+//TODO
+
+/* particle system management
+
+
+*/
 particlesystem_t *particlesyslist;
 
 #define clearsyslist(num) if(particlesyslist) memset(particlesyslist, 0, num*sizeof(particlesystem_t))
-#define clearpartlist(point, num) if(point) memset(point, 0, num*sizeof(particle_t))
 
 #define MAXJUMPLEVEL 10
 
 int maxSystems;
-
 int topOfSysList=0;
-
 int firstOpenSysList=0;
+
 
 int particleSystemInit(int max){
 	if(particlesyslist) free(particlesyslist);
@@ -32,7 +47,6 @@ int searchForOpenSys(/*int start, int end*/){
 //	return start;
 	for(; particlesyslist[firstOpenSysList].type && firstOpenSysList < maxSystems; firstOpenSysList++);
 	return firstOpenSysList;
-
 }
 void resizeSysList(count){
 	maxSystems = count;
@@ -63,7 +77,6 @@ int addParticleSys(char * name, vec3_t spawnpos, float lifespan, char type, int 
 int searchForTopSys(){
 	for(; !particlesyslist[topOfSysList].type && topOfSysList > 0; topOfSysList--);
 	return topOfSysList;
-
 }
 
 int delParticleSys(int id){
