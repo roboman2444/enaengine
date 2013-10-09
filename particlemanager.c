@@ -26,7 +26,7 @@ int particleSystemInit(int max){
 	return FALSE;
 }
 
-int searchForOpen(/*int start, int end*/){
+int searchForOpenSys(/*int start, int end*/){
 	//todo start at firstopen slot, go until top of list or an type 0... wait 1+topoflist should technically be open
 //	for(; particlesyslist[start].active && start < end; start++);
 //	return start;
@@ -40,7 +40,7 @@ void resizeSysList(count){
 }
 //todo do a search for open system
 int addParticleSys(char * name, vec3_t spawnpos, float lifespan, char type, int max){
-	int id = searchForOpen();
+	int id = searchForOpenSys();
 	if (id == maxSystems) resizeSysList(maxSystems+MAXJUMPLEVEL);
 	particlesyslist[id].particlecount = 0;
 	particlesyslist[id].name = name;
@@ -60,11 +60,18 @@ int addParticleSys(char * name, vec3_t spawnpos, float lifespan, char type, int 
 	return FALSE; //eh
 	//todo debugging modes?
 }
+int searchForTopSys(){
+	for(; !particlesyslist[topOfSysList].type && topOfSysList > 0; topOfSysList--);
+	return topOfSysList;
+
+}
+
 int delParticleSys(int id){
 	//todo set first
 	particlesyslist[id].type = 0;
 	free(particlesyslist[id].name); //WARNING, do i want to do this?
 	free(particlesyslist[id].particlelist);
-
+	if(id < firstOpenSysList) firstOpenSysList = id;
+	searchForTopSys();
 	return TRUE; //todo errorcheck
 }
