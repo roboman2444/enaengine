@@ -26,12 +26,22 @@ int particleSystemInit(int max){
 	return FALSE;
 }
 
-int searchForOpen(void){
+int searchForOpen(/*int start, int end*/){
 	//todo start at firstopen slot, go until top of list or an type 0... wait 1+topoflist should technically be open
-	return TRUE; //REMOVE THIS
+//	for(; particlesyslist[start].active && start < end; start++);
+//	return start;
+	for(; particlesyslist[firstOpenSysList].type && firstOpenSysList < maxSystems; firstOpenSysList++);
+	return firstOpenSysList;
+
+}
+void resizeSysList(count){
+	maxSystems = count;
+	particlesyslist = realloc(particlesyslist, maxSystems * sizeof(particlesystem_t));
 }
 //todo do a search for open system
-int addParticleSys(int id, char * name, vec3_t spawnpos, float lifespan, char type, int max){
+int addParticleSys(char * name, vec3_t spawnpos, float lifespan, char type, int max){
+	int id = searchForOpen();
+	if (id == maxSystems) resizeSysList(maxSystems+MAXJUMPLEVEL);
 	particlesyslist[id].particlecount = 0;
 	particlesyslist[id].name = name;
 	particlesyslist[id].spawnpos[0] = spawnpos[0];
@@ -43,10 +53,12 @@ int addParticleSys(int id, char * name, vec3_t spawnpos, float lifespan, char ty
 	//maybe different way...
 	if( ( particlesyslist[id].particlelist = malloc(max*sizeof(particle_t)) ) ){ //maybe change to calloc
 		clearpartlist(particlesyslist[id].particlelist, max);
-		return TRUE;
+		if(topOfSysList<id) topOfSysList = id;
+		return id;
 	}
 	//todo work on this
 	return FALSE; //eh
+	//todo debugging modes?
 }
 int delParticleSys(int id){
 	//todo set first
