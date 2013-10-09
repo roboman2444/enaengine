@@ -18,6 +18,8 @@ typedef struct particlesystem_s {
 	char * name; //just because reasons
 	int particlecount;
 	int max;
+	int firstOpenSlot;
+	int topOfList;
 	char type; //0 is inactive/dead
 } particlesystem_t;
 

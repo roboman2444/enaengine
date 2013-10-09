@@ -2,6 +2,12 @@
 #include "particlemanager.h"
 
 //#include "texturemanager.h" //todo
+particlesystem_t *particlesyslist;
+#define clearpartlist(point, num) if(point) memset(point, 0, num*sizeof(particle_t))
+#define clearsyslist(num) if(particlesyslist) memset(particlesyslist, 0, num*sizeof(particlesystem_t))
+
+#define MAXJUMPLEVEL 10
+
 
 /* particle math
 
@@ -13,18 +19,16 @@
 
 
 */
-#define clearpartlist(point, num) if(point) memset(point, 0, num*sizeof(particle_t))
 //TODO
+void resizePartList(int id, int count){
+	particlesyslist[id].max = count;
+	particlesyslist[id].particlelist = realloc(particlesyslist[id].particlelist, count * sizeof(particle_t));
+}
 
 /* particle system management
 
 
 */
-particlesystem_t *particlesyslist;
-
-#define clearsyslist(num) if(particlesyslist) memset(particlesyslist, 0, num*sizeof(particlesystem_t))
-
-#define MAXJUMPLEVEL 10
 
 int maxSystems;
 int topOfSysList=0;
@@ -48,7 +52,7 @@ int searchForOpenSys(/*int start, int end*/){
 	for(; particlesyslist[firstOpenSysList].type && firstOpenSysList < maxSystems; firstOpenSysList++);
 	return firstOpenSysList;
 }
-void resizeSysList(count){
+void resizeSysList(int count){
 	maxSystems = count;
 	particlesyslist = realloc(particlesyslist, maxSystems * sizeof(particlesystem_t));
 }
