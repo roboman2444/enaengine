@@ -24,6 +24,16 @@ void resizePartList(int id, int count){
 	particlesyslist[id].max = count;
 	particlesyslist[id].particlelist = realloc(particlesyslist[id].particlelist, count * sizeof(particle_t));
 }
+int searchForOpenPart(int id){
+	//todo start at firstopen slot, go until top of list or an type 0... wait 1+topoflist should technically be open
+//	for(; particlesyslist[start].active && start < end; start++);
+//	return start;
+	int temp = particlesyslist[id].firstOpenSlot;
+	for(; particlesyslist[id].particlelist[temp].type && temp < particlesyslist[id].max; temp++); //todo optimize
+	particlesyslist[id].firstOpenSlot = temp;
+	return temp;
+}
+
 
 /* particle system management
 
