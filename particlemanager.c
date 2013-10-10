@@ -25,14 +25,28 @@ void resizePartList(int id, int count){
 	particlesyslist[id].particlelist = realloc(particlesyslist[id].particlelist, count * sizeof(particle_t));
 }
 int searchForOpenPart(int id){
-	//todo start at firstopen slot, go until top of list or an type 0... wait 1+topoflist should technically be open
-//	for(; particlesyslist[start].active && start < end; start++);
-//	return start;
+	//todo optimize
 	int temp = particlesyslist[id].firstOpenSlot;
 	for(; particlesyslist[id].particlelist[temp].type && temp < particlesyslist[id].max; temp++); //todo optimize
 	particlesyslist[id].firstOpenSlot = temp;
 	return temp;
 }
+int searchForTopPart(int id){
+	//todo optimize
+	int temp = particlesyslist[id].topOfList;
+	for(; particlesyslist[id].particlelist[temp].type && temp > 0; temp--); //todo optimize
+	particlesyslist[id].topOfList = temp;
+	return temp;
+}
+int delParticle(int lid, int pid){
+	//todo set first
+	particlesyslist[lid].particlelist[pid].type = 0;
+	if(pid < particlesyslist[lid].firstOpenSlot) particlesyslist[lid].firstOpenSlot = id;
+	searchForTopPart(lid);
+	return TRUE; //todo errorcheck
+}
+
+
 
 
 /* particle system management
