@@ -19,7 +19,6 @@ particlesystem_t *particlesyslist;
 
 
 */
-//TODO
 void resizePartList(int id, int count){
 	particlesyslist[id].max = count;
 	particlesyslist[id].particlelist = realloc(particlesyslist[id].particlelist, count * sizeof(particle_t));
@@ -41,10 +40,31 @@ int searchForTopPart(int id){
 int delParticle(int lid, int pid){
 	//todo set first
 	particlesyslist[lid].particlelist[pid].type = 0;
-	if(pid < particlesyslist[lid].firstOpenSlot) particlesyslist[lid].firstOpenSlot = id;
+	if(pid < particlesyslist[lid].firstOpenSlot) particlesyslist[lid].firstOpenSlot = pid;
 	searchForTopPart(lid);
+	particlesyslist[lid].particlecount--;
 	return TRUE; //todo errorcheck
 }
+int addParticle(int lid, vec3_t pos, vec3_t gravity, vec3_t vel, float life, float fade, char type){
+	int pid = searchForOpenPart(lid);
+	if (pid == particlesyslist[lid].max) resizePartList(lid, particlesyslist[lid].max+MAXJUMPLEVEL);
+	particlesyslist[lid].particlelist[pid].life = life;
+	particlesyslist[lid].particlelist[pid].vel[0] 	  = vel[0];
+	particlesyslist[lid].particlelist[pid].vel[1] 	  = vel[1];
+	particlesyslist[lid].particlelist[pid].vel[2] 	  = vel[2];
+	particlesyslist[lid].particlelist[pid].pos[0] 	  = pos[0];
+	particlesyslist[lid].particlelist[pid].pos[1] 	  = pos[1];
+	particlesyslist[lid].particlelist[pid].pos[2] 	  = pos[2];
+	particlesyslist[lid].particlelist[pid].gravity[0] = gravity[0];
+	particlesyslist[lid].particlelist[pid].gravity[1] = gravity[1];
+	particlesyslist[lid].particlelist[pid].gravity[2] = gravity[2];
+	particlesyslist[lid].particlelist[pid].fade = fade;
+	particlesyslist[lid].particlelist[pid].type = type;
+	particlesyslist[lid].particlecount++; // maybe adda  check if it isnt type 0
+	return TRUE;
+	//todo debugging modes?
+}
+
 
 
 
