@@ -15,7 +15,7 @@ particlesystem_t *particlesyslist;
 */
 //TODO
 
-
+extern int delParticle(int lid, int id);
 int partPhysics(int lid, float timescale){
 	int i = particlesyslist[lid].firstOpenSlot;
 	int end = particlesyslist[lid].topOfList + 1;
