@@ -15,6 +15,31 @@ particlesystem_t *particlesyslist;
 */
 //TODO
 
+
+int partPhysics(int lid, float timescale){
+	int i = particlesyslist[lid].firstOpenSlot;
+	int end = particlesyslist[lid].topOfList + 1;
+	for(; i < end; i++){
+		if(particlesyslist[lid].particlelist[i].type){ //maybe turn into if(! )break
+			particlesyslist[lid].particlelist[i].vel[0] += particlesyslist[lid].particlelist[i].gravity[0]*timescale;
+			particlesyslist[lid].particlelist[i].vel[1] += particlesyslist[lid].particlelist[i].gravity[1]*timescale;
+			particlesyslist[lid].particlelist[i].vel[2] += particlesyslist[lid].particlelist[i].gravity[2]*timescale;
+//todo friction
+
+			particlesyslist[lid].particlelist[i].pos[0] += particlesyslist[lid].particlelist[i].vel[0]*timescale;
+			particlesyslist[lid].particlelist[i].pos[1] += particlesyslist[lid].particlelist[i].vel[1]*timescale;
+			particlesyslist[lid].particlelist[i].pos[2] += particlesyslist[lid].particlelist[i].vel[2]*timescale;
+
+//			particlesyslist[lid].particlelist[i].life -= particlesyslist[lid].particlelist[i].fade*timescale;
+//			if(life<0) delParticle(lid, i);
+			if( (particlesyslist[lid].particlelist[i].life -= particlesyslist[lid].particlelist[i].fade*timescale) < 0)delParticle(lid, i);
+
+
+		}
+	}
+	return TRUE; //todo errorcheck
+}
+
 /* particle management
 
 
