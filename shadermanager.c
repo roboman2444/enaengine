@@ -17,14 +17,6 @@ int initShaderSystem(void){
 	addProgramToList("default", 0, 0, 0);
 	return TRUE; // todo error check
 }
-shaderprogram_t findShader(char * name){
-	int i;
-	for(i=0; i<programnumber; i++){
-		if(programlist[i].name == name) return programlist[i];
-	}
-	//return the default if not found
-	return programlist[0];
-}
 
 int addProgramToList(char *name, GLuint id, GLuint vertexid, GLuint fragmentid){
 	int current = programnumber;
@@ -36,6 +28,13 @@ int addProgramToList(char *name, GLuint id, GLuint vertexid, GLuint fragmentid){
 	programlist[current].fragmentid = fragmentid;
 	//todo
 	return current;
+}
+int findProgramByName(char * name){
+	int i;
+	for(i = 0; i<programnumber; i++){
+		if(!strcmp(name, programlist[i].name)) return i;
+	}
+	return 0;
 }
 
 int createAndLoadShader(char * name){

@@ -9,7 +9,7 @@ const SDL_VideoInfo *videoInfo;
 int videoFlags;
 
 //functions
-int	resizeWindow(int width, int height, int bpp, int debugmode){
+int resizeWindow(int width, int height, int bpp, int debugmode){
 	if(debugmode) printf("DEBUG -- SDL video resize to: %ix%i with %i bits per pixel \n", width, height, bpp);
 	if(height<1) height = 1;
 	if(width<1) width = 1;
