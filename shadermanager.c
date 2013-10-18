@@ -39,17 +39,21 @@ int findProgramByName(char * name){
 
 int createAndLoadShader(char * name){
 	char * vertname = malloc(strlen(name) + 5);
-	*vertname = *name; strcat(vertname, ".vert");
+
+	strcpy(vertname, name);strcat(vertname, ".vert");
+
 	char * vertstring;
 	int vertlength;
+
 	loadFileString(vertname, &vertstring, &vertlength, 2);
+
 	free(vertname);
 	if(vertlength == 0){	//error
 		free(vertstring);
 		return FALSE;
 	}
 	char * fragname = malloc(strlen(name) + 5); //add on 5 extra characters for .frag
-	*fragname = *name; strcat(fragname, ".frag");
+	strcpy(fragname,name); strcat(fragname, ".frag");
 	char * fragstring;
 	int fraglength;
 	loadFileString(fragname, &fragstring, &fraglength, 2);

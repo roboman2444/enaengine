@@ -23,6 +23,15 @@ typedef struct particlesystem_s {
 	char type; //0 is inactive/dead
 } particlesystem_t;
 
+/*
+	particlesystem type;
+	0 is dead/inactive
+	1 is addative, no sorting.
+	//should make a bitfield
+
+
+*/
+
 int particleSysCount = 0;
 
 int particleSystemInit(int maxSystems);

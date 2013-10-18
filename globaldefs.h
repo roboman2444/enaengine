@@ -4,6 +4,8 @@
 #define TRUE  1
 #define FALSE 0
 
+#define GCTIMESTEP 1.0f/60.0f
+
 //global includes
 #include <stdio.h>
 #include <stdlib.h>
