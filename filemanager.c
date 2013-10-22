@@ -7,6 +7,7 @@ int loadFileString(const char * filename, char ** output, int * length, int debu
 	FILE *file = fopen(filename, "r");
 	if(!file){
 		if(debugmode)fprintf(stderr, "ERROR -- file does not exist\n");
+		*length = 0;
 		return FALSE;
 	}
 	fseek(file, 0, SEEK_END);
