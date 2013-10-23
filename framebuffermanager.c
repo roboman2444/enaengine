@@ -29,6 +29,9 @@ int addProgramToList(char *name, GLuint id, GLuint height, GLuint width){
 	return current;
 }
 */
+framebuffer_t returnFrameBuffer(int id){
+	return fblist[id];
+}
 int findFrameBufferByName(char * name){
 	int i;
 	for(i = 0; i<fbnumber; i++){

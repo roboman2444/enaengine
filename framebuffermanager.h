@@ -16,4 +16,5 @@ int initFrameBufferSystem(void);
 //int addFrameBufferToList(char * name,GLuint id, GLuint vertexid, GLuint fragmentid);
 
 int findFrameBufferByName(char * name);
+framebuffer_t returnFrameBuffer(int it);
 #endif
