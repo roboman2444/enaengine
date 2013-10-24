@@ -30,6 +30,7 @@ int addProgramToList(char *name, GLuint id, GLuint height, GLuint width){
 }
 */
 framebuffer_t returnFrameBuffer(int id){
+	if(id >= fbnumber) return fblist[0];
 	return fblist[id];
 }
 int findFrameBufferByName(char * name){

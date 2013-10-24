@@ -7,7 +7,7 @@
 #include "shadermanager.h"
 #include "filemanager.h"
 
-int programnumber = 1; //the first is an error one
+int programnumber = 0; //the first is an error one
 shaderprogram_t *programlist;
 
 int initShaderSystem(void){
@@ -30,6 +30,7 @@ int addProgramToList(char *name, GLuint id, GLuint vertexid, GLuint fragmentid){
 	return current;
 }
 shaderprogram_t returnShader(int id){
+	if(id >= programnumber) return programlist[id];
 	return programlist[id];
 }
 int findProgramByName(char * name){
