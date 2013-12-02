@@ -41,5 +41,3 @@ int loadFileStringNoLength(const char * filename, char ** output, int debugmode)
 	if(debugmode > 1) printf("DEBUG -- Closed file %s \n", filename);
 	return length; //will return false if length is 0
 }
-
-

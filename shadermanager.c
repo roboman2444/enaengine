@@ -88,7 +88,6 @@ int createAndLoadShader(char * name){
 	printf("%d\n", id);
 	return id; //so far i am assuming that it works
 }
-
 int printProgramLogStatus(int id){
 	GLint blen = 0;
 	glGetProgramiv(id, GL_INFO_LOG_LENGTH, &blen);
@@ -111,4 +110,3 @@ int getProgramLogStatus(int id, char ** output){
 	}
 	return length;
 }
-

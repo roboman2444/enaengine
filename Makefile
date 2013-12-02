@@ -1,7 +1,7 @@
 CC = gcc
 LDFLAGS = -lGL -lGLU -lGLEW `sdl-config --libs`  -lm
 CFLAGS = -Wall -O3 `sdl-config --cflags`
-OBJECTS = enaengine.o matrixlib.o shadermanager.o filemanager.o glmanager.o sdlmanager.o particlemanager.o framebuffermanager.o
+OBJECTS = enaengine.o matrixlib.o shadermanager.o filemanager.o glmanager.o sdlmanager.o particlemanager.o framebuffermanager.o texturemanager.o
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c -o $@ $<
