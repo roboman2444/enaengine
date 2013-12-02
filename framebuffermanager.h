@@ -12,9 +12,8 @@ typedef struct framebuffer_s
 	GLuint texid;
 } framebuffer_t;
 int initFrameBufferSystem(void);
-//int createAndLoadShader(char * name);
-//int addFrameBufferToList(char * name,GLuint id, GLuint vertexid, GLuint fragmentid);
 
 int findFrameBufferByName(char * name);
 framebuffer_t returnFrameBuffer(int it);
+int addFrameBufferToList(framebuffer_t fb);
 #endif

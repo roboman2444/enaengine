@@ -17,6 +17,7 @@ int initTextureSystem(void){
 }
 texturegroup_t createTextureGroup(char * name, int num){
 	texturegroup_t texgroup;
+	texgroup.textures = malloc(num*sizeof(texture_t));
 	texgroup.num = num;
 	texgroup.name = name;
 	return texgroup;
