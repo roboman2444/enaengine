@@ -6,6 +6,7 @@ typedef struct texture_s {
 	char type;
 	GLuint width; // could do shorts...
 	GLuint height; // could do shorts...
+	char * components; //todo bitfield
 }texture_t;
 
 

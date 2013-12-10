@@ -37,17 +37,3 @@ int sdlInit(int width, int height, int bpp, int debugmode){
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 	return resizeWindow(width, height, bpp, debugmode);
 }
-
-//TODO get rid of this, its temporary so i can have some sort of textures
-int sdlImportImage(const char * filename, int *height, int *width, void ** data){
-	SDL_Surface *TextureImage;
-	if(!(TextureImage = SDL_LoadBMP(filename))) return FALSE;
-	*height = TextureImage->h;
-	*width = TextureImage->w;
-	int size = TextureImage->w * TextureImage->h * TextureImage->format->BytesPerPixel;
-	*data = malloc(size);
-	memcpy(*data, TextureImage->pixels, size);
-	SDL_FreeSurface(TextureImage);
-	return TRUE;
-}
-
