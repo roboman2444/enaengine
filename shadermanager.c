@@ -22,10 +22,12 @@ int addProgramToList(char *name, GLuint id, GLuint vertexid, GLuint fragmentid){
 	int current = programnumber;
 	programnumber++;
 	programlist = realloc(programlist, (programnumber)*sizeof(shaderprogram_t));
-	programlist[current].name = name;
 	programlist[current].id = id;
 	programlist[current].vertexid = vertexid;
 	programlist[current].fragmentid = fragmentid;
+
+	strcpy(programlist[current].name,name);
+
 	//todo
 	return current;
 }

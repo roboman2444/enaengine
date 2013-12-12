@@ -125,18 +125,18 @@ void resizeSysList(int count){
 	maxSystems = count;
 	particlesyslist = realloc(particlesyslist, maxSystems * sizeof(particlesystem_t));
 }
-//todo do a search for open system
 int addParticleSys(char * name, vec3_t spawnpos, float lifespan, char type, int max){
 	int id = searchForOpenSys();
 	if (id == maxSystems) resizeSysList(maxSystems+MAXJUMPLEVEL);
 	particlesyslist[id].particlecount = 0;
-	particlesyslist[id].name = name;
 	particlesyslist[id].spawnpos[0] = spawnpos[0];
 	particlesyslist[id].spawnpos[1] = spawnpos[1];
 	particlesyslist[id].spawnpos[2] = spawnpos[2];
 	particlesyslist[id].lifespan = lifespan;
 	particlesyslist[id].type = type;
 	particlesyslist[id].max = max;
+	strcpy(particlesyslist[id].name, name);
+
 	//maybe different way...
 	if( ( particlesyslist[id].particlelist = malloc(max*sizeof(particle_t)) ) ){ //maybe change to calloc
 		clearpartlist(particlesyslist[id].particlelist, max);
