@@ -48,4 +48,8 @@ int addTextureGroupToList(texturegroup_t texgroup);
 
 int initTextureSystem(void);
 
+texture_t loadTexture(char *filepath, char type);
+
+texturegroup_t createAndLoadTextureGroup(char *name);
+
 #endif

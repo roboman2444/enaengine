@@ -3,6 +3,7 @@
 
 #include "globaldefs.h"
 #include "texturemanager.h"
+#include <sys/stat.h>
 
 #include "SDL_image.h"
 #include "SDL.h"
@@ -18,13 +19,15 @@ int initTextureSystem(void){
 	//todo error checking
 	return TRUE;
 }
+
 texturegroup_t createTextureGroup(char * name, int num){
 	texturegroup_t texgroup;
 	texgroup.textures = malloc(num*sizeof(texture_t));
 	texgroup.num = num;
-	texgroup.name = name;
+	strcpy(texgroup.name, name);
 	return texgroup;
 }
+
 int addTextureGroupToList(texturegroup_t texgroup){
 	int current = texturegroupnumber;
 	texturegroupnumber++;
@@ -40,7 +43,7 @@ texturegroup_t findTextureGroupByName(char * name){
 	return texturegrouplist[0];
 }
 //todo something to load all textures for group *name
-texture_t loadTexture(char * filepath){
+texture_t loadTexture(char * filepath, char type){
 	texture_t tex;
 	SDL_Surface *teximage;
 	//todo better errorchecking
@@ -48,6 +51,7 @@ texture_t loadTexture(char * filepath){
 	teximage = IMG_Load(filepath);
 	tex.width = teximage->w;
 	tex.height = teximage->h;
+	tex.type = type;
 //	int size = teximage->format->BytesPerPixel * tex.width * tex.height;
 
 	GLint texformat = GL_RGB;
@@ -74,4 +78,34 @@ texture_t loadTexture(char * filepath){
 	SDL_FreeSurface(teximage);
 	glBindTexture(GL_TEXTURE_2D, 0);
 	return tex;
+}
+
+texturegroup_t createAndLoadTextureGroup(char * name){
+	char * filetypes[] = {".png",".tga",".bmp",".jpg",".jpeg"}; //todo filesys
+	char * nametypes[] = {"_diffuse","_normal","_bump","_spec","_gloss"}; //todo filesys
+	texturegroup_t texgroup;
+	//todo clean up texturegroup if it already has shit in it.
+	texgroup.num = 0;
+	strcpy(texgroup.name, name);
+	//todo filesys
+	char * filename = malloc(200); //max size of 200
+	int n, f;
+	struct stat s;
+	for(n = 0; n < sizeof(nametypes); n++){
+		for(f = 0; f < sizeof(filetypes); f++){
+			//do i need to clear the string?
+			sprintf(filename, "%s%s%s", name, nametypes[n], filetypes[f]);
+			if(!stat(filename, &s)){ //dont actually need it
+				//todo implement a filesystem sort of thing
+				texture_t temptex = loadTexture(filename, n+1); // n+1 is the type which each in nametypes corresponds to
+				if(!temptex.id) break; //if texture loading fails... TODO debug
+				texgroup.num++;
+				texgroup.textures = realloc(texgroup.textures, texgroup.num*sizeof(texture_t));
+				texgroup.textures[texgroup.num-1] = temptex;
+				f = sizeof(filetypes)+1; // dont look for any more of name_type files
+			}
+		}
+	}
+	free(filename);
+	return texgroup;
 }
