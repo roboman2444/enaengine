@@ -25,7 +25,7 @@ int addProgramToList(char *name, GLuint id, GLuint vertexid, GLuint fragmentid){
 	programlist[current].id = id;
 	programlist[current].vertexid = vertexid;
 	programlist[current].fragmentid = fragmentid;
-
+	programlist[current].name = malloc(sizeof(name));
 	strcpy(programlist[current].name,name);
 
 	//todo
