@@ -81,6 +81,40 @@ texture_t loadTexture(char * filepath, char type){
 	return tex;
 }
 
+int deleteTexture(texture_t texture){
+	glDeleteTextures(1, &texture.id);
+	texture.type = 0;
+	texture.id = 0;
+	texture.width = 0;
+	texture.height = 0;
+	return TRUE; // todo return something useful
+}
+
+int deleteTextureGroup(texturegroup_t texgroup){
+	int i;
+	for(i = 0; i < texgroup.num; i++){
+		deleteTexture(texgroup.textures[i]);
+	}
+	texgroup.num = 0;
+	free(texgroup.textures);
+	texgroup.textures = 0;
+	free(texgroup.name);
+	texgroup.name = 0;
+//	free(texgroup);
+	//todo return false if some sort of error
+	return i;
+}
+int deleteAllTextureGroups(void){
+	int i;
+	for(i = 0; i < texturegroupnumber; i++){
+		deleteTextureGroup(texturegrouplist[i]); // if texgroup is unused/deleted, the num will be 0 anyway
+	}
+	free(texturegrouplist);
+	texturegrouplist = 0;
+	texturegroupnumber = 0;
+	return i; //todo useful returns
+}
+
 texturegroup_t createAndLoadTextureGroup(char * name){
 	char * filetypes[] = {".png",".tga",".bmp",".jpg",".jpeg"}; //todo filesys
 	char * nametypes[] = {"_diffuse","_normal","_bump","_spec","_gloss"}; //todo filesys

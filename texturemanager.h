@@ -6,7 +6,7 @@ typedef struct texture_s {
 	char type;
 	GLuint width; // could do shorts...
 	GLuint height; // could do shorts...
-	char * components; //todo bitfield
+	char components; //todo bitfield
 }texture_t;
 
 
@@ -52,4 +52,11 @@ texture_t loadTexture(char *filepath, char type);
 
 texturegroup_t createAndLoadTextureGroup(char *name);
 
+int deleteTextureGroup(texturegroup_t texgroup);
+
+int deleteTexture(texture_t texture);
+
+int deleteAllTextureGroups(void);
+
 #endif
+
