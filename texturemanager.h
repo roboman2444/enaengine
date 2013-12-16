@@ -40,7 +40,7 @@ typedef struct texturegroup_s{
 	char * name;
 }texturegroup_t;
 
-texturegroup_t findTextureGroupByName(char * name);
+texturegroup_t * findTextureGroupByName(char * name);
 
 texturegroup_t createTextureGroup(char * name, int num);
 

@@ -2,10 +2,10 @@
 #define MODELMANAGERHEADER
 
 typedef struct model_s {
+	char * name;
 	texturegroup_t * texture;
 	GLuint vboid;// maybe not
 }model_t;
-
 
 /* types of models ... i should do enums for these
 
@@ -15,5 +15,10 @@ typedef struct model_s {
 3 - nonstatic with bones // maybe sperate struct
 
 */
+
+
+int addModelToList(model_t model);
+int initModelSystem(void);
+model_t * findModelByName(char * name);
 #endif
 

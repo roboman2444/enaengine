@@ -36,12 +36,12 @@ int addTextureGroupToList(texturegroup_t texgroup){
 	texturegrouplist[current] = texgroup;
 	return current;
 }
-texturegroup_t findTextureGroupByName(char * name){
+texturegroup_t * findTextureGroupByName(char * name){
 	int i;
 	for(i = 0; i < texturegroupnumber; i++){
-		if(!strcmp(name, texturegrouplist[i].name)) return texturegrouplist[i];
+		if(!strcmp(name, texturegrouplist[i].name)) return &texturegrouplist[i];
 	}
-	return texturegrouplist[0];
+	return &texturegrouplist[0];
 }
 //todo something to load all textures for group *name
 texture_t loadTexture(char * filepath, char type){
