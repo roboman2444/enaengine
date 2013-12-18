@@ -16,8 +16,6 @@ int initModelSystem(void){
 	addModelToList(none);
 	return TRUE;
 }
-
-
 int addModelToList(model_t model){
 	int current = modelnumber;
 	modelnumber++;

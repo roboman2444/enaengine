@@ -10,13 +10,12 @@ int fbnumber = 0; //the first is an error one/screen
 framebuffer_t *fblist;
 
 int initFrameBufferSystem(void){
-			//	id	name		width	height	aspect	fov	texid
-	framebuffer_t screen = {0	,"default"	,0	,0	,1	,0	,0	};
+			//	name		id	width	height	aspect	fov	texid
+	framebuffer_t screen = {"default"	,0 	,0	,0	,1	,0	,0	};
 	if(fblist) free(fblist);
 	fblist = malloc(fbnumber * sizeof(framebuffer_t));
 	if(!fblist) memset(fblist, 0 , fbnumber * sizeof(framebuffer_t));
 	addFrameBufferToList(screen);
-//	addProgramToList("default", 0, 0, 0);
 	return TRUE; // todo error check
 }
 int addFrameBufferToList(framebuffer_t fb){
@@ -29,19 +28,6 @@ int addFrameBufferToList(framebuffer_t fb){
 /*
 framebuffer_t createFrameBuffer (char * name){
 //todo
-}
-*/
-/*
-int addProgramToList(char *name, GLuint id, GLuint height, GLuint width){
-	int current = programnumber;
-	programnumber++;
-	programlist = realloc(programlist, (programnumber)*sizeof(shaderprogram_t));
-	programlist[current].name = name;
-	programlist[current].id = id;
-	programlist[current].vertexid = vertexid;
-	programlist[current].fragmentid = fragmentid;
-	//todo
-	return current;
 }
 */
 framebuffer_t * returnFrameBuffer(int id){

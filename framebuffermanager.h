@@ -3,8 +3,8 @@
 
 typedef struct framebuffer_s
 {
-	GLuint id;
 	char * name;
+	GLuint id;
 	GLuint width;
 	GLuint height;
 	GLuint aspect; // maybe

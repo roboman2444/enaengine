@@ -11,23 +11,18 @@ int programnumber = 0; //the first is an error one
 shaderprogram_t *programlist;
 
 int initShaderSystem(void){
+	shaderprogram_t none = {"default", 0, 0, 0};
 	if(programlist) free(programlist);
 	programlist = malloc(programnumber * sizeof(shaderprogram_t));
 	if(!programlist) memset(programlist, 0 , programnumber * sizeof(shaderprogram_t));
-	addProgramToList("default", 0, 0, 0);
+	addProgramToList(none);
 	return TRUE; // todo error check
 }
-
-int addProgramToList(char *name, GLuint id, GLuint vertexid, GLuint fragmentid){
+int addProgramToList(shaderprogram_t prog){
 	int current = programnumber;
 	programnumber++;
-	programlist = realloc(programlist, (programnumber)*sizeof(shaderprogram_t));
-	programlist[current].id = id;
-	programlist[current].vertexid = vertexid;
-	programlist[current].fragmentid = fragmentid;
-	programlist[current].name = malloc(sizeof(name));
-	strcpy(programlist[current].name,name);
-	//todo
+	programlist = realloc(programlist, programnumber*sizeof(shaderprogram_t));
+	programlist[current] = prog;
 	return current;
 }
 shaderprogram_t * returnShader(int id){
@@ -85,7 +80,8 @@ int createAndLoadShader(char * name){
 	glLinkProgram(programid);
 	//TODO errorcheck
 	printProgramLogStatus(programid);
-	int id = addProgramToList(name, programid, vertid, fragid);
+	shaderprogram_t prog = {name, programid, vertid, fragid};
+	int id = addProgramToList(prog);
 	printf("%d\n", id);
 	return id; //so far i am assuming that it works
 }

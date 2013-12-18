@@ -10,17 +10,17 @@ typedef struct shaderuniform_s
 } shaderuniform_t;
 typedef struct shaderprogram_s
 {
-	GLuint id;
 	char * name;
+	GLuint id;
 	GLuint vertexid;
 	GLuint fragmentid;
-	shaderuniform_t * uniforms;
+//	shaderuniform_t * uniforms;
 } shaderprogram_t;
 int initShaderSystem(void);
 //loads a shader pair from files name.frag and name.vert, compiles, links, adds to the list
 int createAndLoadShader(char * name);
 //resizes and adds the shader to the list
-int addProgramToList(char * name,GLuint id, GLuint vertexid, GLuint fragmentid);
+int addProgramToList(shaderprogram_t prog);
 
 shaderprogram_t * returnShader(int id);
 int printProgramLogStatus(int id);

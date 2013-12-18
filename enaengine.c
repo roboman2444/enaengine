@@ -10,7 +10,9 @@
 
 int main(int argc, char *argv[]){
 	sdlInit(800, 600, 24, 1);
-	glInit();
+	if(glInit()){
+		printf("opengl has initailized correctly\n");
+	}
 	while(TRUE){
 		//main loop
 		return FALSE;

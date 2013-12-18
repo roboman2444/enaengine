@@ -89,11 +89,6 @@ int addParticle(int lid, vec3_t pos, vec3_t gravity, vec3_t vel, float life, flo
 	return TRUE;
 	//todo debugging modes?
 }
-
-
-
-
-
 /* particle system management
 
 
