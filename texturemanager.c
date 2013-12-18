@@ -91,6 +91,7 @@ int deleteTexture(texture_t texture){
 }
 
 int deleteTextureGroup(texturegroup_t texgroup){
+	//todo method for replacing... like particlemanager.
 	int i;
 	for(i = 0; i < texgroup.num; i++){
 		deleteTexture(texgroup.textures[i]);

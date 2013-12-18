@@ -22,8 +22,8 @@ int createAndLoadShader(char * name);
 //resizes and adds the shader to the list
 int addProgramToList(char * name,GLuint id, GLuint vertexid, GLuint fragmentid);
 
-shaderprogram_t returnShader(int id);
+shaderprogram_t * returnShader(int id);
 int printProgramLogStatus(int id);
 int getProgramLogStatus(int id, char ** output);
-int findProgramByName(char * name);
+shaderprogram_t * findProgramByName(char * name);
 #endif

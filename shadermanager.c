@@ -27,20 +27,19 @@ int addProgramToList(char *name, GLuint id, GLuint vertexid, GLuint fragmentid){
 	programlist[current].fragmentid = fragmentid;
 	programlist[current].name = malloc(sizeof(name));
 	strcpy(programlist[current].name,name);
-
 	//todo
 	return current;
 }
-shaderprogram_t returnShader(int id){
-	if(id >= programnumber) return programlist[id];
-	return programlist[id];
+shaderprogram_t * returnShader(int id){
+	if(id >= programnumber) return &programlist[0];
+	return & programlist[id];
 }
-int findProgramByName(char * name){
+shaderprogram_t * findProgramByName(char * name){
 	int i;
 	for(i = 0; i<programnumber; i++){
-		if(!strcmp(name, programlist[i].name)) return i;
+		if(!strcmp(name, programlist[i].name)) return &programlist[i];
 	}
-	return 0;
+	return &programlist[0];
 }
 
 int createAndLoadShader(char * name){

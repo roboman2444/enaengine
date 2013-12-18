@@ -44,16 +44,16 @@ int addProgramToList(char *name, GLuint id, GLuint height, GLuint width){
 	return current;
 }
 */
-framebuffer_t returnFrameBuffer(int id){
-	if(id >= fbnumber) return fblist[0];
-	return fblist[id];
+framebuffer_t * returnFrameBuffer(int id){
+	if(id >= fbnumber) return &fblist[0];
+	return &fblist[id];
 }
-int findFrameBufferByName(char * name){
+framebuffer_t * findFrameBufferByName(char * name){
 	int i;
 	for(i = 0; i<fbnumber; i++){
-		if(!strcmp(name, fblist[i].name)) return i;
+		if(!strcmp(name, fblist[i].name)) return &fblist[i];
 	}
-	return 0;
+	return &fblist[0];
 }
 
 /*
