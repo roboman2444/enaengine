@@ -10,7 +10,10 @@ typedef struct framebuffer_s
 	GLuint aspect; // maybe
 	GLuint fov; // maybe
 	GLuint texid;
+//	texture_t texture;
 } framebuffer_t;
+
+framebuffer_t *defaultFrameBuffer;
 int initFrameBufferSystem(void);
 
 framebuffer_t * findFrameBufferByName(char * name);

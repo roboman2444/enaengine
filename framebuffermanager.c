@@ -10,12 +10,14 @@ int fbnumber = 0; //the first is an error one/screen
 framebuffer_t *fblist;
 
 int initFrameBufferSystem(void){
-			//	name		id	width	height	aspect	fov	texid
+	//todo have it figure out screen aspect for the default
+			//	name	id	width	height	aspect	fov	texid
 	framebuffer_t screen = {"default"	,0 	,0	,0	,1	,0	,0	};
 	if(fblist) free(fblist);
 	fblist = malloc(fbnumber * sizeof(framebuffer_t));
 	if(!fblist) memset(fblist, 0 , fbnumber * sizeof(framebuffer_t));
 	addFrameBufferToList(screen);
+	defaultFrameBuffer = &fblist[0];
 	return TRUE; // todo error check
 }
 int addFrameBufferToList(framebuffer_t fb){
