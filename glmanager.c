@@ -6,20 +6,15 @@
 #include "texturemanager.h"
 #include "framebuffermanager.h"
 #include "modelmanager.h"
+#include "vbomanager.h"
 
 
 int texturesOK;
 int framebuffersOK;
 int modelsOK;
+int vboOK;
 
-GLuint vertexarrayobject;
 //todo move these to globals in their respective .hfiles
-
-int initVAO(GLuint *vaoid){
-	glGenVertexArrays(1, vaoid);
-	glBindVertexArray(*vaoid);
-	return *vaoid;
-}
 
 int glInit(void){
 	GLenum glewError = glewInit();
@@ -37,9 +32,9 @@ int glInit(void){
 		//todo call some sort of shutdown of everything
 		 return framebuffersOK;
 	}
-	initVAO(&vertexarrayobject);
-	if(vertexarrayobject){
-		return vertexarrayobject;
+	vboOK = initVBOSystem();
+	if(!vboOK){
+		return vboOK;
 		//todo call some sort of shutdown of everything
 	}
 

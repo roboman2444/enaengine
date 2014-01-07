@@ -5,12 +5,13 @@
 #include "globaldefs.h"
 #include "texturemanager.h"
 #include "modelmanager.h"
+//#include "vbomanager.h"
 
 int modelnumber = 0;
 model_t *modellist;
 
 int initModelSystem(void){
-	model_t none = {"default", findTextureGroupByName("default"), 0};
+	model_t none = {"default", findTextureGroupByName("default"), 0, 0};
 	if(modellist) free(modellist);
 	modellist = malloc(modelnumber * sizeof(model_t));
 	if(!modellist) memset(modellist, 0 , modelnumber * sizeof(model_t));
@@ -30,6 +31,9 @@ model_t * findModelByName(char * name){
 		if(!strcmp(name, modellist[i].name)) return &modellist[i];
 	}
 	return &modellist[0];
+}
+model_t * createAndAddModel(char * name){
+	return &modellist[addModelToList(createAndLoadModel(name))];
 }
 model_t createAndLoadModel(char * name){
 	char *statictypes[] = {".obj"}; //todo filesys
