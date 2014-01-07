@@ -11,7 +11,16 @@
 int texturesOK;
 int framebuffersOK;
 int modelsOK;
+
+GLuint vertexarrayobject;
 //todo move these to globals in their respective .hfiles
+
+int initVAO(GLuint *vaoid){
+	glGenVertexArrays(1, vaoid);
+	glBindVertexArray(*vaoid);
+	return *vaoid;
+}
+
 int glInit(void){
 	GLenum glewError = glewInit();
 	if(glewError != GLEW_OK){
@@ -28,6 +37,12 @@ int glInit(void){
 		//todo call some sort of shutdown of everything
 		 return framebuffersOK;
 	}
+	initVAO(&vertexarrayobject);
+	if(vertexarrayobject){
+		return vertexarrayobject;
+		//todo call some sort of shutdown of everything
+	}
+
 	modelsOK = initModelSystem();
 	if(!modelsOK){
 		//todo call some sort of shutdown of everything

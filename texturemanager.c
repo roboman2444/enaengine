@@ -1,9 +1,10 @@
 #include <GL/glew.h> //may be unneeded
 #include <GL/gl.h>
+#include <sys/stat.h> //todo filesys
+
 
 #include "globaldefs.h"
 #include "texturemanager.h"
-#include <sys/stat.h>
 
 #include "SDL_image.h"
 #include "SDL.h"
@@ -128,8 +129,8 @@ texturegroup_t createAndLoadTextureGroup(char * name){
 	char * filename = malloc(200); //max size of 200
 	int n, f;
 	struct stat s;
-	for(n = 0; n < sizeof(nametypes); n++){
-		for(f = 0; f < sizeof(filetypes); f++){
+	for(n = 0; n < sizeof(nametypes) && nametypes[n]; n++){
+		for(f = 0; f < sizeof(filetypes) && filetypes[f]; f++){
 			//do i need to clear the string?
 			sprintf(filename, "%s%s%s", name, nametypes[n], filetypes[f]);
 			if(!stat(filename, &s)){ //dont actually need it

@@ -5,6 +5,7 @@ typedef struct model_s {
 	char * name;
 	texturegroup_t * texture;
 	GLuint vboid;// maybe not
+	char type; // maybe not
 }model_t;
 
 /* types of models ... i should do enums for these
@@ -20,5 +21,6 @@ typedef struct model_s {
 int addModelToList(model_t model);
 int initModelSystem(void);
 model_t * findModelByName(char * name);
+model_t createAndloadModel(char * name);
 #endif
 
