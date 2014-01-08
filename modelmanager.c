@@ -55,8 +55,8 @@ int loadModelOBJ(model_t * m, char * filename){//todo flags
 		else if(!strncmp(testline, "vp", 2)) normcount++;
 		else if(!strncmp(testline, "f ", 2)) facecount++;
 	}
-	if(vertcount + tccount + normcount != vertcount*3) return FALSE;
-	if(!vertcount) return FALSE;
+//	if(vertcount + tccount + normcount != vertcount*3) return FALSE;
+	if(!vertcount) return FALSE; // no verts
 	float * vertbuffer = malloc(3*vertcount*sizeof(GLfloat));
 	float * tcbuffer = malloc(2*tccount*sizeof(GLfloat));
 	float * normbuffer = malloc(3*normcount*sizeof(GLfloat));
@@ -93,12 +93,20 @@ int loadModelOBJ(model_t * m, char * filename){//todo flags
 		else if(!strncmp(testline, "f ", 2)){
 			if(readface >=facecount) break;
 			//sscanf(line," vp %d %d %d", &facebuffer[readface++], &facebuffer[readface++], &facebuffer[readface++]);
-			sscanf(line," f %d/%d/%d %d/%d/%d %d/%d/%d",
+			if(sscanf(line," f %d/%d/%d %d/%d/%d %d/%d/%d",
 				&facebuffer[(readface*9)], &facebuffer[(readface*9)+1], &facebuffer[(readface*9)+2],
 				&facebuffer[(readface*9)+3], &facebuffer[(readface*9)+4], &facebuffer[(readface*9)+5],
 				&facebuffer[(readface*9)+6], &facebuffer[(readface*9)+7], &facebuffer[(readface*9)+8]
-			);
-			readface++;
+			))readface++;
+			else if(sscanf(line," f %d/%d %d/%d %d/%d",
+				&facebuffer[(readface*9)], &facebuffer[(readface*9)+1], &facebuffer[(readface*9)+2],
+				&facebuffer[(readface*9)+3], &facebuffer[(readface*9)+4], &facebuffer[(readface*9)+5]
+			))readface++;
+			else if(sscanf(line," f %d//%d %d//%d %d//%d",
+				&facebuffer[(readface*9)], &facebuffer[(readface*9)+1], &facebuffer[(readface*9)+2],
+				&facebuffer[(readface*9)+6], &facebuffer[(readface*9)+7], &facebuffer[(readface*9)+8]
+			))readface++;
+			else return 0; //todo debug... most likely case is that it has a quad
 		}
 	}
 	free(line);
