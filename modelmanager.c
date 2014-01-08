@@ -93,7 +93,7 @@ int loadModelOBJ(model_t * m, char * filename){//todo flags
 		else if(!strncmp(testline, "f ", 2)){
 			if(readface >=facecount) break;
 			//sscanf(line," vp %d %d %d", &facebuffer[readface++], &facebuffer[readface++], &facebuffer[readface++]);
-			sscanf(line," vp %d/%d/%d %d/%d/%d %d/%d/%d",
+			sscanf(line," f %d/%d/%d %d/%d/%d %d/%d/%d",
 				&facebuffer[(readface*9)], &facebuffer[(readface*9)+1], &facebuffer[(readface*9)+2],
 				&facebuffer[(readface*9)+3], &facebuffer[(readface*9)+4], &facebuffer[(readface*9)+5],
 				&facebuffer[(readface*9)+6], &facebuffer[(readface*9)+7], &facebuffer[(readface*9)+8]
