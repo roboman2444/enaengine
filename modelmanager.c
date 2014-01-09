@@ -109,11 +109,11 @@ int loadModelOBJ(model_t * m, char * filename){//todo flags
 			else if(sscanf(line," f %d/%d %d/%d %d/%d",
 				&facebuffer[0], &facebuffer[1], &facebuffer[2],
 				&facebuffer[3], &facebuffer[4], &facebuffer[5]
-			) == 6 );
+			) == 6 ) facebuffer[6] = facebuffer[7] = facebuffer[8] = 0; // make sure they are 0s
 			else if(sscanf(line," f %d//%d %d//%d %d//%d",
 				&facebuffer[0], &facebuffer[1], &facebuffer[2],
 				&facebuffer[6], &facebuffer[7], &facebuffer[8]
-			) == 6);
+			) == 6) facebuffer[3] = facebuffer[4] = facebuffer[5] = 0; // make sure they are 0s
 			else return 0; //todo debug... most likely case is that it has a quad
 
 			int n;
@@ -130,18 +130,24 @@ int loadModelOBJ(model_t * m, char * filename){//todo flags
 				if(facebuffer[(n*3)+1] >= 0) normindice = facebuffer[(n*3)+2];
 				else if(facebuffer[(n*3)+2] < 0) normindice = readnorm+facebuffer[(n*3)+2];
 
+
+
+				vindice--; //1 to 0
+				tcindice--;
+				normindice--;
+
 				//may not be doing this properly...
 				indicebuffer[readface+n] = vindice;
 				interleavedbuffer[(vindice*8)+0] = vertbuffer[(vindice*3)+0];
 				interleavedbuffer[(vindice*8)+1] = vertbuffer[(vindice*3)+1];
 				interleavedbuffer[(vindice*8)+2] = vertbuffer[(vindice*3)+2];
-				if(normindice){
+				if(normindice>=0){
 					//todo maybe check if there is already something there...
 					interleavedbuffer[(vindice*8)+3] = vertbuffer[(normindice*3)+0];
 					interleavedbuffer[(vindice*8)+4] = vertbuffer[(normindice*3)+1];
 					interleavedbuffer[(vindice*8)+5] = vertbuffer[(normindice*3)+2];
 				}
-				if(normindice){
+				if(tcindice>=0){
 					//todo check if there is maybe something there
 					interleavedbuffer[(vindice*8)+6] = tcbuffer[(tcindice*2)+0];
 					interleavedbuffer[(vindice*8)+7] = tcbuffer[(tcindice*2)+1];
