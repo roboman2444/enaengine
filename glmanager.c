@@ -5,8 +5,8 @@
 #include "glmanager.h"
 #include "texturemanager.h"
 #include "framebuffermanager.h"
-#include "modelmanager.h"
 #include "vbomanager.h"
+#include "modelmanager.h"
 
 
 int texturesOK;

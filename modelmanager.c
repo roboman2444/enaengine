@@ -4,8 +4,8 @@
 
 #include "globaldefs.h"
 #include "texturemanager.h"
+#include "vbomanager.h"
 #include "modelmanager.h"
-//#include "vbomanager.h"
 
 int modelnumber = 0;
 model_t *modellist;
@@ -152,28 +152,34 @@ int loadModelOBJ(model_t * m, char * filename){//todo flags
 					interleavedbuffer[(vindice*8)+6] = tcbuffer[(tcindice*2)+0];
 					interleavedbuffer[(vindice*8)+7] = tcbuffer[(tcindice*2)+1];
 				}
-				//todo, gotta think about this for a while
 			}
 			readface++;
 		}
 	}
 	free(line);
 	fclose(f);
-	if(readface != facecount) return 0; //todo actually debug and whatnot
-	if(readtc != tccount) return 0; //todo actually debug and whatnot
-	if(readtc != vertcount) return 0; //todo actually debug and whatnot
-	if(readnorm != normcount) return 0; //todo actually debug and whatnot
-	//todo sort texcoords and normals to verts... in each face thing, organize verts into a new buffer
-	//todo create VAO
-	//todo create VBOs and load crap into them
-	//todo set flags in the model
-	//todo curse more at obj for being stupid
 	free(vertbuffer);
 	free(normbuffer);
 	free(facebuffer);
-	free(interleavedbuffer);
-	free(indicebuffer);
 	free(tcbuffer);
+
+	if(readface != facecount) return 0; //todo actually debug and free crap
+	if(readtc != tccount) return 0; //todo actually debug and whatnot
+	if(readtc != vertcount) return 0; //todo actually debug and whatnot
+	if(readnorm != normcount) return 0; //todo actually debug and whatnot
+
+	m->vbo = createAndAddVBO(m->name, m->type);
+	if(!m->vbo) return 0; // todo free and error handle
+	//the correct vao should be bound at this point.
+	glBindBuffer(GL_ARRAY_BUFFER,m->vbo->vboid);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(interleavedbuffer), interleavedbuffer, GL_STATIC_DRAW);
+	free(interleavedbuffer);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,m->vbo->indicesid);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER,sizeof(indicebuffer), indicebuffer, GL_STATIC_DRAW);
+	free(indicebuffer);
+	//todo look up the shader used and get the positions of the attribs in it
+	//todo set flags in the model
+	//todo curse more at obj for being stupid
 	return TRUE;
 }
 model_t createAndLoadModel(char * name){

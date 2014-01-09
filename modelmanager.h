@@ -4,7 +4,7 @@
 typedef struct model_s {
 	char * name;
 	texturegroup_t * texture;
-	GLuint vboid;// maybe not
+	vbo_t * vbo;// maybe not
 	char type; // maybe not
 }model_t;
 

@@ -1,5 +1,5 @@
 #ifndef VBOMANAGERHEADER
-#define VBOELMANAGERHEADER
+#define VBOMANAGERHEADER
 
 typedef struct vbo_s {
 	char * name;
