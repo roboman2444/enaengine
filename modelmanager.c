@@ -57,11 +57,22 @@ int loadModelOBJ(model_t * m, char * filename){//todo flags
 	}
 //	if(vertcount + tccount + normcount != vertcount*3) return FALSE;
 	if(!vertcount) return FALSE; // no verts
-	float * vertbuffer = malloc(3*vertcount*sizeof(GLfloat));
-	float * tcbuffer = malloc(2*tccount*sizeof(GLfloat));
-	float * normbuffer = malloc(3*normcount*sizeof(GLfloat));
+	float 	* vertbuffer = malloc(3*vertcount*sizeof(GLfloat));
+	float 	* tcbuffer = malloc(2*tccount*sizeof(GLfloat));
+	float 	* normbuffer = malloc(3*normcount*sizeof(GLfloat));
 	//GLuint  * facebuffer = malloc(9*facecount*sizeof(GLuint)); //one for verts, tc, and normals
-	int  * facebuffer = malloc(9*facecount*sizeof(GLuint)); //one for verts, tc, and normals
+	int 	* facebuffer = malloc(9*sizeof(int)); //one for verts, tc, and normals
+	int 	* indicebuffer = malloc(3*facecount *sizeof(int));
+	GLfloat * interleavedbuffer = malloc(8*normcount*sizeof(GLfloat));
+
+
+
+	bzero(vertbuffer, 3*vertcount*sizeof(GLfloat));
+	bzero(normbuffer, 3*normcount*sizeof(GLfloat));
+	bzero(tcbuffer,   2*  tccount*sizeof(GLfloat));
+	bzero(facebuffer, 9*sizeof(int));
+	bzero(indicebuffer, 3*facecount*sizeof(int));
+	bzero(interleavedbuffer, 8*facecount*sizeof(GLfloat));
 	rewind(f);
 
 
@@ -69,6 +80,7 @@ int loadModelOBJ(model_t * m, char * filename){//todo flags
 	unsigned int readnorm = 0;
 	unsigned int readtc = 0;
 	unsigned int readface = 0;
+	unsigned int readinterleaved = 0;
 	while(fgets(line, 300, f)){
 		testline = line;
 		while(*testline == ' ' || *testline == '\t') testline+=sizeof(char); //should be 1 //take off early white spaces
@@ -94,19 +106,44 @@ int loadModelOBJ(model_t * m, char * filename){//todo flags
 			if(readface >=facecount) break;
 			//sscanf(line," vp %d %d %d", &facebuffer[readface++], &facebuffer[readface++], &facebuffer[readface++]);
 			if(sscanf(line," f %d/%d/%d %d/%d/%d %d/%d/%d",
-				&facebuffer[(readface*9)], &facebuffer[(readface*9)+1], &facebuffer[(readface*9)+2],
-				&facebuffer[(readface*9)+3], &facebuffer[(readface*9)+4], &facebuffer[(readface*9)+5],
-				&facebuffer[(readface*9)+6], &facebuffer[(readface*9)+7], &facebuffer[(readface*9)+8]
-			))readface++;
+				&facebuffer[0], &facebuffer[1], &facebuffer[2],
+				&facebuffer[3], &facebuffer[4], &facebuffer[5],
+				&facebuffer[6], &facebuffer[7], &facebuffer[8]
+			) == 9);
 			else if(sscanf(line," f %d/%d %d/%d %d/%d",
-				&facebuffer[(readface*9)], &facebuffer[(readface*9)+1], &facebuffer[(readface*9)+2],
-				&facebuffer[(readface*9)+3], &facebuffer[(readface*9)+4], &facebuffer[(readface*9)+5]
-			))readface++;
+				&facebuffer[0], &facebuffer[1], &facebuffer[2],
+				&facebuffer[3], &facebuffer[4], &facebuffer[5]
+			) == 6 );
 			else if(sscanf(line," f %d//%d %d//%d %d//%d",
-				&facebuffer[(readface*9)], &facebuffer[(readface*9)+1], &facebuffer[(readface*9)+2],
-				&facebuffer[(readface*9)+6], &facebuffer[(readface*9)+7], &facebuffer[(readface*9)+8]
-			))readface++;
+				&facebuffer[0], &facebuffer[1], &facebuffer[2],
+				&facebuffer[6], &facebuffer[7], &facebuffer[8]
+			) == 6);
 			else return 0; //todo debug... most likely case is that it has a quad
+			//todo skip reading into a buffer and parse the iqm out into usable data here
+			//needed for that -2 relative crap
+			int n;
+			for(n = 0; n < 3; n++){ //two or more, use a for
+				int vindice;
+				int tcindice;
+				int normindice;
+				if(facebuffer[(n*3)+0] > 0) vindice = facebuffer[(n*3)+0];
+				else if(facebuffer[(n*3)+0] < 0) vindice = readvert+facebuffer[(n*3)+0];
+				else return 0; //0, todo debug
+				if(facebuffer[(n*3)+0] >= 0) tcindice = tcbuffer[(n*3)+1];
+				else if(facebuffer[(n*3)+0] < 0) tcindice = readtc+facebuffer[(n*3)+1];
+//				else return 0; //0, todo debug
+				if(facebuffer[(n*3)+1] >= 0) normindice = facebuffer[(n*3)+2];
+				else if(facebuffer[(n*3)+2] < 0) normindice = readnorm+facebuffer[(n*3)+2];
+//				else return 0; //0, todo debug
+
+				//may not be doing this properly...
+				indicebuffer[readface+n] = vindice;
+				
+
+				//if(interleavedbuffer[
+				//todo, gotta think about this for a while
+			}
+			readface++;
 		}
 	}
 	free(line);
@@ -123,6 +160,8 @@ int loadModelOBJ(model_t * m, char * filename){//todo flags
 	free(vertbuffer);
 	free(normbuffer);
 	free(facebuffer);
+	free(interleavedbuffer);
+	free(indicebuffer);
 	free(tcbuffer);
 	return TRUE;
 }
