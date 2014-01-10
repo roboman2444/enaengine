@@ -70,21 +70,20 @@ int loadModelOBJ(model_t * m, char * filename){//todo flags
 
 //	if(vertcount + tccount + normcount != vertcount*3) return FALSE;
 	if(!vertcount) return FALSE; // no verts
-	float 	* vertbuffer = malloc(3*vertcount*sizeof(GLfloat));
-	float 	* tcbuffer = malloc(2*tccount*sizeof(GLfloat));
-	float 	* normbuffer = malloc(3*normcount*sizeof(GLfloat));
+	float 	* vertbuffer = malloc(3*vertcount*sizeof(float));
+	float 	* tcbuffer = malloc(2*tccount*sizeof(float));
+	float 	* normbuffer = malloc(3*normcount*sizeof(float));
 	//GLuint  * facebuffer = malloc(9*facecount*sizeof(GLuint)); //one for verts, tc, and normals
 	int 	* facebuffer = malloc(9*sizeof(int)); //one for verts, tc, and normals
-	int 	* indicebuffer = malloc(3*facecount *sizeof(int));
-	GLfloat * interleavedbuffer = malloc(8*normcount*sizeof(GLfloat));
+	int 	* indicebuffer = malloc(3*facecount*sizeof(int));
+	GLfloat * interleavedbuffer = malloc(8*facecount*sizeof(GLfloat));
 
 
 
 
-//commenting these out makes it no segfault, usually, but isnt the problem
-	bzero(vertbuffer, 3*vertcount*sizeof(GLfloat));
-	bzero(normbuffer, 3*normcount*sizeof(GLfloat));
-	bzero(tcbuffer,   2*  tccount*sizeof(GLfloat));
+	bzero(vertbuffer, 3*vertcount*sizeof(float));
+	bzero(normbuffer, 3*normcount*sizeof(float));
+	bzero(tcbuffer,   2*  tccount*sizeof(float));
 	bzero(facebuffer, 9*sizeof(int));
 	bzero(indicebuffer, 3*facecount*sizeof(int));
 	bzero(interleavedbuffer, 8*facecount*sizeof(GLfloat));
@@ -116,7 +115,8 @@ int loadModelOBJ(model_t * m, char * filename){//todo flags
 			readnorm++;
 		}
 		else if(!strncmp(line+over, "f ", 2)){
-			if(readface >=facecount) break;
+			if(readface >= facecount) break;
+//			printf("%i\n",readface);
 			if(sscanf(line," f %d/%d/%d %d/%d/%d %d/%d/%d",
 				&facebuffer[0], &facebuffer[1], &facebuffer[2],
 				&facebuffer[3], &facebuffer[4], &facebuffer[5],
@@ -141,7 +141,7 @@ int loadModelOBJ(model_t * m, char * filename){//todo flags
 				else if(facebuffer[(n*3)+0] < 0) vindice = readvert+facebuffer[(n*3)+0];
 				else return 0; //0, todo debug
 				if(facebuffer[(n*3)+0] >= 0) tcindice = tcbuffer[(n*3)+1];
-				else if(facebuffer[(n*3)+0] < 0) tcindice = readtc+facebuffer[(n*3)+1];
+				else if(facebuffer[(n*3)+1] < 0) tcindice = readtc+facebuffer[(n*3)+1];
 
 				if(facebuffer[(n*3)+1] >= 0) normindice = facebuffer[(n*3)+2];
 				else if(facebuffer[(n*3)+2] < 0) normindice = readnorm+facebuffer[(n*3)+2];
@@ -169,6 +169,7 @@ int loadModelOBJ(model_t * m, char * filename){//todo flags
 					interleavedbuffer[(vindice*8)+7] = tcbuffer[(tcindice*2)+1];
 				}
 			}
+
 			readface++;
 		}
 	}
@@ -179,10 +180,18 @@ int loadModelOBJ(model_t * m, char * filename){//todo flags
 	free(facebuffer);
 	free(tcbuffer);
 
+	int print;
+	printf("%ix%i indices: ", facecount, readface);
+	for(print = 0; print < facecount*3; printf("%i ", indicebuffer[print++]));
+	printf("\n\n\n\n\n\n\n\n\n\n%ix%i data: ", vertcount, readvert);
+	for(print = 0; print < vertcount*8; printf("%f ", interleavedbuffer[print++]));
+	printf("\n");
+
 	if(readface != facecount) return 0; //todo actually debug and free crap
 	if(readtc != tccount) return 0; //todo actually debug and whatnot
-	if(readtc != vertcount) return 0; //todo actually debug and whatnot
+	if(readvert != vertcount) return 0; //todo actually debug and whatnot
 	if(readnorm != normcount) return 0; //todo actually debug and whatnot
+
 
 	m->vbo = createAndAddVBO(m->name, m->type);
 	if(!m->vbo) return 0; // todo free and error handle
