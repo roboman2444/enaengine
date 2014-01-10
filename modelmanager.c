@@ -10,6 +10,10 @@
 int modelnumber = 0;
 model_t *modellist;
 
+char *statictypes[] = {".obj"}; //todo filesys
+char *animtypes[] = {".dpm"}; //todo filesys //todo
+
+
 int initModelSystem(void){
 	model_t none = {"default", findTextureGroupByName("default"), 0, 0};
 	if(modellist) free(modellist);
@@ -44,17 +48,26 @@ int loadModelOBJ(model_t * m, char * filename){//todo flags
 
 	FILE *f;
 	if(!(f = fopen(filename, "r"))) return FALSE;
+
 	char * line = malloc(300*sizeof(char)); //max size of 300;
-	char * testline;
+//	char * testline;
+	int over;
 	while(fgets(line, 300, f)){
-		testline = line;
-		while(*testline == ' ' || *testline == '\t') testline+=sizeof(char); //should be 1 //take off early white spaces
-		if(testline > 200 + line) continue;
-		if(!strncmp(testline, "v ", 2)) vertcount++;
-		else if(!strncmp(testline, "vt", 2)) tccount++;
-		else if(!strncmp(testline, "vp", 2)) normcount++;
-		else if(!strncmp(testline, "f ", 2)) facecount++;
+//		testline = line;
+//		while((*testline == ' ' || *testline == '\t') && testline < line + 200) testline+=sizeof(char); //should be 1 //take off early white spaces
+//		if(testline > 200 + line) continue;
+//		if(!strncmp(testline, "v ", 2)) vertcount++;
+//		else if(!strncmp(testline, "vt", 2)) tccount++;
+//		else if(!strncmp(testline, "vp", 2)) normcount++;
+//		else if(!strncmp(testline, "f ", 2)) facecount++;
+		for(over = 0; (line[over] == ' ' || line[over] == '\t') && over < 200; over++); //should be 1 //take off early white spaces
+		if(!strncmp(line+over, "v ", 2)) vertcount++;
+		else if(!strncmp(line+over, "vt", 2)) tccount++;
+		else if(!strncmp(line+over, "vp", 2)) normcount++;
+		else if(!strncmp(line+over, "f ", 2)) facecount++;
+
 	}
+
 //	if(vertcount + tccount + normcount != vertcount*3) return FALSE;
 	if(!vertcount) return FALSE; // no verts
 	float 	* vertbuffer = malloc(3*vertcount*sizeof(GLfloat));
@@ -67,6 +80,8 @@ int loadModelOBJ(model_t * m, char * filename){//todo flags
 
 
 
+
+//commenting these out makes it no segfault, usually, but isnt the problem
 	bzero(vertbuffer, 3*vertcount*sizeof(GLfloat));
 	bzero(normbuffer, 3*normcount*sizeof(GLfloat));
 	bzero(tcbuffer,   2*  tccount*sizeof(GLfloat));
@@ -81,25 +96,26 @@ int loadModelOBJ(model_t * m, char * filename){//todo flags
 	unsigned int readtc = 0;
 	unsigned int readface = 0;
 	while(fgets(line, 300, f)){
-		testline = line;
-		while(*testline == ' ' || *testline == '\t') testline+=sizeof(char); //should be 1 //take off early white spaces
-		if(testline > 200 + line) continue;
-		if(!strncmp(testline, "v ", 2)){
+		for(over = 0; (line[over] == ' ' || line[over] == '\t') && over < 200; over++); //should be 1 //take off early white spaces
+
+
+//		if(!strncmp(testline, "v ", 2)){
+		if(!strncmp(line+over, "v ", 2)){
 			if(readvert >= vertcount) break; //todo debug
 			sscanf(line," v %f %f %f",&vertbuffer[(readvert*3)],&vertbuffer[(readvert*3)+1],&vertbuffer[(readvert*3)+2]);
 			readvert++;
 		}
-		else if(!strncmp(testline, "vt", 2)){
+		else if(!strncmp(line+over, "vt", 2)){
 			if(readtc >= tccount) break; //todo debug
 			sscanf(line," vt %f %f",&tcbuffer[(readtc*2)],&tcbuffer[(readtc*2)+1]);
 			readtc++;
 		}
-		else if(!strncmp(testline, "vp", 2)){
+		else if(!strncmp(line+over, "vp", 2)){
 			if(readnorm >= normcount) break; //todo debug
 			sscanf(line," vp %f %f %f",&normbuffer[(readnorm*3)],&normbuffer[(readnorm*3)+1], &normbuffer[(readnorm*3)+2]);
 			readnorm++;
 		}
-		else if(!strncmp(testline, "f ", 2)){
+		else if(!strncmp(line+over, "f ", 2)){
 			if(readface >=facecount) break;
 			if(sscanf(line," f %d/%d/%d %d/%d/%d %d/%d/%d",
 				&facebuffer[0], &facebuffer[1], &facebuffer[2],
@@ -177,24 +193,22 @@ int loadModelOBJ(model_t * m, char * filename){//todo flags
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,m->vbo->indicesid);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER,sizeof(indicebuffer), indicebuffer, GL_STATIC_DRAW);
 	free(indicebuffer);
-	//todo look up the shader used and get the positions of the attribs in it
+	//todo look up the shader used and get the positions of the attribs in it ... maybe use material based shading
+
 	//todo set flags in the model
 	//todo curse more at obj for being stupid
 	return TRUE;
 }
 model_t createAndLoadModel(char * name){
-	char *statictypes[] = {".obj"}; //todo filesys
-	char *animtypes[] = {".dpm"}; //todo filesys //todo
 
 	model_t m;
 	m.type = 0; // error
-	char * filename = malloc(200);
+	char * filename = malloc(200); //todo filesys and define a size
 	struct stat s;
 	int n;
 	for(n = 0; n < sizeof(statictypes) &&  statictypes[n]; n++){
 		sprintf(filename, "%s%s", name, statictypes[n]);
 		if(!stat(filename, &s)){ //if file exists... i guess
-			//TODO CALL SOME SORTA LOADING FUNCTION
 			if(!loadModelOBJ(&m, filename)) return m;
 			m.type = 1;
 			m.name = malloc(sizeof(name));
@@ -208,6 +222,41 @@ model_t createAndLoadModel(char * name){
 		if(!stat(filename, &s)){ //if file exists... i guess
 			//TODO CALL SOME SORTA LOADING FUNCTION... ANIMATED
 			m.type = 2;
+			m.name = malloc(sizeof(name));
+			strcpy(m.name, name);
+			free(filename);
+			return m;
+		}
+	}
+	if(!m.type)/*some sorta error*/;
+
+	free(filename);
+	return m;
+}
+
+//if i want to load a static iqm model forsay
+model_t createAndLoadTypeModel(char * name, char type){
+	model_t m;
+	m.type = 0; // error
+	char * filename = malloc(200); //todo filesys and define a size
+	struct stat s;
+	int n;
+	for(n = 0; n < sizeof(statictypes) &&  statictypes[n]; n++){
+		sprintf(filename, "%s%s", name, statictypes[n]);
+		if(!stat(filename, &s)){ //if file exists... i guess
+			if(!loadModelOBJ(&m, filename)) return m;
+			m.type = type;
+			m.name = malloc(sizeof(name));
+			strcpy(m.name, name);
+			free(filename);
+			return m;
+		}
+	}
+	for(n = 0; n < sizeof(animtypes) &&  animtypes[n]; n++){
+		sprintf(filename, "%s%s", name, animtypes[n]);
+		if(!stat(filename, &s)){ //if file exists... i guess
+			//TODO CALL SOME SORTA LOADING FUNCTION... ANIMATED
+			m.type = type;
 			m.name = malloc(sizeof(name));
 			strcpy(m.name, name);
 			free(filename);

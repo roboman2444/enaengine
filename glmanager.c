@@ -25,23 +25,24 @@ int glInit(void){
 	texturesOK = initTextureSystem();
 	if(!texturesOK){
 		//todo call some sort of shutdown of everything
-		 return texturesOK;
+		 return FALSE;
 	}
 	framebuffersOK = initFrameBufferSystem();
 	if(!framebuffersOK){
 		//todo call some sort of shutdown of everything
-		 return framebuffersOK;
+		 return FALSE;
 	}
 	vboOK = initVBOSystem();
 	if(!vboOK){
-		return vboOK;
+		return FALSE;
 		//todo call some sort of shutdown of everything
 	}
-
 	modelsOK = initModelSystem();
 	if(!modelsOK){
 		//todo call some sort of shutdown of everything
-		 return modelsOK;
+		 return FALSE;
 	}
+	createAndAddModel("tehball");
+
 	return TRUE; // so far so good
 }

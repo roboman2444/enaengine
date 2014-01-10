@@ -8,8 +8,8 @@ OBJECTS = enaengine.o matrixlib.o shadermanager.o filemanager.o glmanager.o sdlm
 
 enaengine: $(OBJECTS)
 	$(CC) $(CFLAGS) $(OBJECTS) -o $@ $(LDFLAGS)
-debug: $(OBJECTS)
-	CFLAGS = -Wall -O0 -g `sdl-config --cflags`
+debug:	CFLAGS= -Wall -O0 -g `sdl-config --cflags`
+debug: 	$(OBJECTS)
 	$(CC) $(CFLAGS) $(OBJECTS) -o enaengine-$@ $(LDFLAGS)
 clean:
 	@echo cleaning oop
