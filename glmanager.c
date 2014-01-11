@@ -42,7 +42,7 @@ int glInit(void){
 		//todo call some sort of shutdown of everything
 		 return FALSE;
 	}
-	createAndAddModel("tehball");
+	createAndAddModel("teapot");
 
 	return TRUE; // so far so good
 }

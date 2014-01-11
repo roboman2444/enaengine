@@ -48,7 +48,6 @@ int loadModelOBJ(model_t * m, char * filename){//todo flags
 
 	FILE *f;
 	if(!(f = fopen(filename, "r"))) return FALSE;
-
 	char * line = malloc(300*sizeof(char)); //max size of 300;
 //	char * testline;
 	int over;
@@ -130,7 +129,12 @@ int loadModelOBJ(model_t * m, char * filename){//todo flags
 				&facebuffer[0], &facebuffer[1], &facebuffer[2],
 				&facebuffer[6], &facebuffer[7], &facebuffer[8]
 			) == 6) facebuffer[3] = facebuffer[4] = facebuffer[5] = 0; // make sure they are 0s
-			else return 0; //todo debug... most likely case is that it has a quad
+			else if(sscanf(line," f %d %d %d",
+				&facebuffer[0], &facebuffer[1], &facebuffer[2]
+			) == 3) facebuffer[3] = facebuffer[4] = facebuffer[5] = facebuffer[6] = facebuffer[7] = facebuffer[8] = 0; // make sure they are 0s
+			else{
+				return 0; //todo debug... most likely case is that it has a quad
+			}
 
 			int n;
 			for(n = 0; n < 3; n++){ //two or more, use a for
@@ -139,11 +143,11 @@ int loadModelOBJ(model_t * m, char * filename){//todo flags
 				int normindice = 0;
 				if(facebuffer[(n*3)+0] > 0) vindice = facebuffer[(n*3)+0];
 				else if(facebuffer[(n*3)+0] < 0) vindice = readvert+facebuffer[(n*3)+0];
-				else return 0; //0, todo debug
-				if(facebuffer[(n*3)+0] >= 0) tcindice = tcbuffer[(n*3)+1];
+				else break; //0, todo debug
+				if(facebuffer[(n*3)+1] >= 0) tcindice = facebuffer[(n*3)+1];
 				else if(facebuffer[(n*3)+1] < 0) tcindice = readtc+facebuffer[(n*3)+1];
 
-				if(facebuffer[(n*3)+1] >= 0) normindice = facebuffer[(n*3)+2];
+				if(facebuffer[(n*3)+2] >= 0) normindice = facebuffer[(n*3)+2];
 				else if(facebuffer[(n*3)+2] < 0) normindice = readnorm+facebuffer[(n*3)+2];
 
 
@@ -169,10 +173,10 @@ int loadModelOBJ(model_t * m, char * filename){//todo flags
 					interleavedbuffer[(vindice*8)+7] = tcbuffer[(tcindice*2)+1];
 				}
 			}
-
 			readface++;
 		}
 	}
+
 	free(line);
 	fclose(f);
 	free(vertbuffer);
@@ -183,8 +187,8 @@ int loadModelOBJ(model_t * m, char * filename){//todo flags
 	int print;
 	printf("%ix%i indices: ", facecount, readface);
 	for(print = 0; print < facecount*3; printf("%i ", indicebuffer[print++]));
-	printf("\n\n\n\n\n\n\n\n\n\n%ix%i data: ", vertcount, readvert);
-	for(print = 0; print < vertcount*8; printf("%f ", interleavedbuffer[print++]));
+//	printf("\n\n\n\n\n\n\n\n\n\n%ix%i data: ", vertcount, readvert);
+//	for(print = 0; print < vertcount*8; printf("%f ", interleavedbuffer[print++]));
 	printf("\n");
 
 	if(readface != facecount) return 0; //todo actually debug and free crap
