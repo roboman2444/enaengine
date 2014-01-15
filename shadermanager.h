@@ -26,4 +26,5 @@ shaderprogram_t * returnShader(int id);
 int printProgramLogStatus(int id);
 int getProgramLogStatus(int id, char ** output);
 shaderprogram_t * findProgramByName(char * name);
+GLint findShaderAttribPos(shaderprogram_t * shader, char * name);
 #endif

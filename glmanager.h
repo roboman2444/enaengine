@@ -2,5 +2,6 @@
 #define GLMANAGERHEADER
 
 int glInit(void);
+int glMainDraw(void);
 
 #endif

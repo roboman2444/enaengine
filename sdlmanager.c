@@ -37,3 +37,6 @@ int sdlInit(int width, int height, int bpp, int debugmode){
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 	return resizeWindow(width, height, bpp, debugmode);
 }
+void swapBuffers(void){
+	SDL_GL_SwapBuffers();
+}

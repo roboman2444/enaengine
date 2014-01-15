@@ -25,6 +25,8 @@ int addFrameBufferToList(framebuffer_t fb){
 	fbnumber++;
 	fblist = realloc(fblist, fbnumber * sizeof(framebuffer_t));
 	fblist[current] = fb;
+	fblist[current].name = malloc(sizeof(*fb.name));
+	strcpy(fblist[current].name, fb.name);
 	return current;
 }
 /*

@@ -130,7 +130,7 @@ int addParticleSys(char * name, vec3_t spawnpos, float lifespan, char type, int 
 	particlesyslist[id].lifespan = lifespan;
 	particlesyslist[id].type = type;
 	particlesyslist[id].max = max;
-	particlesyslist[id].name = malloc(sizeof(name));
+	particlesyslist[id].name = malloc(sizeof(*name));
 	strcpy(particlesyslist[id].name, name);
 
 	//maybe different way...

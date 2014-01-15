@@ -13,6 +13,9 @@ int main(int argc, char *argv[]){
 	if(glInit()){
 		printf("opengl has initailized correctly\n");
 	}
+	glMainDraw();
+	sleep(5);
+
 	while(TRUE){
 		//main loop
 		return FALSE;

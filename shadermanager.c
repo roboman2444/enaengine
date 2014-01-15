@@ -13,8 +13,8 @@ shaderprogram_t *programlist;
 int initShaderSystem(void){
 	shaderprogram_t none = {"default", 0, 0, 0};
 	if(programlist) free(programlist);
-	programlist = malloc(programnumber * sizeof(shaderprogram_t));
-	if(!programlist) memset(programlist, 0 , programnumber * sizeof(shaderprogram_t));
+	programlist = malloc(1 * sizeof(shaderprogram_t));
+	if(!programlist) memset(programlist, 0 , 1 * sizeof(shaderprogram_t));
 	addProgramToList(none);
 	return TRUE; // todo error check
 }
@@ -22,7 +22,11 @@ int addProgramToList(shaderprogram_t prog){
 	int current = programnumber;
 	programnumber++;
 	programlist = realloc(programlist, programnumber*sizeof(shaderprogram_t));
-	programlist[current] = prog;
+	programlist[current].id = prog.id;
+	programlist[current].vertexid = prog.vertexid;
+	programlist[current].fragmentid = prog.fragmentid;
+	programlist[current].name = malloc(sizeof(*prog.name));
+	strcpy(programlist[current].name, prog.name);
 	return current;
 }
 shaderprogram_t * returnShader(int id){
@@ -34,7 +38,7 @@ shaderprogram_t * findProgramByName(char * name){
 	for(i = 0; i<programnumber; i++){
 		if(!strcmp(name, programlist[i].name)) return &programlist[i];
 	}
-	return &programlist[0];
+	return &programlist[0]; // return first one
 }
 
 int createAndLoadShader(char * name){
@@ -77,12 +81,13 @@ int createAndLoadShader(char * name){
 	//TODO errorcheck
 	glAttachShader(programid, vertid);
 	glAttachShader(programid, fragid);
+	glBindFragDataLocation(programid, 0, "fragColor"); //todo move this
 	glLinkProgram(programid);
 	//TODO errorcheck
 	printProgramLogStatus(programid);
 	shaderprogram_t prog = {name, programid, vertid, fragid};
 	int id = addProgramToList(prog);
-	printf("%d\n", id);
+	printf("shader %s has id %d\n", name, id);
 	return id; //so far i am assuming that it works
 }
 int printProgramLogStatus(int id){
@@ -106,4 +111,8 @@ int getProgramLogStatus(int id, char ** output){
 		glGetProgramInfoLog(id, length, 0, *output);
 	}
 	return length;
+}
+GLint findShaderAttribPos(shaderprogram_t * shader, char * name){
+	GLint id = glGetAttribLocation(shader->id, name);
+	return id;
 }

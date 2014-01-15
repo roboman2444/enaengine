@@ -21,6 +21,8 @@ int addVBOToList(vbo_t vbo){
 	vbonumber++;
 	vbolist = realloc(vbolist, vbonumber*sizeof(vbo_t));
 	vbolist[current] = vbo;
+	vbolist[current].name = malloc(sizeof(*vbo.name));
+	strcpy(vbolist[current].name, vbo.name);
 	return current;
 }
 vbo_t * findVBOByName(char * name){
@@ -40,7 +42,7 @@ vbo_t createVBO(char * name, char type){
 	glBindVertexArray(v.vaoid);
 	glGenBuffers(1, &v.vboid);	if(!v.vboid) return v;
 	glGenBuffers(1, &v.indicesid);	if(!v.indicesid) return v;
-	v.name = malloc(sizeof(name));
+	v.name = malloc(sizeof(*name));
 	strcpy(v.name, name);
 	v.type = type; //todo type stuff
 	return v;

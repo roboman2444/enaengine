@@ -6,6 +6,7 @@
 #include "texturemanager.h"
 #include "vbomanager.h"
 #include "modelmanager.h"
+#include "shadermanager.h"
 
 int modelnumber = 0;
 model_t *modellist;
@@ -27,6 +28,8 @@ int addModelToList(model_t model){
 	modelnumber++;
 	modellist = realloc(modellist, modelnumber*sizeof(model_t));
 	modellist[current] = model;
+	modellist[current].name = malloc(sizeof(*model.name));
+	strcpy(modellist[current].name, model.name);
 	return current;
 }
 model_t * findModelByName(char * name){
@@ -184,9 +187,9 @@ int loadModelOBJ(model_t * m, char * filename){//todo flags
 	free(facebuffer);
 	free(tcbuffer);
 
-	int print;
-	printf("%ix%i indices: ", facecount, readface);
-	for(print = 0; print < facecount*3; printf("%i ", indicebuffer[print++]));
+//	int print;
+	printf("Model %s has %i faces and %i verts ", filename, readface, readvert);
+//	for(print = 0; print < facecount*3; printf("%i ", indicebuffer[print++]));
 //	printf("\n\n\n\n\n\n\n\n\n\n%ix%i data: ", vertcount, readvert);
 //	for(print = 0; print < vertcount*8; printf("%f ", interleavedbuffer[print++]));
 	printf("\n");
@@ -203,10 +206,33 @@ int loadModelOBJ(model_t * m, char * filename){//todo flags
 	glBindBuffer(GL_ARRAY_BUFFER,m->vbo->vboid);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(interleavedbuffer), interleavedbuffer, GL_STATIC_DRAW);
 	free(interleavedbuffer);
+
+	shaderprogram_t * program = findProgramByName("staticmodel");//todo per model materials and permutations
+	printf("\n%i\n", program->id);
+	if(!program->id) return FALSE; //todo debug
+	glUseProgram(program->id);
+
+	GLint posattrib = findShaderAttribPos(program, "position"); //todo per model materials?
+	printf("%i\n", posattrib);
+	glVertexAttribPointer(posattrib, 3, GL_FLOAT, GL_FALSE, 8*sizeof(float), 0);
+	glEnableVertexAttribArray(posattrib);
+
+	GLint normattrib = findShaderAttribPos(program, "normal"); //todo per model materials?
+	printf("%i\n", normattrib);
+	glVertexAttribPointer(normattrib, 3, GL_FLOAT, GL_FALSE, 8*sizeof(float), (void*)(3*sizeof(float)));
+	glEnableVertexAttribArray(normattrib);
+
+	GLint tcattrib = findShaderAttribPos(program, "texCoord"); //todo per model materials?
+	printf("%i\n", tcattrib);
+	glVertexAttribPointer(tcattrib, 2, GL_FLOAT, GL_FALSE, 8*sizeof(float), (void*)(5*sizeof(float)));
+	glEnableVertexAttribArray(tcattrib);
+
+
+
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,m->vbo->indicesid);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER,sizeof(indicebuffer), indicebuffer, GL_STATIC_DRAW);
 	free(indicebuffer);
-	//todo look up the shader used and get the positions of the attribs in it ... maybe use material based shading
+	//maybe use material based shading
 
 	//todo set flags in the model
 	//todo curse more at obj for being stupid
@@ -216,6 +242,9 @@ model_t createAndLoadModel(char * name){
 
 	model_t m;
 	m.type = 0; // error
+	m.name = malloc(sizeof(*name));
+	strcpy(m.name, name);
+
 	char * filename = malloc(200); //todo filesys and define a size
 	struct stat s;
 	int n;
@@ -224,8 +253,6 @@ model_t createAndLoadModel(char * name){
 		if(!stat(filename, &s)){ //if file exists... i guess
 			if(!loadModelOBJ(&m, filename)) return m;
 			m.type = 1;
-			m.name = malloc(sizeof(name));
-			strcpy(m.name, name);
 			free(filename);
 			return m;
 		}
@@ -235,8 +262,6 @@ model_t createAndLoadModel(char * name){
 		if(!stat(filename, &s)){ //if file exists... i guess
 			//TODO CALL SOME SORTA LOADING FUNCTION... ANIMATED
 			m.type = 2;
-			m.name = malloc(sizeof(name));
-			strcpy(m.name, name);
 			free(filename);
 			return m;
 		}
@@ -251,16 +276,19 @@ model_t createAndLoadModel(char * name){
 model_t createAndLoadTypeModel(char * name, char type){
 	model_t m;
 	m.type = 0; // error
+	m.name = malloc(sizeof(*name));
+	strcpy(m.name, name);
+
 	char * filename = malloc(200); //todo filesys and define a size
 	struct stat s;
 	int n;
 	for(n = 0; n < sizeof(statictypes) &&  statictypes[n]; n++){
 		sprintf(filename, "%s%s", name, statictypes[n]);
 		if(!stat(filename, &s)){ //if file exists... i guess
-			if(!loadModelOBJ(&m, filename)) return m;
+			if(!loadModelOBJ(&m, filename)){
+				return m;
+			}
 			m.type = type;
-			m.name = malloc(sizeof(name));
-			strcpy(m.name, name);
 			free(filename);
 			return m;
 		}
@@ -270,8 +298,6 @@ model_t createAndLoadTypeModel(char * name, char type){
 		if(!stat(filename, &s)){ //if file exists... i guess
 			//TODO CALL SOME SORTA LOADING FUNCTION... ANIMATED
 			m.type = type;
-			m.name = malloc(sizeof(name));
-			strcpy(m.name, name);
 			free(filename);
 			return m;
 		}
