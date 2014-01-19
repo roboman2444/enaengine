@@ -201,11 +201,26 @@ int loadModelOBJ(model_t * m, char * filename){//todo flags
 	if(readnorm != normcount) return 0; //todo actually debug and whatnot
 
 
+
+
+/*
+	float muhverts[32] = {  -0.5, -0.5, 0.0,  0.0, 0.0, 0.0,  0.0, 0.0,
+				-0.5,  0.5, 0.0,  0.0, 0.0, 0.0,  0.0, 1.0,
+				 0.5,  0.5, 0.0,  0.0, 0.0, 0.0,  1.0, 1.0,
+				 0.5, -0.5, 0.0,  0.0, 0.0, 0.0,  1.0, 0.0};
+	int muhindices[6] = { 0, 1, 2, 0, 2, 3};
+*/
+
+
+
 	m->vbo = createAndAddVBO(m->name, m->type);
 	if(!m->vbo) return 0; // todo free and error handle
 	//the correct vao should be bound at this point.
+	glBindVertexArray(m->vbo->vaoid);
 	glBindBuffer(GL_ARRAY_BUFFER,m->vbo->vboid);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(interleavedbuffer), interleavedbuffer, GL_STATIC_DRAW);
+//	glBufferData(GL_ARRAY_BUFFER, sizeof(*interleavedbuffer), interleavedbuffer, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, vertcount * 8 * sizeof(GLfloat), interleavedbuffer, GL_STATIC_DRAW);
+//	glBufferData(GL_ARRAY_BUFFER, 32 * sizeof(GLfloat), muhverts, GL_STATIC_DRAW);
 	free(interleavedbuffer);
 
 	shaderprogram_t * program = findProgramByName("staticmodel");//todo per model materials and permutations
@@ -231,7 +246,9 @@ int loadModelOBJ(model_t * m, char * filename){//todo flags
 
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,m->vbo->indicesid);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER,sizeof(indicebuffer), indicebuffer, GL_STATIC_DRAW);
+//	glBufferData(GL_ELEMENT_ARRAY_BUFFER,sizeof(*indicebuffer), indicebuffer, GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER,facecount * 3 *sizeof(GLint), indicebuffer, GL_STATIC_DRAW);
+//	glBufferData(GL_ELEMENT_ARRAY_BUFFER,6 * sizeof(GLint), muhindices, GL_STATIC_DRAW);
 
 	free(indicebuffer);
 	//maybe use material based shading

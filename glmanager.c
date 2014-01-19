@@ -63,8 +63,9 @@ int glMainDraw(void){
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glViewport(0, 0, 800, 600);
 	glUseProgram(1);
-//	glDrawElements(GL_TRIANGLES, 6320, GL_UNSIGNED_INT, 0);
-	glDrawArrays(GL_POINTS, 0, 3644);
+	glDrawElements(GL_TRIANGLES, 6320, GL_UNSIGNED_INT, 0);
+//	glDrawArrays(GL_POINTS, 0, 3644);
+//	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 	swapBuffers();
 	return TRUE;
 }
