@@ -97,7 +97,7 @@ int printProgramLogStatus(int id){
 	if(blen > 1){
 		GLchar *log = (GLchar *) malloc(blen);
 		glGetProgramInfoLog(id, blen, 0, log);
-		printf("program log: %s \n", log); //too much for the console
+		consoleNPrintf(blen + 16, "program log: %s \n", log); //too much for the console
 		free(log);
 		return FALSE;
 	}

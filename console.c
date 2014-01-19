@@ -110,3 +110,56 @@ int consolePrintf(const char *format, ...){//very similar to printf... oh noes m
 
 	return done;
 }
+
+/*NOTE
+	when using this function you have to take into account the length of all of the inputs. That includes format.
+	So, if you are doing consoleNPrintf( SOMESIZE, "yar har %s\n", string); with string being 200 characters long,
+	you have to take into account of the length of "yar har \n" as well. (so final would be 210 or so characters long.
+*/
+int consoleNPrintf(size_t size, const char *format, ...){//very similar to printf... oh noes muh gnu source code as a ref!
+	va_list arg;
+	int done;
+
+	if(!consoleOutputBuffer){ //no console, fall back to stdout printing
+		va_start(arg, format);
+		done = vfprintf (stdout, format, arg); //not likely to be a tempPrint malloced, so not using it
+		va_end(arg);
+		return done;
+	}
+
+	char * bigTempPrint = malloc(size);
+	if(!bigTempPrint) return 0;// somehow we messed up
+
+	//initialize string
+	//slap string into buffer
+	//move down into empty buffer spot
+	va_start(arg, format);
+	done = vsnprintf(bigTempPrint, size, format, arg);
+	va_end(arg);
+
+	printf(bigTempPrint); // possibly faster than having it re-interpret the format
+
+	consoleOutputBuffer[consoleCircleBufferPlace] = realloc(consoleOutputBuffer[consoleCircleBufferPlace], size); //reallocate that string in the buffer to only the size needed
+	strncpy(consoleOutputBuffer[consoleCircleBufferPlace], bigTempPrint, size);
+	free(bigTempPrint);
+
+	consoleCircleBufferPlace++;
+	consoleCircleBufferPlace = (consoleCircleBufferPlace % maxConsoleBufferLines); // add one to the position
+	if(consoleStringsPrinted < maxConsoleBufferLines)consoleStringsPrinted++; //add one to how "full" the buffer is
+
+	//maybe call a function to update vbos for the console or something
+
+
+
+	return done;
+}
+int printConsoleBackwards(void){
+	printf("Console buffer backwards : \n");
+	int n, p = consoleCircleBufferPlace;
+	for(n = 0; n < consoleStringsPrinted; n++){
+		p--;
+		if(p < 0) p = maxConsoleBufferLines-1;
+		if(consoleOutputBuffer)printf(consoleOutputBuffer[p]);
+	}
+	return TRUE;
+}

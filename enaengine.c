@@ -17,6 +17,7 @@ int main(int argc, char *argv[]){
 	}
 	glMainDraw();
 	sleep(5);
+	printConsoleBackwards();
 
 	while(TRUE){
 		//main loop
