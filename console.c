@@ -35,8 +35,11 @@ int resizeConsoleBuffer(int size){
 	char **newBuffer = malloc(size * sizeof(char *));
 
 //	if(!newBuffer); //todo debug
+	bzero(newBuffer, size*sizeof(char *));
 
 	if(consoleOutputBuffer){ //if there already is one
+
+		//TODO since newBuffer is already bzero'd  i can probably only reset the parts that were set. Some hocus pocus with consoleStringsPrinted
 
 		if(consoleStringsPrinted > size) consoleStringsPrinted = size; // set the number of printed strings to the size of the buffer if they are too much... needed if i eventually resize the buffer back up to that size or such
 
@@ -70,6 +73,7 @@ int resizeConsoleBuffer(int size){
 int initConsoleSystem(void){ //should work for now
 	tempPrint = malloc(maxConsoleBufferLineLength * sizeof(char));
 	resizeConsoleBuffer(maxConsoleBufferLines);
+//	resizeConsoleBuffer(5); for testing resizing
 	return TRUE; // good enough for now
 }
 int consolePrintf(const char *format, ...){//very similar to printf... oh noes muh gnu source code as a ref!
