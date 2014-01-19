@@ -99,7 +99,7 @@ int topOfSysList=0;
 int firstOpenSysList=0;
 
 
-int particleSystemInit(int max){
+int initParticleSystem(int max){
 	if(particlesyslist) free(particlesyslist);
 	if( ( particlesyslist = malloc(max*sizeof(particlesystem_t)) ) ){ //should work.. //maybe change to calloc
 		maxSystems = max;

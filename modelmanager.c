@@ -188,11 +188,11 @@ int loadModelOBJ(model_t * m, char * filename){//todo flags
 	free(tcbuffer);
 
 //	int print;
-	printf("Model %s has %i faces and %i verts ", filename, readface, readvert);
+	printf("Model %s has %i faces and %i verts\n", filename, readface, readvert);
 //	for(print = 0; print < facecount*3; printf("%i ", indicebuffer[print++]));
 //	printf("\n\n\n\n\n\n\n\n\n\n%ix%i data: ", vertcount, readvert);
 //	for(print = 0; print < vertcount*8; printf("%f ", interleavedbuffer[print++]));
-	printf("\n");
+//	printf("\n");
 
 	if(readface != facecount) return 0; //todo actually debug and free crap
 	if(readtc != tccount) return 0; //todo actually debug and whatnot
@@ -208,29 +208,30 @@ int loadModelOBJ(model_t * m, char * filename){//todo flags
 	free(interleavedbuffer);
 
 	shaderprogram_t * program = findProgramByName("staticmodel");//todo per model materials and permutations
-	printf("\n%i\n", program->id);
+//	printf("\n%i\n", program->id);
 	if(!program->id) return FALSE; //todo debug
 	glUseProgram(program->id);
 
 	GLint posattrib = findShaderAttribPos(program, "position"); //todo per model materials?
-	printf("%i\n", posattrib);
-	glVertexAttribPointer(posattrib, 3, GL_FLOAT, GL_FALSE, 8*sizeof(float), 0);
+//	printf("%i\n", posattrib);
 	glEnableVertexAttribArray(posattrib);
+	glVertexAttribPointer(posattrib, 3, GL_FLOAT, GL_FALSE, 8*sizeof(GLfloat), 0);
 
 	GLint normattrib = findShaderAttribPos(program, "normal"); //todo per model materials?
-	printf("%i\n", normattrib);
-	glVertexAttribPointer(normattrib, 3, GL_FLOAT, GL_FALSE, 8*sizeof(float), (void*)(3*sizeof(float)));
+//	printf("%i\n", normattrib);
 	glEnableVertexAttribArray(normattrib);
+	glVertexAttribPointer(normattrib, 3, GL_FLOAT, GL_FALSE, 8*sizeof(GLfloat), (void*)(3*sizeof(GLfloat)));
 
 	GLint tcattrib = findShaderAttribPos(program, "texCoord"); //todo per model materials?
-	printf("%i\n", tcattrib);
-	glVertexAttribPointer(tcattrib, 2, GL_FLOAT, GL_FALSE, 8*sizeof(float), (void*)(5*sizeof(float)));
+//	printf("%i\n", tcattrib);
 	glEnableVertexAttribArray(tcattrib);
+	glVertexAttribPointer(tcattrib, 2, GL_FLOAT, GL_FALSE, 8*sizeof(GLfloat), (void*)(5*sizeof(GLfloat)));
 
 
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,m->vbo->indicesid);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER,sizeof(indicebuffer), indicebuffer, GL_STATIC_DRAW);
+
 	free(indicebuffer);
 	//maybe use material based shading
 

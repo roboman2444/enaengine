@@ -16,6 +16,7 @@ int framebuffersOK;
 int modelsOK;
 int vboOK;
 int shadersOK;
+int particlesOK;
 
 //todo move these to globals in their respective .hfiles
 
@@ -45,6 +46,7 @@ int glInit(void){
 		return FALSE;
 		//todo call some sort of shutdown of everything
 	}
+
 	modelsOK = initModelSystem();
 	if(!modelsOK){
 		//todo call some sort of shutdown of everything

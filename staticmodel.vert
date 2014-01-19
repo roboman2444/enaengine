@@ -7,7 +7,8 @@ vec3 newpos;
 
 
 void main(){
-	newpos = position*1000.0;
-	newpos.z = -0.5;
+	newpos = position/10.0;
+	newpos.z = 0.0;
 	gl_Position = vec4(newpos, 1.0);
+	gl_PointSize = 5.0;
 }
