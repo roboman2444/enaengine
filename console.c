@@ -73,30 +73,38 @@ int initConsoleSystem(void){ //should work for now
 	return TRUE; // good enough for now
 }
 int consolePrintf(const char *format, ...){//very similar to printf... oh noes muh gnu source code as a ref!
+	va_list arg;
+	int done;
+
+
+	if(!consoleOutputBuffer){ //no console, fall back to stdout printing
+		va_start(arg, format);
+		done = vfprintf (stdout, format, arg); //not likely to be a tempPrint malloced, so not using it
+		va_end(arg);
+		return done;
+	}
 
 	if(!tempPrint) return 0;// somehow we messed up
 
 	//initialize string
 	//slap string into buffer
 	//move down into empty buffer spot
-	va_list arg;
-	int done;
 	int length;
 	va_start(arg, format);
 	done = vsnprintf(tempPrint, maxConsoleBufferLineLength, format, arg);
 	va_end(arg);
+
+	printf(tempPrint); // possibly faster than having it re-interpret the format
+
 	length = strlen(tempPrint) + 2;
 	consoleOutputBuffer[consoleCircleBufferPlace] = realloc(consoleOutputBuffer[consoleCircleBufferPlace], length * sizeof(char)); //reallocate that string in the buffer to only the size needed
 	strncpy(consoleOutputBuffer[consoleCircleBufferPlace], tempPrint, length * sizeof(char));
-
-	free(tempPrint);
 
 	consoleCircleBufferPlace++;
 	consoleCircleBufferPlace = (consoleCircleBufferPlace % maxConsoleBufferLines); // add one to the position
 	if(consoleStringsPrinted < maxConsoleBufferLines)consoleStringsPrinted++; //add one to how "full" the buffer is
 
 	//maybe call a function to update vbos for the console or something
-	//maybe print to cout? as well?
 
 
 
