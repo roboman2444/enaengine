@@ -9,6 +9,7 @@
 #include "vbomanager.h"
 #include "modelmanager.h"
 #include "sdlmanager.h"
+#include "console.h"
 
 
 int texturesOK;
@@ -23,7 +24,7 @@ int particlesOK;
 int glInit(void){
 	GLenum glewError = glewInit();
 	if(glewError != GLEW_OK){
-		printf("ERROR with the glew: %s\n", glewGetErrorString(glewError));
+		consolePrintf("ERROR with the glew: %s\n", glewGetErrorString(glewError));
 		return FALSE;
 	}
 	shadersOK = initShaderSystem();

@@ -13,7 +13,7 @@ int main(int argc, char *argv[]){
 	initConsoleSystem();
 	sdlInit(800, 600, 24, 1);
 	if(glInit()){
-		printf("opengl has initailized correctly\n");
+		consolePrintf("opengl has initailized correctly\n");
 	}
 	glMainDraw();
 	sleep(5);

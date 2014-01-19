@@ -7,6 +7,7 @@
 #include "vbomanager.h"
 #include "modelmanager.h"
 #include "shadermanager.h"
+#include "console.h"
 
 int modelnumber = 0;
 model_t *modellist;
@@ -188,7 +189,7 @@ int loadModelOBJ(model_t * m, char * filename){//todo flags
 	free(tcbuffer);
 
 //	int print;
-	printf("Model %s has %i faces and %i verts\n", filename, readface, readvert);
+	consolePrintf("Model %s has %i faces and %i verts\n", filename, readface, readvert);
 //	for(print = 0; print < facecount*3; printf("%i ", indicebuffer[print++]));
 //	printf("\n\n\n\n\n\n\n\n\n\n%ix%i data: ", vertcount, readvert);
 //	for(print = 0; print < vertcount*8; printf("%f ", interleavedbuffer[print++]));

@@ -6,6 +6,7 @@
 #include "globaldefs.h"
 #include "shadermanager.h"
 #include "filemanager.h"
+#include "console.h"
 
 int programnumber = 0; //the first is an error one
 shaderprogram_t *programlist;
@@ -87,7 +88,7 @@ int createAndLoadShader(char * name){
 	printProgramLogStatus(programid);
 	shaderprogram_t prog = {name, programid, vertid, fragid};
 	int id = addProgramToList(prog);
-	printf("shader %s has id %d\n", name, id);
+	consolePrintf("shader %s has id %d\n", name, id);
 	return id; //so far i am assuming that it works
 }
 int printProgramLogStatus(int id){
@@ -96,7 +97,7 @@ int printProgramLogStatus(int id){
 	if(blen > 1){
 		GLchar *log = (GLchar *) malloc(blen);
 		glGetProgramInfoLog(id, blen, 0, log);
-		printf("program log: %s \n", log);
+		printf("program log: %s \n", log); //too much for the console
 		free(log);
 		return FALSE;
 	}

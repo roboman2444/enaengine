@@ -2,6 +2,7 @@
 
 #include "globaldefs.h"
 #include "sdlmanager.h"
+#include "console.h"
 
 //local vars
 SDL_Surface *surface;
@@ -10,20 +11,22 @@ int videoFlags;
 
 //functions
 int resizeWindow(int width, int height, int bpp, int debugmode){
-	if(debugmode) printf("DEBUG -- SDL video resize to: %ix%i with %i bits per pixel \n", width, height, bpp);
+	if(debugmode) consolePrintf("DEBUG -- SDL video resize to: %ix%i with %i bits per pixel \n", width, height, bpp);
 	if(height<1) height = 1;
 	if(width<1) width = 1;
 	surface = SDL_SetVideoMode(width, height, bpp, videoFlags);
 	if(!surface){
-		fprintf(stderr, "ERROR -- SDL video resize failed: %s \n", SDL_GetError());
+//		fprintf(stderr, "ERROR -- SDL video resize failed: %s \n", SDL_GetError());
+		consolePrintf("ERROR -- SDL video resize failed: %s \n", SDL_GetError());
 		return FALSE;
 	}
 	return TRUE;
 }
 int sdlInit(int width, int height, int bpp, int debugmode){
-	if(debugmode) printf("DEBUG -- SDL window initializing \n");
+	if(debugmode) consolePrintf("DEBUG -- SDL window initializing \n");
 	if(SDL_Init(SDL_INIT_VIDEO)<0){
-		fprintf(stderr, "ERROR -- SDL video init failed: %s \n", SDL_GetError());
+//		fprintf(stderr, "ERROR -- SDL video init failed: %s \n", SDL_GetError());
+		consolePrintf("ERROR -- SDL video init failed: %s \n", SDL_GetError());
 		return FALSE;
 	}
 	videoInfo = SDL_GetVideoInfo();
