@@ -54,16 +54,29 @@ int glInit(void){
 		 return FALSE;
 	}
 	createAndLoadShader("staticmodel");
+	createAndLoadShader("console");
 
 	createAndAddModel("teapot");
+
+
+	glEnable(GL_DEPTH_TEST);
+	glDepthFunc(GL_LEQUAL);
+	glClearDepth(1.0);
+//	glEnable(GL_BLEND);
+//	glBlendFunc(GL_SRC_ALPHA,GL_ONE);
 
 	return TRUE; // so far so good
 }
 int glMainDraw(void){
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 	glViewport(0, 0, 800, 600);
 	glUseProgram(1);
-	glDrawElements(GL_TRIANGLES, 6320, GL_UNSIGNED_INT, 0);
+	glDrawElements(GL_TRIANGLES, 6320*3, GL_UNSIGNED_INT, 0);
+//	updateConsoleVBO();
+//	glUseProgram(2);
+//	glDrawArrays(GL_QUADS, 0, 40);
+
 //	glDrawArrays(GL_POINTS, 0, 3644);
 //	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 	swapBuffers();

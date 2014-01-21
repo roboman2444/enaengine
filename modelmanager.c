@@ -78,7 +78,7 @@ int loadModelOBJ(model_t * m, char * filename){//todo flags
 	float 	* normbuffer = malloc(3*normcount*sizeof(float));
 	//GLuint  * facebuffer = malloc(9*facecount*sizeof(GLuint)); //one for verts, tc, and normals
 	int 	* facebuffer = malloc(9*sizeof(int)); //one for verts, tc, and normals
-	int 	* indicebuffer = malloc(3*facecount*sizeof(int));
+	GLuint 	* indicebuffer = malloc(3*facecount*sizeof(GLuint));
 	GLfloat * interleavedbuffer = malloc(8*facecount*sizeof(GLfloat));
 
 
@@ -88,7 +88,7 @@ int loadModelOBJ(model_t * m, char * filename){//todo flags
 	bzero(normbuffer, 3*normcount*sizeof(float));
 	bzero(tcbuffer,   2*  tccount*sizeof(float));
 	bzero(facebuffer, 9*sizeof(int));
-	bzero(indicebuffer, 3*facecount*sizeof(int));
+	bzero(indicebuffer, 3*facecount*sizeof(GLuint));
 	bzero(interleavedbuffer, 8*facecount*sizeof(GLfloat));
 	rewind(f);
 
@@ -126,16 +126,18 @@ int loadModelOBJ(model_t * m, char * filename){//todo flags
 				&facebuffer[6], &facebuffer[7], &facebuffer[8]
 			) == 9);
 			else if(sscanf(line," f %d/%d %d/%d %d/%d",
-				&facebuffer[0], &facebuffer[1], &facebuffer[2],
-				&facebuffer[3], &facebuffer[4], &facebuffer[5]
-			) == 6 ) facebuffer[6] = facebuffer[7] = facebuffer[8] = 0; // make sure they are 0s
+				&facebuffer[0], &facebuffer[1],
+				&facebuffer[3], &facebuffer[4],
+				&facebuffer[6], &facebuffer[7]
+			) == 6 ) facebuffer[2] = facebuffer[5] = facebuffer[8] = 0; // make sure they are 0s
 			else if(sscanf(line," f %d//%d %d//%d %d//%d",
-				&facebuffer[0], &facebuffer[1], &facebuffer[2],
-				&facebuffer[6], &facebuffer[7], &facebuffer[8]
-			) == 6) facebuffer[3] = facebuffer[4] = facebuffer[5] = 0; // make sure they are 0s
+				&facebuffer[0], &facebuffer[2],
+				&facebuffer[3], &facebuffer[5],
+				&facebuffer[6], &facebuffer[8]
+			) == 6) facebuffer[1] = facebuffer[4] = facebuffer[7] = 0; // make sure they are 0s
 			else if(sscanf(line," f %d %d %d",
-				&facebuffer[0], &facebuffer[1], &facebuffer[2]
-			) == 3) facebuffer[3] = facebuffer[4] = facebuffer[5] = facebuffer[6] = facebuffer[7] = facebuffer[8] = 0; // make sure they are 0s
+				&facebuffer[0], &facebuffer[3], &facebuffer[6]
+			) == 3) facebuffer[1] = facebuffer[2] = facebuffer[4] = facebuffer[5] = facebuffer[7] = facebuffer[8] = 0; // make sure they are 0s
 			else{
 				return 0; //todo debug... most likely case is that it has a quad
 			}
@@ -161,7 +163,7 @@ int loadModelOBJ(model_t * m, char * filename){//todo flags
 				normindice--;
 
 				//may not be doing this properly...
-				indicebuffer[readface+n] = vindice;
+				indicebuffer[(readface*3)+n] = vindice;
 				interleavedbuffer[(vindice*8)+0] = vertbuffer[(vindice*3)+0];
 				interleavedbuffer[(vindice*8)+1] = vertbuffer[(vindice*3)+1];
 				interleavedbuffer[(vindice*8)+2] = vertbuffer[(vindice*3)+2];
@@ -188,8 +190,8 @@ int loadModelOBJ(model_t * m, char * filename){//todo flags
 	free(facebuffer);
 	free(tcbuffer);
 
-//	int print;
 	consolePrintf("Model %s has %i faces and %i verts\n", filename, readface, readvert);
+//	int print;
 //	for(print = 0; print < facecount*3; printf("%i ", indicebuffer[print++]));
 //	printf("\n\n\n\n\n\n\n\n\n\n%ix%i data: ", vertcount, readvert);
 //	for(print = 0; print < vertcount*8; printf("%f ", interleavedbuffer[print++]));

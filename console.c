@@ -1,11 +1,23 @@
+#include "GL/glew.h" //todo remove
+#include "GL/gl.h" //todo remove
+
 // needed for va_ stuff
 #include <stdarg.h>
 #include <string.h>
 
 #include "globaldefs.h"
 #include "console.h"
+#include "vbomanager.h"
+#include "shadermanager.h"
+
+typedef struct consolechar_s { //todo redo
+	GLfloat verts[16];
+}consolechar_t;
 
 char ** consoleOutputBuffer;
+
+int consoleWidth = 64;
+int consoleHeight = 48;
 
 int maxConsoleBufferLines = 2048; //todo make into cvar
 int maxConsoleBufferLineLength = 2048; //todo make cvar/define
@@ -14,6 +26,60 @@ int consoleCircleBufferPlace = 0; // start!... err end
 int consoleStringsPrinted = 0; // useful to not print blank lines + reallocation
 
 char *tempPrint;
+
+vbo_t * consoleVBO;
+consolechar_t generateCharacter(float offsetx, float offsety, float scalex, float scaley, char c){
+	consolechar_t output;
+	output.verts[0] = offsetx;
+	output.verts[1] = offsety;
+			// 0.0, 0.0,
+	output.verts[4] = offsetx+scalex;
+	output.verts[5]	= offsety;
+			//, 0.0, 0.0,
+	output.verts[8] = offsetx+scalex;
+	output.verts[9]	= offsety+scaley;
+
+	output.verts[12]= offsetx;
+	output.verts[13]= offsety+scaley;
+	return output;
+}
+int updateConsoleVBO(void){
+	if(!consoleVBO) return 0; // something bad
+	glBindVertexArray(consoleVBO->vaoid);
+	glBindBuffer(GL_ARRAY_BUFFER, consoleVBO->vboid);
+	int charcount = 0;
+	int n, p = consoleCircleBufferPlace;
+	for(n = 0; n < consoleStringsPrinted && n < consoleHeight; n++){
+		p--;
+		if(p < 0) p = maxConsoleBufferLines-1;
+		if(consoleOutputBuffer)charcount += strlen(consoleOutputBuffer[p]);
+	}
+
+	consolechar_t * consoleVBOTempBuffer = malloc(charcount * sizeof(consolechar_t));
+
+	p = consoleCircleBufferPlace;
+	int numchecked = 0;
+	for(n = 0; n < consoleStringsPrinted && n < consoleHeight; n++){
+		p--;
+		if(p < 0) p = maxConsoleBufferLines-1;
+		int g;
+		for(g = 0; g < strlen(consoleOutputBuffer[p]); g++){
+			consoleVBOTempBuffer[numchecked] = generateCharacter((float)g/consoleWidth, 1.0 - ((float)n/consoleHeight), 1.0/consoleWidth, 1.0/consoleHeight, consoleOutputBuffer[p][g]);
+		}
+	}
+	glBufferData(GL_ARRAY_BUFFER, charcount * 16 * sizeof(GLfloat), consoleVBOTempBuffer, GL_STATIC_DRAW);
+	free(consoleVBOTempBuffer);
+	shaderprogram_t *program = findProgramByName("console"); //todo redo this
+	if(!program->id) return FALSE;
+	glUseProgram(program->id);
+	GLint posattrib = findShaderAttribPos(program, "position");
+	glEnableVertexAttribArray(posattrib);
+	glVertexAttribPointer(posattrib, 2, GL_FLOAT, GL_FALSE, 4 *sizeof(GLfloat), 0);
+	GLint tcattrib = findShaderAttribPos(program, "texCoord");
+	glEnableVertexAttribArray(tcattrib);
+	glVertexAttribPointer(tcattrib, 2, GL_FLOAT, GL_FALSE, 4 *sizeof(GLfloat), (void*) ( 2 * sizeof(GLfloat)));
+	return TRUE;
+}
 
 int deleteConsoleBuffer(void){
 	int n;
@@ -73,6 +139,8 @@ int resizeConsoleBuffer(int size){
 int initConsoleSystem(void){ //should work for now
 	tempPrint = malloc(maxConsoleBufferLineLength * sizeof(char));
 	resizeConsoleBuffer(maxConsoleBufferLines);
+//	consoleVBO = createAndAddVBO("console", 2); //todo set type to something
+//	consoleVAOid = consoleVBO->vaoid;
 //	resizeConsoleBuffer(5); for testing resizing
 	return TRUE; // good enough for now
 }
