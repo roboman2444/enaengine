@@ -17,6 +17,7 @@ rendering
 		only have to pass a framenumber to the shader, it gpu skins based on that.
 		for ragdolls, would need to transfer them to the gpu.
 		likely too different to have gain from instancing
+		seperate out if they have transparency in their textures
 	shaders 
 		have each shader, but also have a permutation generator
 		only generates the permutations if something in the scene calls for it.
@@ -67,6 +68,7 @@ rendering
 		possibly defferred lighting
 		option for FXAA as AA method for crappy cards - easy, done it before
 
+
 	render pipeline
 		clear depth buffer
 		clear other buffers;
@@ -91,6 +93,39 @@ rendering
 			lens flare
 		flip
 		DOO IT AGAIN
+
+		"color" render
+			clear depth buffer and whatnot
+			set up matricies
+			cull out any entities that are outside viewport
+			cull out any grid sections that are outside viewport
+			cull out any alpha tested surfaces that are outside viewport
+			render depth only of world
+			render depth only of entities (maybe only close ones)
+			set texturing on
+			most likely render depth only of alpha tested surfaces with texture mapping (may need to sort alpha tested surfaces by texture before this) (also maybe only close ones)
+			render the faces of skybox that are visible (overdraw already depth tested out) figure out how to set the stencil so that the defferred lighting wont try to shade it
+			todo finish
+			
+		
+
+		sun shadowmap render
+			idk how to do PSSM yet
+
+		light shadowmap render
+			get list of entities that are within bounds;
+			check if needsUpdate flag is true;
+			if list of entities has entities OR needsUpdate is true... if false just continue
+			set up the proper matricies
+			render world, culling out any grids further than the bounding spehere (likely only need to check the 4 nearest)
+			render list of entities
+
+			OPTIONAL may do
+			have it render the world when it gets "spawned in"
+			when it needs updating, copy that already rendered depth buffer, then render entities onto it
+			no need to render world
+			may or may not be faster.
+
 	
 gamecode/entity management
 networking
