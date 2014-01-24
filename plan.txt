@@ -1,0 +1,120 @@
+- might change
+
+rendering
+	prepass
+		depth only prepass for everything other than shadowmaps
+		draw opaque, alpha tested particles to depth buffer in the depth prepass as well as draw them first.
+
+	world
+		Split up into grid sections
+		each grid with its own VAO and VBO
+		when "adding" a model, the vbo is updated for that
+		when removing a model, the VBO is either completely regenerated or redone
+		perhaps have something like a "bake" function
+	entity
+		each entity has a "model" and perhaps a animation
+		animations transformations are stored in buffers in the gpu
+		only have to pass a framenumber to the shader, it gpu skins based on that.
+		for ragdolls, would need to transfer them to the gpu.
+		likely too different to have gain from instancing
+	shaders 
+		have each shader, but also have a permutation generator
+		only generates the permutations if something in the scene calls for it.
+	water/reflections
+		todo
+	lighting
+		frustrum culled by its max sphere
+		x max shadowmaps
+		shadowmaps are shuffled around to nearest lights in view
+		possibly deferred w/shadows
+		shadowmaps
+		possibly pssm for sun shadow
+	particles
+		draw opaque, alpha tested particles to depth buffer in the depth prepass as well as draw them first.
+		current basic particle physics- can be done on gpu if needed (i've done it on gpu)
+		soft particles - easy, i've done it before
+		sorting may be possible on gpu
+		Particle system style.
+		sort systems, sort particles in each system.
+		perhaps OpenGL3.3 geo shaders for some of the particle billboarding.
+			(max throughput of 5 floats per particle, not 12 like manually pushing verts)
+			(also no 6 ints for the indices, geo shader does that)
+	framebuffers
+	viewports - needed for shadows, env maps, reflections, cameras, etc
+	textures
+		texturegroups
+			list of 5 or so textures for the same model/surface
+			
+	lod
+		lod switching cpu side
+		all lod stages of model loaded into gpu
+		lod depends on fov and distance
+	culling
+		cull lights by bounding box/sphere/cone
+		view culling entities - bounding box completely outside of viewport
+		view culling
+		depth prepass
+		draw opaque, alpha tested particles to depth buffer in the depth prepass as well as draw them first.
+		possibly a trace to entity - similar to darkplaces style
+
+	postprocess
+		color correction - easy, fairly straightforward
+		hdr
+		bloom - easy, done it before
+		ssao - mostly easy, mostly done it before
+		DOF - easy, done it before
+		lens flare - easy, done it before
+		possibly defferred lighting
+		option for FXAA as AA method for crappy cards - easy, done it before
+
+	render pipeline
+		clear depth buffer
+		clear other buffers;
+		render sun shadow
+		render shadows if updated or changed places
+		if camera is not in env map culling distance for entities, dont re-render it
+		if env map is outside of viewport, dont render it
+		render env maps, maybe include shadow shading and other env maps (eg, if the order is right, you can have multiple "bounces")
+		render reflections with shadows and env maps
+		render depth prepass - perhaps world only, perhaps not
+		render world
+		render entities
+		render alpha tested particles
+		if deferred lighting, render lighting at this point.
+		sort alpha blended particles and particle systems
+		render alpha blended particles and etc with a small bit of forward lighting and shading.
+		postprocess
+			ssao
+			fxaa it up
+			dof
+			bloom
+			lens flare
+		flip
+		DOO IT AGAIN
+	
+gamecode/entity management
+networking
+	NOT peer to peer, although that would be awesome
+sound
+	openAL
+	not too much thought to put into it... its openAL
+
+
+
+
+
+order of me doing things
+
+	finish model loading, animation and
+	finish major rendering subsystems
+
+	finish world loading and editing
+	finish input systems
+	get some sort of basic gamecode and entity management
+	basic networking
+	finish particle system
+	basic physics
+	sound
+	more advanced physics
+	more advanced rendering (shadows, env maps, etc)
+	more advanced networking (client side physics processing, client side hit detection, client side interpolation, server update queing)
