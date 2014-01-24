@@ -10,6 +10,9 @@ typedef struct vbo_s {
 }vbo_t;
 
 
+int vboOK;
+int vbonumber;
+
 
 int initVBOSystem(void);
 vbo_t * findVBOByName(char * name);

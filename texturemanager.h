@@ -40,6 +40,9 @@ typedef struct texturegroup_s{
 	char * name;
 }texturegroup_t;
 
+int texturesOK;
+int texturegroupnumber;
+
 
 texturegroup_t * defaultTexture;//todo
 

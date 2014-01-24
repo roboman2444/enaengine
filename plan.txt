@@ -70,29 +70,25 @@ rendering
 
 
 	render pipeline
-		clear depth buffer
-		clear other buffers;
 		render sun shadow
-		render shadows if updated or changed places
+		move shadows if needed to be moved. set toupdate to true if they are moved
 		if camera is not in env map culling distance for entities, dont re-render it
 		if env map is outside of viewport, dont render it
+
 		render env maps, maybe include shadow shading and other env maps (eg, if the order is right, you can have multiple "bounces")
 		render reflections with shadows and env maps
-		render depth prepass - perhaps world only, perhaps not
-		render world
-		render entities
-		render alpha tested particles
-		if deferred lighting, render lighting at this point.
-		sort alpha blended particles and particle systems
-		render alpha blended particles and etc with a small bit of forward lighting and shading.
+		render screenspace color
+		postprocess
+		flip
+		DOO IT AGAIN
+
 		postprocess
 			ssao
 			fxaa it up
 			dof
 			bloom
 			lens flare
-		flip
-		DOO IT AGAIN
+
 
 		"color" render
 			clear depth buffer and whatnot
@@ -103,10 +99,18 @@ rendering
 			render depth only of world
 			render depth only of entities (maybe only close ones)
 			set texturing on
-			most likely render depth only of alpha tested surfaces with texture mapping (may need to sort alpha tested surfaces by texture before this) (also maybe only close ones)
+			most likely render alpha tested surfaces with texture mapping (may need to sort alpha tested surfaces by texture before this) (also maybe only close ones)
+			render entities. Sort by texture maybe.
+			render world, fully textured
 			render the faces of skybox that are visible (overdraw already depth tested out) figure out how to set the stencil so that the defferred lighting wont try to shade it
-			todo finish
-			
+			if deferred lighting, do the lighting pass at this point
+			sort alpha blended particles and surfaces and then particle systems. Use a form of sort that itterates and refines upon itself over the course of a few frames.
+			render alpha blended particles and surfaces with a small bit of forward lighting and shading.
+
+		mirrors render
+			MAYBE if DOF or ssao draw the mirror depth buffer into the screen depth buffer. dont depth test this part, as there might be some geometry behind the mirror
+			if not apply dof and ssao when actually drawing the mirror color buffer, and then not apply ssao to mirrors, and trick the DOF into thinking that mirrors are fully in focus
+			dont apply fxaa to mirror render
 		
 
 		sun shadowmap render
@@ -125,6 +129,9 @@ rendering
 			when it needs updating, copy that already rendered depth buffer, then render entities onto it
 			no need to render world
 			may or may not be faster.
+
+			Another optional may do
+			write only the static mesh that is within the bounding sphere into a buffer. Now it only has to render that smaller bit of mesh into the shadowmap
 
 	
 gamecode/entity management

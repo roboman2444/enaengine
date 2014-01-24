@@ -37,7 +37,8 @@ typedef struct particlesystem_s {
 
 */
 
-int particleSysCount = 0;
+int particleSysCount;
+int particlesOK;
 
 int initParticleSystem(int maxSystems);
 int addParticleSys(char * name, vec3_t spawnpos, float lifespan, char type, int max);

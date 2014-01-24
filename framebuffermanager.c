@@ -7,6 +7,7 @@
 #include "framebuffermanager.h"
 
 int fbnumber = 0; //the first is an error one/screen
+int framebuffersOK = 0;
 framebuffer_t *fblist;
 
 int initFrameBufferSystem(void){
@@ -18,6 +19,7 @@ int initFrameBufferSystem(void){
 	if(!fblist) memset(fblist, 0 , fbnumber * sizeof(framebuffer_t));
 	addFrameBufferToList(screen);
 	defaultFrameBuffer = &fblist[0];
+	framebuffersOK = TRUE;
 	return TRUE; // todo error check
 }
 int addFrameBufferToList(framebuffer_t fb){

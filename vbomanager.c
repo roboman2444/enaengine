@@ -4,6 +4,7 @@
 #include "globaldefs.h"
 #include "vbomanager.h"
 
+int vboOK = 0;
 int vbonumber = 0;
 vbo_t *vbolist;
 
@@ -14,6 +15,7 @@ int initVBOSystem(void){
 	vbolist = malloc(vbonumber * sizeof(vbo_t));
 	if(!vbolist) memset(vbolist, 0 , vbonumber * sizeof(vbo_t));
 	addVBOToList(none);
+	vboOK = TRUE;
 	return TRUE;
 }
 int addVBOToList(vbo_t vbo){

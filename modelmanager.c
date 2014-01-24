@@ -9,6 +9,7 @@
 #include "shadermanager.h"
 #include "console.h"
 
+int modelsOK = 0;
 int modelnumber = 0;
 model_t *modellist;
 
@@ -22,6 +23,7 @@ int initModelSystem(void){
 	modellist = malloc(modelnumber * sizeof(model_t));
 	if(!modellist) memset(modellist, 0 , modelnumber * sizeof(model_t));
 	addModelToList(none);
+	modelsOK = TRUE;
 	return TRUE;
 }
 int addModelToList(model_t model){

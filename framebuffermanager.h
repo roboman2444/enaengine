@@ -15,6 +15,8 @@ typedef struct framebuffer_s
 
 framebuffer_t *defaultFrameBuffer;
 int initFrameBufferSystem(void);
+int fbnumber;
+int framebuffersOK;
 
 framebuffer_t * findFrameBufferByName(char * name);
 framebuffer_t * returnFrameBuffer(int it);

@@ -16,6 +16,10 @@ typedef struct shaderprogram_s
 	GLuint fragmentid;
 //	shaderuniform_t * uniforms;
 } shaderprogram_t;
+
+int shadersOK;
+int programnumber;
+
 int initShaderSystem(void);
 //loads a shader pair from files name.frag and name.vert, compiles, links, adds to the list
 int createAndLoadShader(char * name);

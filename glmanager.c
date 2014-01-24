@@ -9,17 +9,10 @@
 #include "vbomanager.h"
 #include "modelmanager.h"
 #include "sdlmanager.h"
+#include "particlemanager.h"
 #include "console.h"
 
 
-int texturesOK;
-int framebuffersOK;
-int modelsOK;
-int vboOK;
-int shadersOK;
-int particlesOK;
-
-//todo move these to globals in their respective .hfiles
 
 int glInit(void){
 	GLenum glewError = glewInit();
@@ -27,35 +20,39 @@ int glInit(void){
 		consolePrintf("ERROR with the glew: %s\n", glewGetErrorString(glewError));
 		return FALSE;
 	}
-	shadersOK = initShaderSystem();
+	initShaderSystem();
 	if(!shadersOK){
 		//todo call some sort of shutdown of everything
 		 return FALSE;
 	}
-	texturesOK = initTextureSystem();
+	initTextureSystem();
 	if(!texturesOK){
 		//todo call some sort of shutdown of everything
 		 return FALSE;
 	}
-	framebuffersOK = initFrameBufferSystem();
+	initFrameBufferSystem();
 	if(!framebuffersOK){
 		//todo call some sort of shutdown of everything
 		 return FALSE;
 	}
-	vboOK = initVBOSystem();
+	initVBOSystem();
 	if(!vboOK){
 		return FALSE;
 		//todo call some sort of shutdown of everything
 	}
 
-	modelsOK = initModelSystem();
+	initModelSystem();
 	if(!modelsOK){
+		//todo call some sort of shutdown of everything
+		 return FALSE;
+	}
+	initParticleSystem(128);
+	if(!particlesOK){
 		//todo call some sort of shutdown of everything
 		 return FALSE;
 	}
 	createAndLoadShader("staticmodel");
 	createAndLoadShader("console");
-
 	createAndAddModel("teapot");
 
 

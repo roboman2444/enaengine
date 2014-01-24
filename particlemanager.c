@@ -3,6 +3,8 @@
 
 //#include "texturemanager.h" //todo
 particlesystem_t *particlesyslist;
+int particleSysCount = 0;
+int particlesOK = 0;
 #define clearpartlist(point, num) if(point) memset(point, 0, num*sizeof(particle_t))
 #define clearsyslist(num) if(particlesyslist) memset(particlesyslist, 0, num*sizeof(particlesystem_t))
 
@@ -104,6 +106,7 @@ int initParticleSystem(int max){
 	if( ( particlesyslist = malloc(max*sizeof(particlesystem_t)) ) ){ //should work.. //maybe change to calloc
 		maxSystems = max;
 		clearsyslist(maxSystems);
+		particlesOK = TRUE;
 		return TRUE;
 	}
 	return FALSE;

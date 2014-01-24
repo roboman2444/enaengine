@@ -8,6 +8,7 @@
 #include "filemanager.h"
 #include "console.h"
 
+int shadersOK = 0;
 int programnumber = 0; //the first is an error one
 shaderprogram_t *programlist;
 
@@ -17,6 +18,7 @@ int initShaderSystem(void){
 	programlist = malloc(1 * sizeof(shaderprogram_t));
 	if(!programlist) memset(programlist, 0 , 1 * sizeof(shaderprogram_t));
 	addProgramToList(none);
+	shadersOK = TRUE;
 	return TRUE; // todo error check
 }
 int addProgramToList(shaderprogram_t prog){

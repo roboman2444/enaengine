@@ -17,6 +17,9 @@ typedef struct model_s {
 
 */
 
+int modelsOK;
+int modelnumber;
+
 
 int addModelToList(model_t model);
 int initModelSystem(void);
