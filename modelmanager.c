@@ -1,6 +1,7 @@
 #include <GL/glew.h> //may be unneeded
 #include <GL/gl.h>
 #include <sys/stat.h> //todo filesys
+#include <math.h>
 
 #include "globaldefs.h"
 #include "texturemanager.h"
@@ -44,6 +45,106 @@ model_t * findModelByName(char * name){
 }
 model_t * createAndAddModel(char * name){
 	return &modellist[addModelToList(createAndLoadModel(name))];
+}
+
+int generateNormalsFromMesh(GLfloat * vertbuffer, GLfloat * normbuffer, GLuint * indices, GLuint indicecount, GLuint vertcount, int areaweighting){
+	//used http://devmaster.net/posts/6065/calculating-normals-of-a-mesh and darkplaces model_shared.c as a ref
+	int i;
+	for(i = 0; i < indicecount; i += 3 ){
+		float *p1 = &vertbuffer[indices[i+0]*3];
+		float *p2 = &vertbuffer[indices[i+1]*3];
+		float *p3 = &vertbuffer[indices[i+2]*3];
+		float v1[3];
+		float v2[3];
+		int n;
+		for(n = 0; n < 3; n++){
+			v1[n] = p2[n] - p1[n];
+			v2[n] = p3[n] - p1[n];
+		}
+		float normal[3];
+		normal[0] = v1[1] * v2[2] - v2[1] * v1[2];
+		normal[1] = v1[2] * v2[0] - v2[2] * v1[0];
+		normal[2] = v1[0] * v2[1] - v2[0] * v1[1];
+		//if dontwant to do area weighting, normalize now
+		if(!areaweighting){
+			float length;
+			length = sqrt((normal[0] * normal[0]) + (normal[1] * normal[1]) + (normal[2] * normal[2]));
+			normal[0] /= length;
+			normal[1] /= length;
+			normal[2] /= length;
+		}
+
+		float *n1 = &normbuffer[indices[i+0]*3];
+		float *n2 = &normbuffer[indices[i+1]*3];
+		float *n3 = &normbuffer[indices[i+2]*3];
+
+		for(n = 0; n < 3; n++){
+			n1[n] += normal[n];
+			n2[n] += normal[n];
+			n3[n] += normal[n];
+		}
+	}
+	//go through and renormalize
+	for(i = 0; i < vertcount; i++){
+		float * normal = &normbuffer[i*3];
+		float length;
+		length = sqrt((normal[0] * normal[0]) + (normal[1] * normal[1]) + (normal[2] * normal[2]));
+		normal[0] /= length;
+		normal[1] /= length;
+		normal[2] /= length;
+	}
+	return TRUE;
+}
+int generateNormalsFromInterleavedMesh(GLfloat * interleavedbuffer, GLuint * indices, GLuint indicecount, GLuint vertcount, int stride, int areaweighting){
+	//used http://devmaster.net/posts/6065/calculating-normals-of-a-mesh and darkplaces model_shared.c as a ref
+	if(stride < 5) return FALSE;
+	int i;
+	for(i = 0; i < indicecount; i += 3 ){
+		//todo set up something to have a varialbe offset
+		float *p1 = &interleavedbuffer[indices[i+0]*stride];
+		float *p2 = &interleavedbuffer[indices[i+1]*stride];
+		float *p3 = &interleavedbuffer[indices[i+2]*stride];
+		float v1[3];
+		float v2[3];
+		int j;
+		for(j = 0; j < 3; j++){
+			v1[j] = p2[j] - p1[j];
+			v2[j] = p3[j] - p1[j];
+		}
+		float n[3];
+		n[0] = v1[1] * v2[2] - v2[1] * v1[2];
+		n[1] = v1[2] * v2[0] - v2[2] * v1[0];
+		n[2] = v1[0] * v2[1] - v2[0] * v1[1];
+		//if dontwant to do area weighting, normalize now
+		if(!areaweighting){
+			float length;
+			length = sqrt((n[0] * n[0]) + (n[1] * n[1]) + (n[2] * n[2]));
+			n[0] /= length;
+			n[1] /= length;
+			n[2] /= length;
+		}
+		//todo set up something to have a varialbe offset
+		float *n1 = p1 + 3;
+		float *n2 = p2 + 3;
+		float *n3 = p3 + 3;
+
+		for(j = 0; j < 3; j++){
+			n1[j] += n[j];
+			n2[j] += n[j];
+			n3[j] += n[j];
+		}
+	}
+	//go through and renormalize
+	for(i = 0; i < vertcount; i++){
+		//todo set up something to have a varialbe offset
+		float * normal = &interleavedbuffer[(i*stride)+3];
+		float length;
+		length = sqrt((normal[0] * normal[0]) + (normal[1] * normal[1]) + (normal[2] * normal[2]));
+		normal[0] /= length;
+		normal[1] /= length;
+		normal[2] /= length;
+	}
+	return TRUE;
 }
 
 int loadModelOBJ(model_t * m, char * filename){//todo flags
@@ -185,6 +286,7 @@ int loadModelOBJ(model_t * m, char * filename){//todo flags
 		}
 	}
 
+
 	free(line);
 	fclose(f);
 	free(vertbuffer);
@@ -207,6 +309,8 @@ int loadModelOBJ(model_t * m, char * filename){//todo flags
 
 
 
+
+
 /*
 	float muhverts[32] = {  -0.5, -0.5, 0.0,  0.0, 0.0, 0.0,  0.0, 0.0,
 				-0.5,  0.5, 0.0,  0.0, 0.0, 0.0,  0.0, 1.0,
@@ -214,6 +318,10 @@ int loadModelOBJ(model_t * m, char * filename){//todo flags
 				 0.5, -0.5, 0.0,  0.0, 0.0, 0.0,  1.0, 0.0};
 	int muhindices[6] = { 0, 1, 2, 0, 2, 3};
 */
+	//todo actually set flags for if gen verts is needed, and if it should area weight
+	if(!readnorm){
+		generateNormalsFromInterleavedMesh(interleavedbuffer, indicebuffer, facecount*3, vertcount, 8 , 0);
+	}
 
 
 
