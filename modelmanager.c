@@ -320,7 +320,10 @@ int loadModelOBJ(model_t * m, char * filename){//todo flags
 */
 	//todo actually set flags for if gen verts is needed, and if it should area weight
 	if(!readnorm){
+//		consolePrintf("Generating vertex normals for Model %s with area weighting\n", filename);
+		consolePrintf("Generating vertex normals for Model %s\n", filename);
 		generateNormalsFromInterleavedMesh(interleavedbuffer, indicebuffer, facecount*3, vertcount, 8 , 0);
+
 	}
 
 

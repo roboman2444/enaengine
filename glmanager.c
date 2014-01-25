@@ -53,12 +53,18 @@ int glInit(void){
 	}
 	createAndLoadShader("staticmodel");
 	createAndLoadShader("console");
-	createAndAddModel("teapot");
+	createAndAddModel("dragon");
 
 
-	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LEQUAL);
 	glClearDepth(1.0);
+	glClearColor(0, 0, 0, 0);
+	glClearDepth(1);
+	glDisable(GL_FOG);
+	glEnable(GL_DEPTH_TEST);
+//	glDepthFunc(GL_LESS);
+//	glEnable(GL_CULL_FACE);
+//	glCullFace(GL_BACK);
 //	glEnable(GL_BLEND);
 //	glBlendFunc(GL_SRC_ALPHA,GL_ONE);
 
@@ -69,7 +75,8 @@ int glMainDraw(void){
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 	glViewport(0, 0, 800, 600);
 	glUseProgram(1);
-	glDrawElements(GL_TRIANGLES, 6320*3, GL_UNSIGNED_INT, 0);
+//	glDrawElements(GL_TRIANGLES, 6320*3, GL_UNSIGNED_INT, 0);
+	glDrawElements(GL_TRIANGLES, 100000*3, GL_UNSIGNED_INT, 0);
 //	updateConsoleVBO();
 //	glUseProgram(2);
 //	glDrawArrays(GL_QUADS, 0, 40);
