@@ -6,6 +6,8 @@ typedef struct vbo_s {
 	GLuint vaoid;
 	GLuint vboid;// maybe not
 	GLuint indicesid;
+	GLuint numverts;
+	GLuint numfaces;
 	char type; // maybe not
 }vbo_t;
 

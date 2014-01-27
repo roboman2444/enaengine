@@ -26,7 +26,7 @@ texturegroup_t createTextureGroup(char * name, int num){
 	texturegroup_t texgroup;
 	texgroup.textures = malloc(num*sizeof(texture_t));
 	texgroup.num = num;
-	texgroup.name = malloc(sizeof(*name));
+	texgroup.name = malloc(strlen(name)+1);
 	strcpy(texgroup.name, name);
 	return texgroup;
 }
@@ -124,7 +124,7 @@ texturegroup_t createAndLoadTextureGroup(char * name){
 	texturegroup_t texgroup;
 	//todo clean up texturegroup if it already has shit in it.
 	texgroup.num = 0;
-	texgroup.name = malloc(sizeof(*name));
+	texgroup.name = malloc(strlen(name)+1);
 	strcpy(texgroup.name, name);
 	//todo filesys
 	char * filename = malloc(200); //max size of 200

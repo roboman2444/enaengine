@@ -12,6 +12,9 @@
 #include "particlemanager.h"
 #include "console.h"
 
+model_t * dragon;
+shaderprogram_t * staticmodel;
+
 
 
 int glInit(void){
@@ -51,15 +54,14 @@ int glInit(void){
 		//todo call some sort of shutdown of everything
 		 return FALSE;
 	}
-	createAndLoadShader("staticmodel");
-	createAndLoadShader("console");
-	createAndAddModel("dragon");
+	staticmodel = createAndAddShader("staticmodel");
+//	createAndAddShader("console");
+	dragon = createAndAddModel("dragon");
 
 
 	glDepthFunc(GL_LEQUAL);
 	glClearDepth(1.0);
 	glClearColor(0, 0, 0, 0);
-	glClearDepth(1);
 	glDisable(GL_FOG);
 	glEnable(GL_DEPTH_TEST);
 //	glDepthFunc(GL_LESS);
@@ -74,9 +76,15 @@ int glMainDraw(void){
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 	glViewport(0, 0, 800, 600);
-	glUseProgram(1);
-//	glDrawElements(GL_TRIANGLES, 6320*3, GL_UNSIGNED_INT, 0);
-	glDrawElements(GL_TRIANGLES, 100000*3, GL_UNSIGNED_INT, 0);
+	glUseProgram(staticmodel->id);
+//	glUseProgram(3);
+
+//	glBindVertexArray(dragon->vbo->vaoid);
+//	glDrawElements(GL_TRIANGLES, dragon->vbo->numfaces*3, GL_UNSIGNED_INT, 0);
+	sleep(1);
+
+	glDrawElements(GL_TRIANGLES, 1000000*3, GL_UNSIGNED_INT, 0);
+
 //	updateConsoleVBO();
 //	glUseProgram(2);
 //	glDrawArrays(GL_QUADS, 0, 40);

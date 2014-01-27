@@ -25,11 +25,13 @@ int addProgramToList(shaderprogram_t prog){
 	int current = programnumber;
 	programnumber++;
 	programlist = realloc(programlist, programnumber*sizeof(shaderprogram_t));
-	programlist[current].id = prog.id;
-	programlist[current].vertexid = prog.vertexid;
-	programlist[current].fragmentid = prog.fragmentid;
-	programlist[current].name = malloc(sizeof(*prog.name));
-	strcpy(programlist[current].name, prog.name);
+//	programlist[current].id = prog.id;
+//	programlist[current].vertexid = prog.vertexid;
+//	programlist[current].fragmentid = prog.fragmentid;
+//	programlist[current].name = malloc(sizeof(*prog.name));
+//	strcpy(programlist[current].name, prog.name);
+	programlist[current] = prog;
+
 	return current;
 }
 shaderprogram_t * returnShader(int id){
@@ -44,8 +46,12 @@ shaderprogram_t * findProgramByName(char * name){
 	return &programlist[0]; // return first one
 }
 
-int createAndLoadShader(char * name){
-	char * vertname = malloc(strlen(name) + 5);
+shaderprogram_t createAndLoadShader(char * name){
+	shaderprogram_t shader;
+	shader.id = 0;
+	shader.vertexid = 0;
+	shader.fragmentid = 0;
+	char * vertname = malloc(strlen(name) + 6);
 
 	strcpy(vertname, name);strcat(vertname, ".vert");
 
@@ -57,9 +63,9 @@ int createAndLoadShader(char * name){
 	free(vertname);
 	if(vertlength == 0){	//error
 		free(vertstring);
-		return FALSE;
+		return shader;
 	}
-	char * fragname = malloc(strlen(name) + 5); //add on 5 extra characters for .frag
+	char * fragname = malloc(strlen(name) + 6); //add on 5 extra characters for .frag
 	strcpy(fragname,name); strcat(fragname, ".frag");
 	char * fragstring;
 	int fraglength;
@@ -67,10 +73,12 @@ int createAndLoadShader(char * name){
 	free(fragname);
 	if(fraglength == 0){	//error
 		free(fragstring);
-		return FALSE;
+		return shader;
 	}
 	GLuint vertid = glCreateShader(GL_VERTEX_SHADER);
 	GLuint fragid = glCreateShader(GL_FRAGMENT_SHADER);
+	shader.vertexid = vertid;
+	shader.fragmentid = fragid;
 	glShaderSource(vertid, 1, (const GLchar**) &vertstring, &vertlength);
 	glShaderSource(fragid, 1, (const GLchar**) &fragstring, &fraglength);
 	free(vertstring); free(fragstring);
@@ -88,10 +96,18 @@ int createAndLoadShader(char * name){
 	glLinkProgram(programid);
 	//TODO errorcheck
 	printProgramLogStatus(programid);
-	shaderprogram_t prog = {name, programid, vertid, fragid};
-	int id = addProgramToList(prog);
-	consolePrintf("shader %s has id %d\n", name, id);
-	return id; //so far i am assuming that it works
+//	shaderprogram_t prog = {name, programid, vertid, fragid};
+//	int id = addProgramToList(prog);
+	consolePrintf("shader %s has id %d\n", name, programid);
+
+	shader.id = programid;
+	shader.name = malloc(strlen(name)+1);
+	strcpy(shader.name, name);
+//	return id; //so far i am assuming that it works
+	return shader;
+}
+shaderprogram_t * createAndAddShader(char * name){
+	return &programlist[addProgramToList(createAndLoadShader(name))];
 }
 int printProgramLogStatus(int id){
 	GLint blen = 0;

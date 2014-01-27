@@ -32,8 +32,8 @@ int addModelToList(model_t model){
 	modelnumber++;
 	modellist = realloc(modellist, modelnumber*sizeof(model_t));
 	modellist[current] = model;
-	modellist[current].name = malloc(sizeof(*model.name));
-	strcpy(modellist[current].name, model.name);
+//	modellist[current].name = malloc(sizeof(*model.name));
+//	strcpy(modellist[current].name, model.name);
 	return current;
 }
 model_t * findModelByName(char * name){
@@ -329,13 +329,19 @@ int loadModelOBJ(model_t * m, char * filename){//todo flags
 
 
 	m->vbo = createAndAddVBO(m->name, m->type);
+//	printf("%i\n",m->vbo->type);
+//	printf("%i\n",m->vbo->vaoid);
+//	printf("%i\n",m->vbo);
+//	printf("%s\n",m->name);
+//	printf("%s\n",m->vbo->name);
 	if(!m->vbo) return 0; // todo free and error handle
 	//the correct vao should be bound at this point.
-	glBindVertexArray(m->vbo->vaoid);
+//	glBindVertexArray(m->vbo->vaoid);
 	glBindBuffer(GL_ARRAY_BUFFER,m->vbo->vboid);
 //	glBufferData(GL_ARRAY_BUFFER, sizeof(*interleavedbuffer), interleavedbuffer, GL_STATIC_DRAW);
 	glBufferData(GL_ARRAY_BUFFER, vertcount * 8 * sizeof(GLfloat), interleavedbuffer, GL_STATIC_DRAW);
 //	glBufferData(GL_ARRAY_BUFFER, 32 * sizeof(GLfloat), muhverts, GL_STATIC_DRAW);
+	m->vbo->numverts = vertcount;
 	free(interleavedbuffer);
 
 	shaderprogram_t * program = findProgramByName("staticmodel");//todo per model materials and permutations
@@ -364,6 +370,7 @@ int loadModelOBJ(model_t * m, char * filename){//todo flags
 //	glBufferData(GL_ELEMENT_ARRAY_BUFFER,sizeof(*indicebuffer), indicebuffer, GL_STATIC_DRAW);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER,facecount * 3 *sizeof(GLint), indicebuffer, GL_STATIC_DRAW);
 //	glBufferData(GL_ELEMENT_ARRAY_BUFFER,6 * sizeof(GLint), muhindices, GL_STATIC_DRAW);
+	m->vbo->numfaces = facecount;
 
 	free(indicebuffer);
 	//maybe use material based shading
@@ -376,7 +383,7 @@ model_t createAndLoadModel(char * name){
 
 	model_t m;
 	m.type = 0; // error
-	m.name = malloc(sizeof(*name));
+	m.name = malloc(strlen(name)+1);
 	strcpy(m.name, name);
 
 	char * filename = malloc(200); //todo filesys and define a size
@@ -385,7 +392,10 @@ model_t createAndLoadModel(char * name){
 	for(n = 0; n < sizeof(statictypes) &&  statictypes[n]; n++){
 		sprintf(filename, "%s%s", name, statictypes[n]);
 		if(!stat(filename, &s)){ //if file exists... i guess
-			if(!loadModelOBJ(&m, filename)) return m;
+			if(!loadModelOBJ(&m, filename)){
+				free(filename);
+				 return m;
+			}
 			m.type = 1;
 			free(filename);
 			return m;
@@ -410,7 +420,7 @@ model_t createAndLoadModel(char * name){
 model_t createAndLoadTypeModel(char * name, char type){
 	model_t m;
 	m.type = 0; // error
-	m.name = malloc(sizeof(*name));
+	m.name = malloc(strlen(name)+1);
 	strcpy(m.name, name);
 
 	char * filename = malloc(200); //todo filesys and define a size
@@ -420,10 +430,13 @@ model_t createAndLoadTypeModel(char * name, char type){
 		sprintf(filename, "%s%s", name, statictypes[n]);
 		if(!stat(filename, &s)){ //if file exists... i guess
 			if(!loadModelOBJ(&m, filename)){
+				free(filename);
 				return m;
 			}
+
 			m.type = type;
 			free(filename);
+
 			return m;
 		}
 	}

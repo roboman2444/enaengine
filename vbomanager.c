@@ -32,8 +32,8 @@ int addVBOToList(vbo_t vbo){
 	vbonumber++;
 	vbolist = realloc(vbolist, vbonumber*sizeof(vbo_t));
 	vbolist[current] = vbo;
-	vbolist[current].name = malloc(sizeof(*vbo.name));
-	strcpy(vbolist[current].name, vbo.name);
+//	vbolist[current].name = malloc(strlen(vbo.name)+1);
+//	strcpy(vbolist[current].name, vbo.name);
 	return current;
 }
 int addUBOToList(ubo_t ubo){
@@ -41,8 +41,8 @@ int addUBOToList(ubo_t ubo){
 	ubonumber++;
 	ubolist = realloc(ubolist, ubonumber*sizeof(ubo_t));
 	ubolist[current] = ubo;
-	ubolist[current].name = malloc(sizeof(*ubo.name));
-	strcpy(ubolist[current].name, ubo.name);
+//	ubolist[current].name = malloc(strlen(ubo.name)+1);
+//	strcpy(ubolist[current].name, ubo.name);
 	return current;
 }
 
@@ -74,7 +74,7 @@ vbo_t createVBO(char * name, char type){
 	glBindVertexArray(v.vaoid);
 	glGenBuffers(1, &v.vboid);	if(!v.vboid) return v;
 	glGenBuffers(1, &v.indicesid);	if(!v.indicesid) return v;
-	v.name = malloc(sizeof(*name));
+	v.name = malloc(strlen(name)+1);
 	strcpy(v.name, name);
 	v.type = type; //todo type stuff
 	return v;
@@ -87,7 +87,7 @@ ubo_t createUBO(char * name, char type){
 //	glBindVertexArray(v.vaoid);
 	glGenBuffers(1, &u.id);	if(!u.id) return u;
 //	glGenBuffers(1, &v.indicesid);	if(!v.indicesid) return v;
-	u.name = malloc(sizeof(*name));
+	u.name = malloc(strlen(name)+1);
 	strcpy(u.name, name);
 	u.type = type; //todo type stuff
 	return u;

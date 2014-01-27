@@ -22,13 +22,13 @@ int initFrameBufferSystem(void){
 	framebuffersOK = TRUE;
 	return TRUE; // todo error check
 }
-int addFrameBufferToList(framebuffer_t fb){
+int addFrameBufferToList(framebuffer_t fb){ //todo have this return a framebuffer pointa
 	int current = fbnumber;
 	fbnumber++;
 	fblist = realloc(fblist, fbnumber * sizeof(framebuffer_t));
 	fblist[current] = fb;
-	fblist[current].name = malloc(sizeof(*fb.name));
-	strcpy(fblist[current].name, fb.name);
+	//fblist[current].name = malloc(sizeof(*fb.name));
+	//strcpy(fblist[current].name, fb.name);
 	return current;
 }
 /*
