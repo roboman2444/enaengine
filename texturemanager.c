@@ -31,12 +31,12 @@ texturegroup_t createTextureGroup(char * name, int num){
 	return texgroup;
 }
 
-int addTextureGroupToList(texturegroup_t texgroup){
+texturegroup_t * addTextureGroupToList(texturegroup_t texgroup){
 	int current = texturegroupnumber;
 	texturegroupnumber++;
 	texturegrouplist = realloc(texturegrouplist, texturegroupnumber*sizeof(texturegroup_t));
 	texturegrouplist[current] = texgroup;
-	return current;
+	return &texturegrouplist[current];
 }
 texturegroup_t * findTextureGroupByName(char * name){
 	int i;

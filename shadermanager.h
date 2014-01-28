@@ -24,7 +24,7 @@ int initShaderSystem(void);
 //loads a shader pair from files name.frag and name.vert, compiles, links, adds to the list
 shaderprogram_t createAndLoadShader(char * name);
 //resizes and adds the shader to the list
-int addProgramToList(shaderprogram_t prog);
+shaderprogram_t * addProgramToList(shaderprogram_t prog);
 shaderprogram_t * createAndAddShader(char * name);
 
 shaderprogram_t * returnShader(int id);

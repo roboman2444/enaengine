@@ -52,7 +52,7 @@ texturegroup_t * findTextureGroupByName(char * name);
 
 texturegroup_t createTextureGroup(char * name, int num);
 
-int addTextureGroupToList(texturegroup_t texgroup);
+texturegroup_t * addTextureGroupToList(texturegroup_t texgroup);
 
 int initTextureSystem(void);
 

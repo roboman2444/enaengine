@@ -11,9 +11,12 @@
 #include "sdlmanager.h"
 #include "particlemanager.h"
 #include "console.h"
+#include "matrixlib.h"
 
 model_t * dragon;
 shaderprogram_t * staticmodel;
+GLuint modelmat4;
+int degnumber;
 
 
 
@@ -55,6 +58,9 @@ int glInit(void){
 		 return FALSE;
 	}
 	staticmodel = createAndAddShader("staticmodel");
+//	glUseProgram(staticmodel->id);
+	modelmat4 = glGetUniformLocation(staticmodel->id, "modelMat");
+	if(modelmat4<0) consolePrintf("cant find uniform!\n");
 //	createAndAddShader("console");
 	dragon = createAndAddModel("dragon");
 
@@ -69,24 +75,31 @@ int glInit(void){
 //	glCullFace(GL_BACK);
 //	glEnable(GL_BLEND);
 //	glBlendFunc(GL_SRC_ALPHA,GL_ONE);
+	glViewport(0, 0, 800, 600);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glUseProgram(staticmodel->id);
 
 	return TRUE; // so far so good
 }
+int glDrawModel(model_t * model, matrix4x4_t * modworld){
+	GLfloat out[16];
+	Matrix4x4_ToArrayFloatGL(modworld, out);
+	glUniformMatrix4fv(modelmat4, 1, GL_FALSE, out);
+	glBindVertexArray(model->vbo->vaoid);
+	glDrawElements(GL_TRIANGLES, model->vbo->numfaces*3, GL_UNSIGNED_INT, 0);
+	return model->vbo->numfaces;
+}
 int glMainDraw(void){
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	degnumber = degnumber+1 % 360;
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-	glViewport(0, 0, 800, 600);
-	glUseProgram(staticmodel->id);
-//	glUseProgram(3);
-
+	matrix4x4_t mat;
+	Matrix4x4_CreateFromQuakeEntity(&mat, 0.0, -0.5, 0.0, degnumber, 0.0, -30.0, 0.1);
+	glDrawModel(dragon, &mat);
 //	glBindVertexArray(dragon->vbo->vaoid);
 //	glDrawElements(GL_TRIANGLES, dragon->vbo->numfaces*3, GL_UNSIGNED_INT, 0);
-	sleep(1);
 
-	glDrawElements(GL_TRIANGLES, 1000000*3, GL_UNSIGNED_INT, 0);
 
 //	updateConsoleVBO();
-//	glUseProgram(2);
 //	glDrawArrays(GL_QUADS, 0, 40);
 
 //	glDrawArrays(GL_POINTS, 0, 3644);

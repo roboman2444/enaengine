@@ -20,5 +20,5 @@ int framebuffersOK;
 
 framebuffer_t * findFrameBufferByName(char * name);
 framebuffer_t * returnFrameBuffer(int it);
-int addFrameBufferToList(framebuffer_t fb);
+framebuffer_t * addFrameBufferToList(framebuffer_t fb);
 #endif

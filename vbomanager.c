@@ -27,23 +27,23 @@ int initVBOSystem(void){
 	vboOK = TRUE;
 	return TRUE;
 }
-int addVBOToList(vbo_t vbo){
+vbo_t * addVBOToList(vbo_t vbo){
 	int current = vbonumber;
 	vbonumber++;
 	vbolist = realloc(vbolist, vbonumber*sizeof(vbo_t));
 	vbolist[current] = vbo;
 //	vbolist[current].name = malloc(strlen(vbo.name)+1);
 //	strcpy(vbolist[current].name, vbo.name);
-	return current;
+	return &vbolist[current];
 }
-int addUBOToList(ubo_t ubo){
+ubo_t * addUBOToList(ubo_t ubo){
 	int current = ubonumber;
 	ubonumber++;
 	ubolist = realloc(ubolist, ubonumber*sizeof(ubo_t));
 	ubolist[current] = ubo;
 //	ubolist[current].name = malloc(strlen(ubo.name)+1);
 //	strcpy(ubolist[current].name, ubo.name);
-	return current;
+	return &ubolist[current];
 }
 
 vbo_t * findVBOByName(char * name){
@@ -62,10 +62,10 @@ ubo_t * findUBOByName(char * name){
 }
 
 vbo_t * createAndAddVBO(char * name, char type){
-	return &vbolist[addVBOToList(createVBO(name, type))];
+	return addVBOToList(createVBO(name, type));
 }
 ubo_t * createAndAddUBO(char * name, char type){
-	return &ubolist[addUBOToList(createUBO(name, type))];
+	return addUBOToList(createUBO(name, type));
 }
 vbo_t createVBO(char * name, char type){
 	vbo_t v;

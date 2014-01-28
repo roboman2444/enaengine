@@ -27,14 +27,14 @@ int initModelSystem(void){
 	modelsOK = TRUE;
 	return TRUE;
 }
-int addModelToList(model_t model){
+model_t * addModelToList(model_t model){
 	int current = modelnumber;
 	modelnumber++;
 	modellist = realloc(modellist, modelnumber*sizeof(model_t));
 	modellist[current] = model;
 //	modellist[current].name = malloc(sizeof(*model.name));
 //	strcpy(modellist[current].name, model.name);
-	return current;
+	return &modellist[current];
 }
 model_t * findModelByName(char * name){
 	int i;
@@ -44,7 +44,8 @@ model_t * findModelByName(char * name){
 	return &modellist[0];
 }
 model_t * createAndAddModel(char * name){
-	return &modellist[addModelToList(createAndLoadModel(name))];
+	return addModelToList(createAndLoadModel(name));
+//	return &modellist[addModelToList(createAndLoadModel(name))];
 }
 
 int generateNormalsFromMesh(GLfloat * vertbuffer, GLfloat * normbuffer, GLuint * indices, GLuint indicecount, GLuint vertcount, int areaweighting){

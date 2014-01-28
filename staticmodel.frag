@@ -1,4 +1,5 @@
 #version 150
+uniform mat4 modelMat;
 in vec3 fragnormal;
 in vec3 fragposition;
 in vec2 fragtexCoord;

@@ -4,52 +4,53 @@
 
 //local includes
 #include "globaldefs.h"
-#include "framebuffermanager.h"
+#include "matrixlib.h"
+#include "viewportmanager.h"
 
-int fbnumber = 0; //the first is an error one/screen
-int framebuffersOK = 0;
-framebuffer_t *fblist;
+int vpnumber = 0; //the first is an error one/screen
+int viewportsOK = 0;
+viewport_t *vplist;
 
-int initFrameBufferSystem(void){
+int initViewportSystem(void){
 	//todo have it figure out screen aspect for the default
-			//	name	id	width	height	aspect	fov	texid
-	framebuffer_t screen = {"default"	,0 	,0	,0	,1	,0	,0	};
-	if(fblist) free(fblist);
-	fblist = malloc(fbnumber * sizeof(framebuffer_t));
-	if(!fblist) memset(fblist, 0 , fbnumber * sizeof(framebuffer_t));
-	addFrameBufferToList(screen);
-	defaultFrameBuffer = &fblist[0];
-	framebuffersOK = TRUE;
+			//	name	id	width	height	aspect	fov
+	viewport_t screen = {"default"	,0 	,0	,0	,1	, 90};
+	if(vplist) free(vplist);
+	vplist = malloc(vpnumber * sizeof(viewport_t));
+	if(!vplist) memset(vplist, 0 , vpnumber * sizeof(viewport_t));
+	addViewportToList(screen);
+	defaultViewport = &vplist[0];
+	viewportsOK = TRUE;
 	return TRUE; // todo error check
 }
-framebuffer_t *  addFrameBufferToList(framebuffer_t fb){ //todo have this return a framebuffer pointa
-	int current = fbnumber;
-	fbnumber++;
-	fblist = realloc(fblist, fbnumber * sizeof(framebuffer_t));
-	fblist[current] = fb;
-	//fblist[current].name = malloc(sizeof(*fb.name));
-	//strcpy(fblist[current].name, fb.name);
-	return &fblist[current];
+viewport_t *  addViewportToList(viewport_t vp){ //todo have this return a viewport pointa
+	int current = vpnumber;
+	vpnumber++;
+	vplist = realloc(vplist, vpnumber * sizeof(viewport_t));
+	vplist[current] = vp;
+	//vplist[current].name = malloc(sizeof(*vp.name));
+	//strcpy(vplist[current].name, vp.name);
+	return &vplist[current];
 }
 /*
-framebuffer_t createFrameBuffer (char * name){
+viewport_t createViewport (char * name){
 //todo
 }
 */
-framebuffer_t * returnFrameBuffer(int id){
-	if(id >= fbnumber) return &fblist[0];
-	return &fblist[id];
+viewport_t * returnViewport(int id){
+	if(id >= vpnumber) return &vplist[0];
+	return &vplist[id];
 }
-framebuffer_t * findFrameBufferByName(char * name){
+viewport_t * findViewportByName(char * name){
 	int i;
-	for(i = 0; i<fbnumber; i++){
-		if(!strcmp(name, fblist[i].name)) return &fblist[i];
+	for(i = 0; i<vpnumber; i++){
+		if(!strcmp(name, vplist[i].name)) return &vplist[i];
 	}
-	return &fblist[0];
+	return &vplist[0];
 }
 
 /*
-int createFramebuffer(char * name){
+int createViewport(char * name){
 	char * vertname = malloc(strlen(name) + 5);
 
 	strcpy(vertname, name);strcat(vertname, ".vert");

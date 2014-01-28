@@ -21,7 +21,7 @@ int initShaderSystem(void){
 	shadersOK = TRUE;
 	return TRUE; // todo error check
 }
-int addProgramToList(shaderprogram_t prog){
+shaderprogram_t * addProgramToList(shaderprogram_t prog){
 	int current = programnumber;
 	programnumber++;
 	programlist = realloc(programlist, programnumber*sizeof(shaderprogram_t));
@@ -32,7 +32,7 @@ int addProgramToList(shaderprogram_t prog){
 //	strcpy(programlist[current].name, prog.name);
 	programlist[current] = prog;
 
-	return current;
+	return &programlist[current];
 }
 shaderprogram_t * returnShader(int id){
 	if(id >= programnumber) return &programlist[0];
@@ -107,7 +107,7 @@ shaderprogram_t createAndLoadShader(char * name){
 	return shader;
 }
 shaderprogram_t * createAndAddShader(char * name){
-	return &programlist[addProgramToList(createAndLoadShader(name))];
+	return addProgramToList(createAndLoadShader(name));
 }
 int printProgramLogStatus(int id){
 	GLint blen = 0;

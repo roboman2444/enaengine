@@ -21,7 +21,7 @@ int modelsOK;
 int modelnumber;
 
 
-int addModelToList(model_t model);
+model_t * addModelToList(model_t model);
 int initModelSystem(void);
 model_t * findModelByName(char * name);
 model_t createAndLoadModel(char * name);
