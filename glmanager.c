@@ -12,11 +12,15 @@
 #include "particlemanager.h"
 #include "console.h"
 #include "matrixlib.h"
+#include "viewportmanager.h"
 
 model_t * dragon;
+model_t * teapot;
+model_t * coil;
 shaderprogram_t * staticmodel;
-GLuint modelmat4;
+GLuint modelmat4, viewmat4, projectionmat4;
 int degnumber;
+	viewport_t cam;
 
 
 
@@ -61,8 +65,14 @@ int glInit(void){
 //	glUseProgram(staticmodel->id);
 	modelmat4 = glGetUniformLocation(staticmodel->id, "modelMat");
 	if(modelmat4<0) consolePrintf("cant find uniform!\n");
+	viewmat4 = glGetUniformLocation(staticmodel->id, "viewMat");
+	if(viewmat4<0) consolePrintf("cant find uniform!\n");
+	projectionmat4 = glGetUniformLocation(staticmodel->id, "projectionMat");
+	if(projectionmat4<0) consolePrintf("cant find uniform!\n");
 //	createAndAddShader("console");
 	dragon = createAndAddModel("dragon");
+//	teapot = createAndAddModel("teapot");
+//	coil   = createAndAddModel("coil");
 
 
 	glDepthFunc(GL_LEQUAL);
@@ -79,6 +89,9 @@ int glInit(void){
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glUseProgram(staticmodel->id);
 
+	cam = createViewport("cam");
+
+
 	return TRUE; // so far so good
 }
 int glDrawModel(model_t * model, matrix4x4_t * modworld){
@@ -90,20 +103,38 @@ int glDrawModel(model_t * model, matrix4x4_t * modworld){
 	return model->vbo->numfaces;
 }
 int glMainDraw(void){
-	degnumber = degnumber+1 % 360;
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+	degnumber = degnumber+1 % 360;
+
+	vec3_t pos = {0.0, 0.0, 1.0};
+	vec3_t angle;
+//	angle[1] = degnumber;
+//	angle[2] = -90.0;
+	recalcViewport(&cam, pos, angle, 100.0, 4.0/3.0, 0.1, 1000.0);
+
+//	Matrix4x4_CreateIdentity(&cam.view);
+	Matrix4x4_CreateIdentity(&cam.projection);
+
+	GLfloat out[16];
+	Matrix4x4_ToArrayFloatGL(&cam.view, out);
+	glUniformMatrix4fv(viewmat4, 1, GL_FALSE, out);
+	Matrix4x4_ToArrayFloatGL(&cam.projection, out);
+	glUniformMatrix4fv(projectionmat4, 1, GL_FALSE, out);
+
 	matrix4x4_t mat;
-	Matrix4x4_CreateFromQuakeEntity(&mat, 0.0, -0.5, 0.0, degnumber, 0.0, -30.0, 0.1);
+	Matrix4x4_CreateFromQuakeEntity(&mat, 0.0, 0.0, 0.0, degnumber, 0.0, 0.0, 0.1);
+//	Matrix4x4_CreateFromQuakeEntity(&mat, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.1);
 	glDrawModel(dragon, &mat);
-//	glBindVertexArray(dragon->vbo->vaoid);
-//	glDrawElements(GL_TRIANGLES, dragon->vbo->numfaces*3, GL_UNSIGNED_INT, 0);
 
+//	matrix4x4_t mat;
+//	Matrix4x4_CreateFromQuakeEntity(&mat, 0.0, -0.5, 0.0, degnumber, 0.0, -30.0, 0.1);
+//	Matrix4x4_CreateFromQuakeEntity(&mat, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.1);
+//	glDrawModel(teapot, &mat);
 
-//	updateConsoleVBO();
-//	glDrawArrays(GL_QUADS, 0, 40);
-
-//	glDrawArrays(GL_POINTS, 0, 3644);
-//	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+//	matrix4x4_t mat;
+//	Matrix4x4_CreateFromQuakeEntity(&mat, 0.0, -0.5, 0.0, degnumber, 0.0, -30.0, 0.1);
+//	Matrix4x4_CreateFromQuakeEntity(&mat, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.1);
+//	glDrawModel(coil, &mat);
 	swapBuffers();
 	return TRUE;
 }

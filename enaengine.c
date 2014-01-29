@@ -18,8 +18,6 @@ int main(int argc, char *argv[]){
 	if(glInit()){
 		consolePrintf("opengl has initailized correctly\n");
 	}
-	glMainDraw();
-	sleep(5);
 //	printConsoleBackwards();
 	to = SDL_GetTicks();
 	while(TRUE){
