@@ -5,7 +5,7 @@
 #define FALSE 0
 
 #define GCTIMESTEP 1.0f/60.0f
-#define PI 3.1415926535
+//#define PI 3.1415926535
 
 //global includes
 #include <stdio.h>

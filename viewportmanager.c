@@ -61,25 +61,26 @@ viewport_t * findViewportByName(char * name){
 	return &vplist[0];
 }
 void recalcViewMatrix(viewport_t * v){
-	Matrix4x4_CreateIdentity(&v->view);
+/*	Matrix4x4_CreateIdentity(&v->view);
 	Matrix4x4_ConcatRotate(&v->view, v->angle[2], 0.0, 0.0, 1.0);
 	Matrix4x4_ConcatRotate(&v->view, v->angle[0], -1.0, 0.0, 0.0);
 	Matrix4x4_ConcatRotate(&v->view, v->angle[1], 0.0, 1.0, 0.0);
 	Matrix4x4_ConcatRotate(&v->view, -90.0, 1.0, 0.0, 0.0); // rotate up?
 	Matrix4x4_ConcatScale3(&v->view, 1.0, -1.0, 1.0);
 	Matrix4x4_ConcatTranslate(&v->view, -v->pos[0], -v->pos[1], -v->pos[2]);
-
-//    glRotatef(camroll, 0, 0, 1);
-  //  glRotatef(campitch, -1, 0, 0);
-//    glRotatef(camyaw, 0, 1, 0);
-//    glRotatef(-90, 1, 0, 0);
-//    glScalef(1, -1, 1);
-//    glTranslatef(-campos.x, -campos.y, -campos.z);
+*/
+//	Matrix4x4_CreateIdentity(&v->view);
+//	Matrix4x4_ConcatRotate(&v->view, -90.0, 1.0, 0.0, 0.0); // rotate up?
+	Matrix4x4_CreateRotate(&v->view, v->angle[2], 0.0, 0.0, 1.0);
+	Matrix4x4_ConcatRotate(&v->view, v->angle[0], 1.0, 0.0, 0.0);
+	Matrix4x4_ConcatRotate(&v->view, v->angle[1], 0.0, 1.0, 0.0);
+	Matrix4x4_ConcatTranslate(&v->view, -v->pos[0], -v->pos[1], -v->pos[2]);
+//	Matrix4x4_ConcatScale3(&v->view, 1.0, -1.0, 1.0);
 
 }
 void recalcProjectionMatrix(viewport_t * v){
 	double sine, cotangent, deltaZ;
-	double radians = v->fov / 2 * PI / 180;
+	double radians = v->fov / 2 * M_PI / 180;
 
 	deltaZ = v->far - v->near;
 	sine = sin(radians);
@@ -88,13 +89,15 @@ void recalcProjectionMatrix(viewport_t * v){
 	}
 	cotangent = cos(radians) / sine;
 
-	Matrix4x4_CreateIdentity(&v->projection);
+//	Matrix4x4_CreateIdentity(&v->projection);
+
 	v->projection.m[0][0] = cotangent / v->aspect;
 	v->projection.m[1][1] = cotangent;
 	v->projection.m[2][2] = -(v->far + v->near) / deltaZ;
 	v->projection.m[2][3] = -1;
 	v->projection.m[3][2] = -2 * v->near * v->far / deltaZ;
 	v->projection.m[3][3] = 0;
+
 }
 int recalcViewport(viewport_t * v, vec3_t pos, vec3_t angle, float fov, float aspect, float near, float far){
 	if(pos != v->pos || angle != v->angle){

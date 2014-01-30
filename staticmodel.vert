@@ -16,6 +16,7 @@ void main(){
 	fragnormal = normal;
 	fragposition = position;
 	fragtexCoord = texCoord;
-	gl_Position = modelMat *viewMat * projectionMat * vec4(fragposition, 1.0);
+//	gl_Position = viewMat * modelMat * projectionMat * vec4(fragposition, 1.0);
+	gl_Position = projectionMat * modelMat * viewMat * vec4(fragposition, 1.0);
 //	gl_PointSize = 5.0;
 }
