@@ -16,7 +16,8 @@ viewport_t *vplist;
 int initViewportSystem(void){
 	//todo have it figure out screen aspect for the default
 			//	name	id	aspect	fov	viewchanged
-	viewport_t screen = {"default"	,0 	,1.0	, 90.0, 	0};
+//	viewport_t screen = {"default"	,0 	,1.0	, 90.0, 	0};
+	viewport_t screen = createViewport("default");
 	if(vplist) free(vplist);
 	vplist = malloc(vpnumber * sizeof(viewport_t));
 	if(!vplist) memset(vplist, 0 , vpnumber * sizeof(viewport_t));
@@ -35,16 +36,6 @@ viewport_t *  addViewportToList(viewport_t vp){ //todo have this return a viewpo
 	return &vplist[current];
 }
 
-viewport_t createViewport (char * name){
-	viewport_t v;
- 	v.name = malloc(strlen(name)+1);
-	strcpy(v.name, name);
-	v.viewchanged = TRUE;
-	Matrix4x4_CreateIdentity(&v.view);
-	Matrix4x4_CreateIdentity(&v.projection);
-	return v;
-//todo
-}
 viewport_t * createAndAddViewport(char * name){
 	return addViewportToList(createViewport(name));
 }
@@ -117,4 +108,26 @@ int recalcViewport(viewport_t * v, vec3_t pos, vec3_t angle, float fov, float as
 		recalcProjectionMatrix(v);
 	}
 	return v->viewchanged;
+}
+viewport_t createViewport (char * name){
+	viewport_t v;
+	v.id = 0; //todo make useful
+	v.aspect = 1.0;
+	v.fov = 90.0;
+	v.near = 1.0;
+	v.far = 1000.0;
+	v.viewchanged = TRUE;
+	int i;
+	for(i = 0; i < 3; i++){
+		v.pos[i] = 0.0;
+		v.angle[i] = 0.0;
+	}
+ 	v.name = malloc(strlen(name)+1);
+	strcpy(v.name, name);
+//	recalcViewMatrix(&v); //todo may not need
+//	recalcProjectionMatrix(&v);
+	Matrix4x4_CreateIdentity(&v.view);
+	Matrix4x4_CreateIdentity(&v.projection);
+	return v;
+//todo
 }

@@ -332,16 +332,16 @@ int loadModelOBJ(model_t * m, char * filename){//todo flags
 	m->vbo = createAndAddVBO(m->name, m->type);
 //	printf("%i\n",m->vbo->type);
 //	printf("%i\n",m->vbo->vaoid);
-//	printf("%i\n",m->vbo);
+//	printf("%i\n",m->vbo->vboid);
+//	printf("%i\n",m->vbo->indicesid);
 //	printf("%s\n",m->name);
 //	printf("%s\n",m->vbo->name);
 	if(!m->vbo) return 0; // todo free and error handle
 	//the correct vao should be bound at this point.
-	glBindVertexArray(m->vbo->vaoid);
+//	printf("%s vao: %i\n", m->name, m->vbo->vaoid);
+//	glBindVertexArray(m->vbo->vaoid);
 	glBindBuffer(GL_ARRAY_BUFFER,m->vbo->vboid);
-//	glBufferData(GL_ARRAY_BUFFER, sizeof(*interleavedbuffer), interleavedbuffer, GL_STATIC_DRAW);
 	glBufferData(GL_ARRAY_BUFFER, vertcount * 8 * sizeof(GLfloat), interleavedbuffer, GL_STATIC_DRAW);
-//	glBufferData(GL_ARRAY_BUFFER, 32 * sizeof(GLfloat), muhverts, GL_STATIC_DRAW);
 	m->vbo->numverts = vertcount;
 	free(interleavedbuffer);
 

@@ -14,6 +14,7 @@
 #include "matrixlib.h"
 #include "viewportmanager.h"
 
+
 model_t * dragon;
 model_t * teapot;
 model_t * coil;
@@ -70,8 +71,8 @@ int glInit(void){
 	projectionmat4 = glGetUniformLocation(staticmodel->id, "projectionMat");
 	if(projectionmat4<0) consolePrintf("cant find uniform!\n");
 //	createAndAddShader("console");
-	dragon = createAndAddModel("teapot");
 //	teapot = createAndAddModel("teapot");
+	dragon = createAndAddModel("dragon");
 //	coil   = createAndAddModel("coil");
 
 
@@ -111,11 +112,9 @@ int glMainDraw(void){
 	vec3_t angle = {0.0, 0.0, 0.0};
 
 	angle[1] = degnumber;
+
 //	angle[2] = -90.0;
 	recalcViewport(&cam, pos, angle, 90.0, 4.0/3.0, 1.0, 1000.0);
-
-//	Matrix4x4_CreateIdentity(&cam.view);
-//	Matrix4x4_CreateIdentity(&cam.projection);
 
 	GLfloat out[16];
 	Matrix4x4_ToArrayFloatGL(&cam.view, out);
@@ -125,7 +124,13 @@ int glMainDraw(void){
 
 	matrix4x4_t mat;
 //	Matrix4x4_CreateFromQuakeEntity(&mat, 0.0, 0.0, 0.0, degnumber, 0.0, 0.0, 0.1);
-	Matrix4x4_CreateFromQuakeEntity(&mat, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.1);
+	Matrix4x4_CreateFromQuakeEntity(&mat, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0);
+	glDrawModel(dragon, &mat);
+
+	Matrix4x4_CreateFromQuakeEntity(&mat, 0.0, 2.0, 20.0, 0.0, 0.0, 0.0, 1.0);
+	glDrawModel(dragon, &mat);
+
+	Matrix4x4_CreateFromQuakeEntity(&mat, 10.0, 5.0, 0.0, 0.0, 0.0, 0.0, 1.0);
 	glDrawModel(dragon, &mat);
 
 //	matrix4x4_t mat;

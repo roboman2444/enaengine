@@ -18,11 +18,11 @@ int initVBOSystem(void){
 	if(!vbolist) memset(vbolist, 0 , vbonumber * sizeof(vbo_t));
 	addVBOToList(vbonone);
 
-	ubo_t ubonone = {"default", 0, 0};
-	if(ubolist) free(ubolist);
-	ubolist = malloc(ubonumber * sizeof(ubo_t));
-	if(!ubolist) memset(ubolist, 0 , ubonumber * sizeof(ubo_t));
-	addUBOToList(ubonone);
+//	ubo_t ubonone = {"default", 0, 0};
+//	if(ubolist) free(ubolist);
+//	ubolist = malloc(ubonumber * sizeof(ubo_t));
+//	if(!ubolist) memset(ubolist, 0 , ubonumber * sizeof(ubo_t));
+//	addUBOToList(ubonone);
 
 	vboOK = TRUE;
 	return TRUE;
