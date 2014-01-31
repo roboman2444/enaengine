@@ -12,7 +12,7 @@
 
 int modelsOK = 0;
 int modelnumber = 0;
-model_t *modellist;
+model_t **modellist;
 
 char *statictypes[] = {".obj"}; //todo filesys
 char *animtypes[] = {".dpm"}; //todo filesys //todo
@@ -21,27 +21,29 @@ char *animtypes[] = {".dpm"}; //todo filesys //todo
 int initModelSystem(void){
 	model_t none = {"default", findTextureGroupByName("default"), 0, 0};
 	if(modellist) free(modellist);
-	modellist = malloc(modelnumber * sizeof(model_t));
-	if(!modellist) memset(modellist, 0 , modelnumber * sizeof(model_t));
+	modellist = malloc(modelnumber * sizeof(model_t *));
+	if(!modellist) memset(modellist, 0 , modelnumber * sizeof(model_t *));
 	addModelToList(none);
 	modelsOK = TRUE;
 	return TRUE;
 }
 model_t * addModelToList(model_t model){
+	model_t *pointmodel = malloc(sizeof(model_t));
+	*pointmodel = model;
 	int current = modelnumber;
 	modelnumber++;
-	modellist = realloc(modellist, modelnumber*sizeof(model_t));
-	modellist[current] = model;
+	modellist = realloc(modellist, modelnumber*sizeof(model_t*));
+	modellist[current] = pointmodel;
 //	modellist[current].name = malloc(sizeof(*model.name));
 //	strcpy(modellist[current].name, model.name);
-	return &modellist[current];
+	return pointmodel;
 }
 model_t * findModelByName(char * name){
 	int i;
 	for (i=0; i<modelnumber; i++){
-		if(!strcmp(name, modellist[i].name)) return &modellist[i];
+		if(!strcmp(name, modellist[i]->name)) return modellist[i];
 	}
-	return &modellist[0];
+	return modellist[0];
 }
 model_t * createAndAddModel(char * name){
 	return addModelToList(createAndLoadModel(name));

@@ -7,15 +7,15 @@
 int vboOK = 0;
 int vbonumber = 0;
 int ubonumber = 0;
-vbo_t *vbolist;
-ubo_t *ubolist;
+vbo_t **vbolist;
+ubo_t **ubolist;
 
 int initVBOSystem(void){
 //	if(!initVAO(&vertexarrayid)) return FALSE;
 	vbo_t vbonone = {"default", 0, 0, 0, 0};
 	if(vbolist) free(vbolist);
-	vbolist = malloc(vbonumber * sizeof(vbo_t));
-	if(!vbolist) memset(vbolist, 0 , vbonumber * sizeof(vbo_t));
+	vbolist = malloc(vbonumber * sizeof(vbo_t *));
+	if(!vbolist) memset(vbolist, 0 , vbonumber * sizeof(vbo_t *));
 	addVBOToList(vbonone);
 
 //	ubo_t ubonone = {"default", 0, 0};
@@ -28,37 +28,41 @@ int initVBOSystem(void){
 	return TRUE;
 }
 vbo_t * addVBOToList(vbo_t vbo){
+	vbo_t * pointvbo = malloc(sizeof(vbo_t));
+	*pointvbo = vbo;
 	int current = vbonumber;
 	vbonumber++;
-	vbolist = realloc(vbolist, vbonumber*sizeof(vbo_t));
-	vbolist[current] = vbo;
+	vbolist = realloc(vbolist, vbonumber*sizeof(vbo_t *));
+	vbolist[current] = pointvbo;
 //	vbolist[current].name = malloc(strlen(vbo.name)+1);
 //	strcpy(vbolist[current].name, vbo.name);
-	return &vbolist[current];
+	return pointvbo;
 }
 ubo_t * addUBOToList(ubo_t ubo){
+	ubo_t * pointubo = malloc(sizeof(ubo_t*));
+	*pointubo = ubo;
 	int current = ubonumber;
 	ubonumber++;
-	ubolist = realloc(ubolist, ubonumber*sizeof(ubo_t));
-	ubolist[current] = ubo;
+	ubolist = realloc(ubolist, ubonumber*sizeof(ubo_t*));
+	ubolist[current] = pointubo;
 //	ubolist[current].name = malloc(strlen(ubo.name)+1);
 //	strcpy(ubolist[current].name, ubo.name);
-	return &ubolist[current];
+	return ubolist[current];
 }
 
 vbo_t * findVBOByName(char * name){
 	int i;
 	for (i=0; i<vbonumber; i++){
-		if(!strcmp(name, vbolist[i].name)) return &vbolist[i];
+		if(!strcmp(name, vbolist[i]->name)) return vbolist[i];
 	}
-	return &vbolist[0];
+	return vbolist[0];
 }
 ubo_t * findUBOByName(char * name){
 	int i;
 	for (i=0; i<ubonumber; i++){
-		if(!strcmp(name, ubolist[i].name)) return &ubolist[i];
+		if(!strcmp(name, ubolist[i]->name)) return ubolist[i];
 	}
-	return &ubolist[0];
+	return ubolist[0];
 }
 
 vbo_t * createAndAddVBO(char * name, char type){

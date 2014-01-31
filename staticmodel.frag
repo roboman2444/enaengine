@@ -1,5 +1,7 @@
 #version 150
 uniform mat4 modelMat;
+uniform mat4 viewMat;
+uniform mat4 projectionMat;
 in vec3 fragnormal;
 in vec3 fragposition;
 in vec2 fragtexCoord;

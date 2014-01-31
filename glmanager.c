@@ -14,6 +14,8 @@
 #include "matrixlib.h"
 #include "viewportmanager.h"
 
+#include <tgmath.h>
+
 
 model_t * dragon;
 model_t * teapot;
@@ -71,9 +73,9 @@ int glInit(void){
 	projectionmat4 = glGetUniformLocation(staticmodel->id, "projectionMat");
 	if(projectionmat4<0) consolePrintf("cant find uniform!\n");
 //	createAndAddShader("console");
-//	teapot = createAndAddModel("teapot");
+	teapot = createAndAddModel("teapot");
 	dragon = createAndAddModel("dragon");
-//	coil   = createAndAddModel("coil");
+	coil   = createAndAddModel("coil");
 
 
 	glClearDepth(1.0);
@@ -108,13 +110,18 @@ int glMainDraw(void){
 	degnumber = degnumber+0.1;
 	if(degnumber>360.0) degnumber -=360.0;
 
-	vec3_t pos = {0.0, 0.0, 10.0};
-	vec3_t angle = {0.0, 0.0, 0.0};
+	vec3_t pos = {0.0, 5.0, 10.0};
+	vec3_t angle = {30.0, 0.0, 0.0};
+
+	pos[0] = sin(degnumber *(-M_PI / 180.0))*10.0;
+	pos[2] = cos(degnumber *(-M_PI / 180.0))*10.0;
 
 	angle[1] = degnumber;
 
 //	angle[2] = -90.0;
 	recalcViewport(&cam, pos, angle, 90.0, 4.0/3.0, 1.0, 1000.0);
+
+//	Matrix4x4_ConcatRotate(&cam.view, degnumber, 0.0, 1.0, 0.0);
 
 	GLfloat out[16];
 	Matrix4x4_ToArrayFloatGL(&cam.view, out);
@@ -124,24 +131,18 @@ int glMainDraw(void){
 
 	matrix4x4_t mat;
 //	Matrix4x4_CreateFromQuakeEntity(&mat, 0.0, 0.0, 0.0, degnumber, 0.0, 0.0, 0.1);
-	Matrix4x4_CreateFromQuakeEntity(&mat, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0);
-	glDrawModel(dragon, &mat);
-
-	Matrix4x4_CreateFromQuakeEntity(&mat, 0.0, 2.0, 20.0, 0.0, 0.0, 0.0, 1.0);
-	glDrawModel(dragon, &mat);
-
-	Matrix4x4_CreateFromQuakeEntity(&mat, 10.0, 5.0, 0.0, 0.0, 0.0, 0.0, 1.0);
+	Matrix4x4_CreateFromQuakeEntity(&mat, 0.0, 0.0, 0.0, 0.0, 0.0, degnumber * 6.0, 1.0);
 	glDrawModel(dragon, &mat);
 
 //	matrix4x4_t mat;
 //	Matrix4x4_CreateFromQuakeEntity(&mat, 0.0, -0.5, 0.0, degnumber, 0.0, -30.0, 0.1);
-//	Matrix4x4_CreateFromQuakeEntity(&mat, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.1);
-//	glDrawModel(teapot, &mat);
+	Matrix4x4_CreateFromQuakeEntity(&mat, 10.0, 2.0, 0.0, 0.0, degnumber * 4.0, 0.0, 1.0);
+	glDrawModel(teapot, &mat);
 
 //	matrix4x4_t mat;
 //	Matrix4x4_CreateFromQuakeEntity(&mat, 0.0, -0.5, 0.0, degnumber, 0.0, -30.0, 0.1);
-//	Matrix4x4_CreateFromQuakeEntity(&mat, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.1);
-//	glDrawModel(coil, &mat);
+	Matrix4x4_CreateFromQuakeEntity(&mat, -10.0, 2.0, 0.0, degnumber*5.0, 0.0, 0.0, 1.0);
+	glDrawModel(coil, &mat);
 	swapBuffers();
 	return TRUE;
 }
