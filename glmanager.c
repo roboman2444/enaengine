@@ -20,6 +20,7 @@
 model_t * dragon;
 model_t * teapot;
 model_t * coil;
+texturegroup_t * tcoil;
 shaderprogram_t * staticmodel;
 GLuint modelmat4, viewmat4, projectionmat4;
 float degnumber;
@@ -76,7 +77,7 @@ int glInit(void){
 	teapot = createAndAddModel("teapot");
 	dragon = createAndAddModel("dragon");
 	coil   = createAndAddModel("coil");
-
+//	tcoil = addTextureGroupToList(createAndLoadTextureGroup("coil"));
 
 	glClearDepth(1.0);
 	glClearColor(0.0, 0.0, 0.0, 0.0);
@@ -94,6 +95,10 @@ int glInit(void){
 
 	cam = createViewport("cam");
 
+//	glEnable(GL_TEXTURE_2D);
+//	glBindTexture(GL_TEXTURE_2D, tcoil->textures->id);
+//	consolePrintf("texture %s id: %i\n", tcoil->name, tcoil->textures->id);
+
 
 	return TRUE; // so far so good
 }
@@ -110,11 +115,11 @@ int glMainDraw(void){
 	degnumber = degnumber+0.1;
 	if(degnumber>360.0) degnumber -=360.0;
 
-	vec3_t pos = {0.0, 5.0, 10.0};
+	vec3_t pos = {0.0, 9.0, 15.0};
 	vec3_t angle = {30.0, 0.0, 0.0};
 
-	pos[0] = sin(degnumber *(-M_PI / 180.0))*10.0;
-	pos[2] = cos(degnumber *(-M_PI / 180.0))*10.0;
+	pos[0] = sin(degnumber *(-M_PI / 180.0))*15.0;
+	pos[2] = cos(degnumber *(-M_PI / 180.0))*15.0;
 
 	angle[1] = degnumber;
 

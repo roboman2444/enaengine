@@ -50,7 +50,7 @@ model_t * createAndAddModel(char * name){
 //	return &modellist[addModelToList(createAndLoadModel(name))];
 }
 
-int generateNormalsFromMesh(GLfloat * vertbuffer, GLfloat * normbuffer, GLuint * indices, GLuint indicecount, GLuint vertcount, int areaweighting){
+int generateNormalsFromMesh(GLfloat * vertbuffer, GLfloat * normbuffer, GLuint * indices, GLuint indicecount, GLuint vertcount, int type){
 	//used http://devmaster.net/posts/6065/calculating-normals-of-a-mesh and darkplaces model_shared.c as a ref
 	int i;
 	for(i = 0; i < indicecount; i += 3 ){
@@ -69,7 +69,7 @@ int generateNormalsFromMesh(GLfloat * vertbuffer, GLfloat * normbuffer, GLuint *
 		normal[1] = v1[2] * v2[0] - v2[2] * v1[0];
 		normal[2] = v1[0] * v2[1] - v2[0] * v1[1];
 		//if dontwant to do area weighting, normalize now
-		if(!areaweighting){
+		if(!type){
 			float length;
 			length = sqrt((normal[0] * normal[0]) + (normal[1] * normal[1]) + (normal[2] * normal[2]));
 			normal[0] /= length;
@@ -88,8 +88,24 @@ int generateNormalsFromMesh(GLfloat * vertbuffer, GLfloat * normbuffer, GLuint *
 		}
 	}
 	//go through and renormalize
+	if(type ==1){
+		for(i = 0; i < vertcount; i++){
+			float * normal = &normbuffer[i*3];
+			float length;
+			length = sqrt((normal[0] * normal[0]) + (normal[1] * normal[1]) + (normal[2] * normal[2]));
+			normal[0] /= length;
+			normal[1] /= length;
+			normal[2] /= length;
+		}
+	}
+	return TRUE;
+}
+int normalizeNormalsFromInterleavedMesh(GLfloat * interleavedbuffer, GLuint vertcount, int stride){
+	if(stride < 5) return FALSE;
+	int i;
 	for(i = 0; i < vertcount; i++){
-		float * normal = &normbuffer[i*3];
+		//todo set up something to have a varialbe offset
+		float * normal = &interleavedbuffer[(i*stride)+3];
 		float length;
 		length = sqrt((normal[0] * normal[0]) + (normal[1] * normal[1]) + (normal[2] * normal[2]));
 		normal[0] /= length;
@@ -98,7 +114,7 @@ int generateNormalsFromMesh(GLfloat * vertbuffer, GLfloat * normbuffer, GLuint *
 	}
 	return TRUE;
 }
-int generateNormalsFromInterleavedMesh(GLfloat * interleavedbuffer, GLuint * indices, GLuint indicecount, GLuint vertcount, int stride, int areaweighting){
+int generateNormalsFromInterleavedMesh(GLfloat * interleavedbuffer, GLuint * indices, GLuint indicecount, GLuint vertcount, int stride, int type){
 	//used http://devmaster.net/posts/6065/calculating-normals-of-a-mesh and darkplaces model_shared.c as a ref
 	if(stride < 5) return FALSE;
 	int i;
@@ -119,7 +135,7 @@ int generateNormalsFromInterleavedMesh(GLfloat * interleavedbuffer, GLuint * ind
 		n[1] = v1[2] * v2[0] - v2[2] * v1[0];
 		n[2] = v1[0] * v2[1] - v2[0] * v1[1];
 		//if dontwant to do area weighting, normalize now
-		if(!areaweighting){
+		if(!type){ // type 0, no area weighting
 			float length;
 			length = sqrt((n[0] * n[0]) + (n[1] * n[1]) + (n[2] * n[2]));
 			n[0] /= length;
@@ -138,17 +154,64 @@ int generateNormalsFromInterleavedMesh(GLfloat * interleavedbuffer, GLuint * ind
 		}
 	}
 	//go through and renormalize
-	for(i = 0; i < vertcount; i++){
-		//todo set up something to have a varialbe offset
-		float * normal = &interleavedbuffer[(i*stride)+3];
-		float length;
-		length = sqrt((normal[0] * normal[0]) + (normal[1] * normal[1]) + (normal[2] * normal[2]));
-		normal[0] /= length;
-		normal[1] /= length;
-		normal[2] /= length;
-	}
+	if(type == 1) normalizeNormalsFromInterleavedMesh(interleavedbuffer, vertcount, stride);
 	return TRUE;
 }
+int meshDecimate(GLfloat * interleavedbuffer, GLuint * indices, GLuint indicecount, GLuint vertcount, int stride, float cutdistance){
+	if(stride < 5) return FALSE;
+	GLuint * newindices = malloc(sizeof(GLuint)*indicecount);
+	memcpy(newindices, indices, sizeof(GLuint) *indicecount);
+	int i;
+	for(i = 0; i < indicecount; i += 3 ){
+		int m;
+		for(m = 0; m<3; m++){
+			int first = i+m;
+			int second = i + ((m+1) % 3);
+			//todo set up something to have a varialbe offset
+			float *p1 = &interleavedbuffer[(indices[first]*stride)+3];
+			float *p2 = &interleavedbuffer[(indices[second]*stride)+3];
+
+			float diff[3];
+			diff[0] = p1[0]-p2[0];
+			diff[1] = p1[1]-p2[1];
+			diff[2] = p1[2]-p2[2];
+			float dist = (diff[0] *diff[0]) + (diff[1] * diff[1]) + (diff[2] * diff[2]);
+			if(dist > cutdistance){
+				float l1 = (p1[0] * p1[0]) + (p1[1] * p1[1]) + (p1[2] * p1[2]);
+				float l2 = (p2[0] * p2[0]) + (p2[1] * p2[1]) + (p2[2] * p2[2]);
+				int replace;
+				int test;
+				if(l1>l2){
+					replace = indices[first];
+					test = indices[second];
+				} else {
+					replace = indices[second];
+					test = indices[first];
+				}
+				int k;
+				for(k = 0; k < indicecount; k++){
+					//loop through all triangles, make any verts be other verts
+					if(indices[k] == test) newindices[k] = replace;
+				}
+			}
+		}
+	}
+	indices = realloc(indices, sizeof(GLuint)*indicecount*2);
+	//loop through all triangles, make sure the triangles are actually full
+	int count = 0;
+	for(i = 0; i < indicecount; i += 3 ){
+		if(newindices[i] != newindices[i+1] && newindices[i+1] != newindices[i+2] && newindices[i+2] != newindices[i]){
+			indices[count+indicecount] = newindices[i];
+			indices[count+1+indicecount] = newindices[i+1];
+			indices[count+2+indicecount] = newindices[i+2];
+			count+=3;
+		}
+	}
+	free(newindices);
+	indices = realloc(indices, (count+indicecount) * sizeof(GLuint));
+	return count;
+}
+
 
 int loadModelOBJ(model_t * m, char * filename){//todo flags
 	unsigned int vertcount = 0;
