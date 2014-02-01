@@ -10,12 +10,12 @@
 #include "SDL.h"
 int texturesOK = 0;
 int texturegroupnumber = 0; // first one is error one
-texturegroup_t *texturegrouplist; //todo have a sperate dynamic and static lists
+texturegroup_t **texturegrouplist; //todo have a sperate dynamic and static lists
 
 int initTextureSystem(void){
 	if(texturegrouplist) free(texturegrouplist);
-	texturegrouplist = malloc(texturegroupnumber * sizeof(texturegroup_t));
-	if(!texturegrouplist) memset(texturegrouplist, 0, texturegroupnumber * sizeof(texturegroup_t));
+	texturegrouplist = malloc(texturegroupnumber * sizeof(texturegroup_t *));
+	if(!texturegrouplist) memset(texturegrouplist, 0, texturegroupnumber * sizeof(texturegroup_t *));
 	addTextureGroupToList(createTextureGroup("default", 0));
 	//todo error checking
 	texturesOK = TRUE;
@@ -32,18 +32,20 @@ texturegroup_t createTextureGroup(char * name, int num){
 }
 
 texturegroup_t * addTextureGroupToList(texturegroup_t texgroup){
+	texturegroup_t * pointtexgroup = malloc(sizeof(texturegroup_t));
+	*pointtexgroup = texgroup;
 	int current = texturegroupnumber;
 	texturegroupnumber++;
-	texturegrouplist = realloc(texturegrouplist, texturegroupnumber*sizeof(texturegroup_t));
-	texturegrouplist[current] = texgroup;
-	return &texturegrouplist[current];
+	texturegrouplist = realloc(texturegrouplist, texturegroupnumber*sizeof(texturegroup_t *));
+	texturegrouplist[current] = pointtexgroup;
+	return pointtexgroup;
 }
 texturegroup_t * findTextureGroupByName(char * name){
 	int i;
 	for(i = 0; i < texturegroupnumber; i++){
-		if(!strcmp(name, texturegrouplist[i].name)) return &texturegrouplist[i];
+		if(!strcmp(name, texturegrouplist[i]->name)) return texturegrouplist[i];
 	}
-	return &texturegrouplist[0];
+	return texturegrouplist[0];
 }
 //todo something to load all textures for group *name
 texture_t loadTexture(char * filepath, char type){
@@ -92,18 +94,18 @@ int deleteTexture(texture_t texture){
 	return TRUE; // todo return something useful
 }
 
-int deleteTextureGroup(texturegroup_t texgroup){
+int deleteTextureGroup(texturegroup_t * texgroup){
 	//todo method for replacing... like particlemanager.
 	int i;
-	for(i = 0; i < texgroup.num; i++){
-		deleteTexture(texgroup.textures[i]);
+	for(i = 0; i < texgroup->num; i++){
+		deleteTexture(texgroup->textures[i]);
 	}
-	texgroup.num = 0;
-	free(texgroup.textures);
-	texgroup.textures = 0;
-	free(texgroup.name);
-	texgroup.name = 0;
-//	free(texgroup);
+	texgroup->num = 0;
+	free(texgroup->textures);
+	texgroup->textures = 0;
+	free(texgroup->name);
+	texgroup->name = 0;
+	free(texgroup);
 	//todo return false if some sort of error
 	return i;
 }

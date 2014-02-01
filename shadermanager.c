@@ -10,40 +10,42 @@
 
 int shadersOK = 0;
 int programnumber = 0; //the first is an error one
-shaderprogram_t *programlist;
+shaderprogram_t **programlist;
 
 int initShaderSystem(void){
 	shaderprogram_t none = {"default", 0, 0, 0};
 	if(programlist) free(programlist);
-	programlist = malloc(1 * sizeof(shaderprogram_t));
-	if(!programlist) memset(programlist, 0 , 1 * sizeof(shaderprogram_t));
+	programlist = malloc(programnumber * sizeof(shaderprogram_t *));
+	if(!programlist) memset(programlist, 0 , programnumber * sizeof(shaderprogram_t *));
 	addProgramToList(none);
 	shadersOK = TRUE;
 	return TRUE; // todo error check
 }
 shaderprogram_t * addProgramToList(shaderprogram_t prog){
+	shaderprogram_t * pointprog = malloc(sizeof(shaderprogram_t));
+	*pointprog = prog;
 	int current = programnumber;
 	programnumber++;
-	programlist = realloc(programlist, programnumber*sizeof(shaderprogram_t));
+	programlist = realloc(programlist, programnumber*sizeof(shaderprogram_t * ));
 //	programlist[current].id = prog.id;
 //	programlist[current].vertexid = prog.vertexid;
 //	programlist[current].fragmentid = prog.fragmentid;
 //	programlist[current].name = malloc(sizeof(*prog.name));
 //	strcpy(programlist[current].name, prog.name);
-	programlist[current] = prog;
+	programlist[current] = pointprog;
 
-	return &programlist[current];
+	return pointprog;
 }
 shaderprogram_t * returnShader(int id){
-	if(id >= programnumber) return &programlist[0];
-	return & programlist[id];
+	if(id >= programnumber) return programlist[0];
+	return programlist[id];
 }
 shaderprogram_t * findProgramByName(char * name){
 	int i;
 	for(i = 0; i<programnumber; i++){
-		if(!strcmp(name, programlist[i].name)) return &programlist[i];
+		if(!strcmp(name, programlist[i]->name)) return programlist[i];
 	}
-	return &programlist[0]; // return first one
+	return programlist[0]; // return first one
 }
 
 shaderprogram_t createAndLoadShader(char * name){

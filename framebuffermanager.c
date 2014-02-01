@@ -8,28 +8,30 @@
 
 int fbnumber = 0; //the first is an error one/screen
 int framebuffersOK = 0;
-framebuffer_t *fblist;
+framebuffer_t **fblist;
 
 int initFrameBufferSystem(void){
 	//todo have it figure out screen aspect for the default
 			//	name	id	width	height	aspect	fov	texid
 	framebuffer_t screen = {"default"	,0 	,0	,0	,1	,0	,0	};
 	if(fblist) free(fblist);
-	fblist = malloc(fbnumber * sizeof(framebuffer_t));
-	if(!fblist) memset(fblist, 0 , fbnumber * sizeof(framebuffer_t));
+	fblist = malloc(fbnumber * sizeof(framebuffer_t *));
+	if(!fblist) memset(fblist, 0 , fbnumber * sizeof(framebuffer_t *));
 	addFrameBufferToList(screen);
-	defaultFrameBuffer = &fblist[0];
+	defaultFrameBuffer = fblist[0];
 	framebuffersOK = TRUE;
 	return TRUE; // todo error check
 }
-framebuffer_t *  addFrameBufferToList(framebuffer_t fb){ //todo have this return a framebuffer pointa
+framebuffer_t * addFrameBufferToList(framebuffer_t fb){ //todo have this return a framebuffer pointa
+	framebuffer_t * pointfb = malloc(sizeof(framebuffer_t));
+	*pointfb = fb;
 	int current = fbnumber;
 	fbnumber++;
-	fblist = realloc(fblist, fbnumber * sizeof(framebuffer_t));
-	fblist[current] = fb;
+	fblist = realloc(fblist, fbnumber * sizeof(framebuffer_t *));
+	fblist[current] = pointfb;
 	//fblist[current].name = malloc(sizeof(*fb.name));
 	//strcpy(fblist[current].name, fb.name);
-	return &fblist[current];
+	return pointfb;
 }
 /*
 framebuffer_t createFrameBuffer (char * name){
@@ -37,15 +39,15 @@ framebuffer_t createFrameBuffer (char * name){
 }
 */
 framebuffer_t * returnFrameBuffer(int id){
-	if(id >= fbnumber) return &fblist[0];
-	return &fblist[id];
+	if(id >= fbnumber) return fblist[0];
+	return fblist[id];
 }
 framebuffer_t * findFrameBufferByName(char * name){
 	int i;
 	for(i = 0; i<fbnumber; i++){
-		if(!strcmp(name, fblist[i].name)) return &fblist[i];
+		if(!strcmp(name, fblist[i]->name)) return fblist[i];
 	}
-	return &fblist[0];
+	return fblist[0];
 }
 
 /*

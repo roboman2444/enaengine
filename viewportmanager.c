@@ -11,7 +11,7 @@
 
 int vpnumber = 0; //the first is an error one/screen
 int viewportsOK = 0;
-viewport_t *vplist;
+viewport_t **vplist;
 
 int initViewportSystem(void){
 	//todo have it figure out screen aspect for the default
@@ -19,21 +19,23 @@ int initViewportSystem(void){
 //	viewport_t screen = {"default"	,0 	,1.0	, 90.0, 	0};
 	viewport_t screen = createViewport("default");
 	if(vplist) free(vplist);
-	vplist = malloc(vpnumber * sizeof(viewport_t));
-	if(!vplist) memset(vplist, 0 , vpnumber * sizeof(viewport_t));
+	vplist = malloc(vpnumber * sizeof(viewport_t *));
+	if(!vplist) memset(vplist, 0 , vpnumber * sizeof(viewport_t *));
 	addViewportToList(screen);
-	defaultViewport = &vplist[0];
+	defaultViewport = vplist[0];
 	viewportsOK = TRUE;
 	return TRUE; // todo error check
 }
 viewport_t *  addViewportToList(viewport_t vp){ //todo have this return a viewport pointa
+	viewport_t *pointvp = malloc(sizeof(viewport_t));
+	*pointvp = vp;
 	int current = vpnumber;
 	vpnumber++;
-	vplist = realloc(vplist, vpnumber * sizeof(viewport_t));
-	vplist[current] = vp;
+	vplist = realloc(vplist, vpnumber * sizeof(viewport_t*));
+	vplist[current] = pointvp;
 	//vplist[current].name = malloc(sizeof(*vp.name));
 	//strcpy(vplist[current].name, vp.name);
-	return &vplist[current];
+	return pointvp;
 }
 
 viewport_t * createAndAddViewport(char * name){
@@ -41,15 +43,15 @@ viewport_t * createAndAddViewport(char * name){
 }
 
 viewport_t * returnViewport(int id){
-	if(id >= vpnumber) return &vplist[0];
-	return &vplist[id];
+	if(id >= vpnumber) return vplist[0];
+	return vplist[id];
 }
 viewport_t * findViewportByName(char * name){
 	int i;
 	for(i = 0; i<vpnumber; i++){
-		if(!strcmp(name, vplist[i].name)) return &vplist[i];
+		if(!strcmp(name, vplist[i]->name)) return vplist[i];
 	}
-	return &vplist[0];
+	return vplist[0];
 }
 void recalcViewMatrix(viewport_t * v){
 /*	Matrix4x4_CreateIdentity(&v->view);
