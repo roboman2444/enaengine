@@ -107,6 +107,7 @@ int glDrawModel(model_t * model, matrix4x4_t * modworld){
 	Matrix4x4_ToArrayFloatGL(modworld, out);
 	glUniformMatrix4fv(modelmat4, 1, GL_FALSE, out);
 	glBindVertexArray(model->vbo->vaoid);
+//	glDrawElements(GL_TRIANGLES, model->numfaces[1]*3, GL_UNSIGNED_INT, (void*)(model->numfaces[0]*3*sizeof(GLuint)));
 	glDrawElements(GL_TRIANGLES, model->vbo->numfaces*3, GL_UNSIGNED_INT, 0);
 	return model->vbo->numfaces;
 }

@@ -4,8 +4,11 @@
 typedef struct model_s {
 	char * name;
 	texturegroup_t * texture;
-	vbo_t * vbo;// maybe not
+	vbo_t * vbo;
 	char type; // maybe not
+//	GLuint * numfaces;
+//	GLuint numlod;
+//	GLuint numverts;
 }model_t;
 
 /* types of models ... i should do enums for these

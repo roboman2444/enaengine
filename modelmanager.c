@@ -157,10 +157,12 @@ int generateNormalsFromInterleavedMesh(GLfloat * interleavedbuffer, GLuint * ind
 	if(type < 2) normalizeNormalsFromInterleavedMesh(interleavedbuffer, vertcount, stride);
 	return TRUE;
 }
-int meshDecimate(GLfloat * interleavedbuffer, GLuint * indices, GLuint indicecount, GLuint vertcount, int stride, float cutdistance){
+//todo maybe instead of sampling from indices, sample from newindices
+//if i dont, it may cause some "resetting" issues.
+GLuint * meshDecimate(GLfloat * interleavedbuffer, GLuint * indices, GLuint indicecount, GLuint vertcount, int stride, float cutdistance, GLuint * returncount){
 	if(stride < 5) return FALSE;
 	GLuint * newindices = malloc(sizeof(GLuint)*indicecount);
-	memcpy(newindices, indices, sizeof(GLuint) *indicecount);
+	memcpy(newindices, indices,  sizeof(GLuint)*indicecount);
 	int i;
 	for(i = 0; i < indicecount; i += 3 ){
 		int m;
@@ -209,7 +211,8 @@ int meshDecimate(GLfloat * interleavedbuffer, GLuint * indices, GLuint indicecou
 	}
 	free(newindices);
 	indices = realloc(indices, (count+indicecount) * sizeof(GLuint));
-	return count;
+	*returncount = (count + indicecount)/3;
+	return indices;
 }
 
 
@@ -389,9 +392,17 @@ int loadModelOBJ(model_t * m, char * filename){//todo flags
 //		consolePrintf("Generating vertex normals for Model %s with area weighting\n", filename);
 		consolePrintf("Generating vertex normals for Model %s\n", filename);
 		generateNormalsFromInterleavedMesh(interleavedbuffer, indicebuffer, facecount*3, vertcount, 8 , 0);
-
 	}
+//	m->numfaces = malloc(sizeof(GLuint)*2);
+//	m->numlod = 2;
+//	m->numfaces[0] = facecount;
+//	GLuint totalface;
+//	indicebuffer = meshDecimate(interleavedbuffer, indicebuffer, facecount*3, vertcount, 8 , 0.0001, &totalface);
+//	m->numfaces[1] = totalface;
+//	consolePrintf("Model %s has %d total triangles for LOD\n", filename, totalface);
 
+
+//	normalizeNormalsFromInterleavedMesh(interleavedbuffer, vertcount, 8);
 
 
 	m->vbo = createAndAddVBO(m->name, m->type);
@@ -434,7 +445,8 @@ int loadModelOBJ(model_t * m, char * filename){//todo flags
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,m->vbo->indicesid);
 //	glBufferData(GL_ELEMENT_ARRAY_BUFFER,sizeof(*indicebuffer), indicebuffer, GL_STATIC_DRAW);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER,facecount * 3 *sizeof(GLint), indicebuffer, GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER,facecount * 3 *sizeof(GLuint), indicebuffer, GL_STATIC_DRAW);
+//	glBufferData(GL_ELEMENT_ARRAY_BUFFER,totalface * 3 *sizeof(GLuint), indicebuffer, GL_STATIC_DRAW);
 //	glBufferData(GL_ELEMENT_ARRAY_BUFFER,6 * sizeof(GLint), muhindices, GL_STATIC_DRAW);
 	m->vbo->numfaces = facecount;
 
