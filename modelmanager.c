@@ -50,7 +50,7 @@ model_t * createAndAddModel(char * name){
 //	return &modellist[addModelToList(createAndLoadModel(name))];
 }
 
-int generateNormalsFromMesh(GLfloat * vertbuffer, GLfloat * normbuffer, GLuint * indices, GLuint indicecount, GLuint vertcount, int type){
+int generateNormalsFromMesh(GLfloat * vertbuffer, GLfloat * normbuffer, GLuint * indices, GLuint indicecount, GLuint vertcount, char type){
 	//used http://devmaster.net/posts/6065/calculating-normals-of-a-mesh and darkplaces model_shared.c as a ref
 	int i;
 	for(i = 0; i < indicecount; i += 3 ){
@@ -88,7 +88,7 @@ int generateNormalsFromMesh(GLfloat * vertbuffer, GLfloat * normbuffer, GLuint *
 		}
 	}
 	//go through and renormalize
-	if(type ==1){
+	if(type <2){
 		for(i = 0; i < vertcount; i++){
 			float * normal = &normbuffer[i*3];
 			float length;
@@ -114,7 +114,7 @@ int normalizeNormalsFromInterleavedMesh(GLfloat * interleavedbuffer, GLuint vert
 	}
 	return TRUE;
 }
-int generateNormalsFromInterleavedMesh(GLfloat * interleavedbuffer, GLuint * indices, GLuint indicecount, GLuint vertcount, int stride, int type){
+int generateNormalsFromInterleavedMesh(GLfloat * interleavedbuffer, GLuint * indices, GLuint indicecount, GLuint vertcount, int stride, char type){
 	//used http://devmaster.net/posts/6065/calculating-normals-of-a-mesh and darkplaces model_shared.c as a ref
 	if(stride < 5) return FALSE;
 	int i;
@@ -154,7 +154,7 @@ int generateNormalsFromInterleavedMesh(GLfloat * interleavedbuffer, GLuint * ind
 		}
 	}
 	//go through and renormalize
-	if(type == 1) normalizeNormalsFromInterleavedMesh(interleavedbuffer, vertcount, stride);
+	if(type < 2) normalizeNormalsFromInterleavedMesh(interleavedbuffer, vertcount, stride);
 	return TRUE;
 }
 int meshDecimate(GLfloat * interleavedbuffer, GLuint * indices, GLuint indicecount, GLuint vertcount, int stride, float cutdistance){
