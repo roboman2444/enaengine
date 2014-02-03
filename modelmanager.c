@@ -13,6 +13,7 @@
 int modelsOK = 0;
 int modelnumber = 0;
 model_t **modellist;
+model_t * defaultModel;
 
 char *statictypes[] = {".obj"}; //todo filesys
 char *animtypes[] = {".dpm"}; //todo filesys //todo
@@ -23,7 +24,7 @@ int initModelSystem(void){
 	if(modellist) free(modellist);
 	modellist = malloc(modelnumber * sizeof(model_t *));
 	if(!modellist) memset(modellist, 0 , modelnumber * sizeof(model_t *));
-	addModelToList(none);
+	defaultModel = addModelToList(none);
 	modelsOK = TRUE;
 	return TRUE;
 }

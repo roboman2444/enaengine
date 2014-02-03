@@ -23,6 +23,8 @@ typedef struct model_s {
 int modelsOK;
 int modelnumber;
 
+model_t * defaultModel;
+
 
 model_t * addModelToList(model_t model);
 int initModelSystem(void);

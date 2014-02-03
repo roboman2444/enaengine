@@ -11,12 +11,13 @@
 int texturesOK = 0;
 int texturegroupnumber = 0; // first one is error one
 texturegroup_t **texturegrouplist; //todo have a sperate dynamic and static lists
+texturegroup_t * defaultTextureGroup;
 
 int initTextureSystem(void){
 	if(texturegrouplist) free(texturegrouplist);
 	texturegrouplist = malloc(texturegroupnumber * sizeof(texturegroup_t *));
 	if(!texturegrouplist) memset(texturegrouplist, 0, texturegroupnumber * sizeof(texturegroup_t *));
-	addTextureGroupToList(createTextureGroup("default", 0));
+	defaultTextureGroup = addTextureGroupToList(createTextureGroup("default", 0));
 	//todo error checking
 	texturesOK = TRUE;
 	return TRUE;

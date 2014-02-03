@@ -9,6 +9,7 @@
 int fbnumber = 0; //the first is an error one/screen
 int framebuffersOK = 0;
 framebuffer_t **fblist;
+framebuffer_t * defaultFrameBuffer;
 
 int initFrameBufferSystem(void){
 	//todo have it figure out screen aspect for the default
@@ -17,8 +18,7 @@ int initFrameBufferSystem(void){
 	if(fblist) free(fblist);
 	fblist = malloc(fbnumber * sizeof(framebuffer_t *));
 	if(!fblist) memset(fblist, 0 , fbnumber * sizeof(framebuffer_t *));
-	addFrameBufferToList(screen);
-	defaultFrameBuffer = fblist[0];
+	defaultFrameBuffer = addFrameBufferToList(screen);
 	framebuffersOK = TRUE;
 	return TRUE; // todo error check
 }

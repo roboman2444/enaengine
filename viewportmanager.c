@@ -12,6 +12,7 @@
 int vpnumber = 0; //the first is an error one/screen
 int viewportsOK = 0;
 viewport_t **vplist;
+viewport_t * defaultViewport;
 
 int initViewportSystem(void){
 	//todo have it figure out screen aspect for the default
@@ -21,8 +22,7 @@ int initViewportSystem(void){
 	if(vplist) free(vplist);
 	vplist = malloc(vpnumber * sizeof(viewport_t *));
 	if(!vplist) memset(vplist, 0 , vpnumber * sizeof(viewport_t *));
-	addViewportToList(screen);
-	defaultViewport = vplist[0];
+	defaultViewport = addViewportToList(screen);
 	viewportsOK = TRUE;
 	return TRUE; // todo error check
 }

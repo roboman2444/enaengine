@@ -19,6 +19,7 @@ typedef struct shaderprogram_s
 
 int shadersOK;
 int programnumber;
+shaderprogram_t * defaultShader;
 
 int initShaderSystem(void);
 //loads a shader pair from files name.frag and name.vert, compiles, links, adds to the list

@@ -44,8 +44,6 @@ int texturesOK;
 int texturegroupnumber;
 
 
-texturegroup_t * defaultTexture;//todo
-
 texturegroup_t * defaultTextureGroup;//todo
 
 texturegroup_t * findTextureGroupByName(char * name);

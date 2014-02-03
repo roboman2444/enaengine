@@ -11,13 +11,14 @@
 int shadersOK = 0;
 int programnumber = 0; //the first is an error one
 shaderprogram_t **programlist;
+shaderprogram_t * defaultShader;
 
 int initShaderSystem(void){
 	shaderprogram_t none = {"default", 0, 0, 0};
 	if(programlist) free(programlist);
 	programlist = malloc(programnumber * sizeof(shaderprogram_t *));
 	if(!programlist) memset(programlist, 0 , programnumber * sizeof(shaderprogram_t *));
-	addProgramToList(none);
+	defaultShader = addProgramToList(none);
 	shadersOK = TRUE;
 	return TRUE; // todo error check
 }
