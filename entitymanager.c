@@ -1,7 +1,6 @@
-//gloabl includes
-#include <GL/glew.h>
+//global includes
+#include <GL/glew.h> //may be unneeded
 #include <GL/gl.h>
-
 //local includes
 #include "globaldefs.h"
 #include "matrixlib.h"
@@ -37,22 +36,30 @@ entity_t * addEntityToList(entity_t entity){ //todo have this return a entity po
 	//strcpy(entitylist[current].name, entity.name);
 	return pointentity;
 }
-
 entity_t createEntity(char * name){
 	entity_t newent;
 	newent.type = 0;
 	newent.name = malloc(strlen(name)+1);
 	strcpy(newent.name, name);
-//	newent.pos = {0.0, 0.0, 0.0};
-//	newent.angle = {0.0, 0.0, 0.0};
+	int i;
+	for(i = 0; i<3; i++){
+		newent.pos[i]=0.0;
+		newent.vel[i]=0.0;
+		newent.angle[i]=0.0;
+		newent.anglevel[i]=0.0;
+	}
 	newent.model = defaultModel;
 	newent.texturegroup = defaultTextureGroup;
-	newent.scale = 0;
+	newent.scale = 1.0;
+	newent.touch = 0;
+	newent.think = 0;
+	newent.spawn = 0;
+	newent.nextthink = 0;
+	newent.needsmatupdate = FALSE;
 	Matrix4x4_CreateFromQuakeEntity(&newent.mat, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0);
 	return newent;
 //todo
 }
-
 entity_t * returnEntity(int id){
 	if(id >= entitynumber) return entitylist[0];
 	return entitylist[id];

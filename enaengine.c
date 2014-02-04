@@ -6,6 +6,7 @@
 #include "glmanager.h"
 #include "sdlmanager.h"
 #include "console.h"
+#include "gamecodemanager.h"
 
 //main
 
@@ -18,19 +19,32 @@ int main(int argc, char *argv[]){
 	if(glInit()){
 		consolePrintf("opengl has initailized correctly\n");
 	}
+	initGameCodeSystem();
+	if(gamecodeOK){
+		consolePrintf("gamecode has initailized correctly\n");
+	}
 //	printConsoleBackwards();
 	to = SDL_GetTicks();
+
+	unsigned int timesincelastfpsupdate = 0;
+	unsigned int accum = 0;
 	while(TRUE){
-		glMainDraw();
-		framecount++;
-		if(framecount == 1000){
-			t = SDL_GetTicks();
-			consolePrintf("%f fps\n", 1000000.0f/(t-to));
-			to = t;
+		t = SDL_GetTicks();
+		unsigned int delta = t-to;
+		to = t;
+		timesincelastfpsupdate += delta;
+		if(timesincelastfpsupdate > 10000){
+			consolePrintf("%f fps\n", (float)framecount*1000.0/(float)timesincelastfpsupdate);
+			timesincelastfpsupdate = 0;
 			framecount = 0;
 		}
-		//main loop
-	//	return FALSE;
+		accum+= delta;
+		while(accum>GCTIMESTEP){
+			gameCodeTick();
+			accum-=GCTIMESTEP;
+		}
+		glMainDraw();
+		framecount++;
 	}
 	return FALSE;
 }
