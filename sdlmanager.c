@@ -22,6 +22,17 @@ int resizeWindow(int width, int height, int bpp, int debugmode){
 	}
 	return TRUE;
 }
+int setMSAA(int samples){
+	if(!samples){
+		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 0);
+		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 0);
+	}
+	else{
+		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
+		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 16);
+	}
+	return samples;
+}
 int sdlInit(int width, int height, int bpp, int debugmode){
 	if(debugmode) consolePrintf("DEBUG -- SDL window initializing \n");
 	if(SDL_Init(SDL_INIT_VIDEO)<0){
@@ -38,6 +49,7 @@ int sdlInit(int width, int height, int bpp, int debugmode){
 	else			    videoFlags |= SDL_SWSURFACE;
 	if(videoInfo->blit_hw) 	    videoFlags |= SDL_HWACCEL;
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+	setMSAA(16);
 	return resizeWindow(width, height, bpp, debugmode);
 }
 void swapBuffers(void){

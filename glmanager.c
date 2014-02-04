@@ -77,6 +77,12 @@ int glInit(void){
 	createAndAddModel("coil");
 //	tcoil = addTextureGroupToList(createAndLoadTextureGroup("coil"));
 
+
+	glEnable(GL_MULTISAMPLE);
+	glHint(GL_LINE_SMOOTH_HINT, GL_NICEST );
+	glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST );
+	glEnable(GL_LINE_SMOOTH);
+	glEnable(GL_POLYGON_SMOOTH);
 	glClearDepth(1.0);
 	glClearColor(0.0, 0.0, 0.0, 0.0);
 	glDisable(GL_FOG);
