@@ -10,6 +10,9 @@
 #include "SDL.h"
 int texturesOK = 0;
 int texturegroupnumber = 0; // first one is error one
+
+#define NUMNAMES 5
+#define NUMFILES 5
 texturegroup_t **texturegrouplist; //todo have a sperate dynamic and static lists
 texturegroup_t * defaultTextureGroup;
 
@@ -130,11 +133,11 @@ texturegroup_t createAndLoadTextureGroup(char * name){
 	texgroup.name = malloc(strlen(name)+1);
 	strcpy(texgroup.name, name);
 	//todo filesys
-	char * filename = malloc(200); //max size of 200
+	char * filename = malloc(strlen(name)+15); //max size
 	int n, f;
 	struct stat s;
-	for(n = 0; n < sizeof(nametypes) && nametypes[n]; n++){
-		for(f = 0; f < sizeof(filetypes) && filetypes[f]; f++){
+	for(n = 0; n < NUMNAMES && nametypes[n]; n++){
+		for(f = 0; f < NUMFILES && filetypes[f]; f++){
 			//do i need to clear the string?
 			sprintf(filename, "%s%s%s", name, nametypes[n], filetypes[f]);
 			if(!stat(filename, &s)){ //dont actually need it
@@ -150,4 +153,27 @@ texturegroup_t createAndLoadTextureGroup(char * name){
 	}
 	free(filename);
 	return texgroup;
+}
+
+int bindTextureGroup(texturegroup_t * texturegroup){
+	int count, i;
+	texture_t * texturespointer = texturegroup->textures;
+	if(!texturespointer) return FALSE;
+	for(i = 0; i < texturegroup->num; i++){
+		switch(texturespointer[i].type){
+			//atm only model textures todo
+			case 0: continue; break;
+			case 1: glActiveTexture(GL_TEXTURE0);break;
+			case 2: glActiveTexture(GL_TEXTURE1);break;
+			case 3: glActiveTexture(GL_TEXTURE2);break;
+			case 4: glActiveTexture(GL_TEXTURE3);break;
+			case 5: glActiveTexture(GL_TEXTURE4);break;
+			case 10: continue; break;
+			default: continue; break;
+		}
+		count++;
+		glBindTexture(GL_TEXTURE_2D, texturespointer[i].id);
+	}
+	glActiveTexture(GL_TEXTURE0);
+	return count;
 }

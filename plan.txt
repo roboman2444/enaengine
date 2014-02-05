@@ -160,3 +160,22 @@ order of me doing things
 	more advanced physics
 	more advanced rendering (shadows, env maps, etc)
 	more advanced networking (client side physics processing, client side hit detection, client side interpolation, server update queing)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+misc notes
+
+Shader permutations has to take into account things with only diffuse maps or etc.
+	That way i can bound all diffuse maps into 0, all normals into 1, all spec into 2, etc.
+	But, if a model only has a diffuse and a normal, it wont try to shade its normals with the previous model's specular maps

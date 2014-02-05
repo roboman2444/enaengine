@@ -14,6 +14,8 @@ int modelsOK = 0;
 int modelnumber = 0;
 model_t **modellist;
 model_t * defaultModel;
+#define NUMSTATIC 1
+#define NUMANIM 1
 
 char *statictypes[] = {".obj"}; //todo filesys
 char *animtypes[] = {".dpm"}; //todo filesys //todo
@@ -468,7 +470,7 @@ model_t createAndLoadModel(char * name){
 	char * filename = malloc(200); //todo filesys and define a size
 	struct stat s;
 	int n;
-	for(n = 0; n < sizeof(statictypes) &&  statictypes[n]; n++){
+	for(n = 0; n < NUMSTATIC &&  statictypes[n]; n++){
 		sprintf(filename, "%s%s", name, statictypes[n]);
 		if(!stat(filename, &s)){ //if file exists... i guess
 			if(!loadModelOBJ(&m, filename)){
@@ -480,7 +482,7 @@ model_t createAndLoadModel(char * name){
 			return m;
 		}
 	}
-	for(n = 0; n < sizeof(animtypes) &&  animtypes[n]; n++){
+	for(n = 0; n < NUMANIM &&  animtypes[n]; n++){
 		sprintf(filename, "%s%s", name, animtypes[n]);
 		if(!stat(filename, &s)){ //if file exists... i guess
 			//TODO CALL SOME SORTA LOADING FUNCTION... ANIMATED

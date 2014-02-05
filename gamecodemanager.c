@@ -29,18 +29,22 @@ int initGameCodeSystem(void){
 	entity_t entdragon = createEntity("dragon");
 		entdragon.type = 1;
 		entdragon.model = findModelByName("dragon");
+		entdragon.texturegroup = 0;
+
 	addEntityToList(entdragon);
 	entity_t entteapot = createEntity("teapot");
 		entteapot.type = 1;
 		entteapot.pos[0] = 10.0;
 		entteapot.needsmatupdate = TRUE;
 		entteapot.model = findModelByName("teapot");
+		entteapot.texturegroup = 0;
 	addEntityToList(entteapot);
 	entity_t entcoil = createEntity("coil");
 		entcoil.type = 1;
 		entcoil.pos[2] = 10.0;
 		entcoil.needsmatupdate = TRUE;
 		entcoil.model = findModelByName("coil");
+		entcoil.texturegroup = findTextureGroupByName("coil");
 	addEntityToList(entcoil);
 
 	entity_t enthat = createEntity("hat");
@@ -50,6 +54,7 @@ int initGameCodeSystem(void){
 		enthat.anglevel[0] = 360.0;
 		enthat.needsmatupdate = TRUE;
 		enthat.model = findModelByName("teapot");
+		enthat.texturegroup = 0;
 	addEntityToList(enthat);
 
 

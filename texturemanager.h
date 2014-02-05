@@ -58,6 +58,8 @@ texture_t loadTexture(char *filepath, char type);
 
 texturegroup_t createAndLoadTextureGroup(char *name);
 
+int bindTextureGroup(texturegroup_t * texgroup);
+
 int deleteTextureGroup(texturegroup_t * texgroup);
 
 int deleteTexture(texture_t texture);

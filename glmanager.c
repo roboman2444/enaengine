@@ -18,8 +18,8 @@
 #include <tgmath.h>
 
 
-texturegroup_t * tcoil;
-shaderprogram_t * staticmodel;
+//texturegroup_t * tcoil;
+shaderprogram_t * staticmodel, * staticmodeltextured;
 GLuint modelmat4, viewmat4, projectionmat4;
 float degnumber;
 	viewport_t cam;
@@ -64,6 +64,7 @@ int glInit(void){
 		 return FALSE;
 	}
 	staticmodel = createAndAddShader("staticmodel");
+//	staticmodeltextured = createAndAddShader("staticmodeltextured");
 //	glUseProgram(staticmodel->id);
 	modelmat4 = glGetUniformLocation(staticmodel->id, "modelMat");
 	if(modelmat4<0) consolePrintf("cant find uniform!\n");
@@ -71,11 +72,12 @@ int glInit(void){
 	if(viewmat4<0) consolePrintf("cant find uniform!\n");
 	projectionmat4 = glGetUniformLocation(staticmodel->id, "projectionMat");
 	if(projectionmat4<0) consolePrintf("cant find uniform!\n");
+
 //	createAndAddShader("console");
+	addTextureGroupToList(createAndLoadTextureGroup("coil"));
 	createAndAddModel("teapot");
 	createAndAddModel("dragon");
 	createAndAddModel("coil");
-//	tcoil = addTextureGroupToList(createAndLoadTextureGroup("coil"));
 
 
 	glEnable(GL_MULTISAMPLE);
@@ -99,7 +101,7 @@ int glInit(void){
 
 	cam = createViewport("cam");
 
-//	glEnable(GL_TEXTURE_2D);
+	glEnable(GL_TEXTURE_2D);
 //	glBindTexture(GL_TEXTURE_2D, tcoil->textures->id);
 //	consolePrintf("texture %s id: %i\n", tcoil->name, tcoil->textures->id);
 
@@ -122,6 +124,13 @@ int drawEntities(void){
 		entity_t *e = entitylist[i];
 		if(!e->type)continue;
 		if(!e->model)continue;
+		//todo sort and whatnot
+		if(e->texturegroup){
+			bindTextureGroup(e->texturegroup);
+//			glUseProgram(staticmodeltextured->id);
+		} else {
+			glUseProgram(staticmodel->id);
+		}
 		glDrawModel(e->model, &e->mat);
 		count++;
 	}
