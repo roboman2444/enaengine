@@ -46,6 +46,7 @@ int initGameCodeSystem(void){
 		enthat->needsmatupdate = TRUE;
 		enthat->model = createAndAddModel("teapot");
 		enthat->texturegroup = 0;
+	int tidhat = enthat->myid;
 	entity_t * entcoil = addEntityRPOINT("coil");
 		entcoil->type = 2;
 		entcoil->pos[2] = 10.0;
@@ -53,7 +54,8 @@ int initGameCodeSystem(void){
 		entcoil->needsmatupdate = TRUE;
 		entcoil->model = createAndAddModel("coil");
 		entcoil->texturegroup = 0;//findTextureGroupByName("coil");
-		entcoil->attachmentid = enthat->myid;
+		entcoil->attachmentid = tidhat;
+	int tidcoil = entcoil->myid;
 	entity_t * enttinydragon = addEntityRPOINT("tinydragon");
 		enttinydragon->type = 2;
 		enttinydragon->pos[1] = 3.0;
@@ -61,7 +63,9 @@ int initGameCodeSystem(void){
 		enttinydragon->needsmatupdate = TRUE;
 		enttinydragon->model = createAndAddModel("dragon");
 		enttinydragon->texturegroup = 0;//findTextureGroupByName("coil");
-		enttinydragon->attachmentid = entcoil->myid;
+		enttinydragon->attachmentid = tidcoil;
+
+	deleteEntity(tidhat);
 
 
 	gamecodeOK = TRUE;
@@ -69,6 +73,7 @@ int initGameCodeSystem(void){
 }
 
 int calcEntAttachMat(entity_t * e){ //return value is weather e->mat got changed
+	if(!e->type) return FALSE;
 	if(e->attachmentid){
 		entity_t * attacher = returnById(e->attachmentid);
 		if(!attacher){
@@ -80,7 +85,6 @@ int calcEntAttachMat(entity_t * e){ //return value is weather e->mat got changed
 //			Matrix4x4_CreateFromQuakeEntity(&tempmat, e->pos[0], e->pos[1], e->pos[2], e->angle[0], e->angle[1], e->angle[2], e->scale/attacher->scale);
 			Matrix4x4_CreateFromQuakeEntity(&tempmat, e->pos[0]/attacher->scale, e->pos[1]/attacher->scale, e->pos[2]/attacher->scale, e->angle[0], e->angle[1], e->angle[2], e->scale/attacher->scale);
 
-			//may need to swap order
 			Matrix4x4_Concat(&e->mat, &attacher->mat, &tempmat);
 			e->needsmatupdate = 2;
 			return TRUE;
@@ -110,7 +114,7 @@ int calcEntAttachMat(entity_t * e){ //return value is weather e->mat got changed
 		Matrix4x4_CreateFromQuakeEntity(&e->mat, e->pos[0], e->pos[1], e->pos[2], e->angle[0], e->angle[1], e->angle[2], e->scale);
 		e->needsmatupdate = 2;
 		return TRUE;
-	} // else implied
+	} else if(e->needsmatupdate) return TRUE;
 	return FALSE;
 }
 void gameCodeTick(void){ //todo maybe change to float in seconds

@@ -30,17 +30,21 @@ int deleteEntity(int id){
 	int entityindex = (id & 0xFFFF);
 	entity_t * ent = &entitylist[entityindex];
 	if(ent->myid != id) return FALSE;
-	ent->type = 0;
 	if(ent->name) free(ent->name);
-	ent->name = 0;
+	bzero(ent, sizeof(entity_t));
+//	ent->type = 0;
+//	ent->model = 0;
+//	ent->name = 0;
+//	ent->myid = 0;
 	if(entityindex < entityArrayFirstOpen) entityArrayFirstOpen = entityindex;
-	for(; entityArrayLastTaken > 0 && !entitylist[entityArrayFirstOpen].type; entityArrayLastTaken--);
+	for(; entityArrayLastTaken > 0 && !entitylist[entityArrayLastTaken].type; entityArrayLastTaken--);
 	return TRUE;
 }
 entity_t * returnById(int id){
 //	int entityspawncount = (id >> 16);
 	int entityindex = (id & 0xFFFF);
 	entity_t * ent = &entitylist[entityindex];
+	if(!ent->type) return FALSE;
 	if(ent->myid == id) return ent;
 	return FALSE;
 }
