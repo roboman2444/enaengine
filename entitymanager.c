@@ -27,10 +27,9 @@ int initEntitySystem(void){
 	return TRUE; // todo error check
 }
 int deleteEntity(int id){
-	int entityspawncount = (id >> 16);
 	int entityindex = (id & 0xFFFF);
 	entity_t * ent = &entitylist[entityindex];
-	if(ent->spawnnumber != entityspawncount) return FALSE;
+	if(ent->myid != id) return FALSE;
 	ent->type = 0;
 	if(ent->name) free(ent->name);
 	ent->name = 0;
@@ -39,10 +38,10 @@ int deleteEntity(int id){
 	return TRUE;
 }
 entity_t * returnById(int id){
-	int entityspawncount = (id >> 16);
+//	int entityspawncount = (id >> 16);
 	int entityindex = (id & 0xFFFF);
 	entity_t * ent = &entitylist[entityindex];
-	if(ent->spawnnumber == entityspawncount) return ent;
+	if(ent->myid == id) return ent;
 	return FALSE;
 }
 entity_t createEntity(char * name){
@@ -70,8 +69,8 @@ entity_t createEntity(char * name){
 	newent.texturegroup = defaultTextureGroup;
 	newent.scale = 1.0;
 	Matrix4x4_CreateFromQuakeEntity(&newent.mat, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0);
-	entitycount++;
-	newent.spawnnumber = entitycount;
+//	entitycount++;
+//	newent.spawncount = entitycount;
 	return newent;
 //todo
 }
@@ -85,20 +84,25 @@ int addEntityRINT(char * name){
 		entitylist = realloc(entitylist, entityArraySize * sizeof(entity_t));
 	}
 	entitylist[entityArrayFirstOpen] = createEntity(name);
-	if(entityArrayLastTaken < entityArrayFirstOpen) entityArrayLastTaken = entityArrayFirstOpen; //todo redo
-
 	int returnid = (entitycount << 16) | entityArrayFirstOpen;
+	entitylist[entityArrayFirstOpen].myid = returnid;
+
+	if(entityArrayLastTaken < entityArrayFirstOpen) entityArrayLastTaken = entityArrayFirstOpen; //todo redo
 	return returnid;
 }
 entity_t * addEntityRPOINT(char * name){
+	entitycount++;
 	for(; entityArrayFirstOpen < entityArraySize && entitylist[entityArrayFirstOpen].type; entityArrayFirstOpen++);
 	if(entityArrayFirstOpen == entityArraySize){	//resize
 		entityArraySize++;
 		entitylist = realloc(entitylist, entityArraySize * sizeof(entity_t));
 	}
 	entitylist[entityArrayFirstOpen] = createEntity(name);
+	int returnid = (entitycount << 16) | entityArrayFirstOpen;
+	entitylist[entityArrayFirstOpen].myid = returnid;
 	if(entityArrayLastTaken < entityArrayFirstOpen) entityArrayLastTaken = entityArrayFirstOpen;
-	printf("entityarraysize = %i\n", entityArraySize);
+//	printf("entityarraysize = %i\n", entityArraySize);
+//	printf("entitycount = %i\n", entitycount);
 
 	return &entitylist[entityArrayFirstOpen];
 

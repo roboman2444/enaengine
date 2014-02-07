@@ -36,24 +36,76 @@ int initGameCodeSystem(void){
 		entteapot->needsmatupdate = TRUE;
 		entteapot->model = findModelByName("teapot");
 		entteapot->texturegroup = 0;
-	entity_t * entcoil = addEntityRPOINT("coil");
-		entcoil->type = 2;
-		entcoil->pos[2] = 10.0;
-		entcoil->needsmatupdate = TRUE;
-		entcoil->model = findModelByName("coil");
-		entcoil->texturegroup = 0;//findTextureGroupByName("coil");
 	entity_t * enthat = addEntityRPOINT("hat");
 		enthat->type = 2;
 		enthat->pos[1] = 8.7;
 		enthat->pos[0] = -2.5;
+		enthat->angle[1] = -45.0;
 		enthat->anglevel[0] = 360.0;
 		enthat->needsmatupdate = TRUE;
 		enthat->model = findModelByName("teapot");
 		enthat->texturegroup = 0;
+	entity_t * entcoil = addEntityRPOINT("coil");
+		entcoil->type = 2;
+		entcoil->pos[2] = 10.0;
+		entcoil->anglevel[2] = 1080.0;
+		entcoil->needsmatupdate = TRUE;
+		entcoil->model = findModelByName("coil");
+		entcoil->texturegroup = 0;//findTextureGroupByName("coil");
+		entcoil->attachmentid = enthat->myid;
+	entity_t * enttinydragon = addEntityRPOINT("tinydragon");
+		enttinydragon->type = 2;
+		enttinydragon->pos[1] = 3.0;
+		enttinydragon->scale = 0.1;
+		enttinydragon->needsmatupdate = TRUE;
+		enttinydragon->model = findModelByName("dragon");
+		enttinydragon->texturegroup = 0;//findTextureGroupByName("coil");
+		enttinydragon->attachmentid = entcoil->myid;
 
 
 	gamecodeOK = TRUE;
 	return TRUE; // todo error check
+}
+
+int calcEntAttachMat(entity_t * e){ //return value is weather e->mat got changed
+	if(e->attachmentid){
+		entity_t * attacher = returnById(e->attachmentid);
+		if(!attacher){
+			 e->attachmentid = 0;
+		}
+		else if (calcEntAttachMat(attacher)){ //dat recursion
+			matrix4x4_t tempmat;
+			Matrix4x4_CreateFromQuakeEntity(&tempmat, e->pos[0], e->pos[1], e->pos[2], e->angle[0], e->angle[1], e->angle[2], e->scale);
+			//todo find something that doesnt take into account the scaling of the ent maybe...
+			//may need to swap order
+			Matrix4x4_Concat(&e->mat, &attacher->mat, &tempmat);
+			e->needsmatupdate = FALSE;
+			return TRUE;
+		}
+		//todo figure this out...
+//		else if (e->needsmatupdate){
+		else if (TRUE){
+			e->needsmatupdate = 2;
+			if(attacher){
+				matrix4x4_t tempmat;
+				Matrix4x4_CreateFromQuakeEntity(&tempmat, e->pos[0], e->pos[1], e->pos[2], e->angle[0], e->angle[1], e->angle[2], e->scale);
+				//todo find something that doesnt take into account the scaling of the ent maybe...
+				//may need to swap order
+				Matrix4x4_Concat(&e->mat, &attacher->mat, &tempmat);
+
+				return TRUE;
+			} else {
+				Matrix4x4_CreateFromQuakeEntity(&e->mat, e->pos[0], e->pos[1], e->pos[2], e->angle[0], e->angle[1], e->angle[2], e->scale);
+				return TRUE;
+			}
+		} //else implied
+		return FALSE;
+	} else if (e->needsmatupdate == 1) {
+		Matrix4x4_CreateFromQuakeEntity(&e->mat, e->pos[0], e->pos[1], e->pos[2], e->angle[0], e->angle[1], e->angle[2], e->scale);
+		e->needsmatupdate = 2;
+		return TRUE;
+	} // else implied
+	return FALSE;
 }
 void gameCodeTick(void){ //todo maybe change to float in seconds
 	tGameTime+=GCTIMESTEP;
@@ -77,9 +129,15 @@ void gameCodeTick(void){ //todo maybe change to float in seconds
 			e->think();
 		}
 		//todo check if ents are touching!
+/*
 		if(e->needsmatupdate){
 			Matrix4x4_CreateFromQuakeEntity(&e->mat, e->pos[0], e->pos[1], e->pos[2], e->angle[0], e->angle[1], e->angle[2], e->scale);
 			e->needsmatupdate = FALSE;
 		}
+	*/	calcEntAttachMat(e); //does the checking and updating mat anyway...
 	}
+	for(i = 0; i <= entityArrayLastTaken; i++){// make sure they dont update again
+		entitylist[i].needsmatupdate = FALSE;
+	}
+
 }
