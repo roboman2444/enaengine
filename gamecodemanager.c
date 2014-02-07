@@ -40,7 +40,7 @@ int initGameCodeSystem(void){
 		enthat->type = 2;
 		enthat->pos[1] = 8.7;
 		enthat->pos[0] = -2.5;
-		enthat->scale = 1.0;
+		enthat->scale = .5;
 		enthat->angle[1] = -45.0;
 		enthat->anglevel[0] = 360.0;
 		enthat->needsmatupdate = TRUE;
@@ -57,7 +57,7 @@ int initGameCodeSystem(void){
 	entity_t * enttinydragon = addEntityRPOINT("tinydragon");
 		enttinydragon->type = 2;
 		enttinydragon->pos[1] = 3.0;
-		enttinydragon->scale = 0.1;
+		enttinydragon->scale = 0.2;
 		enttinydragon->needsmatupdate = TRUE;
 		enttinydragon->model = findModelByName("dragon");
 		enttinydragon->texturegroup = 0;//findTextureGroupByName("coil");
@@ -76,8 +76,10 @@ int calcEntAttachMat(entity_t * e){ //return value is weather e->mat got changed
 		}
 		else if (calcEntAttachMat(attacher)){ //dat recursion
 			matrix4x4_t tempmat;
-			Matrix4x4_CreateFromQuakeEntity(&tempmat, e->pos[0], e->pos[1], e->pos[2], e->angle[0], e->angle[1], e->angle[2], e->scale);
-			//todo find something that doesnt take into account the scaling of the ent maybe...
+//			Matrix4x4_CreateFromQuakeEntity(&tempmat, e->pos[0], e->pos[1], e->pos[2], e->angle[0], e->angle[1], e->angle[2], e->scale);
+//			Matrix4x4_CreateFromQuakeEntity(&tempmat, e->pos[0], e->pos[1], e->pos[2], e->angle[0], e->angle[1], e->angle[2], e->scale/attacher->scale);
+			Matrix4x4_CreateFromQuakeEntity(&tempmat, e->pos[0]/attacher->scale, e->pos[1]/attacher->scale, e->pos[2]/attacher->scale, e->angle[0], e->angle[1], e->angle[2], e->scale/attacher->scale);
+
 			//may need to swap order
 			Matrix4x4_Concat(&e->mat, &attacher->mat, &tempmat);
 			e->needsmatupdate = 2;
@@ -89,8 +91,9 @@ int calcEntAttachMat(entity_t * e){ //return value is weather e->mat got changed
 			e->needsmatupdate = 2;
 			if(attacher){
 				matrix4x4_t tempmat;
-				Matrix4x4_CreateFromQuakeEntity(&tempmat, e->pos[0], e->pos[1], e->pos[2], e->angle[0], e->angle[1], e->angle[2], e->scale);
-				//todo find something that doesnt take into account the scaling of the ent maybe...
+	//			Matrix4x4_CreateFromQuakeEntity(&tempmat, e->pos[0], e->pos[1], e->pos[2], e->angle[0], e->angle[1], e->angle[2], e->scale);
+//				Matrix4x4_CreateFromQuakeEntity(&tempmat, e->pos[0], e->pos[1], e->pos[2], e->angle[0], e->angle[1], e->angle[2], e->scale/attacher->scale);
+				Matrix4x4_CreateFromQuakeEntity(&tempmat, e->pos[0]/attacher->scale, e->pos[1]/attacher->scale, e->pos[2]/attacher->scale, e->angle[0], e->angle[1], e->angle[2], e->scale/attacher->scale);
 				//may need to swap order
 				Matrix4x4_Concat(&e->mat, &attacher->mat, &tempmat);
 
