@@ -40,6 +40,7 @@ int initGameCodeSystem(void){
 		enthat->type = 2;
 		enthat->pos[1] = 8.7;
 		enthat->pos[0] = -2.5;
+		enthat->scale = 1.0;
 		enthat->angle[1] = -45.0;
 		enthat->anglevel[0] = 360.0;
 		enthat->needsmatupdate = TRUE;
@@ -79,12 +80,12 @@ int calcEntAttachMat(entity_t * e){ //return value is weather e->mat got changed
 			//todo find something that doesnt take into account the scaling of the ent maybe...
 			//may need to swap order
 			Matrix4x4_Concat(&e->mat, &attacher->mat, &tempmat);
-			e->needsmatupdate = FALSE;
+			e->needsmatupdate = 2;
 			return TRUE;
 		}
 		//todo figure this out...
-//		else if (e->needsmatupdate){
-		else if (TRUE){
+		else if (e->needsmatupdate & 1){
+//		else if (TRUE){
 			e->needsmatupdate = 2;
 			if(attacher){
 				matrix4x4_t tempmat;
@@ -98,9 +99,11 @@ int calcEntAttachMat(entity_t * e){ //return value is weather e->mat got changed
 				Matrix4x4_CreateFromQuakeEntity(&e->mat, e->pos[0], e->pos[1], e->pos[2], e->angle[0], e->angle[1], e->angle[2], e->scale);
 				return TRUE;
 			}
-		} //else implied
+		}
+		else if (e->needsmatupdate) return TRUE;
+		//else implied
 		return FALSE;
-	} else if (e->needsmatupdate == 1) {
+	} else if (e->needsmatupdate & 1) {
 		Matrix4x4_CreateFromQuakeEntity(&e->mat, e->pos[0], e->pos[1], e->pos[2], e->angle[0], e->angle[1], e->angle[2], e->scale);
 		e->needsmatupdate = 2;
 		return TRUE;
