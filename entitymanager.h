@@ -17,18 +17,22 @@ typedef struct entity_s {
 	void (*think)(void);
 	void (*touch)(int touchid); //should be entity_t * toucher
 	int parentid;
+	int spawnnumber;
 	model_t * model;
 	texturegroup_t * texturegroup;
 } entity_t;
 
-entity_t *defaultentity;
-entity_t **entitylist;
+entity_t *entitylist;
 int initEntitySystem(void);
-int entitynumber;
+int entitycount;
+int entityArraySize;
+int entityArrayLastTaken;
 int entitiesOK;
 
 entity_t * findEntityByName(char * name);
-entity_t * returnEntity(int it);
-entity_t createEntity(char * name);
-entity_t * addEntityToList(entity_t fb);
+entity_t * returnById(int id);
+//entity_t createEntity(char * name); // not supposed to do this yourself
+entity_t * addEntityRPOINT(char * name);
+int addEntityRINT(char * name);
+int deleteEntity(int id);
 #endif

@@ -74,7 +74,7 @@ int glInit(void){
 	if(projectionmat4<0) consolePrintf("cant find uniform!\n");
 
 //	createAndAddShader("console");
-	addTextureGroupToList(createAndLoadTextureGroup("coil"));
+//	addTextureGroupToList(createAndLoadTextureGroup("coil"));
 	createAndAddModel("teapot");
 	createAndAddModel("dragon");
 	createAndAddModel("coil");
@@ -120,17 +120,18 @@ int glDrawModel(model_t * model, matrix4x4_t * modworld){
 int drawEntities(void){
 	int i;
 	int count = 0;
-	for(i =0; i < entitynumber; i++){
-		entity_t *e = entitylist[i];
-		if(!e->type)continue;
+	for(i =0; i <= entityArrayLastTaken; i++){
+		entity_t *e = &entitylist[i];
+		if(e->type < 2)continue;
 		if(!e->model)continue;
 		//todo sort and whatnot
-		if(e->texturegroup){
+/*		if(e->texturegroup){
 			bindTextureGroup(e->texturegroup);
 //			glUseProgram(staticmodeltextured->id);
 		} else {
 			glUseProgram(staticmodel->id);
 		}
+*/
 		glDrawModel(e->model, &e->mat);
 		count++;
 	}

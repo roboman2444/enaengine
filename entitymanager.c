@@ -9,38 +9,49 @@
 #include "modelmanager.h"
 #include "entitymanager.h"
 
-int entitynumber = 0; //the first is an error one/screen
+int entitycount = 0;
+int entityArrayFirstOpen = 0;
+int entityArrayLastTaken = 0; // may not be used
+int entityArraySize = 0;
 int entitiesOK = 0;
-entity_t **entitylist;
-entity_t *defaultEntity;
+entity_t *entitylist;
 
 int initEntitySystem(void){
 	//todo have it figure out screen aspect for the default
 			//	name	id	width	height	aspect	fov	texid
-	entity_t none = {"default"};
 	if(entitylist) free(entitylist);
-	entitylist = malloc(entitynumber * sizeof(entity_t *));
-	if(!entitylist) memset(entitylist, 0 , entitynumber * sizeof(entity_t *));
-	defaultEntity = addEntityToList(none);
+	entitylist = malloc(entitycount * sizeof(entity_t));
+	if(!entitylist) memset(entitylist, 0 , entitycount * sizeof(entity_t));
+	addEntityRINT("default");
 	entitiesOK = TRUE;
 	return TRUE; // todo error check
 }
-entity_t * addEntityToList(entity_t entity){ //todo have this return a entity pointa
-	entity_t * pointentity = malloc(sizeof(entity_t));
-	*pointentity = entity;
-	int current = entitynumber;
-	entitynumber++;
-	entitylist = realloc(entitylist, entitynumber * sizeof(entity_t *));
-	entitylist[current] = pointentity;
-	//entitylist[current].name = malloc(sizeof(*entity.name));
-	//strcpy(entitylist[current].name, entity.name);
-	return pointentity;
+int deleteEntity(int id){
+	int entityspawncount = (id >> 16);
+	int entityindex = (id & 0xFFFF);
+	entity_t * ent = &entitylist[entityindex];
+	if(ent->spawnnumber != entityspawncount) return FALSE;
+	ent->type = 0;
+	if(ent->name) free(ent->name);
+	ent->name = 0;
+	if(entityindex < entityArrayFirstOpen) entityArrayFirstOpen = entityindex;
+	for(; entityArrayLastTaken > 0 && !entitylist[entityArrayFirstOpen].type; entityArrayLastTaken--);
+	return TRUE;
+}
+entity_t * returnById(int id){
+	int entityspawncount = (id >> 16);
+	int entityindex = (id & 0xFFFF);
+	entity_t * ent = &entitylist[entityindex];
+	if(ent->spawnnumber == entityspawncount) return ent;
+	return FALSE;
 }
 entity_t createEntity(char * name){
 	entity_t newent;
-	newent.type = 0;
+	bzero(&newent, sizeof(entity_t));
+	newent.type = 1;
 	newent.name = malloc(strlen(name)+1);
 	strcpy(newent.name, name);
+/*
 	int i;
 	for(i = 0; i<3; i++){
 		newent.pos[i]=0.0;
@@ -48,26 +59,52 @@ entity_t createEntity(char * name){
 		newent.angle[i]=0.0;
 		newent.anglevel[i]=0.0;
 	}
-	newent.model = defaultModel;
-	newent.texturegroup = defaultTextureGroup;
-	newent.scale = 1.0;
+
 	newent.touch = 0;
 	newent.think = 0;
 	newent.spawn = 0;
 	newent.nextthink = 0;
 	newent.needsmatupdate = FALSE;
+*/
+	newent.model = defaultModel;
+	newent.texturegroup = defaultTextureGroup;
+	newent.scale = 1.0;
 	Matrix4x4_CreateFromQuakeEntity(&newent.mat, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0);
+	entitycount++;
+	newent.spawnnumber = entitycount;
 	return newent;
 //todo
 }
-entity_t * returnEntity(int id){
-	if(id >= entitynumber) return entitylist[0];
-	return entitylist[id];
-}
-entity_t * findEntityByName(char * name){
-	int i;
-	for(i = 0; i<entitynumber; i++){
-		if(!strcmp(name, entitylist[i]->name)) return entitylist[i];
+
+
+int addEntityRINT(char * name){
+	entitycount++;
+	for(; entityArrayFirstOpen < entityArraySize && entitylist[entityArrayFirstOpen].type; entityArrayFirstOpen++);
+	if(entityArrayFirstOpen == entityArraySize){	//resize
+		entityArraySize++;
+		entitylist = realloc(entitylist, entityArraySize * sizeof(entity_t));
 	}
-	return entitylist[0];
+	entitylist[entityArrayFirstOpen] = createEntity(name);
+	if(entityArrayLastTaken < entityArrayFirstOpen) entityArrayLastTaken = entityArrayFirstOpen; //todo redo
+
+	int returnid = (entitycount << 16) | entityArrayFirstOpen;
+	return returnid;
+}
+entity_t * addEntityRPOINT(char * name){
+	for(; entityArrayFirstOpen < entityArraySize && entitylist[entityArrayFirstOpen].type; entityArrayFirstOpen++);
+	if(entityArrayFirstOpen == entityArraySize){	//resize
+		entityArraySize++;
+		entitylist = realloc(entitylist, entityArraySize * sizeof(entity_t));
+	}
+	entitylist[entityArrayFirstOpen] = createEntity(name);
+	if(entityArrayLastTaken < entityArrayFirstOpen) entityArrayLastTaken = entityArrayFirstOpen;
+	printf("entityarraysize = %i\n", entityArraySize);
+
+	return &entitylist[entityArrayFirstOpen];
+
+}
+
+entity_t * findEntityByName(char * name){
+	//todo
+	return &entitylist[0];
 }
