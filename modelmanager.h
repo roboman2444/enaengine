@@ -5,6 +5,7 @@ typedef struct model_s {
 	char * name;
 	texturegroup_t * texture;
 	vbo_t * vbo;
+	vec6_t bbox;
 	char type; // maybe not
 //	GLuint * numfaces;
 //	GLuint numlod;

@@ -75,9 +75,9 @@ int glInit(void){
 
 //	createAndAddShader("console");
 //	addTextureGroupToList(createAndLoadTextureGroup("coil"));
-	createAndAddModel("teapot");
-	createAndAddModel("dragon");
-	createAndAddModel("coil");
+//	createAndAddModel("teapot");
+//	createAndAddModel("dragon");
+//	createAndAddModel("coil");
 
 
 	glEnable(GL_MULTISAMPLE);

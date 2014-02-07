@@ -49,6 +49,8 @@ model_t * findModelByName(char * name){
 	return modellist[0];
 }
 model_t * createAndAddModel(char * name){
+	model_t * m = findModelByName(name);
+	if(m != defaultModel) return m;
 	return addModelToList(createAndLoadModel(name));
 //	return &modellist[addModelToList(createAndLoadModel(name))];
 }
@@ -103,6 +105,28 @@ int generateNormalsFromMesh(GLfloat * vertbuffer, GLfloat * normbuffer, GLuint *
 	}
 	return TRUE;
 }
+float * getBBoxFromInterleavedMesh(GLfloat * interleavedbuffer, GLuint vertcount, int stride){
+	float *bbox = malloc(sizeof(vec6_t));
+	bbox[0] = -3.4028e+38;
+	bbox[1] = 3.4028e+38;
+	bbox[2] = -3.4028e+38;
+	bbox[3] = 3.4028e+38;
+	bbox[4] = -3.4028e+38;
+	bbox[5] = 3.4028e+38;
+	if(stride < 5) return bbox;
+	int i;
+	for(i = 0; i < vertcount; i++){
+		float * vert = &interleavedbuffer[(i*stride)];
+		if(vert[0] > bbox[0]) bbox[0] = vert[0];
+		else if(vert[0] < bbox[1]) bbox[1] = vert[0];
+		if(vert[1] > bbox[2]) bbox[2] = vert[1];
+		else if(vert[1] < bbox[3]) bbox[3] = vert[1];
+		if(vert[2] > bbox[4]) bbox[4] = vert[2];
+		else if(vert[2] < bbox[5]) bbox[5] = vert[2];
+	}
+	return bbox;
+}
+
 int normalizeNormalsFromInterleavedMesh(GLfloat * interleavedbuffer, GLuint vertcount, int stride){
 	if(stride < 5) return FALSE;
 	int i;
@@ -396,6 +420,11 @@ int loadModelOBJ(model_t * m, char * filename){//todo flags
 		consolePrintf("Generating vertex normals for Model %s\n", filename);
 		generateNormalsFromInterleavedMesh(interleavedbuffer, indicebuffer, facecount*3, vertcount, 8 , 0);
 	}
+	float * bbox = getBBoxFromInterleavedMesh(interleavedbuffer, vertcount, 8);
+	if(bbox){
+		memcpy(&m->bbox, bbox, 6*sizeof(float));
+		free(bbox);
+	}
 //	m->numfaces = malloc(sizeof(GLuint)*2);
 //	m->numlod = 2;
 //	m->numfaces[0] = facecount;
@@ -461,7 +490,6 @@ int loadModelOBJ(model_t * m, char * filename){//todo flags
 	return TRUE;
 }
 model_t createAndLoadModel(char * name){
-
 	model_t m;
 	m.type = 0; // error
 	m.name = malloc(strlen(name)+1);
