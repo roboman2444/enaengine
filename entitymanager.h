@@ -30,7 +30,8 @@ int entityArraySize;
 int entityArrayLastTaken;
 int entitiesOK;
 
-entity_t * findEntityByName(char * name);
+entity_t * findEntityByNameRPOINT(char * nam);
+int findEntityByNameRINT(char * name);
 entity_t * returnById(int id);
 //entity_t createEntity(char * name); // not supposed to do this yourself
 entity_t * addEntityRPOINT(char * name);

@@ -9,16 +9,22 @@
 #include "modelmanager.h"
 #include "entitymanager.h"
 
+typedef struct hashbucket_s {
+	char * name;
+	int id;
+	struct hashbucket_s * next;
+} hashbucket_t;
+
 int entitycount = 0;
 int entityArrayFirstOpen = 0;
 int entityArrayLastTaken = 0; // may not be used
 int entityArraySize = 0;
 int entitiesOK = 0;
 entity_t *entitylist;
+hashbucket_t hashtable[MAXHASHBUCKETS];
 
 int initEntitySystem(void){
-	//todo have it figure out screen aspect for the default
-			//	name	id	width	height	aspect	fov	texid
+	bzero(hashtable, MAXHASHBUCKETS * sizeof(hashbucket_t));
 	if(entitylist) free(entitylist);
 	entitylist = malloc(entitycount * sizeof(entity_t));
 	if(!entitylist) memset(entitylist, 0 , entitycount * sizeof(entity_t));
@@ -26,11 +32,71 @@ int initEntitySystem(void){
 	entitiesOK = TRUE;
 	return TRUE; // todo error check
 }
+int getHash(char * string){
+	unsigned long rethash=0;
+	while(*string){
+		rethash= rethash * 31 + *string;
+		string++;
+	}
+	return rethash%MAXHASHBUCKETS;
+}
+int addEntityToHashTable(char * name, int id){
+	int hash = getHash(name);
+	hashbucket_t * hb = &hashtable[hash];
+        for(; hb->next; hb = hb->next);
+	hb->next = malloc(sizeof(hashbucket_t));
+	hb->next->name = name;
+	hb->next->id = id;
+	return hash;
+}
+int deleteEntityFromHashTable(char * name, int id){
+	int hash = getHash(name);
+	hashbucket_t * hb = &hashtable[hash];
+	hashbucket_t * oldb;
+        for(oldb = hb; hb; oldb = hb, hb = hb->next){
+		if(hb->id == id){
+			oldb->next = hb->next;
+			free(hb);
+			return TRUE;
+		}
+        }
+	return FALSE;
+}
+
+entity_t * findEntityByNameRPOINT(char * name){ //todo write a function that can find ALL entities with name
+	int hash = getHash(name);
+	hashbucket_t * hb = &hashtable[hash];
+	if(!hb->name) return 0;
+        for(; hb; hb = hb->next){
+		if(strcmp(hb->name, name)){
+			return returnById(hb->id);
+		}
+        }
+	//not found :(
+	return 0;
+}
+int findEntityByNameRINT(char * name){
+
+	int hash = getHash(name);
+	hashbucket_t * hb = &hashtable[hash];
+	if(!hb->name) return 0;
+        for(; hb; hb = hb->next){
+		if(strcmp(hb->name, name)){
+			return hb->id;
+		}
+        }
+	//not found :(
+	return 0;
+}
+
+
 int deleteEntity(int id){
 	int entityindex = (id & 0xFFFF);
 	entity_t * ent = &entitylist[entityindex];
 	if(ent->myid != id) return FALSE;
-	if(ent->name) free(ent->name);
+	if(!ent->name) return FALSE;
+	deleteEntityFromHashTable(ent->name, id);
+	free(ent->name);
 	bzero(ent, sizeof(entity_t));
 //	ent->type = 0;
 //	ent->model = 0;
@@ -80,6 +146,7 @@ entity_t createEntity(char * name){
 }
 
 
+
 int addEntityRINT(char * name){
 	entitycount++;
 	for(; entityArrayFirstOpen < entityArraySize && entitylist[entityArrayFirstOpen].type; entityArrayFirstOpen++);
@@ -91,6 +158,7 @@ int addEntityRINT(char * name){
 	int returnid = (entitycount << 16) | entityArrayFirstOpen;
 	entitylist[entityArrayFirstOpen].myid = returnid;
 
+	addEntityToHashTable(entitylist[entityArrayFirstOpen].name, returnid);
 	if(entityArrayLastTaken < entityArrayFirstOpen) entityArrayLastTaken = entityArrayFirstOpen; //todo redo
 	return returnid;
 }
@@ -104,15 +172,13 @@ entity_t * addEntityRPOINT(char * name){
 	entitylist[entityArrayFirstOpen] = createEntity(name);
 	int returnid = (entitycount << 16) | entityArrayFirstOpen;
 	entitylist[entityArrayFirstOpen].myid = returnid;
+
+	addEntityToHashTable(entitylist[entityArrayFirstOpen].name, returnid);
+	//todo maybe have entity have a hash variable, so i dont have to calculate it again if i want to delete... maybe
 	if(entityArrayLastTaken < entityArrayFirstOpen) entityArrayLastTaken = entityArrayFirstOpen;
 //	printf("entityarraysize = %i\n", entityArraySize);
 //	printf("entitycount = %i\n", entitycount);
 
 	return &entitylist[entityArrayFirstOpen];
 
-}
-
-entity_t * findEntityByName(char * name){
-	//todo
-	return &entitylist[0];
 }

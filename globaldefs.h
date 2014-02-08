@@ -6,6 +6,7 @@
 
 #define GCTIMESTEP 1000.0f/60.0f //time in ms
 #define GCTIMESTEPSECONDS 1.0f/60.0f //time in seconds
+#define MAXHASHBUCKETS 128
 //#define PI 3.1415926535
 
 //global includes
