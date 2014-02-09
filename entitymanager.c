@@ -65,6 +65,7 @@ int deleteEntityFromHashTable(char * name, int id){
 			free(hb->next);
 		}
 		hb->id = 0;
+		hb->name = 0;
 		return TRUE;
 	} //check linked list off of first
 	hashbucket_t * oldb = hb;
@@ -77,6 +78,38 @@ int deleteEntityFromHashTable(char * name, int id){
 		}
         }
 	return FALSE;
+}
+entitylistpoint_t findEntitiesByNameRPOINT(char * name){ //todo write a function that can find ALL entities with name
+
+	entitylistpoint_t ret;
+	int hash = getHash(name);
+	hashbucket_t * hb = &hashtable[hash];
+	if(!hb->name) return ret;
+        for(; hb; hb = hb->next){
+		if(strcmp(hb->name, name)==0){
+//			return returnById(hb->id);
+			ret.count++;
+			ret.list = realloc(ret.list, ret.count * sizeof(entity_t *));
+			ret.list[ret.count-1] = returnById(hb->id);
+		}
+        }
+	return ret;
+}
+entitylistint_t findEntitiesByNameRINT(char * name){ //todo write a function that can find ALL entities with name
+
+	entitylistint_t ret;
+	int hash = getHash(name);
+	hashbucket_t * hb = &hashtable[hash];
+	if(!hb->name) return ret;
+        for(; hb; hb = hb->next){
+		if(strcmp(hb->name, name)==0){
+//			return returnById(hb->id);
+			ret.count++;
+			ret.list = realloc(ret.list, ret.count * sizeof(int));
+			ret.list[ret.count-1] = hb->id;
+		}
+        }
+	return ret;
 }
 
 entity_t * findEntityByNameRPOINT(char * name){ //todo write a function that can find ALL entities with name

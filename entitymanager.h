@@ -23,6 +23,16 @@ typedef struct entity_s {
 	texturegroup_t * texturegroup;
 } entity_t;
 
+typedef struct entitylistpoint_s {
+	entity_t **list;
+	int count;
+} entitylistpoint_t; // yeah yeah i know naming
+
+typedef struct entitylistint_s {
+	int *list;
+	int count;
+} entitylistint_t; // yeah yeah i know naming
+
 entity_t *entitylist;
 int initEntitySystem(void);
 int entitycount;
@@ -32,6 +42,8 @@ int entitiesOK;
 
 entity_t * findEntityByNameRPOINT(char * nam);
 int findEntityByNameRINT(char * name);
+entitylistpoint_t findEntitiesByNameRPOINT(char * nam);
+entitylistint_t findEntitiesByNameRINT(char * name);
 entity_t * returnById(int id);
 //entity_t createEntity(char * name); // not supposed to do this yourself
 entity_t * addEntityRPOINT(char * name);
