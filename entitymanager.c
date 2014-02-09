@@ -43,18 +43,34 @@ int getHash(char * string){
 int addEntityToHashTable(char * name, int id){
 	int hash = getHash(name);
 	hashbucket_t * hb = &hashtable[hash];
-        for(; hb->next; hb = hb->next);
-	hb->next = malloc(sizeof(hashbucket_t));
-	hb->next->name = name;
-	hb->next->id = id;
+	if(hb->id){
+	        for(; hb->next; hb = hb->next);
+		hb->next = malloc(sizeof(hashbucket_t));
+		hb = hb->next;
+	}
+
+//	hb->name = malloc(strlen(name)+1);
+//	strcpy(hb->name, name);
+
+	hb->name = name;
+	hb->id = id;
 	return hash;
 }
 int deleteEntityFromHashTable(char * name, int id){
 	int hash = getHash(name);
 	hashbucket_t * hb = &hashtable[hash];
-	hashbucket_t * oldb;
-        for(oldb = hb; hb; oldb = hb, hb = hb->next){
+	if(hb->id == id){ // check first one
+		if(hb->next){
+			*hb = *hb->next;
+			free(hb->next);
+		}
+		hb->id = 0;
+		return TRUE;
+	} //check linked list off of first
+	hashbucket_t * oldb = hb;
+        for(hb = hb->next; hb; oldb = hb, hb = hb->next){
 		if(hb->id == id){
+//			if(hb->name) free(hb->name);
 			oldb->next = hb->next;
 			free(hb);
 			return TRUE;
@@ -68,7 +84,7 @@ entity_t * findEntityByNameRPOINT(char * name){ //todo write a function that can
 	hashbucket_t * hb = &hashtable[hash];
 	if(!hb->name) return 0;
         for(; hb; hb = hb->next){
-		if(strcmp(hb->name, name)){
+		if(strcmp(hb->name, name)==0){
 			return returnById(hb->id);
 		}
         }
@@ -81,7 +97,7 @@ int findEntityByNameRINT(char * name){
 	hashbucket_t * hb = &hashtable[hash];
 	if(!hb->name) return 0;
         for(; hb; hb = hb->next){
-		if(strcmp(hb->name, name)){
+		if(strcmp(hb->name, name)==0){
 			return hb->id;
 		}
         }
@@ -118,7 +134,7 @@ entity_t createEntity(char * name){
 	entity_t newent;
 	bzero(&newent, sizeof(entity_t));
 	newent.type = 1;
-	newent.name = malloc(strlen(name)+1);
+	newent.name = malloc(strlen(name)+1); // todo maybe put this somewhere else...
 	strcpy(newent.name, name);
 /*
 	int i;

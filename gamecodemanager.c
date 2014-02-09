@@ -46,7 +46,6 @@ int initGameCodeSystem(void){
 		enthat->needsmatupdate = TRUE;
 		enthat->model = createAndAddModel("teapot");
 		enthat->texturegroup = 0;
-	int tidhat = enthat->myid;
 	entity_t * entcoil = addEntityRPOINT("coil");
 		entcoil->type = 2;
 		entcoil->pos[2] = 10.0;
@@ -54,8 +53,8 @@ int initGameCodeSystem(void){
 		entcoil->needsmatupdate = TRUE;
 		entcoil->model = createAndAddModel("coil");
 		entcoil->texturegroup = 0;//findTextureGroupByName("coil");
-		entcoil->attachmentid = tidhat;
-	int tidcoil = entcoil->myid;
+//		entcoil->attachmentid = tidhat;
+		entcoil->attachmentid = findEntityByNameRINT("hat");
 	entity_t * enttinydragon = addEntityRPOINT("tinydragon");
 		enttinydragon->type = 2;
 		enttinydragon->pos[1] = 3.0;
@@ -63,9 +62,10 @@ int initGameCodeSystem(void){
 		enttinydragon->needsmatupdate = TRUE;
 		enttinydragon->model = createAndAddModel("dragon");
 		enttinydragon->texturegroup = 0;//findTextureGroupByName("coil");
-		enttinydragon->attachmentid = tidcoil;
+		enttinydragon->attachmentid = findEntityByNameRINT("coil");
 
-	deleteEntity(tidhat);
+	deleteEntity(findEntityByNameRINT("hat"));
+//	deleteEntity(tidhat);
 
 
 	gamecodeOK = TRUE;
