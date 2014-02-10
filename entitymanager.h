@@ -40,13 +40,17 @@ int entityArraySize;
 int entityArrayLastTaken;
 int entitiesOK;
 
+//returns first entity it finds with name
 entity_t * findEntityByNameRPOINT(char * nam);
 int findEntityByNameRINT(char * name);
+//returns a list of all entities with name
 entitylistpoint_t findEntitiesByNameRPOINT(char * nam);
 entitylistint_t findEntitiesByNameRINT(char * name);
+//returns pointer by entity id
 entity_t * returnById(int id);
-//entity_t createEntity(char * name); // not supposed to do this yourself
+//creates and adds entity to listwith name
 entity_t * addEntityRPOINT(char * name);
 int addEntityRINT(char * name);
+//deletes entity, only id is accepted
 int deleteEntity(int id);
 #endif

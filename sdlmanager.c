@@ -23,13 +23,16 @@ int resizeWindow(int width, int height, int bpp, int debugmode){
 	return TRUE;
 }
 int setMSAA(int samples){
+	int msbuf;
+	int mssamp;
 	if(!samples){
 		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 0);
 		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 0);
 	}
 	else{
 		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
-		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 16);
+		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, samples);
+//		SDL_GL_GetAttribute(SDL_GL_MULTISAMPLEBUFFERS, &msbuf);//todo
 	}
 	return samples;
 }
@@ -54,4 +57,35 @@ int sdlInit(int width, int height, int bpp, int debugmode){
 }
 void swapBuffers(void){
 	SDL_GL_SwapBuffers();
+}
+int sdlCheckEvent(void){
+	SDL_Event event;
+	while (SDL_PollEvent(&event)){
+		switch(event.type){
+			case SDL_QUIT:
+				//todo make exit functions
+				SDL_Quit();
+			break;
+			case SDL_KEYDOWN:
+				//todo
+			break;
+			case SDL_KEYUP:
+				//todo
+			break;
+			case SDL_VIDEORESIZE:
+				resizeWindow(event.resize.w, event.resize.h, 24, 0);
+			break;
+			case SDL_MOUSEMOTION:
+			//todo
+			break;
+			case SDL_MOUSEBUTTONDOWN:
+			//todo
+			break;
+			case SDL_MOUSEBUTTONUP:
+			break;
+			default:
+			break;
+		}
+	}
+	return TRUE;
 }

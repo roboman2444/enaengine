@@ -133,26 +133,47 @@ rendering
 			Another optional may do
 			write only the static mesh that is within the bounding sphere into a buffer. Now it only has to render that smaller bit of mesh into the shadowmap
 
-	
-gamecode/entity management
+physics
+	bullet, newton, or ODE.
+	in that order.
+	bullet, being c++, may be hard to get working, but there is a WIP c wrapper for it.
+	server side for most physics , may later move some to clientside.
+gamecode/entity management -- mostly done
+	quake-style gamecode
+	crysis-style "ids" of entities - makes so no collisions can occour, while keeping things allocated
+	nextthink - timer
+	think - function pointer to do at time of timer
+	attachment system
 networking
+	client-server model for all gamecode
+	both client and server will have to do work like matrix math, so if it is single player (eg, localhost) probably use the same matricies for both
 	NOT peer to peer, although that would be awesome
+	most likely udp. TCP adds too much overhead... maybe tcp for just "status" messages, ie ones that arent going to be corrected in the next 10nth of a second.
+	some sort of delta encoding for speed.
+	probably some method of not updating entities as much if you aren't looking at them. Like 10* a second verses 50*
 sound
 	openAL
-	not too much thought to put into it... its openAL
+	not too much thought to put into it... it's openAL
+	loudest/distance get top priority.
+world
+	Split up into grid sections. Each grid keeps track of its objects, bounding box size, VAO, etc.
+	when "baking", order models by texture, apply matrix transformations, add with vertex offsets to VBOs.
+	could "bake" in shader using transform feedback, likely wont
+	When editing, it adds "fake" entities to the grid these can be moved around and etc. Selecting an object that is already "baked" will remove it from the baked VBO and transfer it into fake entity.
+	I dont know if i will have support for transparent objects or if that will be a seperate path.
 
 
 
 
 
-order of me doing things
+order of me doing things (not in explicit order)
 
 	finish model loading, animation and
 	finish major rendering subsystems
 
 	finish world loading and editing
 	finish input systems
-	get some sort of basic gamecode and entity management
+	get some sort of basic gamecode and entity management -- mostly done actually
 	basic networking
 	finish particle system
 	basic physics

@@ -35,10 +35,11 @@ int main(int argc, char *argv[]){
 		timesincelastfpsupdate += delta;
 		if(timesincelastfpsupdate > 10000){
 			consolePrintf("%f fps\n", (float)framecount*1000.0/(float)timesincelastfpsupdate);
-			timesincelastfpsupdate = 0;
+			timesincelastfpsupdate -= 10000;
 			framecount = 0;
 		}
 		accum+= delta;
+		sdlCheckEvent();
 		while(accum>GCTIMESTEP){
 			gameCodeTick();
 			accum-=GCTIMESTEP;

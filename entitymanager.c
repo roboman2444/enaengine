@@ -79,8 +79,7 @@ int deleteEntityFromHashTable(char * name, int id){
         }
 	return FALSE;
 }
-entitylistpoint_t findEntitiesByNameRPOINT(char * name){ //todo write a function that can find ALL entities with name
-
+entitylistpoint_t findEntitiesByNameRPOINT(char * name){
 	entitylistpoint_t ret;
 	int hash = getHash(name);
 	hashbucket_t * hb = &hashtable[hash];
@@ -95,8 +94,7 @@ entitylistpoint_t findEntitiesByNameRPOINT(char * name){ //todo write a function
         }
 	return ret;
 }
-entitylistint_t findEntitiesByNameRINT(char * name){ //todo write a function that can find ALL entities with name
-
+entitylistint_t findEntitiesByNameRINT(char * name){
 	entitylistint_t ret;
 	int hash = getHash(name);
 	hashbucket_t * hb = &hashtable[hash];
