@@ -8,6 +8,7 @@ typedef struct vbo_s {
 	GLuint indicesid;
 	GLuint numverts;
 	GLuint numfaces;
+	int myid;
 	char type; // maybe not
 }vbo_t;
 
@@ -20,17 +21,20 @@ typedef struct ubo_s {
 
 int vboOK;
 int vbonumber;
-int ubonumber;
-
+vbo_t * vbolist;
+int vbocount;
+int vboArraySize;
+int vboArrayLastTaken;
 
 int initVBOSystem(void);
-vbo_t * findVBOByName(char * name);
-ubo_t * findUBOByName(char * name);
-vbo_t * addVBOToList(vbo_t vbo);
-ubo_t * addUBOToList(ubo_t ubo);
-vbo_t * createAndAddVBO(char * name, char type);
-ubo_t * createAndAddUBO(char * name, char type);
+
+vbo_t * findVBOByNameRPOINT(char * name);
+int findVBOByNameRINT(char * name);
+
+vbo_t * returnVBOById(int id);
+
+vbo_t * createAndAddVBORPOINT(char * name, char type);
+int createAndAddVBORINT(char * name, char type);
 vbo_t createVBO(char *name, char type);
-ubo_t createUBO(char *name, char type);
 #endif
 

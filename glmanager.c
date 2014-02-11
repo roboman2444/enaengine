@@ -22,7 +22,11 @@
 shaderprogram_t * staticmodel, * staticmodeltextured;
 GLuint modelmat4, viewmat4, projectionmat4;
 float degnumber;
-	viewport_t cam;
+viewport_t cam;
+
+int glShutdown(void){
+	return FALSE;
+}
 
 
 
@@ -112,10 +116,12 @@ int glDrawModel(model_t * model, matrix4x4_t * modworld){
 	GLfloat out[16];
 	Matrix4x4_ToArrayFloatGL(modworld, out);
 	glUniformMatrix4fv(modelmat4, 1, GL_FALSE, out);
-	glBindVertexArray(model->vbo->vaoid);
+	vbo_t * tvbo = returnVBOById(model->vbo);
+	if(!tvbo) return FALSE;
+	glBindVertexArray(tvbo->vaoid);
 //	glDrawElements(GL_TRIANGLES, model->numfaces[1]*3, GL_UNSIGNED_INT, (void*)(model->numfaces[0]*3*sizeof(GLuint)));
-	glDrawElements(GL_TRIANGLES, model->vbo->numfaces*3, GL_UNSIGNED_INT, 0);
-	return model->vbo->numfaces;
+	glDrawElements(GL_TRIANGLES, tvbo->numfaces*3, GL_UNSIGNED_INT, 0);
+	return tvbo->numfaces;
 }
 int drawEntities(void){
 	int i;

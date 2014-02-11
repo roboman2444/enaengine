@@ -3,73 +3,64 @@
 
 #include "globaldefs.h"
 #include "vbomanager.h"
+#include "hashtables.h"
 
 int vboOK = 0;
-int vbonumber = 0;
-int ubonumber = 0;
-vbo_t **vbolist;
-ubo_t **ubolist;
+int vbocount = 0;
+int ubocount = 0;
+int vboArrayFirstOpen = 0;
+int vboArrayLastTaken = 0;
+int vboArraySize = 0;
+int uboArrayFirstOpen = 0;
+int uboArrayLastTaken = 0;
+int uboArraySize = 0;
+vbo_t *vbolist;
+ubo_t *ubolist;
+
+hashbucket_t vbohashtable[MAXHASHBUCKETS];
+//hashbucket_t ubohashtable[MAXHASHBUCKETS];
 
 int initVBOSystem(void){
 //	if(!initVAO(&vertexarrayid)) return FALSE;
-	vbo_t vbonone = {"default", 0, 0, 0, 0};
+//	vbo_t vbonone = {"default", 0, 0, 0, 0};
+	memset(vbohashtable, 0, MAXHASHBUCKETS*sizeof(hashbucket_t));
+//	memset(ubohashtable, 0, MAXHASHBUCKETS*sizeof(hashbucket_t));
 	if(vbolist) free(vbolist);
-	vbolist = malloc(vbonumber * sizeof(vbo_t *));
-	if(!vbolist) memset(vbolist, 0 , vbonumber * sizeof(vbo_t *));
-	addVBOToList(vbonone);
-
-//	ubo_t ubonone = {"default", 0, 0};
-//	if(ubolist) free(ubolist);
-//	ubolist = malloc(ubonumber * sizeof(ubo_t));
-//	if(!ubolist) memset(ubolist, 0 , ubonumber * sizeof(ubo_t));
-//	addUBOToList(ubonone);
+	vbolist = malloc(vboArraySize * sizeof(vbo_t));
+	if(!vbolist) memset(vbolist, 0 , vbonumber * sizeof(vbo_t));
+//	addVBOToList(vbonone);
 
 	vboOK = TRUE;
 	return TRUE;
 }
-vbo_t * addVBOToList(vbo_t vbo){
-	vbo_t * pointvbo = malloc(sizeof(vbo_t));
-	*pointvbo = vbo;
-	int current = vbonumber;
-	vbonumber++;
-	vbolist = realloc(vbolist, vbonumber*sizeof(vbo_t *));
-	vbolist[current] = pointvbo;
-//	vbolist[current].name = malloc(strlen(vbo.name)+1);
-//	strcpy(vbolist[current].name, vbo.name);
-	return pointvbo;
+
+
+vbo_t * findVBOByNameRPOINT(char * name){
+	return returnVBOById(findByNameRINT(name, vbohashtable));
 }
-ubo_t * addUBOToList(ubo_t ubo){
-	ubo_t * pointubo = malloc(sizeof(ubo_t*));
-	*pointubo = ubo;
-	int current = ubonumber;
-	ubonumber++;
-	ubolist = realloc(ubolist, ubonumber*sizeof(ubo_t*));
-	ubolist[current] = pointubo;
-//	ubolist[current].name = malloc(strlen(ubo.name)+1);
-//	strcpy(ubolist[current].name, ubo.name);
-	return ubolist[current];
+int findVBOByNameRINT(char * name){
+	return findByNameRINT(name, vbohashtable);
 }
 
-vbo_t * findVBOByName(char * name){
-	int i;
-	for (i=0; i<vbonumber; i++){
-		if(!strcmp(name, vbolist[i]->name)) return vbolist[i];
-	}
-	return vbolist[0];
-}
-ubo_t * findUBOByName(char * name){
-	int i;
-	for (i=0; i<ubonumber; i++){
-		if(!strcmp(name, ubolist[i]->name)) return ubolist[i];
-	}
-	return ubolist[0];
+int deleteVBO(int id){
+	int vboindex = (id & 0xFFFF);
+	vbo_t * vbo = &vbolist[vboindex];
+	if(vbo->myid != id) return FALSE;
+	if(!vbo->name) return FALSE;
+	deleteFromHashTable(vbo->name, id, vbohashtable);
+	free(vbo->name);
+	bzero(vbo, sizeof(vbo_t));
+	if(vboindex < vboArrayFirstOpen) vboArrayFirstOpen = vboindex;
+	for(; vboArrayLastTaken > 0 && !vbolist[vboArrayLastTaken].type; vboArrayLastTaken--);
+	return TRUE;
 }
 
-vbo_t * createAndAddVBO(char * name, char type){
-	return addVBOToList(createVBO(name, type));
-}
-ubo_t * createAndAddUBO(char * name, char type){
-	return addUBOToList(createUBO(name, type));
+vbo_t * returnVBOById(int id){
+	int vboindex = (id & 0xFFFF);
+	vbo_t * vbo = &vbolist[vboindex];
+	if(!vbo->type) return FALSE;
+	if(vbo->myid == id) return vbo;
+	return FALSE;
 }
 vbo_t createVBO(char * name, char type){
 	vbo_t v;
@@ -80,19 +71,45 @@ vbo_t createVBO(char * name, char type){
 	glGenBuffers(1, &v.indicesid);	if(!v.indicesid) return v;
 	v.name = malloc(strlen(name)+1);
 	strcpy(v.name, name);
-	v.type = type; //todo type stuff
+//	v.type = type; //todo type stuff
+	v.type = 2;
 	return v;
 }
-ubo_t createUBO(char * name, char type){
-	ubo_t u;
-	u.type = 0;
-	//todo fill this in more
-//	glGenVertexArrays(1, &v.vaoid);	if(!v.vaoid) return v;
-//	glBindVertexArray(v.vaoid);
-	glGenBuffers(1, &u.id);	if(!u.id) return u;
-//	glGenBuffers(1, &v.indicesid);	if(!v.indicesid) return v;
-	u.name = malloc(strlen(name)+1);
-	strcpy(u.name, name);
-	u.type = type; //todo type stuff
-	return u;
+
+int addVBORINT(vbo_t vbo){
+	vbocount++;
+	for(; vboArrayFirstOpen < vboArraySize && vbolist[vboArrayFirstOpen].type; vboArrayFirstOpen++);
+	if(vboArrayFirstOpen == vboArraySize){	//resize
+		vboArraySize++;
+		vbolist = realloc(vbolist, vboArraySize * sizeof(vbo_t));
+	}
+	vbolist[vboArrayFirstOpen] = vbo;
+	int returnid = (vbocount << 16) | vboArrayFirstOpen;
+	vbolist[vboArrayFirstOpen].myid = returnid;
+
+	addToHashTable(vbolist[vboArrayFirstOpen].name, returnid, vbohashtable);
+	if(vboArrayLastTaken < vboArrayFirstOpen) vboArrayLastTaken = vboArrayFirstOpen; //todo redo
+	return returnid;
+}
+vbo_t * addVBORPOINT(vbo_t vbo){
+	vbocount++;
+	for(; vboArrayFirstOpen < vboArraySize && vbolist[vboArrayFirstOpen].type; vboArrayFirstOpen++);
+	if(vboArrayFirstOpen == vboArraySize){	//resize
+		vboArraySize++;
+		vbolist = realloc(vbolist, vboArraySize * sizeof(vbo_t));
+	}
+	vbolist[vboArrayFirstOpen] = vbo;
+	int returnid = (vbocount << 16) | vboArrayFirstOpen;
+	vbolist[vboArrayFirstOpen].myid = returnid;
+
+	addToHashTable(vbolist[vboArrayFirstOpen].name, returnid, vbohashtable);
+	if(vboArrayLastTaken < vboArrayFirstOpen) vboArrayLastTaken = vboArrayFirstOpen; //todo redo
+	return &vbolist[vboArrayFirstOpen];
+}
+
+vbo_t * createAndAddVBORPOINT(char * name, char type){
+	return addVBORPOINT(createVBO(name, type));
+}
+int createAndAddVBORINT(char * name, char type){
+	return addVBORINT(createVBO(name, type));
 }

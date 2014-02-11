@@ -11,12 +11,6 @@
 #include "shadermanager.h"
 #include "console.h"
 
-typedef struct hashbucket_s {
-	char * name;
-	int id;
-	struct hashbucket_s * next;
-} hashbucket_t; //todo make global
-
 int modelcount = 0;
 int modelArrayFirstOpen = 0;
 int modelArrayLastTaken = 0;
@@ -46,66 +40,12 @@ int initModelSystem(void){
 	modelsOK = TRUE;
 	return TRUE;
 }
-int addModelToHashTable(char * name, int id){ //todo global
-	int hash = getHash(name);
-	hashbucket_t * hb = &modelhashtable[hash];
-	if(hb->id){
-		for(; hb->next; hb = hb->next);
-		hb->next = malloc(sizeof(hashbucket_t));
-		hb = hb->next;
-	}
-	hb->name = name;
-	hb->id = id;
-	return hash;
-}
-int deleteModelFromHashTable(char * name, int id){
-	int hash = getHash(name);
-	hashbucket_t * hb = &modelhashtable[hash];
-	if(hb->id == id){
-		if(hb->next){
-			*hb = *hb->next;
-			free(hb->next);
-		}
-		hb->id = 0;
-		hb->name = 0;
-		return TRUE;
-	} //check linked list off of first
-	hashbucket_t * oldb = hb;
-        for(hb = hb->next; hb; oldb = hb, hb = hb->next){
-		if(hb->id == id){
-//			if(hb->name) free(hb->name);
-			oldb->next = hb->next;
-			free(hb);
-			return TRUE;
-		}
-        }
-	return FALSE;
-}
-
 
 model_t * findModelByNameRPOINT(char * name){
-	int hash = getHash(name);
-	hashbucket_t * hb = &modelhashtable[hash];
-	if(!hb->name) return 0;
-        for(; hb; hb = hb->next){
-		if(strcmp(hb->name, name)==0){
-			return returnModelById(hb->id);
-		}
-        }
-	//not found :(
-	return 0;
+	return returnModelById(findByNameRINT(name, modelhashtable));
 }
 int findModelByNameRINT(char * name){ //todo global
-	int hash = getHash(name);
-	hashbucket_t * hb = &modelhashtable[hash];
-	if(!hb->name) return 0;
-        for(; hb; hb = hb->next){
-		if(strcmp(hb->name, name)==0){
-			return hb->id;
-		}
-        }
-	//not found :(
-	return 0;
+	return findByNameRINT(name, modelhashtable);
 }
 
 int deleteModel(int id){
@@ -113,9 +53,9 @@ int deleteModel(int id){
 	model_t * mod = &modellist[modelindex];
 	if(mod->myid != id) return FALSE;
 	if(!mod->name) return FALSE;
-	deleteModelFromHashTable(mod->name, id);
+	deleteFromHashTable(mod->name, id, modelhashtable);
 	free(mod->name);
-
+	//todo call delete vbo
 //TODO
 //TODO
 //TODO
@@ -517,20 +457,21 @@ int loadModelOBJ(model_t * m, char * filename){//todo flags
 //	normalizeNormalsFromInterleavedMesh(interleavedbuffer, vertcount, 8);
 
 
-	m->vbo = createAndAddVBO(m->name, m->type);
+	vbo_t * myvbo = createAndAddVBORPOINT(m->name, m->type);
+	if(!myvbo) return 0; // todo free and error handle
+	m->vbo = myvbo->myid;
 //	printf("%i\n",m->vbo->type);
 //	printf("%i\n",m->vbo->vaoid);
 //	printf("%i\n",m->vbo->vboid);
 //	printf("%i\n",m->vbo->indicesid);
 //	printf("%s\n",m->name);
 //	printf("%s\n",m->vbo->name);
-	if(!m->vbo) return 0; // todo free and error handle
 	//the correct vao should be bound at this point.
 //	printf("%s vao: %i\n", m->name, m->vbo->vaoid);
 //	glBindVertexArray(m->vbo->vaoid);
-	glBindBuffer(GL_ARRAY_BUFFER,m->vbo->vboid);
+	glBindBuffer(GL_ARRAY_BUFFER,myvbo->vboid);
 	glBufferData(GL_ARRAY_BUFFER, vertcount * 8 * sizeof(GLfloat), interleavedbuffer, GL_STATIC_DRAW);
-	m->vbo->numverts = vertcount;
+	myvbo->numverts = vertcount;
 	free(interleavedbuffer);
 
 	shaderprogram_t * program = findProgramByName("staticmodel");//todo per model materials and permutations
@@ -555,12 +496,12 @@ int loadModelOBJ(model_t * m, char * filename){//todo flags
 
 
 
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,m->vbo->indicesid);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,myvbo->indicesid);
 //	glBufferData(GL_ELEMENT_ARRAY_BUFFER,sizeof(*indicebuffer), indicebuffer, GL_STATIC_DRAW);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER,facecount * 3 *sizeof(GLuint), indicebuffer, GL_STATIC_DRAW);
 //	glBufferData(GL_ELEMENT_ARRAY_BUFFER,totalface * 3 *sizeof(GLuint), indicebuffer, GL_STATIC_DRAW);
 //	glBufferData(GL_ELEMENT_ARRAY_BUFFER,6 * sizeof(GLint), muhindices, GL_STATIC_DRAW);
-	m->vbo->numfaces = facecount;
+	myvbo->numfaces = facecount;
 
 	free(indicebuffer);
 	//maybe use material based shading
@@ -659,7 +600,7 @@ int addModelRINT(model_t mod){
 	int returnid = (modelcount << 16) | modelArrayFirstOpen;
 	modellist[modelArrayFirstOpen].myid = returnid;
 
-	addModelToHashTable(modellist[modelArrayFirstOpen].name, returnid);
+	addToHashTable(modellist[modelArrayFirstOpen].name, returnid, modelhashtable);
 	if(modelArrayLastTaken < modelArrayFirstOpen) modelArrayLastTaken = modelArrayFirstOpen; //todo redo
 	return returnid;
 }
@@ -674,7 +615,7 @@ model_t * addModelRPOINT(model_t mod){
 	int returnid = (modelcount << 16) | modelArrayFirstOpen;
 	modellist[modelArrayFirstOpen].myid = returnid;
 
-	addModelToHashTable(modellist[modelArrayFirstOpen].name, returnid);
+	addToHashTable(modellist[modelArrayFirstOpen].name, returnid, modelhashtable);
 	//todo maybe have model have a hash variable, so i dont have to calculate it again if i want to delete... maybe
 	if(modelArrayLastTaken < modelArrayFirstOpen) modelArrayLastTaken = modelArrayFirstOpen;
 //	printf("modelarraysize = %i\n", modelArraySize);
