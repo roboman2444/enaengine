@@ -64,7 +64,7 @@ int initGameCodeSystem(void){
 		enttinydragon->texturegroup = 0;//findTextureGroupByName("coil");
 		enttinydragon->attachmentid = findEntityByNameRINT("coil");
 
-	deleteEntity(findEntityByNameRINT("hat"));
+//	deleteEntity(findEntityByNameRINT("hat"));
 //	deleteEntity(tidhat);
 
 
