@@ -123,7 +123,7 @@ int drawEntities(void){
 	for(i =0; i <= entityArrayLastTaken; i++){
 		entity_t *e = &entitylist[i];
 		if(e->type < 2)continue;
-		if(!e->model)continue;
+		if(!e->modelid)continue;
 		//todo sort and whatnot
 /*		if(e->texturegroup){
 			bindTextureGroup(e->texturegroup);
@@ -132,7 +132,7 @@ int drawEntities(void){
 			glUseProgram(staticmodel->id);
 		}
 */
-		glDrawModel(e->model, &e->mat);
+		glDrawModel(returnModelById(e->modelid), &e->mat);
 		count++;
 	}
 	return count;

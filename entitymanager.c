@@ -3,10 +3,9 @@
 #include <GL/gl.h>
 //local includes
 #include "globaldefs.h"
+#include "hashtables.h"
 #include "matrixlib.h"
 #include "texturemanager.h"
-#include "vbomanager.h"
-#include "modelmanager.h"
 #include "entitymanager.h"
 
 typedef struct hashbucket_s {
@@ -31,14 +30,6 @@ int initEntitySystem(void){
 	addEntityRINT("default");
 	entitiesOK = TRUE;
 	return TRUE; // todo error check
-}
-int getHash(char * string){
-	unsigned long rethash=0;
-	while(*string){
-		rethash= rethash * 31 + *string;
-		string++;
-	}
-	return rethash%MAXHASHBUCKETS;
 }
 int addEntityToHashTable(char * name, int id){
 	int hash = getHash(name);
@@ -181,8 +172,9 @@ entity_t createEntity(char * name){
 	newent.spawn = 0;
 	newent.nextthink = 0;
 	newent.needsmatupdate = FALSE;
+	newent.model = 0;
+
 */
-	newent.model = defaultModel;
 	newent.texturegroup = defaultTextureGroup;
 	newent.scale = 1.0;
 	Matrix4x4_CreateFromQuakeEntity(&newent.mat, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0);

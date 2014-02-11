@@ -23,17 +23,32 @@ int resizeWindow(int width, int height, int bpp, int debugmode){
 	return TRUE;
 }
 int setMSAA(int samples){
-	int msbuf;
-	int mssamp;
-	if(!samples){
-		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 0);
-		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 0);
+	int msbuf = 0;
+	int mssamp = 0;
+//	SDL_GL_GetAttribute(SDL_GL_MULTISAMPLEBUFFERS, &msbuf);
+//	SDL_GL_GetAttribute(SDL_GL_MULTISAMPLESAMPLES, &mssamp);
+	if(samples<2){
+		/*if(msbuf)*/ SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 0);
+//		SDL_GL_GetAttribute(SDL_GL_MULTISAMPLEBUFFERS, &msbuf);
+//		if(msbuf); //todo cast error
 	}
 	else{
-		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
-		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, samples);
+		/*if(!msbuf)*/ SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
+//		SDL_GL_GetAttribute(SDL_GL_MULTISAMPLEBUFFERS, &msbuf);
+//		if(!msbuf); //todo cast error
+
 //		SDL_GL_GetAttribute(SDL_GL_MULTISAMPLEBUFFERS, &msbuf);//todo
+		//returns 0 on success -error code on fail
 	}
+	/*if(mssamp != samples)*/ SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, samples);
+//	SDL_GL_GetAttribute(SDL_GL_MULTISAMPLESAMPLES, &mssamp);
+//	if(mssamp != samples){
+//		return FALSE;
+//		if(samples > 1){
+//			return setMSAA(samples/2);
+//		} else return FALSE;
+//	}
+
 	return samples;
 }
 int sdlInit(int width, int height, int bpp, int debugmode){
@@ -74,14 +89,16 @@ int sdlCheckEvent(void){
 			break;
 			case SDL_VIDEORESIZE:
 				resizeWindow(event.resize.w, event.resize.h, 24, 0);
+				//call stuff to change stuff blah
 			break;
 			case SDL_MOUSEMOTION:
-			//todo
+				//todo
 			break;
 			case SDL_MOUSEBUTTONDOWN:
-			//todo
+				//todo
 			break;
 			case SDL_MOUSEBUTTONUP:
+				//todo
 			break;
 			default:
 			break;

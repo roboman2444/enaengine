@@ -19,7 +19,8 @@ typedef struct entity_s {
 	void (*touch)(int touchid); //should be entity_t * toucher
 	int parentid;
 	int attachmentid;
-	model_t * model;
+
+	int modelid;
 	texturegroup_t * texturegroup;
 } entity_t;
 

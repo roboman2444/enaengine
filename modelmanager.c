@@ -4,16 +4,29 @@
 #include <math.h>
 
 #include "globaldefs.h"
+#include "hashtables.h"
 #include "texturemanager.h"
 #include "vbomanager.h"
 #include "modelmanager.h"
 #include "shadermanager.h"
 #include "console.h"
 
+typedef struct hashbucket_s {
+	char * name;
+	int id;
+	struct hashbucket_s * next;
+} hashbucket_t; //todo make global
+
+int modelcount = 0;
+int modelArrayFirstOpen = 0;
+int modelArrayLastTaken = 0;
+int modelArraySize = 0;
 int modelsOK = 0;
-int modelnumber = 0;
-model_t **modellist;
-model_t * defaultModel;
+model_t *modellist;
+
+hashbucket_t modelhashtable[MAXHASHBUCKETS];
+//hashbucket_t * modelhashtable;
+//model_t * defaultModel;
 #define NUMSTATIC 1
 #define NUMANIM 1
 
@@ -22,38 +35,105 @@ char *animtypes[] = {".dpm"}; //todo filesys //todo
 
 
 int initModelSystem(void){
-	model_t none = {"default", findTextureGroupByName("default"), 0, 0};
+//	modelhashtable = malloc(MAXHASHBUCKETS * 2* sizeof(hashbucket_t));
+	memset(modelhashtable, 0, MAXHASHBUCKETS *sizeof(hashbucket_t));
+//	model_t none = {"default", findTextureGroupByName("default"), 0, 0};
 	if(modellist) free(modellist);
-	modellist = malloc(modelnumber * sizeof(model_t *));
-	if(!modellist) memset(modellist, 0 , modelnumber * sizeof(model_t *));
-	defaultModel = addModelToList(none);
+	modellist = malloc(modelnumber * sizeof(model_t));
+	if(!modellist) memset(modellist, 0 , modelnumber * sizeof(model_t));
+//	addModelRINT("default");
+//	defaultModel = addModelToList(none);
 	modelsOK = TRUE;
 	return TRUE;
 }
-model_t * addModelToList(model_t model){
-	model_t *pointmodel = malloc(sizeof(model_t));
-	*pointmodel = model;
-	int current = modelnumber;
-	modelnumber++;
-	modellist = realloc(modellist, modelnumber*sizeof(model_t*));
-	modellist[current] = pointmodel;
-//	modellist[current].name = malloc(sizeof(*model.name));
-//	strcpy(modellist[current].name, model.name);
-	return pointmodel;
-}
-model_t * findModelByName(char * name){
-	int i;
-	for (i=0; i<modelnumber; i++){
-		if(!strcmp(name, modellist[i]->name)) return modellist[i];
+int addModelToHashTable(char * name, int id){ //todo global
+	int hash = getHash(name);
+	hashbucket_t * hb = &modelhashtable[hash];
+	if(hb->id){
+		for(; hb->next; hb = hb->next);
+		hb->next = malloc(sizeof(hashbucket_t));
+		hb = hb->next;
 	}
-	return modellist[0];
+	hb->name = name;
+	hb->id = id;
+	return hash;
 }
-model_t * createAndAddModel(char * name){
-	model_t * m = findModelByName(name);
-	if(m != defaultModel) return m;
-	return addModelToList(createAndLoadModel(name));
-//	return &modellist[addModelToList(createAndLoadModel(name))];
+int deleteModelFromHashTable(char * name, int id){
+	int hash = getHash(name);
+	hashbucket_t * hb = &modelhashtable[hash];
+	if(hb->id == id){
+		if(hb->next){
+			*hb = *hb->next;
+			free(hb->next);
+		}
+		hb->id = 0;
+		hb->name = 0;
+		return TRUE;
+	} //check linked list off of first
+	hashbucket_t * oldb = hb;
+        for(hb = hb->next; hb; oldb = hb, hb = hb->next){
+		if(hb->id == id){
+//			if(hb->name) free(hb->name);
+			oldb->next = hb->next;
+			free(hb);
+			return TRUE;
+		}
+        }
+	return FALSE;
 }
+
+
+model_t * findModelByNameRPOINT(char * name){
+	int hash = getHash(name);
+	hashbucket_t * hb = &modelhashtable[hash];
+	if(!hb->name) return 0;
+        for(; hb; hb = hb->next){
+		if(strcmp(hb->name, name)==0){
+			return returnModelById(hb->id);
+		}
+        }
+	//not found :(
+	return 0;
+}
+int findModelByNameRINT(char * name){ //todo global
+	int hash = getHash(name);
+	hashbucket_t * hb = &modelhashtable[hash];
+	if(!hb->name) return 0;
+        for(; hb; hb = hb->next){
+		if(strcmp(hb->name, name)==0){
+			return hb->id;
+		}
+        }
+	//not found :(
+	return 0;
+}
+
+int deleteModel(int id){
+	int modelindex = (id & 0xFFFF);
+	model_t * mod = &modellist[modelindex];
+	if(mod->myid != id) return FALSE;
+	if(!mod->name) return FALSE;
+	deleteModelFromHashTable(mod->name, id);
+	free(mod->name);
+
+//TODO
+//TODO
+//TODO
+//TODO
+//delte VAO and whatnot
+	bzero(mod, sizeof(model_t));
+	if(modelindex < modelArrayFirstOpen) modelArrayFirstOpen = modelindex;
+	for(; modelArrayLastTaken > 0 && !modellist[modelArrayLastTaken].type; modelArrayLastTaken--);
+	return TRUE;
+}
+model_t * returnModelById(int id){
+	int modelindex = (id & 0xFFFF);
+	model_t * mod = &modellist[modelindex];
+	if(!mod->type) return FALSE;
+	if(mod->myid == id) return mod;
+	return FALSE;
+}
+
 
 int generateNormalsFromMesh(GLfloat * vertbuffer, GLfloat * normbuffer, GLuint * indices, GLuint indicecount, GLuint vertcount, char type){
 	//used http://devmaster.net/posts/6065/calculating-normals-of-a-mesh and darkplaces model_shared.c as a ref
@@ -563,3 +643,56 @@ model_t createAndLoadTypeModel(char * name, char type){
 	free(filename);
 	return m;
 }
+
+
+
+
+
+int addModelRINT(model_t mod){
+	modelcount++;
+	for(; modelArrayFirstOpen < modelArraySize && modellist[modelArrayFirstOpen].type; modelArrayFirstOpen++);
+	if(modelArrayFirstOpen == modelArraySize){	//resize
+		modelArraySize++;
+		modellist = realloc(modellist, modelArraySize * sizeof(model_t));
+	}
+	modellist[modelArrayFirstOpen] = mod;
+	int returnid = (modelcount << 16) | modelArrayFirstOpen;
+	modellist[modelArrayFirstOpen].myid = returnid;
+
+	addModelToHashTable(modellist[modelArrayFirstOpen].name, returnid);
+	if(modelArrayLastTaken < modelArrayFirstOpen) modelArrayLastTaken = modelArrayFirstOpen; //todo redo
+	return returnid;
+}
+model_t * addModelRPOINT(model_t mod){
+	modelcount++;
+	for(; modelArrayFirstOpen < modelArraySize && modellist[modelArrayFirstOpen].type; modelArrayFirstOpen++);
+	if(modelArrayFirstOpen == modelArraySize){	//resize
+		modelArraySize++;
+		modellist = realloc(modellist, modelArraySize * sizeof(model_t));
+	}
+	modellist[modelArrayFirstOpen] = mod;
+	int returnid = (modelcount << 16) | modelArrayFirstOpen;
+	modellist[modelArrayFirstOpen].myid = returnid;
+
+	addModelToHashTable(modellist[modelArrayFirstOpen].name, returnid);
+	//todo maybe have model have a hash variable, so i dont have to calculate it again if i want to delete... maybe
+	if(modelArrayLastTaken < modelArrayFirstOpen) modelArrayLastTaken = modelArrayFirstOpen;
+//	printf("modelarraysize = %i\n", modelArraySize);
+//	printf("modelcount = %i\n", modelcount);
+
+	return &modellist[modelArrayFirstOpen];
+
+}
+int createAndAddModelRINT(char * name){
+	int m = findModelByNameRINT(name);
+	if(m) return m;
+	return addModelRINT(createAndLoadModel(name));
+//	return &modellist[addModelToList(createAndLoadModel(name))];
+}
+model_t * createAndAddModelRPOINT(char * name){
+	model_t * m = findModelByNameRPOINT(name);
+	if(m) return m;
+	return addModelRPOINT(createAndLoadModel(name));
+//	return &modellist[addModelToList(createAndLoadModel(name))];
+}
+
