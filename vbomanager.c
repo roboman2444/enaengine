@@ -49,6 +49,10 @@ int deleteVBO(int id){
 	if(!vbo->name) return FALSE;
 	deleteFromHashTable(vbo->name, id, vbohashtable);
 	free(vbo->name);
+	glDeleteBuffers(2, &vbo->vboid); //deletes both
+	glDeleteVertexArrays(1, &vbo->vaoid);
+
+//todo free vbo
 	bzero(vbo, sizeof(vbo_t));
 	if(vboindex < vboArrayFirstOpen) vboArrayFirstOpen = vboindex;
 	for(; vboArrayLastTaken > 0 && !vbolist[vboArrayLastTaken].type; vboArrayLastTaken--);

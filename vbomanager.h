@@ -3,9 +3,12 @@
 
 typedef struct vbo_s {
 	char * name;
+
 	GLuint vaoid;
-	GLuint vboid;// maybe not
+	 // must be in this order or else i have to rewrite deletion functions.
+	GLuint vboid;
 	GLuint indicesid;
+
 	GLuint numverts;
 	GLuint numfaces;
 	int myid;
