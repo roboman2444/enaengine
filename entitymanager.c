@@ -16,6 +16,7 @@ int entitiesOK = 0;
 entity_t *entitylist;
 hashbucket_t entityhashtable[MAXHASHBUCKETS];
 
+
 int initEntitySystem(void){
 	bzero(entityhashtable, MAXHASHBUCKETS * sizeof(hashbucket_t));
 	if(entitylist) free(entitylist);

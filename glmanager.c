@@ -106,7 +106,7 @@ int glInit(void){
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glUseProgram(staticmodel->id);
 
-	cam = createViewport("cam");
+	cam = createViewport("cam", 1);
 
 	glEnable(GL_TEXTURE_2D);
 //	glBindTexture(GL_TEXTURE_2D, tcoil->textures->id);
@@ -161,13 +161,6 @@ int glMainDraw(void){
 	angle[1] = degnumber;
 
 	recalcViewport(&cam, pos, angle, 90.0, 4.0/3.0, 1.0, 1000.0);
-/*
-	GLfloat out[16];
-	Matrix4x4_ToArrayFloatGL(&cam.view, out);
-	glUniformMatrix4fv(viewmat4, 1, GL_FALSE, out);
-	Matrix4x4_ToArrayFloatGL(&cam.projection, out);
-	glUniformMatrix4fv(projectionmat4, 1, GL_FALSE, out);
-*/
 	drawEntities();
 	swapBuffers();
 	return TRUE;

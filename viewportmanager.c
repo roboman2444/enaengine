@@ -6,53 +6,122 @@
 //local includes
 #include "globaldefs.h"
 #include "matrixlib.h"
+#include "hashtables.h"
 #include "viewportmanager.h"
 #include "framebuffermanager.h"
 
-int vpnumber = 0; //the first is an error one/screen
 int viewportsOK = 0;
-viewport_t **vplist;
-viewport_t * defaultViewport;
+int viewportcount = 0;
+int viewportArrayFirstOpen = 0;
+int viewportArrayLastTaken = 0;
+int viewportArraySize = 0;
+viewport_t *viewportlist;
+
+hashbucket_t viewporthashtable[MAXHASHBUCKETS];
 
 int initViewportSystem(void){
-	//todo have it figure out screen aspect for the default
-			//	name	id	aspect	fov	viewchanged
-//	viewport_t screen = {"default"	,0 	,1.0	, 90.0, 	0};
-	viewport_t screen = createViewport("default");
-	if(vplist) free(vplist);
-	vplist = malloc(vpnumber * sizeof(viewport_t *));
-	if(!vplist) memset(vplist, 0 , vpnumber * sizeof(viewport_t *));
-	defaultViewport = addViewportToList(screen);
+//	viewport_t screen = createViewport("default");
+	memset(viewporthashtable, 0, MAXHASHBUCKETS*sizeof(hashbucket_t));
+	if(viewportlist) free(viewportlist);
+	viewportlist = malloc(vpnumber * sizeof(viewport_t));
+	if(!viewportlist) memset(viewportlist, 0 , vpnumber * sizeof(viewport_t));
+//	defaultViewport = addViewportToList(screen);
 	viewportsOK = TRUE;
 	return TRUE; // todo error check
 }
-viewport_t *  addViewportToList(viewport_t vp){ //todo have this return a viewport pointa
-	viewport_t *pointvp = malloc(sizeof(viewport_t));
-	*pointvp = vp;
-	int current = vpnumber;
-	vpnumber++;
-	vplist = realloc(vplist, vpnumber * sizeof(viewport_t*));
-	vplist[current] = pointvp;
-	//vplist[current].name = malloc(sizeof(*vp.name));
-	//strcpy(vplist[current].name, vp.name);
-	return pointvp;
+viewport_t *findViewportByNameRPOINT(char * name){
+	return returnViewportById(findByNameRINT(name, viewporthashtable));
+}
+int findViewportByNameRINT(char * name){
+	return findByNameRINT(name, viewporthashtable);
 }
 
-viewport_t * createAndAddViewport(char * name){
-	return addViewportToList(createViewport(name));
+int deleteViewPort(int id){
+	int viewportindex = (id & 0xFFFF);
+	viewport_t * viewport = &viewportlist[viewportindex];
+	if(viewport->myid != id) return FALSE;
+	if(!viewport->name) return FALSE;
+	deleteFromHashTable(viewport->name, id, viewporthashtable);
+	free(viewport->name);
+
+//todo free viewport
+	bzero(viewport, sizeof(viewport_t));
+	if(viewportindex < viewportArrayFirstOpen) viewportArrayFirstOpen = viewportindex;
+	for(; viewportArrayLastTaken > 0 && !viewportlist[viewportArrayLastTaken].type; viewportArrayLastTaken--);
+	return TRUE;
 }
 
-viewport_t * returnViewport(int id){
-	if(id >= vpnumber) return vplist[0];
-	return vplist[id];
+viewport_t * returnViewportById(int id){
+	int viewportindex = (id & 0xFFFF);
+	viewport_t * viewport = &viewportlist[viewportindex];
+	if(!viewport->type) return FALSE;
+	if(viewport->myid == id) return viewport;
+	return FALSE;
 }
-viewport_t * findViewportByName(char * name){
+
+viewport_t createViewport (char * name, char type){
+	viewport_t v;
+	v.type = 0; //todo make useful
+	v.aspect = 1.0;
+	v.fov = 90.0;
+	v.near = 1.0;
+	v.far = 1000.0;
+	v.viewchanged = TRUE;
 	int i;
-	for(i = 0; i<vpnumber; i++){
-		if(!strcmp(name, vplist[i]->name)) return vplist[i];
+	for(i = 0; i < 3; i++){
+		v.pos[i] = 0.0;
+		v.angle[i] = 0.0;
 	}
-	return vplist[0];
+ 	v.name = malloc(strlen(name)+1);
+	strcpy(v.name, name);
+//	recalcViewMatrix(&v); //todo may not need
+//	recalcProjectionMatrix(&v);
+	Matrix4x4_CreateIdentity(&v.view);
+	Matrix4x4_CreateIdentity(&v.projection);
+	Matrix4x4_CreateIdentity(&v.viewproj);
+	v.type = type;
+	return v;
+//todo
 }
+
+int addViewportRINT(viewport_t viewport){
+	viewportcount++;
+	for(; viewportArrayFirstOpen < viewportArraySize && viewportlist[viewportArrayFirstOpen].type; viewportArrayFirstOpen++);
+	if(viewportArrayFirstOpen == viewportArraySize){	//resize
+		viewportArraySize++;
+		viewportlist = realloc(viewportlist, viewportArraySize * sizeof(viewport_t));
+	}
+	viewportlist[viewportArrayFirstOpen] = viewport;
+	int returnid = (viewportcount << 16) | viewportArrayFirstOpen;
+	viewportlist[viewportArrayFirstOpen].myid = returnid;
+
+	addToHashTable(viewportlist[viewportArrayFirstOpen].name, returnid, viewporthashtable);
+	if(viewportArrayLastTaken < viewportArrayFirstOpen) viewportArrayLastTaken = viewportArrayFirstOpen; //todo redo
+	return returnid;
+}
+viewport_t * addViewportRPOINT(viewport_t viewport){
+	viewportcount++;
+	for(; viewportArrayFirstOpen < viewportArraySize && viewportlist[viewportArrayFirstOpen].type; viewportArrayFirstOpen++);
+	if(viewportArrayFirstOpen == viewportArraySize){	//resize
+		viewportArraySize++;
+		viewportlist = realloc(viewportlist, viewportArraySize * sizeof(viewport_t));
+	}
+	viewportlist[viewportArrayFirstOpen] = viewport;
+	int returnid = (viewportcount << 16) | viewportArrayFirstOpen;
+	viewportlist[viewportArrayFirstOpen].myid = returnid;
+
+	addToHashTable(viewportlist[viewportArrayFirstOpen].name, returnid, viewporthashtable);
+	if(viewportArrayLastTaken < viewportArrayFirstOpen) viewportArrayLastTaken = viewportArrayFirstOpen; //todo redo
+	return &viewportlist[viewportArrayFirstOpen];
+}
+
+viewport_t * createAndAddViewportRPOINT(char * name, char type){
+	return addViewportRPOINT(createViewport(name, type));
+}
+int createAndAddViewportRINT(char * name, char type){
+	return addViewportRINT(createViewport(name, type));
+}
+
 void recalcViewMatrix(viewport_t * v){
 /*	Matrix4x4_CreateIdentity(&v->view);
 	Matrix4x4_ConcatRotate(&v->view, v->angle[2], 0.0, 0.0, 1.0);
@@ -112,27 +181,4 @@ int recalcViewport(viewport_t * v, vec3_t pos, vec3_t angle, float fov, float as
 //	if(v->viewchanged) Matrix4x4_Concat(&v->viewproj, &v->view, &v->projection);
 	if(v->viewchanged) Matrix4x4_Concat(&v->viewproj, &v->projection, &v->view);
 	return v->viewchanged;
-}
-viewport_t createViewport (char * name){
-	viewport_t v;
-	v.id = 0; //todo make useful
-	v.aspect = 1.0;
-	v.fov = 90.0;
-	v.near = 1.0;
-	v.far = 1000.0;
-	v.viewchanged = TRUE;
-	int i;
-	for(i = 0; i < 3; i++){
-		v.pos[i] = 0.0;
-		v.angle[i] = 0.0;
-	}
- 	v.name = malloc(strlen(name)+1);
-	strcpy(v.name, name);
-//	recalcViewMatrix(&v); //todo may not need
-//	recalcProjectionMatrix(&v);
-	Matrix4x4_CreateIdentity(&v.view);
-	Matrix4x4_CreateIdentity(&v.projection);
-	Matrix4x4_CreateIdentity(&v.viewproj);
-	return v;
-//todo
 }
