@@ -144,7 +144,7 @@ int drawEntities(void){
 			glUseProgram(staticmodel->id);
 		}
 */
-		glDrawModel(returnModelById(e->modelid), &e->mat, &cam.view); //todo redo
+		glDrawModel(returnModelById(e->modelid), &e->mat, &cam.viewproj); //todo redo
 		count++;
 	}
 	return count;
