@@ -14,6 +14,7 @@ typedef struct viewport_s
 	vec3_t angle;
 	matrix4x4_t projection;
 	matrix4x4_t view;
+	matrix4x4_t viewproj;
 } viewport_t;
 
 viewport_t *defaultViewport;

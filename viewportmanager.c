@@ -109,6 +109,8 @@ int recalcViewport(viewport_t * v, vec3_t pos, vec3_t angle, float fov, float as
 		v->fov = fov;
 		recalcProjectionMatrix(v);
 	}
+//	if(v->viewchanged) Matrix4x4_Concat(&v->viewproj, &v->view, &v->projection);
+	if(v->viewchanged) Matrix4x4_Concat(&v->viewproj, &v->projection, &v->view);
 	return v->viewchanged;
 }
 viewport_t createViewport (char * name){
@@ -130,6 +132,7 @@ viewport_t createViewport (char * name){
 //	recalcProjectionMatrix(&v);
 	Matrix4x4_CreateIdentity(&v.view);
 	Matrix4x4_CreateIdentity(&v.projection);
+	Matrix4x4_CreateIdentity(&v.viewproj);
 	return v;
 //todo
 }

@@ -20,7 +20,7 @@
 
 //texturegroup_t * tcoil;
 shaderprogram_t * staticmodel, * staticmodeltextured;
-GLuint modelmat4, viewmat4, projectionmat4;
+GLuint modelmat4, viewmat4, projectionmat4, mvpmat4;
 float degnumber;
 viewport_t cam;
 
@@ -70,12 +70,15 @@ int glInit(void){
 	staticmodel = createAndAddShader("staticmodel");
 //	staticmodeltextured = createAndAddShader("staticmodeltextured");
 //	glUseProgram(staticmodel->id);
-	modelmat4 = glGetUniformLocation(staticmodel->id, "modelMat");
+/*	modelmat4 = glGetUniformLocation(staticmodel->id, "modelMat");
 	if(modelmat4<0) consolePrintf("cant find uniform!\n");
 	viewmat4 = glGetUniformLocation(staticmodel->id, "viewMat");
 	if(viewmat4<0) consolePrintf("cant find uniform!\n");
 	projectionmat4 = glGetUniformLocation(staticmodel->id, "projectionMat");
 	if(projectionmat4<0) consolePrintf("cant find uniform!\n");
+*/
+	mvpmat4 = glGetUniformLocation(staticmodel->id, "mvpMat");
+	if(mvpmat4<0) consolePrintf("cant find uniform!\n");
 
 //	createAndAddShader("console");
 //	addTextureGroupToList(createAndLoadTextureGroup("coil"));
@@ -112,12 +115,15 @@ int glInit(void){
 
 	return TRUE; // so far so good
 }
-int glDrawModel(model_t * model, matrix4x4_t * modworld){
-	GLfloat out[16];
-	Matrix4x4_ToArrayFloatGL(modworld, out);
-	glUniformMatrix4fv(modelmat4, 1, GL_FALSE, out);
+int glDrawModel(model_t * model, matrix4x4_t * modworld, matrix4x4_t * viewproj){
 	vbo_t * tvbo = returnVBOById(model->vbo);
 	if(!tvbo) return FALSE;
+	matrix4x4_t outmat;
+//	Matrix4x4_Concat(&outmat, modworld, viewproj);
+	Matrix4x4_Concat(&outmat, viewproj, modworld);
+	GLfloat out[16];
+	Matrix4x4_ToArrayFloatGL(&outmat, out);
+	glUniformMatrix4fv(mvpmat4, 1, GL_FALSE, out);
 	glBindVertexArray(tvbo->vaoid);
 //	glDrawElements(GL_TRIANGLES, model->numfaces[1]*3, GL_UNSIGNED_INT, (void*)(model->numfaces[0]*3*sizeof(GLuint)));
 	glDrawElements(GL_TRIANGLES, tvbo->numfaces*3, GL_UNSIGNED_INT, 0);
@@ -138,7 +144,7 @@ int drawEntities(void){
 			glUseProgram(staticmodel->id);
 		}
 */
-		glDrawModel(returnModelById(e->modelid), &e->mat);
+		glDrawModel(returnModelById(e->modelid), &e->mat, &cam.view); //todo redo
 		count++;
 	}
 	return count;
@@ -151,16 +157,17 @@ int glMainDraw(void){
 	vec3_t angle = {30.0, 0.0, 0.0};
 	pos[0] = sin(degnumber *(-M_PI / 180.0))*15.0;
 	pos[2] = cos(degnumber *(-M_PI / 180.0))*15.0;
-	angle[1] = degnumber;
 //	angle[2] = -90.0;
-	recalcViewport(&cam, pos, angle, 90.0, 4.0/3.0, 1.0, 1000.0);
+	angle[1] = degnumber;
 
+	recalcViewport(&cam, pos, angle, 90.0, 4.0/3.0, 1.0, 1000.0);
+/*
 	GLfloat out[16];
 	Matrix4x4_ToArrayFloatGL(&cam.view, out);
 	glUniformMatrix4fv(viewmat4, 1, GL_FALSE, out);
 	Matrix4x4_ToArrayFloatGL(&cam.projection, out);
 	glUniformMatrix4fv(projectionmat4, 1, GL_FALSE, out);
-
+*/
 	drawEntities();
 	swapBuffers();
 	return TRUE;

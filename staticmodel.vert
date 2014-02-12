@@ -3,6 +3,8 @@
 uniform mat4 modelMat;
 uniform mat4 viewMat;
 uniform mat4 projectionMat;
+uniform mat4 mvpMat;
+
 
 in vec2 texCoord;
 in vec3 position;
@@ -16,8 +18,7 @@ void main(){
 	fragnormal = normal;
 	fragposition = position;
 	fragtexCoord = texCoord;
-//	gl_Position = viewMat * modelMat * projectionMat * vec4(fragposition, 1.0);
-//	gl_Position = projectionMat * modelMat * viewMat * vec4(fragposition, 1.0);
-	gl_Position = projectionMat *  viewMat * modelMat * vec4(fragposition, 1.0);
-//	gl_PointSize = 5.0;
+//	gl_Position = projectionMat *  viewMat * modelMat * vec4(fragposition, 1.0);
+	gl_Position = mvpMat * vec4(fragposition, 1.0);
+//	gl_Position = vec4(fragposition, 1.0) * mvpMat;
 }
