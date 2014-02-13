@@ -33,10 +33,10 @@ entitylistpoint_t findEntitiesByNameRPOINT(char * name){
 	if(!hb->name) return ret;
         for(; hb; hb = hb->next){
 		if(strcmp(hb->name, name)==0){
-//			return returnById(hb->id);
+//			return returnEntityById(hb->id);
 			ret.count++;
 			ret.list = realloc(ret.list, ret.count * sizeof(entity_t *));
-			ret.list[ret.count-1] = returnById(hb->id);
+			ret.list[ret.count-1] = returnEntityById(hb->id);
 		}
         }
 	return ret;
@@ -48,7 +48,7 @@ entitylistint_t findEntitiesByNameRINT(char * name){
 	if(!hb->name) return ret;
         for(; hb; hb = hb->next){
 		if(strcmp(hb->name, name)==0){
-//			return returnById(hb->id);
+//			return returnEntityById(hb->id);
 			ret.count++;
 			ret.list = realloc(ret.list, ret.count * sizeof(int));
 			ret.list[ret.count-1] = hb->id;
@@ -58,7 +58,7 @@ entitylistint_t findEntitiesByNameRINT(char * name){
 }
 
 entity_t * findEntityByNameRPOINT(char * name){ //todo write a function that can find ALL entities with name
-	return returnById(findByNameRINT(name, entityhashtable));
+	return returnEntityById(findByNameRINT(name, entityhashtable));
 }
 int findEntityByNameRINT(char * name){
 	return findByNameRINT(name, entityhashtable);
@@ -80,7 +80,7 @@ int deleteEntity(int id){
 	for(; entityArrayLastTaken > 0 && !entitylist[entityArrayLastTaken].type; entityArrayLastTaken--);
 	return TRUE;
 }
-entity_t * returnById(int id){
+entity_t * returnEntityById(int id){
 //	int entityspawncount = (id >> 16);
 	int entityindex = (id & 0xFFFF);
 	entity_t * ent = &entitylist[entityindex];

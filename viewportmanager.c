@@ -29,6 +29,36 @@ int initViewportSystem(void){
 	viewportsOK = TRUE;
 	return TRUE; // todo error check
 }
+viewportlistpoint_t findViewportssByNameRPOINT(char * name){
+	viewportlistpoint_t ret;
+	int hash = getHash(name);
+	hashbucket_t * hb = &viewporthashtable[hash];
+	if(!hb->name) return ret;
+        for(; hb; hb = hb->next){
+		if(strcmp(hb->name, name)==0){
+//			return returnById(hb->id);
+			ret.count++;
+			ret.list = realloc(ret.list, ret.count * sizeof(viewport_t *));
+			ret.list[ret.count-1] = returnViewportById(hb->id);
+		}
+        }
+	return ret;
+}
+viewportlistint_t findViewportssByNameRINT(char * name){
+	viewportlistint_t ret;
+	int hash = getHash(name);
+	hashbucket_t * hb = &viewporthashtable[hash];
+	if(!hb->name) return ret;
+        for(; hb; hb = hb->next){
+		if(strcmp(hb->name, name)==0){
+//			return returnById(hb->id);
+			ret.count++;
+			ret.list = realloc(ret.list, ret.count * sizeof(int));
+			ret.list[ret.count-1] = hb->id;
+		}
+        }
+	return ret;
+}
 viewport_t *findViewportByNameRPOINT(char * name){
 	return returnViewportById(findByNameRINT(name, viewporthashtable));
 }

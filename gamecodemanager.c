@@ -75,7 +75,7 @@ int initGameCodeSystem(void){
 int calcEntAttachMat(entity_t * e){ //return value is weather e->mat got changed
 	if(!e->type) return FALSE;
 	if(e->attachmentid){
-		entity_t * attacher = returnById(e->attachmentid);
+		entity_t * attacher = returnEntityById(e->attachmentid);
 		if(!attacher){
 			 e->attachmentid = 0;
 		}

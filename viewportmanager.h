@@ -17,6 +17,17 @@ typedef struct viewport_s {
 	int myid;
 } viewport_t;
 
+typedef struct viewportlistpoint_s {
+	//gotta free dis stuff after you use it
+	viewport_t **list;
+	int count;
+} viewportlistpoint_t;
+typedef struct viewportlistint_s {
+	//gotta free dis stuff after you use it
+	int *list;
+	int count;
+} viewportlistint_t;
+
 int initViewPortSystem(void);
 
 viewport_t * viewportlist;
@@ -28,6 +39,9 @@ int viewportArrayLastTaken;
 
 viewport_t * findViewportByNameRPOINT(char * name);
 int findViewportByNameRINT(char * name);
+
+viewportlistpoint_t findViewportsByNameRPOINT(char * name);
+viewportlistint_t findViewportsByNameRINT(char * name);
 
 viewport_t * returnViewportById(int id);
 

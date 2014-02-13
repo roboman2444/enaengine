@@ -25,11 +25,13 @@ typedef struct entity_s {
 } entity_t;
 
 typedef struct entitylistpoint_s {
+	//gotta use this stuff after you use it
 	entity_t **list;
 	int count;
 } entitylistpoint_t; // yeah yeah i know naming
 
 typedef struct entitylistint_s {
+	//gotta use this stuff after you use it
 	int *list;
 	int count;
 } entitylistint_t; // yeah yeah i know naming
@@ -48,7 +50,7 @@ int findEntityByNameRINT(char * name);
 entitylistpoint_t findEntitiesByNameRPOINT(char * nam);
 entitylistint_t findEntitiesByNameRINT(char * name);
 //returns pointer by entity id
-entity_t * returnById(int id);
+entity_t * returnEntityById(int id);
 //creates and adds entity to listwith name
 entity_t * addEntityRPOINT(char * name);
 int addEntityRINT(char * name);
