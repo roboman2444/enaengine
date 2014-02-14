@@ -8,22 +8,63 @@
 
 #include "SDL_image.h"
 #include "SDL.h"
+#include "hashtables.h"
 int texturesOK = 0;
-int texturegroupnumber = 0; // first one is error one
+int texturegroupcount = 0;
+int texturegroupArrayFirstOpen = 0;
+int texturegroupArrayLastTaken = 0;
+int texturegroupArraySize = 0;
 
 #define NUMNAMES 5
 #define NUMFILES 5
-texturegroup_t **texturegrouplist; //todo have a sperate dynamic and static lists
-texturegroup_t * defaultTextureGroup;
+char * filetypes[] = {".png",".tga",".bmp",".jpg",".jpeg"}; //todo filesys
+char * nametypes[] = {"_diffuse","_normal","_bump","_spec","_gloss"}; //todo filesys
+
+hashbucket_t texturegrouphashtable[MAXHASHBUCKETS];
+
+texturegroup_t *texturegrouplist;
 
 int initTextureSystem(void){
+	memset(texturegrouphashtable, 0, MAXHASHBUCKETS * sizeof(hashbucket_t));
 	if(texturegrouplist) free(texturegrouplist);
-	texturegrouplist = malloc(texturegroupnumber * sizeof(texturegroup_t *));
-	if(!texturegrouplist) memset(texturegrouplist, 0, texturegroupnumber * sizeof(texturegroup_t *));
-	defaultTextureGroup = addTextureGroupToList(createTextureGroup("default", 0));
+	texturegrouplist = malloc(texturegroupnumber * sizeof(texturegroup_t));
+	if(!texturegrouplist) memset(texturegrouplist, 0, texturegroupnumber * sizeof(texturegroup_t));
+//	defaultTextureGroup = addTextureGroupToList(createTextureGroup("default", 0));
 	//todo error checking
 	texturesOK = TRUE;
 	return TRUE;
+}
+
+texturegroup_t * findTexturegroupByNameRPOINT(char * name){
+	return returnTexturegroupById(findByNameRINT(name, texturegrouphashtable));
+}
+int findTexturegroupByNameRINT(char * name){
+	return findByNameRINT(name, texturegrouphashtable);
+}
+int deleteTexturegroup(int id){
+	int texturegroupindex = (id & 0xFFFF);
+	texturegroup_t * tex = &texturegrouplist[texturegroupindex];
+	if(tex->myid != id) return FALSE;
+	if(!tex->name) return FALSE;
+	int i = 0;
+	if(tex->textures){
+		for(i = 0; i < tex->num; i++){
+			deleteTexture(tex->textures[i]);
+		}
+		free(tex->textures);
+	}
+	free(tex->name);
+	memset(tex,0, sizeof(texturegroup_t));
+	if(texturegroupindex < texturegroupArrayFirstOpen) texturegroupArrayFirstOpen = texturegroupindex;
+	for(; texturegroupArrayLastTaken > 0 && !texturegrouplist[texturegroupArrayLastTaken].type; texturegroupArrayLastTaken--);
+	return i;
+}
+texturegroup_t * returnTexturegroupById(int id){
+	int texturegroupindex = (id & 0xFFFF);
+	texturegroup_t * tex = &texturegrouplist[texturegroupindex];
+	if(!tex->type) return FALSE;
+	if(tex->myid == id) return tex;
+	return FALSE;
 }
 
 texturegroup_t createTextureGroup(char * name, int num){
@@ -35,22 +76,6 @@ texturegroup_t createTextureGroup(char * name, int num){
 	return texgroup;
 }
 
-texturegroup_t * addTextureGroupToList(texturegroup_t texgroup){
-	texturegroup_t * pointtexgroup = malloc(sizeof(texturegroup_t));
-	*pointtexgroup = texgroup;
-	int current = texturegroupnumber;
-	texturegroupnumber++;
-	texturegrouplist = realloc(texturegrouplist, texturegroupnumber*sizeof(texturegroup_t *));
-	texturegrouplist[current] = pointtexgroup;
-	return pointtexgroup;
-}
-texturegroup_t * findTextureGroupByName(char * name){
-	int i;
-	for(i = 0; i < texturegroupnumber; i++){
-		if(!strcmp(name, texturegrouplist[i]->name)) return texturegrouplist[i];
-	}
-	return texturegrouplist[0];
-}
 //todo something to load all textures for group *name
 texture_t loadTexture(char * filepath, char type){
 	texture_t tex;
@@ -98,25 +123,10 @@ int deleteTexture(texture_t texture){
 	return TRUE; // todo return something useful
 }
 
-int deleteTextureGroup(texturegroup_t * texgroup){
-	//todo method for replacing... like particlemanager.
-	int i;
-	for(i = 0; i < texgroup->num; i++){
-		deleteTexture(texgroup->textures[i]);
-	}
-	texgroup->num = 0;
-	free(texgroup->textures);
-	texgroup->textures = 0;
-	free(texgroup->name);
-	texgroup->name = 0;
-	free(texgroup);
-	//todo return false if some sort of error
-	return i;
-}
-int deleteAllTextureGroups(void){
+int deleteAllTexturegroups(void){
 	int i;
 	for(i = 0; i < texturegroupnumber; i++){
-		deleteTextureGroup(texturegrouplist[i]); // if texgroup is unused/deleted, the num will be 0 anyway
+		deleteTexturegroup(texturegrouplist[i].myid); // if texgroup is unused/deleted, the num will be 0 anyway
 	}
 	free(texturegrouplist);
 	texturegrouplist = 0;
@@ -124,9 +134,7 @@ int deleteAllTextureGroups(void){
 	return i; //todo useful returns
 }
 
-texturegroup_t createAndLoadTextureGroup(char * name){
-	char * filetypes[] = {".png",".tga",".bmp",".jpg",".jpeg"}; //todo filesys
-	char * nametypes[] = {"_diffuse","_normal","_bump","_spec","_gloss"}; //todo filesys
+texturegroup_t createAndLoadTexturegroup(char * name){
 	texturegroup_t texgroup;
 	//todo clean up texturegroup if it already has shit in it.
 	texgroup.num = 0;
@@ -152,6 +160,7 @@ texturegroup_t createAndLoadTextureGroup(char * name){
 		}
 	}
 	free(filename);
+	texgroup.type = 2;
 	return texgroup;
 }
 
@@ -176,4 +185,52 @@ int bindTextureGroup(texturegroup_t * texturegroup){
 	}
 	glActiveTexture(GL_TEXTURE0);
 	return count;
+}
+
+int addTexturegroupRINT(texturegroup_t tex){
+	texturegroupcount++;
+	for(; texturegroupArrayFirstOpen < texturegroupArraySize && texturegrouplist[texturegroupArrayFirstOpen].type; texturegroupArrayFirstOpen++);
+	if(texturegroupArrayFirstOpen == texturegroupArraySize){	//resize
+		texturegroupArraySize++;
+		texturegrouplist = realloc(texturegrouplist, texturegroupArraySize * sizeof(texturegroup_t));
+	}
+	texturegrouplist[texturegroupArrayFirstOpen] = tex;
+	int returnid = (texturegroupcount << 16) | texturegroupArrayFirstOpen;
+	texturegrouplist[texturegroupArrayFirstOpen].myid = returnid;
+
+	addToHashTable(texturegrouplist[texturegroupArrayFirstOpen].name, returnid, texturegrouphashtable);
+	if(texturegroupArrayLastTaken < texturegroupArrayFirstOpen) texturegroupArrayLastTaken = texturegroupArrayFirstOpen; //todo redo
+	return returnid;
+}
+texturegroup_t * addTexturegroupRPOINT(texturegroup_t tex){
+	texturegroupcount++;
+	for(; texturegroupArrayFirstOpen < texturegroupArraySize && texturegrouplist[texturegroupArrayFirstOpen].type; texturegroupArrayFirstOpen++);
+	if(texturegroupArrayFirstOpen == texturegroupArraySize){	//resize
+		texturegroupArraySize++;
+		texturegrouplist = realloc(texturegrouplist, texturegroupArraySize * sizeof(texturegroup_t));
+	}
+	texturegrouplist[texturegroupArrayFirstOpen] = tex;
+	int returnid = (texturegroupcount << 16) | texturegroupArrayFirstOpen;
+	texturegrouplist[texturegroupArrayFirstOpen].myid = returnid;
+
+	addToHashTable(texturegrouplist[texturegroupArrayFirstOpen].name, returnid, texturegrouphashtable);
+	//todo maybe have texturegroup have a hash variable, so i dont have to calculate it again if i want to delete... maybe
+	if(texturegroupArrayLastTaken < texturegroupArrayFirstOpen) texturegroupArrayLastTaken = texturegroupArrayFirstOpen;
+//	printf("texturegrouparraysize = %i\n", texturegroupArraySize);
+//	printf("texturegroupcount = %i\n", texturegroupcount);
+
+	return &texturegrouplist[texturegroupArrayFirstOpen];
+
+}
+int createAndAddTexturegroupRINT(char * name){
+	int m = findTexturegroupByNameRINT(name);
+	if(m) return m;
+	return addTexturegroupRINT(createAndLoadTexturegroup(name));
+//	return &texturegrouplist[addtexturegroupToList(createAndLoadtexturegroup(name))];
+}
+texturegroup_t * createAndAddTexturegroupRPOINT(char * name){
+	texturegroup_t * m = findTexturegroupByNameRPOINT(name);
+	if(m) return m;
+	return addTexturegroupRPOINT(createAndLoadTexturegroup(name));
+//	return &texturegrouplist[addtexturegroupToList(createAndLoadtexturegroup(name))];
 }

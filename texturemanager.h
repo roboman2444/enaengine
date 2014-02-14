@@ -35,36 +35,48 @@ typedef struct texture_s {
 */
 
 typedef struct texturegroup_s{
+	char type;
 	int num;
 	texture_t * textures; //first should be diffuse, second normal, etc
 	char * name;
+	int myid;
 }texturegroup_t;
 
 int texturesOK;
 int texturegroupnumber;
 
+texturegroup_t *texturegrouplist;
+int texturegroupcount;
+int texturegroupArraySize;
+int texturegroupArrayLastTaken;
 
-texturegroup_t * defaultTextureGroup;//todo
+texturegroup_t createTexturegroup(char * name, int num);
 
-texturegroup_t * findTextureGroupByName(char * name);
-
-texturegroup_t createTextureGroup(char * name, int num);
-
-texturegroup_t * addTextureGroupToList(texturegroup_t texgroup);
+texturegroup_t * addTexturegroupRPOINT(texturegroup_t texgroup);
+int addTexturegroupRINT(texturegroup_t texgroup);
 
 int initTextureSystem(void);
 
+texturegroup_t * findTexturegroupByNameRPOINT(char * name);
+int findTexturegroupByNameRINT(char * name);
+
+int deleteTexturegroup(int id);
+
+
 texture_t loadTexture(char *filepath, char type);
+texturegroup_t createAndLoadTexturegroup(char *name);
 
-texturegroup_t createAndLoadTextureGroup(char *name);
 
-int bindTextureGroup(texturegroup_t * texgroup);
+texturegroup_t * createAndAddTexturegroupRPOINT(char * name);
+int createAndAddTexturegroupRINT(char * name);
 
-int deleteTextureGroup(texturegroup_t * texgroup);
+texturegroup_t * returnTexturegroupById(int id);
 
-int deleteTexture(texture_t texture);
+//int bindTextureGroup(texturegroup_t * texgroup);
 
-int deleteAllTextureGroups(void);
+int deleteAllTexturegroups(void);
+
+int deleteTexture(texture_t tex);
 
 #endif
 

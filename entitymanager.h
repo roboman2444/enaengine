@@ -5,6 +5,7 @@ typedef struct entity_s {
 	char * name;
 	int myid;
 	char type;
+	char transparent;
 	vec3_t pos;
 	vec3_t angle;
 	vec3_t anglevel;

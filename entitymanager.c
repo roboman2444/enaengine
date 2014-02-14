@@ -109,9 +109,8 @@ entity_t createEntity(char * name){
 	newent.nextthink = 0;
 	newent.needsmatupdate = FALSE;
 	newent.model = 0;
-
+	newent.texturegroup = 0;
 */
-	newent.texturegroup = defaultTextureGroup;
 	newent.scale = 1.0;
 	Matrix4x4_CreateFromQuakeEntity(&newent.mat, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0);
 //	entitycount++;
