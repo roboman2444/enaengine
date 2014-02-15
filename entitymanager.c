@@ -18,7 +18,7 @@ hashbucket_t entityhashtable[MAXHASHBUCKETS];
 
 
 int initEntitySystem(void){
-	bzero(entityhashtable, MAXHASHBUCKETS * sizeof(hashbucket_t));
+	memset(entityhashtable, 0, MAXHASHBUCKETS * sizeof(hashbucket_t));
 	if(entitylist) free(entitylist);
 	entitylist = malloc(entitycount * sizeof(entity_t));
 	if(!entitylist) memset(entitylist, 0 , entitycount * sizeof(entity_t));

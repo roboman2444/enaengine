@@ -20,6 +20,7 @@ int addToHashTable(char * name, int id, hashbucket_t * ht){
 	}
 	hb->name = name;
 	hb->id = id;
+	hb->next = 0;
 	return hash;
 }
 int deleteFromHashTable(char * name, int id, hashbucket_t *ht){

@@ -62,6 +62,22 @@ int initGameCodeSystem(void){
 		enttinydragon->modelid = createAndAddModelRINT("dragon");
 		enttinydragon->texturegroupid = 0;//findtexturegroupidByName("coil");
 		enttinydragon->attachmentid = findEntityByNameRINT("coil");
+	enttinydragon = addEntityRPOINT("tinydragon");
+		enttinydragon->type = 2;
+		enttinydragon->pos[1] = -3.0;
+		enttinydragon->scale = 0.2;
+		enttinydragon->needsmatupdate = TRUE;
+		enttinydragon->modelid = createAndAddModelRINT("dragon");
+		enttinydragon->texturegroupid = 0;//findtexturegroupidByName("coil");
+		enttinydragon->attachmentid = findEntityByNameRINT("coil");
+	enttinydragon = addEntityRPOINT("tinydragon");
+		enttinydragon->type = 2;
+		enttinydragon->pos[2] = 3.0;
+		enttinydragon->scale = 0.2;
+		enttinydragon->needsmatupdate = TRUE;
+		enttinydragon->modelid = createAndAddModelRINT("dragon");
+		enttinydragon->texturegroupid = 0;//findtexturegroupidByName("coil");
+		enttinydragon->attachmentid = findEntityByNameRINT("coil");
 
 //	deleteEntity(findEntityByNameRINT("hat"));
 //	deleteEntity(tidhat);
