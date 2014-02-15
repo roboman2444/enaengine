@@ -14,6 +14,7 @@
 #include "matrixlib.h"
 #include "viewportmanager.h"
 #include "entitymanager.h"
+#include "renderqueue.h"
 
 #include <tgmath.h>
 
@@ -129,23 +130,65 @@ int glDrawModel(model_t * model, matrix4x4_t * modworld, matrix4x4_t * viewproj)
 	glDrawElements(GL_TRIANGLES, tvbo->numfaces*3, GL_UNSIGNED_INT, 0);
 	return tvbo->numfaces;
 }
-int drawEntities(void){
+int loadEntitiesIntoQueue(renderbatche_t * batch){
 	int i;
 	int count = 0;
 	for(i =0; i <= entityArrayLastTaken; i++){
 		entity_t *e = &entitylist[i];
 		if(e->type < 2)continue;
 		if(!e->modelid)continue;
-		//todo sort and whatnot
-/*		if(e->texturegroup){
-			bindTextureGroup(e->texturegroup);
-//			glUseProgram(staticmodeltextured->id);
-		} else {
-			glUseProgram(staticmodel->id);
-		}
-*/
-		glDrawModel(returnModelById(e->modelid), &e->mat, &cam.viewproj); //todo redo
+//		glDrawModel(returnModelById(e->modelid), &e->mat, &cam.viewproj); //todo redo
+		addEntityToRenderbatche(e, batch);
 		count++;
+	}
+	return count;
+
+}
+
+int drawEntitiesM(modelbatche_t * batch){
+	if(!batch) return FALSE;
+	int count = batch->count;
+	if(!count || !batch->matlist) return FALSE;
+	int i;
+	//todo
+	//stuff here
+	model_t * m = returnModelById(batch->modelid);;
+	for(i = 0; i < count; i++){
+	//todo
+		glDrawModel(m, &batch->matlist[i], &cam.viewproj);
+	}
+	return count;
+}
+int drawEntitiesT(texturebatche_t * batch){
+	if(!batch) return FALSE;
+	int count = batch->count;
+	if(!count || !batch->modelbatch) return FALSE;
+	int i;
+	//stuff here
+	for(i = 0; i < count; i++){
+		drawEntitiesM(&batch->modelbatch[i]);
+	}
+	return count;
+}
+int drawEntitiesS(shaderbatche_t * batch){
+	if(!batch) return FALSE;
+	int count = batch->count;
+	if(!count || !batch->texturebatch) return FALSE;
+	int i;
+	//stuff here
+	for(i = 0; i < count; i++){
+		drawEntitiesT(&batch->texturebatch[i]);
+	}
+	return count;
+}
+int drawEntitiesR(renderbatche_t * batch){
+	if(!batch) return FALSE;
+	int count = batch->count;
+	if(!count || !batch->shaderbatch) return FALSE;
+	int i;
+	//stuff here
+	for(i = 0; i < count; i++){
+		drawEntitiesS(&batch->shaderbatch[i]);
 	}
 	return count;
 }
@@ -161,7 +204,11 @@ int glMainDraw(void){
 	angle[1] = degnumber;
 
 	recalcViewport(&cam, pos, angle, 90.0, 4.0/3.0, 1.0, 1000.0);
-	drawEntities();
+	renderbatche_t b;
+	memset(&b, 0, sizeof(renderbatche_t));
+	loadEntitiesIntoQueue(&b);
+	drawEntitiesR(&b);
+	cleanupRenderbatche(&b);
 	swapBuffers();
 	return TRUE;
 }

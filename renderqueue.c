@@ -3,9 +3,9 @@
 
 #include "globaldefs.h"
 #include "matrixlib.h"
+#include "entitymanager.h"
 #include "renderqueue.h"
 #include "glmanager.h"
-#include "entitymanager.h"
 
 int addEntityToModelbatche(entity_t * ent, modelbatche_t * batch){
 	if(!batch) return FALSE;
@@ -77,4 +77,52 @@ int addEntityToRenderbatche(entity_t * ent, renderbatche_t * batch){
 	batch->shaderbatch[count].texturebatch = 0;
 
 	return addEntityToShaderbatche(ent, &batch->shaderbatch[count]);
+}
+
+
+int cleanupModelbatche(modelbatche_t * batch){
+	if(!batch) return FALSE;
+	if(batch->matlist)free(batch->matlist);
+	batch->count = 0;
+	batch->matlist = 0;
+	return TRUE;
+}
+int cleanupTexturebatche(texturebatche_t * batch){
+	if(!batch) return FALSE;
+	int count = batch->count;
+	if(!batch->modelbatch) count = 0;
+	int i;
+	for(i = 0; i < count; i++){
+		cleanupModelbatche(&batch->modelbatch[i]);
+	}
+	if(batch->modelbatch)free(batch->modelbatch);
+	batch->count = 0;
+	batch->modelbatch = 0;
+	return TRUE;
+}
+int cleanupShaderbatche(shaderbatche_t * batch){
+	if(!batch) return FALSE;
+	int count = batch->count;
+	if(!batch->texturebatch) count = 0;
+	int i;
+	for(i = 0; i < count; i++){
+		cleanupTexturebatche(&batch->texturebatch[i]);
+	}
+	if(batch->texturebatch)free(batch->texturebatch);
+	batch->count = 0;
+	batch->texturebatch = 0;
+	return TRUE;
+}
+int cleanupRenderbatche(renderbatche_t * batch){
+	if(!batch) return FALSE;
+	int count = batch->count;
+	if(!batch->shaderbatch) count = 0;
+	int i;
+	for(i = 0; i < count; i++){
+		cleanupShaderbatche(&batch->shaderbatch[i]);
+	}
+	if(batch->shaderbatch)free(batch->shaderbatch);
+	batch->count = 0;
+	batch->shaderbatch = 0;
+	return TRUE;
 }
