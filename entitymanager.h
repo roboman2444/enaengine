@@ -21,8 +21,9 @@ typedef struct entity_s {
 	int parentid;
 	int attachmentid;
 
-	int modelid;
-	texturegroup_t * texturegroup;
+	int programid;		//frist priority for grouping
+	int texturegroupid;	//second priority
+	int modelid;		//third priority
 } entity_t;
 
 typedef struct entitylistpoint_s {
