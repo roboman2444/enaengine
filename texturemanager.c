@@ -9,6 +9,7 @@
 #include "SDL_image.h"
 #include "SDL.h"
 #include "hashtables.h"
+#include "console.h"
 int texturesOK = 0;
 int texturegroupcount = 0;
 int texturegroupArrayFirstOpen = 0;
@@ -111,6 +112,8 @@ texture_t loadTexture(char * filepath, char type){
 	glTexImage2D(GL_TEXTURE_2D, 0, texformat, tex.width, tex.height, 0, texformat, GL_UNSIGNED_BYTE, teximage->pixels); //todo different formats
 	SDL_FreeSurface(teximage);
 	glBindTexture(GL_TEXTURE_2D, 0);
+
+	consolePrintf("loaded texture %s with dimensions %ix%i and type %i\n", filepath, tex.width, tex.height, tex.type);
 	return tex;
 }
 
@@ -136,6 +139,7 @@ int deleteAllTexturegroups(void){
 
 texturegroup_t createAndLoadTexturegroup(char * name){
 	texturegroup_t texgroup;
+	memset(&texgroup, 0, sizeof(texturegroup_t));
 	//todo clean up texturegroup if it already has shit in it.
 	texgroup.num = 0;
 	texgroup.name = malloc(strlen(name)+1);
@@ -164,10 +168,26 @@ texturegroup_t createAndLoadTexturegroup(char * name){
 	return texgroup;
 }
 
-int bindTextureGroup(texturegroup_t * texturegroup){
-	int count, i;
+void unbindTexturegroup(void){
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, 0);
+		glActiveTexture(GL_TEXTURE2);
+		glBindTexture(GL_TEXTURE_2D, 0);
+		glActiveTexture(GL_TEXTURE3);
+		glBindTexture(GL_TEXTURE_2D, 0);
+		glActiveTexture(GL_TEXTURE4);
+		glBindTexture(GL_TEXTURE_2D, 0);
+		glActiveTexture(GL_TEXTURE5);
+		glBindTexture(GL_TEXTURE_2D, 0);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, 0);
+}
+
+int bindTexturegroup(texturegroup_t * texturegroup){
+	if(!texturegroup) return -1;
+	int count = 0, i;
 	texture_t * texturespointer = texturegroup->textures;
-	if(!texturespointer) return FALSE;
+	if(!texturespointer) return -2;
 	for(i = 0; i < texturegroup->num; i++){
 		switch(texturespointer[i].type){
 			//atm only model textures todo

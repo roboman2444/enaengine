@@ -52,7 +52,7 @@ int initGameCodeSystem(void){
 		entcoil->anglevel[2] = 360.0;
 		entcoil->needsmatupdate = TRUE;
 		entcoil->modelid = createAndAddModelRINT("coil");
-		entcoil->texturegroupid = 0;//findtexturegroupidByName("coil");
+		entcoil->texturegroupid = createAndAddTexturegroupRINT("coil");
 		entcoil->attachmentid = findEntityByNameRINT("hat");
 	entity_t * enttinydragon = addEntityRPOINT("tinydragon");
 		enttinydragon->type = 2;
@@ -93,8 +93,8 @@ int initGameCodeSystem(void){
 	for(i = 0; i < 34; i++){
 		enttinydragon = addEntityRPOINT("hardball");
 		enttinydragon->type = 2;
-		enttinydragon->pos[0] = i;
-		enttinydragon->pos[2] = i;
+		enttinydragon->pos[0] = i*10.0;
+		enttinydragon->pos[2] = i*10.0;
 		enttinydragon->scale = 1.0;
 		enttinydragon->needsmatupdate = TRUE;
 		enttinydragon->modelid = createAndAddModelRINT("hardball");

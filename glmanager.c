@@ -20,8 +20,8 @@
 
 
 //texturegroup_t * tcoil;
-shaderprogram_t * staticmodel, * staticmodeltextured;
-GLuint modelmat4, viewmat4, projectionmat4, mvpmat4;
+shaderprogram_t * staticmodel, * staticmodelt;
+GLuint texuni, mvpmat4;
 float degnumber;
 viewport_t cam;
 
@@ -68,6 +68,7 @@ int glInit(void){
 		 return FALSE;
 	}
 	staticmodel = createAndAddShader("staticmodel");
+	staticmodelt = createAndAddShader("staticmodelt");
 //	staticmodeltextured = createAndAddShader("staticmodeltextured");
 //	glUseProgram(staticmodel->id);
 /*	modelmat4 = glGetUniformLocation(staticmodel->id, "modelMat");
@@ -79,7 +80,6 @@ int glInit(void){
 */
 	mvpmat4 = glGetUniformLocation(staticmodel->id, "mvpMat");
 	if(mvpmat4<0) consolePrintf("cant find uniform!\n");
-
 //	createAndAddShader("console");
 //	addTextureGroupToList(createAndLoadTextureGroup("coil"));
 //	createAndAddModel("teapot");
@@ -104,7 +104,7 @@ int glInit(void){
 //	glBlendFunc(GL_SRC_ALPHA,GL_ONE);
 	glViewport(0, 0, 800, 600);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	glUseProgram(staticmodel->id);
+//	glUseProgram(staticmodel->id);
 
 	cam = createViewport("cam", 1);
 
@@ -124,7 +124,7 @@ int glDrawModel(model_t * model, matrix4x4_t * modworld, matrix4x4_t * viewproj)
 	GLfloat out[16];
 	Matrix4x4_ToArrayFloatGL(&outmat, out);
 	glUniformMatrix4fv(mvpmat4, 1, GL_FALSE, out);
-	glBindVertexArray(tvbo->vaoid);
+//	glBindVertexArray(tvbo->vaoid);
 //	glDrawElements(GL_TRIANGLES, model->numfaces[1]*3, GL_UNSIGNED_INT, (void*)(model->numfaces[0]*3*sizeof(GLuint)));
 	glDrawElements(GL_TRIANGLES, tvbo->numfaces*3, GL_UNSIGNED_INT, 0);
 	return tvbo->numfaces;
@@ -151,7 +151,12 @@ int drawEntitiesM(modelbatche_t * batch){
 	int i;
 	//todo
 	//stuff here
-	model_t * m = returnModelById(batch->modelid);;
+	model_t * m = returnModelById(batch->modelid);
+	vbo_t * tvbo = returnVBOById(m->vbo);
+	glBindVertexArray(tvbo->vaoid);
+
+	if(!tvbo) return FALSE;
+
 	for(i = 0; i < count; i++){
 	//todo
 		glDrawModel(m, &batch->matlist[i], &cam.viewproj);
@@ -163,6 +168,13 @@ int drawEntitiesT(texturebatche_t * batch){
 	int count = batch->count;
 	if(!count || !batch->modelbatch) return FALSE;
 	int i;
+	if(batch->textureid){
+		glUseProgram(staticmodelt->id);
+		bindTexturegroup(returnTexturegroupById(batch->textureid));
+	} else {
+		glUseProgram(staticmodel->id);
+		unbindTexturegroup();
+	}
 	//stuff here
 	for(i = 0; i < count; i++){
 		drawEntitiesM(&batch->modelbatch[i]);

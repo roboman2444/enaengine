@@ -72,11 +72,13 @@ int createAndAddTexturegroupRINT(char * name);
 
 texturegroup_t * returnTexturegroupById(int id);
 
-//int bindTextureGroup(texturegroup_t * texgroup);
+int bindTexturegroup(texturegroup_t * texgroup);
 
 int deleteAllTexturegroups(void);
 
 int deleteTexture(texture_t tex);
+
+void unbindTexturegroup(void);
 
 #endif
 
