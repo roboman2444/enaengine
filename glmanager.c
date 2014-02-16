@@ -57,7 +57,6 @@ int glInit(void){
 		return FALSE;
 		//todo call some sort of shutdown of everything
 	}
-
 	initModelSystem();
 	if(!modelsOK){
 		//todo call some sort of shutdown of everything

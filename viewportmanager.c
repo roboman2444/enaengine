@@ -65,7 +65,6 @@ viewport_t *findViewportByNameRPOINT(char * name){
 int findViewportByNameRINT(char * name){
 	return findByNameRINT(name, viewporthashtable);
 }
-
 int deleteViewPort(int id){
 	int viewportindex = (id & 0xFFFF);
 	viewport_t * viewport = &viewportlist[viewportindex];
