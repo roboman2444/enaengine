@@ -2,18 +2,19 @@
 #define SHADERMANAGERHEADER
 
 
-typedef struct shaderuniform_s
-{
-	char * name;
-	GLuint position;
-	//todo maybe type and other stuffs?
-} shaderuniform_t;
 typedef struct shaderprogram_s
 {
 	char * name;
-	GLuint id;
-	GLuint vertexid;
-	GLuint fragmentid;
+	char type;
+	unsigned int id;
+	unsigned int vertexid;
+	unsigned int fragmentid;
+	char * fragstring; // quick if i need to compile a new permutation
+	int fraglength;
+	char * vertstring; // quick if i need to compile a new permutation
+	int vertlength;
+	char * geomstring; // quick if i need to compile a new permutation
+	int geomlength;
 //	shaderuniform_t * uniforms;
 } shaderprogram_t;
 

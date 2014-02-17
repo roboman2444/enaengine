@@ -49,6 +49,51 @@ shaderprogram_t * findProgramByName(char * name){
 	return programlist[0]; // return first one
 }
 
+shaderprogram_t createAndReadyShader(char * name){
+	shaderprogram_t shader;
+	memset(&shader, 0 , sizeof(shaderprogram_t));
+	char * vertname = malloc(strlen(name)+6);
+	strcpy(vertname, name);strcat(vertname, ".vert");
+	loadFileString(vertname, &shader.vertstring, &shader.vertlength, 2);
+	free(vertname);
+	if(shader.vertlength == 0){
+		//todo
+		if(shader.vertstring)free(shader.vertstring);
+		shader.type = 0;
+		return shader;
+	}
+	char * fragname = malloc(strlen(name)+6);
+	strcpy(vertname, name);strcat(vertname, ".frag");
+	loadFileString(fragname, &shader.fragstring, &shader.fraglength, 2);
+	free(fragname);
+	if(shader.fraglength == 0){
+		//todo
+		if(shader.vertstring)free(shader.vertstring);
+		shader.vertlength =0;
+		if(shader.fragstring)free(shader.fragstring);
+		shader.type = 0;
+		return shader;
+	}
+	shader.type = 1;
+/*
+	char * geomname = malloc(strlen(name)+6);
+	strcpy(vertname, name);strcat(vertname, ".geom");
+	loadFileString(geomname, &shader.geomstring, &shader.geomlength, 2);
+	free(geomname);
+	if(geomlength == 0){
+		if(shader.geomstring)free(shader.geomstring);
+		shader.type = 1;
+	} else {
+		shader.type = 2;
+	}
+*/
+	//todo debugmodes
+	shader.name = malloc(strlen(name)+1);
+	strcpy(shader.name, name);
+
+	return shader;
+}
+
 shaderprogram_t createAndLoadShader(char * name){
 	shaderprogram_t shader;
 	shader.id = 0;
