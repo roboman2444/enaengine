@@ -6,9 +6,7 @@ typedef struct shaderprogram_s
 {
 	char * name;
 	char type;
-	unsigned int id;
-	unsigned int vertexid;
-	unsigned int fragmentid;
+	int myid;
 	char * fragstring; // quick if i need to compile a new permutation
 	int fraglength;
 	char * vertstring; // quick if i need to compile a new permutation
@@ -20,18 +18,27 @@ typedef struct shaderprogram_s
 
 int shadersOK;
 int programnumber;
-shaderprogram_t * defaultShader;
+
+shaderprogram_t * shaderlist;
+int shadercount;
+int shaderArraySize;
+int shaderArrayLastTaken;
 
 int initShaderSystem(void);
-//loads a shader pair from files name.frag and name.vert, compiles, links, adds to the list
-shaderprogram_t createAndLoadShader(char * name);
-//resizes and adds the shader to the list
-shaderprogram_t * addProgramToList(shaderprogram_t prog);
-shaderprogram_t * createAndAddShader(char * name);
 
-shaderprogram_t * returnShader(int id);
+shaderprogram_t * findShaderByNameRPOINT(char * name);
+int findShaderByNameRINT(char * name);
+
+shaderprogram_t * returnShaderById(int id);
+
+shaderprogrm_t * addShaderRPOINT(shaderprogram_t shader);
+int addShaderRINT(shaderprogram_t shader);
+
+int deleteShader(int id);
+
+shaderprogram_t * createAndAddShaderRPOINT(char * name);
+int createAndAddShaderRINT(char * name);
+
 int printProgramLogStatus(int id);
 int getProgramLogStatus(int id, char ** output);
-shaderprogram_t * findProgramByName(char * name);
-GLint findShaderAttribPos(shaderprogram_t * shader, char * name);
 #endif

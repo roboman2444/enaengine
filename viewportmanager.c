@@ -23,8 +23,9 @@ int initViewportSystem(void){
 //	viewport_t screen = createViewport("default");
 	memset(viewporthashtable, 0, MAXHASHBUCKETS*sizeof(hashbucket_t));
 	if(viewportlist) free(viewportlist);
-	viewportlist = malloc(vpnumber * sizeof(viewport_t));
-	if(!viewportlist) memset(viewportlist, 0 , vpnumber * sizeof(viewport_t));
+	viewportlist = 0;
+//	viewportlist = malloc(vpnumber * sizeof(viewport_t));
+//	if(!viewportlist) memset(viewportlist, 0 , vpnumber * sizeof(viewport_t));
 //	defaultViewport = addViewportToList(screen);
 	viewportsOK = TRUE;
 	return TRUE; // todo error check

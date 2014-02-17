@@ -28,8 +28,9 @@ texturegroup_t *texturegrouplist;
 int initTextureSystem(void){
 	memset(texturegrouphashtable, 0, MAXHASHBUCKETS * sizeof(hashbucket_t));
 	if(texturegrouplist) free(texturegrouplist);
-	texturegrouplist = malloc(texturegroupnumber * sizeof(texturegroup_t));
-	if(!texturegrouplist) memset(texturegrouplist, 0, texturegroupnumber * sizeof(texturegroup_t));
+	texturegrouplist = 0;
+//	texturegrouplist = malloc(texturegroupnumber * sizeof(texturegroup_t));
+//	if(!texturegrouplist) memset(texturegrouplist, 0, texturegroupnumber * sizeof(texturegroup_t));
 //	defaultTextureGroup = addTextureGroupToList(createTextureGroup("default", 0));
 	//todo error checking
 	texturesOK = TRUE;

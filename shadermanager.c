@@ -4,24 +4,67 @@
 
 //local includes
 #include "globaldefs.h"
+#include "hashtables.h"
 #include "shadermanager.h"
 #include "filemanager.h"
 #include "console.h"
 
+int shadercount = 0;
+int shaderArrayFirstOpen = 0;
+int shaderArrayLastTaken = 0;
+int shaderArraySize = 0;
 int shadersOK = 0;
-int programnumber = 0; //the first is an error one
-shaderprogram_t **programlist;
-shaderprogram_t * defaultShader;
+
+shaderprogram_t *shaderlist;
+
+hashbucket_t shaderhashtable[MAXHASHBUCKETS];
 
 int initShaderSystem(void){
-	shaderprogram_t none = {"default", 0, 0, 0};
-	if(programlist) free(programlist);
-	programlist = malloc(programnumber * sizeof(shaderprogram_t *));
-	if(!programlist) memset(programlist, 0 , programnumber * sizeof(shaderprogram_t *));
-	defaultShader = addProgramToList(none);
+	memset(shaderhashtable, 0, MAXHASHBUCKETS * sizeof(hashbucket_t));
+
+//	shaderprogram_t none = {"default", 0, 0, 0};
+	if(shaderlist) free(shaderlist);
+	shaderlist = malloc(0 * sizeof(shaderprogram_t));
+//	defaultShader = addProgramToList(none);
 	shadersOK = TRUE;
 	return TRUE; // todo error check
 }
+
+shaderprogram_t * findShaderByNameRPOINT(char * name){
+	return returnShaderById(findByNameRINT(name, shaderhashtable));
+}
+int findShaderByNameRINT(char * name){
+	return findByNameRINT(name, shaderhashtable);
+}
+
+int deleteShader(int id){
+	int shaderindex = (id & 0xFFFF);
+	shaderprogram_t * shader = &shaderlist[shaderindex];
+	if(shader->myid != id) return FALSE;
+	if(!shader->name) return FALSE;
+	deleteFromHashTable(shader->name, id, shaderhashtable);
+	free(shader->name);
+
+	//todo
+
+	bzero(shader, sizeof(shaderprogram_t));
+	if(shaderindex < shaderArrayFirstOpen) shaderArrayFirstOpen = shaderindex;
+	for(; shaderArrayLastTaken > 0 && !shaderlist[shaderArrayLastTaken].type; shaderArrayLastTaken--);
+	return TRUE;
+}
+
+shaderprogram_t * returnShaderById(int id){
+	int shaderindex = (id & 0xFFFF);
+	shaderprogram_t * shader = &shaderlist[shaderindex];
+	if(!shader->type) return FALSE;
+	if(shader->myid == id) return shader;
+	return FALSE;
+}
+
+
+//////////////////////////////////////////////////////////////
+
+
 shaderprogram_t * addProgramToList(shaderprogram_t prog){
 	shaderprogram_t * pointprog = malloc(sizeof(shaderprogram_t));
 	*pointprog = prog;

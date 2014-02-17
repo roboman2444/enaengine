@@ -26,8 +26,9 @@ int initVBOSystem(void){
 	memset(vbohashtable, 0, MAXHASHBUCKETS*sizeof(hashbucket_t));
 //	memset(ubohashtable, 0, MAXHASHBUCKETS*sizeof(hashbucket_t));
 	if(vbolist) free(vbolist);
-	vbolist = malloc(vboArraySize * sizeof(vbo_t));
-	if(!vbolist) memset(vbolist, 0 , vbonumber * sizeof(vbo_t));
+	vbolist = 0;
+//	vbolist = malloc(vboArraySize * sizeof(vbo_t));
+//	if(!vbolist) memset(vbolist, 0 , vbonumber * sizeof(vbo_t));
 //	addVBOToList(vbonone);
 
 	vboOK = TRUE;

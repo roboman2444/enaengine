@@ -33,8 +33,9 @@ int initModelSystem(void){
 	memset(modelhashtable, 0, MAXHASHBUCKETS *sizeof(hashbucket_t));
 //	model_t none = {"default", findTextureGroupByName("default"), 0, 0};
 	if(modellist) free(modellist);
-	modellist = malloc(modelnumber * sizeof(model_t));
-	if(!modellist) memset(modellist, 0 , modelnumber * sizeof(model_t));
+	modellist = 0;
+//	modellist = malloc(modelnumber * sizeof(model_t));
+//	if(!modellist) memset(modellist, 0 , modelnumber * sizeof(model_t));
 //	addModelRINT("default");
 //	defaultModel = addModelToList(none);
 	modelsOK = TRUE;
