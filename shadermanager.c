@@ -24,7 +24,8 @@ int initShaderSystem(void){
 
 //	shaderprogram_t none = {"default", 0, 0, 0};
 	if(shaderlist) free(shaderlist);
-	shaderlist = malloc(0 * sizeof(shaderprogram_t));
+	shaderlist = 0;
+//	shaderlist = malloc(0 * sizeof(shaderprogram_t));
 //	defaultShader = addProgramToList(none);
 	shadersOK = TRUE;
 	return TRUE; // todo error check
@@ -36,7 +37,6 @@ shaderprogram_t * findShaderByNameRPOINT(char * name){
 int findShaderByNameRINT(char * name){
 	return findByNameRINT(name, shaderhashtable);
 }
-
 int deleteShader(int id){
 	int shaderindex = (id & 0xFFFF);
 	shaderprogram_t * shader = &shaderlist[shaderindex];
@@ -61,36 +61,42 @@ shaderprogram_t * returnShaderById(int id){
 	return FALSE;
 }
 
-
-//////////////////////////////////////////////////////////////
-
-
-shaderprogram_t * addProgramToList(shaderprogram_t prog){
-	shaderprogram_t * pointprog = malloc(sizeof(shaderprogram_t));
-	*pointprog = prog;
-	int current = programnumber;
-	programnumber++;
-	programlist = realloc(programlist, programnumber*sizeof(shaderprogram_t * ));
-//	programlist[current].id = prog.id;
-//	programlist[current].vertexid = prog.vertexid;
-//	programlist[current].fragmentid = prog.fragmentid;
-//	programlist[current].name = malloc(sizeof(*prog.name));
-//	strcpy(programlist[current].name, prog.name);
-	programlist[current] = pointprog;
-
-	return pointprog;
-}
-shaderprogram_t * returnShader(int id){
-	if(id >= programnumber) return programlist[0];
-	return programlist[id];
-}
-shaderprogram_t * findProgramByName(char * name){
-	int i;
-	for(i = 0; i<programnumber; i++){
-		if(!strcmp(name, programlist[i]->name)) return programlist[i];
+int addShaderRINT(shaderprogram_t shader){
+	shadercount++;
+	for(; shaderArrayFirstOpen < shaderArraySize && shaderlist[shaderArrayFirstOpen].type; shaderArrayFirstOpen++);
+	if(shaderArrayFirstOpen == shaderArraySize){	//resize
+		shaderArraySize++;
+		shaderlist = realloc(shaderlist, shaderArraySize * sizeof(shaderprogram_t));
 	}
-	return programlist[0]; // return first one
+	shaderlist[shaderArrayFirstOpen] = shader;
+	int returnid = (shadercount << 16) | shaderArrayFirstOpen;
+	shaderlist[shaderArrayFirstOpen].myid = returnid;
+
+	addToHashTable(shaderlist[shaderArrayFirstOpen].name, returnid, shaderhashtable);
+	if(shaderArrayLastTaken < shaderArrayFirstOpen) shaderArrayLastTaken = shaderArrayFirstOpen; //todo redo
+	return returnid;
 }
+shaderprogram_t * addShaderRPOINT(shaderprogram_t shader){
+	shadercount++;
+	for(; shaderArrayFirstOpen < shaderArraySize && shaderlist[shaderArrayFirstOpen].type; shaderArrayFirstOpen++);
+	if(shaderArrayFirstOpen == shaderArraySize){	//resize
+		shaderArraySize++;
+		shaderlist = realloc(shaderlist, shaderArraySize * sizeof(shaderprogram_t));
+	}
+	shaderlist[shaderArrayFirstOpen] = shader;
+	int returnid = (shadercount << 16) | shaderArrayFirstOpen;
+	shaderlist[shaderArrayFirstOpen].myid = returnid;
+
+	addToHashTable(shaderlist[shaderArrayFirstOpen].name, returnid, shaderhashtable);
+	//todo maybe have shader have a hash variable, so i dont have to calculate it again if i want to delete... maybe
+	if(shaderArrayLastTaken < shaderArrayFirstOpen) shaderArrayLastTaken = shaderArrayFirstOpen;
+//	printf("shaderarraysize = %i\n", shaderArraySize);
+//	printf("shadercount = %i\n", shadercount);
+
+	return &shaderlist[shaderArrayFirstOpen];
+
+}
+
 
 shaderprogram_t createAndReadyShader(char * name){
 	shaderprogram_t shader;
@@ -136,7 +142,7 @@ shaderprogram_t createAndReadyShader(char * name){
 
 	return shader;
 }
-
+/*
 shaderprogram_t createAndLoadShader(char * name){
 	shaderprogram_t shader;
 	shader.id = 0;
@@ -197,9 +203,7 @@ shaderprogram_t createAndLoadShader(char * name){
 //	return id; //so far i am assuming that it works
 	return shader;
 }
-shaderprogram_t * createAndAddShader(char * name){
-	return addProgramToList(createAndLoadShader(name));
-}
+*/
 int printProgramLogStatus(int id){
 	GLint blen = 0;
 	glGetProgramiv(id, GL_INFO_LOG_LENGTH, &blen);
@@ -222,7 +226,20 @@ int getProgramLogStatus(int id, char ** output){
 	}
 	return length;
 }
+
+int createAndAddShaderRINT(char * name){
+	int s = findShaderByNameRINT(name);
+	if(s) return s;
+	return addShaderRINT(createAndReadyShader(name));
+}
+shaderprogram_t * createAndAddShaderRPOINT(char * name){
+	shaderprogram_t * s = findShaderByNameRPOINT(name);
+	if(s) return s;
+	return addShaderRPOINT(createAndReadyShader(name));
+}
+/*
 GLint findShaderAttribPos(shaderprogram_t * shader, char * name){
 	GLint id = glGetAttribLocation(shader->id, name);
 	return id;
 }
+*/

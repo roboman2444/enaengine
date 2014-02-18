@@ -31,7 +31,7 @@ int findShaderByNameRINT(char * name);
 
 shaderprogram_t * returnShaderById(int id);
 
-shaderprogrm_t * addShaderRPOINT(shaderprogram_t shader);
+shaderprogram_t * addShaderRPOINT(shaderprogram_t shader);
 int addShaderRINT(shaderprogram_t shader);
 
 int deleteShader(int id);
