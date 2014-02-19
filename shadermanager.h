@@ -6,6 +6,8 @@ typedef struct shaderprogram_s
 {
 	char * name;
 	char type;
+	int numdefines; // maybe change to unsigned char
+	char **defines;
 	int myid;
 	char * fragstring; // quick if i need to compile a new permutation
 	int fraglength;

@@ -46,6 +46,7 @@ int deleteShader(int id){
 	free(shader->name);
 
 	//todo
+	//much todo
 
 	bzero(shader, sizeof(shaderprogram_t));
 	if(shaderindex < shaderArrayFirstOpen) shaderArrayFirstOpen = shaderindex;
@@ -97,10 +98,116 @@ shaderprogram_t * addShaderRPOINT(shaderprogram_t shader){
 
 }
 
+//shaderpermutation_t compilePermutation(shaderprogram_t * shader, int permutation){
+GLuint compilePermutation(shaderprogram_t * shader, int permutation){
+	if(!(shader->type & 2)) return FALSE;
+	GLuint vertid = glCreateShader(GL_VERTEX_SHADER);
+	GLuint fragid = glCreateShader(GL_FRAGMENT_SHADER);
+	//todo errorcheck
+
+	char ** shaderstring = malloc((shader->numdefines+1) * sizeof(char *)); // if it has no defines, it will be 1 so its ok anyway
+	GLint *shaderlength = malloc((shader->numdefines+1) * sizeof(GLint));
+	memset(shaderstring, 0, (shader->numdefines +1) * sizeof(char *));
+	memset(shaderlength, 0, (shader->numdefines +1) * sizeof(GLuint));
+	if(shader->type & 1){
+		int i;
+		for(i = 0; i < shader->numdefines; i++){
+			if(permutation & 1<<i){
+				GLuint l = strlen(shader->defines[i]) + 10;
+				shaderstring[i] = malloc(l); // 8 for the extra #define , 1 for the \n, 1 for the \0
+				snprintf(shaderstring[i], l, "#define %s\n", shader->defines[i]);
+				shaderlength[i] = l;
+			}
+		}
+	}
+
+	shaderstring[shader->numdefines] = shader->vertstring;
+	shaderlength[shader->numdefines] = shader->vertlength;
+	glShaderSource(vertid, shader->numdefines + 1, (const GLchar **) shaderstring, shaderlength);
+	shaderstring[shader->numdefines] = shader->fragstring;
+	shaderlength[shader->numdefines] = shader->fraglength;
+	glShaderSource(fragid, shader->numdefines + 1, (const GLchar **) shaderstring, shaderlength);
+	//if i set shadersource length to null, it does it by null char looking
+	//todo geom shader
+
+	if(shader->type & 1){
+		int i;
+		for(i = 0; i < shader->numdefines; i++) if(shaderstring[i]) free(shaderstring[i]); // doesnt free the vertstring or fragstring
+	}
+	free(shaderstring);
+	free(shaderlength);
+
+
+	glCompileShader(vertid);
+	glCompileShader(fragid);
+	//todo geom shader
+	GLuint programid = glCreateProgram();
+	//TODO errorcheck
+	glAttachShader(programid, vertid);
+	glAttachShader(programid, fragid);
+	glBindFragDataLocation(programid, 0, "fragColor"); //todo move this
+	glLinkProgram(programid);
+	//TODO errorcheck
+	if(printProgramLogStatus(programid)){
+		if(shader->type & 1){
+			char * error = malloc((100* shader->numdefines) + 100);
+			sprintf(error, "Shader %s compile failed. Permutations:\n", shader->name);
+
+			int i, count = 0;
+				for(i = 0; i < shader->numdefines; i++){
+				if(permutation & 1<<i){
+					sprintf(error, "%s\n", shader->defines[i]);
+					count++;
+				}
+			}
+			sprintf(error, "Line offset in file: %i\n", count);
+			consoleNPrintf(strlen(error)+1,error);
+			free(error);
+		} else {
+			consolePrintf("Shader %s compile failed", shader->name);
+		}
+
+	}
+	return programid; //todo
+
+}
 
 shaderprogram_t createAndReadyShader(char * name){
 	shaderprogram_t shader;
 	memset(&shader, 0 , sizeof(shaderprogram_t));
+
+
+// populate define list
+	char * definename = malloc(strlen(name)+6);
+	FILE *f;
+	if(!(f = fopen(definename, "r"))){
+		//todo debug?
+	} else {
+		shader.defines = malloc(32 * sizeof(char *));
+		int i;
+		for(i = 0; i < 32; i++){
+			shader.defines[i] = malloc(100);
+			if(!fgets(shader.defines[i], 100, f)){
+				shader.defines = realloc(shader.defines[i], strlen(shader.defines[i]) +1);
+			} else {
+				free(shader.defines[i]);
+				shader.defines[i] = 0;
+				break;
+			}
+		}
+		if(i){
+			shader.type = shader.type | 1; //shader has a definelist
+			shader.defines = realloc(shader.defines, i * sizeof(char *)); // might need a +1
+			shader.numdefines = i;
+		} else {
+			free(shader.defines);
+			shader.defines = 0;
+		}
+	}
+	if(f)fclose(f);
+	free(definename);
+
+
 	char * vertname = malloc(strlen(name)+6);
 	strcpy(vertname, name);strcat(vertname, ".vert");
 	loadFileString(vertname, &shader.vertstring, &shader.vertlength, 2);
@@ -123,19 +230,17 @@ shaderprogram_t createAndReadyShader(char * name){
 		shader.type = 0;
 		return shader;
 	}
-	shader.type = 1;
-/*
+	shader.type = shader.type | 2;
+
 	char * geomname = malloc(strlen(name)+6);
 	strcpy(vertname, name);strcat(vertname, ".geom");
 	loadFileString(geomname, &shader.geomstring, &shader.geomlength, 2);
 	free(geomname);
-	if(geomlength == 0){
+	if(shader.geomlength < 1){
 		if(shader.geomstring)free(shader.geomstring);
-		shader.type = 1;
 	} else {
-		shader.type = 2;
+		shader.type = shader.type | 4;
 	}
-*/
 	//todo debugmodes
 	shader.name = malloc(strlen(name)+1);
 	strcpy(shader.name, name);

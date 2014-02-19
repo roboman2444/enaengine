@@ -28,7 +28,7 @@ int main(int argc, char *argv[]){
 
 	unsigned int timesincelastfpsupdate = 0;
 	unsigned int accum = 0;
-	while(TRUE){
+	while(TRUE){//glorious for loop master race
 		t = SDL_GetTicks();
 		unsigned int delta = t-to;
 		to = t;
