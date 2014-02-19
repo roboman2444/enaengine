@@ -89,18 +89,18 @@ shaderprogram_t * addShaderRPOINT(shaderprogram_t shader){
 	shaderlist[shaderArrayFirstOpen].myid = returnid;
 
 	addToHashTable(shaderlist[shaderArrayFirstOpen].name, returnid, shaderhashtable);
-	//todo maybe have shader have a hash variable, so i dont have to calculate it again if i want to delete... maybe
 	if(shaderArrayLastTaken < shaderArrayFirstOpen) shaderArrayLastTaken = shaderArrayFirstOpen;
-//	printf("shaderarraysize = %i\n", shaderArraySize);
-//	printf("shadercount = %i\n", shadercount);
-
 	return &shaderlist[shaderArrayFirstOpen];
 
 }
 
 //shaderpermutation_t compilePermutation(shaderprogram_t * shader, int permutation){
-GLuint compilePermutation(shaderprogram_t * shader, int permutation){
-	if(!(shader->type & 2)) return FALSE;
+shaderpermutation_t createPermutation(shaderprogram_t * shader, int permutation){
+	shaderpermutation_t perm;
+	perm.permutation = permutation;
+	memset(&perm, 0 , sizeof(shaderpermutation_t));
+
+	if(!(shader->type & 2)) return perm;
 	GLuint vertid = glCreateShader(GL_VERTEX_SHADER);
 	GLuint fragid = glCreateShader(GL_FRAGMENT_SHADER);
 	//todo errorcheck
@@ -147,6 +147,7 @@ GLuint compilePermutation(shaderprogram_t * shader, int permutation){
 	glAttachShader(programid, fragid);
 	glBindFragDataLocation(programid, 0, "fragColor"); //todo move this
 	glLinkProgram(programid);
+	perm.id = programid;
 	//TODO errorcheck
 	if(printProgramLogStatus(programid)){
 		if(shader->type & 1){
@@ -166,11 +167,28 @@ GLuint compilePermutation(shaderprogram_t * shader, int permutation){
 		} else {
 			consolePrintf("Shader %s compile failed", shader->name);
 		}
-
+		return perm;
 	}
-	return programid; //todo
+	perm.type = 1;
+//set up texture uniforms
+	char * texstring = malloc(9);
+	int i;
+	for(i = 0; i < 16; i++){
+		sprintf(texstring, "texture%i", i);
+		glUniform1i(glGetAttribLocation(programid, texstring), i);
+	}
+	free(texstring);
 
+//set up other uniforms
+	perm.unimat40 = glGetAttribLocation(programid, "unimat40");
+	perm.univec40 = glGetAttribLocation(programid, "univec40");
+	perm.univec30 = glGetAttribLocation(programid, "univec30");
+	perm.univec20 = glGetAttribLocation(programid, "univec20");
+	perm.unifloat0 =glGetAttribLocation(programid, "unifloat0");
+
+	return perm;
 }
+
 
 shaderprogram_t createAndReadyShader(char * name){
 	shaderprogram_t shader;
@@ -341,6 +359,38 @@ shaderprogram_t * createAndAddShaderRPOINT(char * name){
 	shaderprogram_t * s = findShaderByNameRPOINT(name);
 	if(s) return s;
 	return addShaderRPOINT(createAndReadyShader(name));
+}
+shaderpermutation_t * addPermutationToShader(shaderprogram_t * shader, int permutation){
+	if(!shader) return FALSE;
+	unsigned int hashindex = (permutation * 0x1021) & (PERMHASHSIZE - 1);
+	if(!shader->permhashtable[hashindex].type && !shader->permhashtable[hashindex].next){
+		shaderpermutation_t newp = createPermutation(shader, permutation);
+		if(!newp.type) return FALSE;
+		shader->permhashtable[hashindex] = newp;
+		return &shader->permhashtable[hashindex];
+	}
+	shaderpermutation_t *p;
+	for (p = &shader->permhashtable[hashindex]; p->next ;p = p->next){
+		if(p->permutation == permutation) return p; // already done
+	}
+	shaderpermutation_t *newp = malloc(sizeof(shaderpermutation_t));
+	*newp = createPermutation(shader, permutation);
+	if(!newp->type){
+		free(newp);
+		return FALSE;
+	}
+	p->next = newp;
+	return newp;
+}
+
+shaderpermutation_t * findShaderPermutation(shaderprogram_t * shader, int permutation){
+	if(!shader) return FALSE;
+	unsigned int hashindex = (permutation * 0x1021) & (PERMHASHSIZE - 1);
+	shaderpermutation_t *p;
+	for (p = &shader->permhashtable[hashindex]; p; p = p->next){
+		if(p->permutation == permutation) return p;
+	}
+	return FALSE;
 }
 /*
 GLint findShaderAttribPos(shaderprogram_t * shader, char * name){

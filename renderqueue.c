@@ -61,11 +61,12 @@ int addEntityToShaderbatche(entity_t * ent, shaderbatche_t * batch){
 int addEntityToRenderbatche(entity_t * ent, renderbatche_t * batch){
 	if(!batch) return FALSE;
 	int count = batch->count;
-	int programid = ent->programid;
+	int shaderid = ent->shaderid;
+	int shaderperm = ent->shaderperm;
 	if(!batch->shaderbatch) count = 0;
 	int i;
 	for(i = 0; i < count; i++){
-		if(batch->shaderbatch[i].programid == programid){
+		if(batch->shaderbatch[i].shaderid == shaderid && batch->shaderbatch[i].shaderperm == shaderperm){
 			return addEntityToShaderbatche(ent, &batch->shaderbatch[i]);
 		}
 	}
@@ -73,7 +74,8 @@ int addEntityToRenderbatche(entity_t * ent, renderbatche_t * batch){
 	batch->count++;
 	batch->shaderbatch = realloc(batch->shaderbatch, batch->count * sizeof(shaderbatche_t));
 	batch->shaderbatch[count].count = 0;
-	batch->shaderbatch[count].programid = programid;
+	batch->shaderbatch[count].shaderid = shaderid;
+	batch->shaderbatch[count].shaderperm = shaderperm;
 	batch->shaderbatch[count].texturebatch = 0;
 
 	return addEntityToShaderbatche(ent, &batch->shaderbatch[count]);

@@ -1,6 +1,23 @@
 #ifndef SHADERMANAGERHEADER
 #define SHADERMANAGERHEADER
 
+#define PERMHASHSIZE 256
+
+
+typedef struct shaderpermutation_s {
+	struct shaderpermutation_s * next;
+	GLuint id;
+	char type;
+	int permutation;
+	int unimat40;
+	//int unimat41;
+	//int unimat42;
+	//int unimat43;
+	int univec40;
+	int univec30;
+	int univec20;
+	int unifloat0;
+} shaderpermutation_t;
 
 typedef struct shaderprogram_s
 {
@@ -15,8 +32,10 @@ typedef struct shaderprogram_s
 	int vertlength;
 	char * geomstring; // quick if i need to compile a new permutation
 	int geomlength;
+	shaderpermutation_t permhashtable[PERMHASHSIZE];
 //	shaderuniform_t * uniforms;
 } shaderprogram_t;
+
 
 int shadersOK;
 int programnumber;

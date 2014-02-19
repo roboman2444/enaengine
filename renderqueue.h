@@ -15,7 +15,8 @@ typedef struct texturebatche_s {
 typedef struct shaderbatche_s {
 	int count;
 	texturebatche_t * texturebatch;
-	int programid;
+	int shaderid;
+	int shaderperm;
 } shaderbatche_t;
 typedef struct renderbatche_s {
 	int count;
