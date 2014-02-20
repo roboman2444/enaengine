@@ -19,10 +19,11 @@
 #include <tgmath.h>
 
 
-//texturegroup_t * tcoil;
-shaderprogram_t * staticmodel, * staticmodelt;
-GLuint texuni, mvpmat4;
 float degnumber;
+
+viewport_t * currentvp;
+shaderpermutation_t * currentsp;
+
 viewport_t cam;
 
 int glShutdown(void){
@@ -67,25 +68,6 @@ int glInit(void){
 		//todo call some sort of shutdown of everything
 		 return FALSE;
 	}
-	staticmodel = createAndAddShader("staticmodel");
-	staticmodelt = createAndAddShader("staticmodelt");
-//	staticmodeltextured = createAndAddShader("staticmodeltextured");
-//	glUseProgram(staticmodel->id);
-/*	modelmat4 = glGetUniformLocation(staticmodel->id, "modelMat");
-	if(modelmat4<0) consolePrintf("cant find uniform!\n");
-	viewmat4 = glGetUniformLocation(staticmodel->id, "viewMat");
-	if(viewmat4<0) consolePrintf("cant find uniform!\n");
-	projectionmat4 = glGetUniformLocation(staticmodel->id, "projectionMat");
-	if(projectionmat4<0) consolePrintf("cant find uniform!\n");
-*/
-	mvpmat4 = glGetUniformLocation(staticmodel->id, "mvpMat");
-	if(mvpmat4<0) consolePrintf("cant find uniform!\n");
-//	createAndAddShader("console");
-//	addTextureGroupToList(createAndLoadTextureGroup("coil"));
-//	createAndAddModel("teapot");
-//	createAndAddModel("dragon");
-//	createAndAddModel("coil");
-
 
 	glEnable(GL_MULTISAMPLE);
 	glHint(GL_LINE_SMOOTH_HINT, GL_NICEST );
@@ -123,9 +105,9 @@ int glDrawModel(model_t * model, matrix4x4_t * modworld, matrix4x4_t * viewproj)
 	Matrix4x4_Concat(&outmat, viewproj, modworld);
 	GLfloat out[16];
 	Matrix4x4_ToArrayFloatGL(&outmat, out);
-	glUniformMatrix4fv(mvpmat4, 1, GL_FALSE, out);
+//	glUniformMatrix4fv(mvpmat4, 1, GL_FALSE, out);
 //	glBindVertexArray(tvbo->vaoid);
-//	glDrawElements(GL_TRIANGLES, model->numfaces[1]*3, GL_UNSIGNED_INT, (void*)(model->numfaces[0]*3*sizeof(GLuint)));
+
 	glDrawElements(GL_TRIANGLES, tvbo->numfaces*3, GL_UNSIGNED_INT, 0);
 	return tvbo->numfaces;
 }
@@ -168,13 +150,6 @@ int drawEntitiesT(texturebatche_t * batch){
 	int count = batch->count;
 	if(!count || !batch->modelbatch) return FALSE;
 	int i;
-	if(batch->textureid){
-		glUseProgram(staticmodelt->id);
-		bindTexturegroup(returnTexturegroupById(batch->textureid));
-	} else {
-		glUseProgram(staticmodel->id);
-		unbindTexturegroup();
-	}
 	//stuff here
 	for(i = 0; i < count; i++){
 		drawEntitiesM(&batch->modelbatch[i]);
@@ -187,6 +162,13 @@ int drawEntitiesS(shaderbatche_t * batch){
 	if(!count || !batch->texturebatch) return FALSE;
 	int i;
 	//stuff here
+	shaderprogram_t * shader = returnShaderById(batch->shaderid);
+//	if(!shader) return FALSE; it does this anyway when i ask for perm
+	shaderpermutation_t * perm = findShaderPermutation(shader, batch->shaderperm);
+	if(!perm) return FALSE;
+	//
+	currentsp = perm;
+	glUseProgram(perm->id);
 	for(i = 0; i < count; i++){
 		drawEntitiesT(&batch->texturebatch[i]);
 	}

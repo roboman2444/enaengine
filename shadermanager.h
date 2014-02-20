@@ -2,6 +2,9 @@
 #define SHADERMANAGERHEADER
 
 #define PERMHASHSIZE 256
+#define POSATTRIBLOC 0
+#define NORMATTRIBLOC 1
+#define TCATTRIBLOC 2
 
 
 typedef struct shaderpermutation_s {
@@ -62,4 +65,5 @@ int createAndAddShaderRINT(char * name);
 
 int printProgramLogStatus(int id);
 int getProgramLogStatus(int id, char ** output);
+shaderpermutation_t * findShaderPermutation( shaderprogram_t * shader, int permutation);
 #endif

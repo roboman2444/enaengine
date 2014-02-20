@@ -475,25 +475,25 @@ int loadModelOBJ(model_t * m, char * filename){//todo flags
 	myvbo->numverts = vertcount;
 	free(interleavedbuffer);
 
-	shaderprogram_t * program = findProgramByName("staticmodel");//todo per model materials and permutations
+//	shaderprogram_t * program = findProgramByName("staticmodel");//todo per model materials and permutations
 //	printf("\n%i\n", program->id);
-	if(!program->id) return FALSE; //todo debug
-	glUseProgram(program->id);
+//	if(!program->id) return FALSE; //todo debug
+//	glUseProgram(program->id);
 
-	GLint posattrib = findShaderAttribPos(program, "position"); //todo per model materials?
+//	GLint posattrib = findShaderAttribPos(program, "position"); //todo per model materials?
 //	printf("%i\n", posattrib);
-	glEnableVertexAttribArray(posattrib);
-	glVertexAttribPointer(posattrib, 3, GL_FLOAT, GL_FALSE, 8*sizeof(GLfloat), 0);
+	glEnableVertexAttribArray(POSATTRIBLOC);
+	glVertexAttribPointer(POSATTRIBLOC, 3, GL_FLOAT, GL_FALSE, 8*sizeof(GLfloat), 0);
 
-	GLint normattrib = findShaderAttribPos(program, "normal"); //todo per model materials?
+//	GLint normattrib = findShaderAttribPos(program, "normal"); //todo per model materials?
 //	printf("%i\n", normattrib);
-	glEnableVertexAttribArray(normattrib);
-	glVertexAttribPointer(normattrib, 3, GL_FLOAT, GL_FALSE, 8*sizeof(GLfloat), (void*)(3*sizeof(GLfloat)));
+	glEnableVertexAttribArray(NORMATTRIBLOC);
+	glVertexAttribPointer(NORMATTRIBLOC, 3, GL_FLOAT, GL_FALSE, 8*sizeof(GLfloat), (void*)(3*sizeof(GLfloat)));
 
-	GLint tcattrib = findShaderAttribPos(program, "texCoord"); //todo per model materials?
+//	GLint tcattrib = findShaderAttribPos(program, "texCoord"); //todo per model materials?
 //	printf("%i\n", tcattrib);
-	glEnableVertexAttribArray(tcattrib);
-	glVertexAttribPointer(tcattrib, 2, GL_FLOAT, GL_FALSE, 8*sizeof(GLfloat), (void*)(5*sizeof(GLfloat)));
+	glEnableVertexAttribArray(TCATTRIBLOC);
+	glVertexAttribPointer(TCATTRIBLOC, 2, GL_FLOAT, GL_FALSE, 8*sizeof(GLfloat), (void*)(5*sizeof(GLfloat)));
 
 
 

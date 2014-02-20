@@ -43,6 +43,7 @@ consolechar_t generateCharacter(float offsetx, float offsety, float scalex, floa
 	output.verts[13]= offsety+scaley;
 	return output;
 }
+/*
 int updateConsoleVBO(void){
 	if(!consoleVBO) return 0; // something bad
 	glBindVertexArray(consoleVBO->vaoid);
@@ -80,7 +81,7 @@ int updateConsoleVBO(void){
 	glVertexAttribPointer(tcattrib, 2, GL_FLOAT, GL_FALSE, 4 *sizeof(GLfloat), (void*) ( 2 * sizeof(GLfloat)));
 	return TRUE;
 }
-
+*/
 int deleteConsoleBuffer(void){
 	int n;
 	if(!consoleOutputBuffer) return FALSE; // its already deleted
