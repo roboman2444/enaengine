@@ -90,10 +90,6 @@ int glInit(void){
 
 	cam = createViewport("cam", 1);
 
-	glEnable(GL_TEXTURE_2D);
-//	glBindTexture(GL_TEXTURE_2D, tcoil->textures->id);
-//	consolePrintf("texture %s id: %i\n", tcoil->name, tcoil->textures->id);
-
 
 	return TRUE; // so far so good
 }
@@ -105,7 +101,7 @@ int glDrawModel(model_t * model, matrix4x4_t * modworld, matrix4x4_t * viewproj)
 	Matrix4x4_Concat(&outmat, viewproj, modworld);
 	GLfloat out[16];
 	Matrix4x4_ToArrayFloatGL(&outmat, out);
-//	glUniformMatrix4fv(mvpmat4, 1, GL_FALSE, out);
+	glUniformMatrix4fv(currentsp->unimat40, 1, GL_FALSE, out);
 //	glBindVertexArray(tvbo->vaoid);
 
 	glDrawElements(GL_TRIANGLES, tvbo->numfaces*3, GL_UNSIGNED_INT, 0);
@@ -164,8 +160,13 @@ int drawEntitiesS(shaderbatche_t * batch){
 	//stuff here
 	shaderprogram_t * shader = returnShaderById(batch->shaderid);
 //	if(!shader) return FALSE; it does this anyway when i ask for perm
-	shaderpermutation_t * perm = findShaderPermutation(shader, batch->shaderperm);
+//	shaderpermutation_t * perm = findShaderPermutation(shader, batch->shaderperm);
+//	if(!perm) return FALSE;
+//	if(!perm) perm = addPermutationToShader(shader, batch->shaderperm);
+	shaderpermutation_t * perm = addPermutationToShader(shader, batch->shaderperm);
 	if(!perm) return FALSE;
+	if(!perm->compiled < 2) return FALSE;
+
 	//
 	currentsp = perm;
 	glUseProgram(perm->id);

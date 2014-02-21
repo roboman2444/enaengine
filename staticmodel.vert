@@ -1,9 +1,6 @@
 #version 150
 
-uniform mat4 modelMat;
-uniform mat4 viewMat;
-uniform mat4 projectionMat;
-uniform mat4 mvpMat;
+uniform mat4 unimat40;
 
 
 in vec3 posattrib;
@@ -18,7 +15,5 @@ void main(){
 	fragnormal = normattrib;
 	fragposition = posattrib;
 	fragtexCoord = tcattrib;
-//	gl_Position = projectionMat *  viewMat * modelMat * vec4(fragposition, 1.0);
-	gl_Position = mvpMat * vec4(fragposition, 1.0);
-//	gl_Position = vec4(fragposition, 1.0) * mvpMat;
+	gl_Position = unimat40 * vec4(fragposition, 1.0);
 }

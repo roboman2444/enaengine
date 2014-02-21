@@ -1,9 +1,6 @@
 #version 150
 
-uniform mat4 modelMat;
-uniform mat4 viewMat;
-uniform mat4 projectionMat;
-uniform mat4 mvpMat;
+uniform mat4 unimat40;
 
 
 in vec2 texCoord;

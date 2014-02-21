@@ -96,9 +96,10 @@ shaderprogram_t * addShaderRPOINT(shaderprogram_t shader){
 
 //shaderpermutation_t compilePermutation(shaderprogram_t * shader, int permutation){
 shaderpermutation_t createPermutation(shaderprogram_t * shader, int permutation){
+//	consolePrintf("readying shader %s with permutation %i", shader->name, permutation);
 	shaderpermutation_t perm;
-	perm.permutation = permutation;
 	memset(&perm, 0 , sizeof(shaderpermutation_t));
+	perm.permutation = permutation;
 
 	if(!(shader->type & 2)) return perm;
 	GLuint vertid = glCreateShader(GL_VERTEX_SHADER);
@@ -137,14 +138,29 @@ shaderpermutation_t createPermutation(shaderprogram_t * shader, int permutation)
 	free(shaderstring);
 	free(shaderlength);
 
-
+	perm.compiled = 1;
 	glCompileShader(vertid);
 	glCompileShader(fragid);
+	int fail = 0;
+	int status;
+
+	glGetShaderiv(fragid, GL_COMPILE_STATUS, &status);
+	if(status == GL_FALSE){
+//			consolePrintf("Shader %s compile failed\n", shader->name);
+			fail = 1;
+	}
+	glGetShaderiv(vertid, GL_COMPILE_STATUS, &status);
+	if(status == GL_FALSE){
+//			consolePrintf("Shader %s compile failed\n", shader->name);
+			fail = 1;
+	}
+
 	//todo geom shader
 	GLuint programid = glCreateProgram();
 	//TODO errorcheck
 	glAttachShader(programid, vertid);
 	glAttachShader(programid, fragid);
+//	glUseProgram(programid);
 	glBindFragDataLocation(programid, 0, "fragColor"); //todo move this
 
 
@@ -153,30 +169,41 @@ shaderpermutation_t createPermutation(shaderprogram_t * shader, int permutation)
 	glBindAttribLocation(programid, TCATTRIBLOC, "tcattrib");
 	glLinkProgram(programid);
 	perm.id = programid;
+
 	//TODO errorcheck
-	if(printProgramLogStatus(programid)){
-		if(shader->type & 1){
+	glGetProgramiv(programid, GL_LINK_STATUS, &status);
+	if(status == GL_FALSE){
+//			consolePrintf("Shader %s compile failed\n", shader->name);
+			fail = 1;
+	}
+
+	if(printProgramLogStatus(programid)|| fail){
+		fail = TRUE;
+//		if(shader->type & 1){
 			char * error = malloc((100* shader->numdefines) + 100);
 			sprintf(error, "Shader %s compile failed. Permutations:\n", shader->name);
-
 			int i, count = 0;
 				for(i = 0; i < shader->numdefines; i++){
 				if(permutation & 1<<i){
-					sprintf(error, "%s\n", shader->defines[i]);
+					sprintf(error, "%s%s\n", error, shader->defines[i]);
 					count++;
 				}
 			}
-			sprintf(error, "Line offset in file: %i\n", count);
+			sprintf(error, "%sLine offset in file: %i\n", error, count);
 			consoleNPrintf(strlen(error)+1,error);
 			free(error);
-		} else {
-			consolePrintf("Shader %s compile failed", shader->name);
+/*		} else {
+			consolePrintf("Shader %s compile failed\n", shader->name);
 		}
-		return perm;
+*/
+		perm.compiled = 1;
+//		return perm;
 	}
-	perm.type = 1;
+	if(fail) return perm;
+	glUseProgram(programid);
 //set up texture uniforms
-	char * texstring = malloc(9);
+
+	char * texstring = malloc(10);
 	int i;
 	for(i = 0; i < 16; i++){
 		sprintf(texstring, "texture%i", i);
@@ -186,10 +213,14 @@ shaderpermutation_t createPermutation(shaderprogram_t * shader, int permutation)
 
 //set up other uniforms
 	perm.unimat40 = glGetAttribLocation(programid, "unimat40");
+	printf("%i\n",perm.unimat40);
 	perm.univec40 = glGetAttribLocation(programid, "univec40");
 	perm.univec30 = glGetAttribLocation(programid, "univec30");
 	perm.univec20 = glGetAttribLocation(programid, "univec20");
 	perm.unifloat0 =glGetAttribLocation(programid, "unifloat0");
+
+	perm.compiled = 2;
+	consolePrintf("Shader %s compile successful\n", shader->name);
 
 	return perm;
 }
@@ -233,7 +264,7 @@ shaderprogram_t createAndReadyShader(char * name){
 
 	char * vertname = malloc(strlen(name)+6);
 	strcpy(vertname, name);strcat(vertname, ".vert");
-	loadFileString(vertname, &shader.vertstring, &shader.vertlength, 2);
+	loadFileString(vertname, &shader.vertstring, &shader.vertlength, 1);
 	free(vertname);
 	if(shader.vertlength == 0){
 		//todo
@@ -243,7 +274,7 @@ shaderprogram_t createAndReadyShader(char * name){
 	}
 	char * fragname = malloc(strlen(name)+6);
 	strcpy(vertname, name);strcat(vertname, ".frag");
-	loadFileString(fragname, &shader.fragstring, &shader.fraglength, 2);
+	loadFileString(fragname, &shader.fragstring, &shader.fraglength, 1);
 	free(fragname);
 	if(shader.fraglength == 0){
 		//todo
@@ -257,7 +288,7 @@ shaderprogram_t createAndReadyShader(char * name){
 
 	char * geomname = malloc(strlen(name)+6);
 	strcpy(vertname, name);strcat(vertname, ".geom");
-	loadFileString(geomname, &shader.geomstring, &shader.geomlength, 2);
+	loadFileString(geomname, &shader.geomstring, &shader.geomlength, 0);
 	free(geomname);
 	if(shader.geomlength < 1){
 		if(shader.geomstring)free(shader.geomstring);
@@ -340,9 +371,9 @@ int printProgramLogStatus(int id){
 		glGetProgramInfoLog(id, blen, 0, log);
 		consoleNPrintf(blen + 16, "program log: %s \n", log); //too much for the console
 		free(log);
-		return FALSE;
+		return blen;
 	}
-	return TRUE;
+	return FALSE;
 }
 //UNTESTED
 int getProgramLogStatus(int id, char ** output){
@@ -368,22 +399,20 @@ shaderprogram_t * createAndAddShaderRPOINT(char * name){
 shaderpermutation_t * addPermutationToShader(shaderprogram_t * shader, int permutation){
 	if(!shader) return FALSE;
 	unsigned int hashindex = (permutation * 0x1021) & (PERMHASHSIZE - 1);
-	if(!shader->permhashtable[hashindex].type && !shader->permhashtable[hashindex].next){
-		shaderpermutation_t newp = createPermutation(shader, permutation);
-		if(!newp.type) return FALSE;
-		shader->permhashtable[hashindex] = newp;
+	if(!shader->permhashtable[hashindex].compiled){
+		shader->permhashtable[hashindex] = createPermutation(shader, permutation);
 		return &shader->permhashtable[hashindex];
 	}
 	shaderpermutation_t *p;
-	for (p = &shader->permhashtable[hashindex]; p->next ;p = p->next){
+	for (p = &shader->permhashtable[hashindex]; p; p = p->next){
 		if(p->permutation == permutation) return p; // already done
 	}
 	shaderpermutation_t *newp = malloc(sizeof(shaderpermutation_t));
 	*newp = createPermutation(shader, permutation);
-	if(!newp->type){
-		free(newp);
-		return FALSE;
-	}
+//	if(!newp->type){
+//		free(newp);
+//		return FALSE;
+//	}
 	p->next = newp;
 	return newp;
 }

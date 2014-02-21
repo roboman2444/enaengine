@@ -10,7 +10,7 @@
 typedef struct shaderpermutation_s {
 	struct shaderpermutation_s * next;
 	GLuint id;
-	char type;
+	char compiled;
 	int permutation;
 	int unimat40;
 	//int unimat41;
@@ -65,5 +65,6 @@ int createAndAddShaderRINT(char * name);
 
 int printProgramLogStatus(int id);
 int getProgramLogStatus(int id, char ** output);
-shaderpermutation_t * findShaderPermutation( shaderprogram_t * shader, int permutation);
+shaderpermutation_t * findShaderPermutation(shaderprogram_t * shader, int permutation);
+shaderpermutation_t * addPermutationToShader(shaderprogram_t * shader, int permutation);
 #endif
