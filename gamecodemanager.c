@@ -32,6 +32,7 @@ int initGameCodeSystem(void){
 		entdragon->modelid = createAndAddModelRINT("dragon");
 		entdragon->texturegroupid = 0;
 		entdragon->shaderid = createAndAddShaderRINT("staticmodel");
+		entdragon->shaderperm = 1;
 	entity_t *entteapot = addEntityRPOINT("teapot");
 		entteapot->type = 2;
 		entteapot->pos[0] = 10.0;
@@ -68,6 +69,8 @@ int initGameCodeSystem(void){
 		enttinydragon->shaderid = createAndAddShaderRINT("staticmodel");
 		enttinydragon->texturegroupid = 0;//findtexturegroupidByName("coil");
 		enttinydragon->attachmentid = findEntityByNameRINT("coil");
+		enttinydragon->shaderperm = 1;
+
 	enttinydragon = addEntityRPOINT("tinydragon");
 		enttinydragon->type = 2;
 		enttinydragon->pos[1] = -3.0;
@@ -79,6 +82,7 @@ int initGameCodeSystem(void){
 		enttinydragon->texturegroupid = 0;//findtexturegroupidByName("coil");
 		enttinydragon->attachmentid = findEntityByNameRINT("coil");
 		enttinydragon->texturegroupid = 1;
+		enttinydragon->shaderperm = 1;
 	enttinydragon = addEntityRPOINT("tinydragon");
 		enttinydragon->type = 2;
 		enttinydragon->pos[2] = 3.0;
@@ -89,6 +93,8 @@ int initGameCodeSystem(void){
 		enttinydragon->modelid = createAndAddModelRINT("dragon");
 		enttinydragon->texturegroupid = 0;//findtexturegroupidByName("coil");
 		enttinydragon->attachmentid = findEntityByNameRINT("coil");
+		enttinydragon->shaderperm = 2;
+
 	enttinydragon = addEntityRPOINT("tinydragon");
 		enttinydragon->type = 2;
 		enttinydragon->pos[2] = -3.0;
@@ -99,6 +105,7 @@ int initGameCodeSystem(void){
 		enttinydragon->shaderid = createAndAddShaderRINT("staticmodel");
 		enttinydragon->texturegroupid = 0;//findtexturegroupidByName("coil");
 		enttinydragon->attachmentid = findEntityByNameRINT("coil");
+		enttinydragon->shaderperm = 2;
 	int i;
 	for(i = 0; i < 34; i++){
 		enttinydragon = addEntityRPOINT("hardball");

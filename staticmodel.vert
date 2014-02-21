@@ -14,6 +14,6 @@ out vec2 fragtexCoord;
 void main(){
 	fragnormal = normattrib;
 	fragtexCoord = tcattrib;
+	fragposition = posattrib;
 	gl_Position = unimat40 * vec4(posattrib, 1.0);
-	fragposition = vec3(gl_Position);
 }

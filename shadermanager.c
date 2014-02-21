@@ -107,27 +107,25 @@ shaderpermutation_t createPermutation(shaderprogram_t * shader, int permutation)
 	//todo errorcheck
 
 	char ** shaderstring = malloc((shader->numdefines+1) * sizeof(char *)); // if it has no defines, it will be 1 so its ok anyway
-	GLint *shaderlength = malloc((shader->numdefines+1) * sizeof(GLint));
 	memset(shaderstring, 0, (shader->numdefines +1) * sizeof(char *));
-	memset(shaderlength, 0, (shader->numdefines +1) * sizeof(GLuint));
 	if(shader->type & 1){
 		int i;
 		for(i = 0; i < shader->numdefines; i++){
 			if(permutation & 1<<i){
 				GLuint l = strlen(shader->defines[i]) + 10;
 				shaderstring[i] = malloc(l); // 8 for the extra #define , 1 for the \n, 1 for the \0
-				snprintf(shaderstring[i], l, "#define %s\n", shader->defines[i]);
-				shaderlength[i] = l;
+				snprintf(shaderstring[i], l, "#define %s", shader->defines[i]); //no need for the \n because the defines has it in them
+			} else {
+				shaderstring[i] = malloc(2* sizeof(char));
+				strcpy(shaderstring[i], "\n");
 			}
 		}
 	}
 
 	shaderstring[shader->numdefines] = shader->vertstring;
-	shaderlength[shader->numdefines] = shader->vertlength;
-	glShaderSource(vertid, shader->numdefines + 1, (const GLchar **) shaderstring, shaderlength);
+	glShaderSource(vertid, shader->numdefines+1, (const GLchar **) shaderstring, 0);
 	shaderstring[shader->numdefines] = shader->fragstring;
-	shaderlength[shader->numdefines] = shader->fraglength;
-	glShaderSource(fragid, shader->numdefines + 1, (const GLchar **) shaderstring, shaderlength);
+	glShaderSource(fragid, shader->numdefines+1, (const GLchar **) shaderstring, 0);
 	//if i set shadersource length to null, it does it by null char looking
 	//todo geom shader
 
@@ -136,7 +134,6 @@ shaderpermutation_t createPermutation(shaderprogram_t * shader, int permutation)
 		for(i = 0; i < shader->numdefines; i++) if(shaderstring[i]) free(shaderstring[i]); // doesnt free the vertstring or fragstring
 	}
 	free(shaderstring);
-	free(shaderlength);
 
 	perm.compiled = 1;
 	glCompileShader(vertid);
@@ -188,7 +185,7 @@ shaderpermutation_t createPermutation(shaderprogram_t * shader, int permutation)
 			int i, count = 0;
 				for(i = 0; i < shader->numdefines; i++){
 				if(permutation & 1<<i){
-					sprintf(error, "%s%s\n", error, shader->defines[i]);
+					sprintf(error, "%s%s", error, shader->defines[i]);
 					count++;
 				}
 			}
@@ -224,6 +221,17 @@ shaderpermutation_t createPermutation(shaderprogram_t * shader, int permutation)
 
 	perm.compiled = 2;
 	consolePrintf("Shader %s compile successful\n", shader->name);
+			char * error = malloc((100* shader->numdefines) + 100);
+			sprintf(error, "Shader %s compile success. Permutations:\n", shader->name);
+			int count = 0;
+				for(i = 0; i < shader->numdefines; i++){
+				if(permutation & 1<<i){
+					sprintf(error, "%s%s", error, shader->defines[i]);
+					count++;
+				}
+			}
+			consoleNPrintf(strlen(error)+1,error);
+			free(error);
 
 	return perm;
 }
@@ -236,6 +244,8 @@ shaderprogram_t createAndReadyShader(char * name){
 
 // populate define list
 	char * definename = malloc(strlen(name)+6);
+	strcpy(definename, name);strcat(definename, ".define");
+
 	FILE *f;
 	if(!(f = fopen(definename, "r"))){
 		//todo debug?
@@ -244,9 +254,12 @@ shaderprogram_t createAndReadyShader(char * name){
 		int i;
 		for(i = 0; i < 32; i++){
 			shader.defines[i] = malloc(100);
-			if(!fgets(shader.defines[i], 100, f)){
-				shader.defines = realloc(shader.defines[i], strlen(shader.defines[i]) +1);
+			if(fgets(shader.defines[i], 100, f)){
+				shader.defines[i] = realloc(shader.defines[i], strlen(shader.defines[i])+1);
+				consolePrintf("%s\n",shader.defines[i]);
 			} else {
+//				consolePrintf("%s\n",shader.defines[i]);
+
 				free(shader.defines[i]);
 				shader.defines[i] = 0;
 				break;
