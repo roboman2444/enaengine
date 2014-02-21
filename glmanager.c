@@ -131,10 +131,8 @@ int drawEntitiesM(modelbatche_t * batch){
 	//stuff here
 	model_t * m = returnModelById(batch->modelid);
 	vbo_t * tvbo = returnVBOById(m->vbo);
-	glBindVertexArray(tvbo->vaoid);
-
 	if(!tvbo) return FALSE;
-
+	glBindVertexArray(tvbo->vaoid);
 	for(i = 0; i < count; i++){
 	//todo
 		glDrawModel(m, &batch->matlist[i], &cam.viewproj);
@@ -163,9 +161,12 @@ int drawEntitiesS(shaderbatche_t * batch){
 //	shaderpermutation_t * perm = findShaderPermutation(shader, batch->shaderperm);
 //	if(!perm) return FALSE;
 //	if(!perm) perm = addPermutationToShader(shader, batch->shaderperm);
+
 	shaderpermutation_t * perm = addPermutationToShader(shader, batch->shaderperm);
 	if(!perm) return FALSE;
-	if(!perm->compiled < 2) return FALSE;
+//	consolePrintf("count:%i\n",1);
+
+	if(perm->compiled < 2) return FALSE;
 
 	//
 	currentsp = perm;
@@ -173,6 +174,7 @@ int drawEntitiesS(shaderbatche_t * batch){
 	for(i = 0; i < count; i++){
 		drawEntitiesT(&batch->texturebatch[i]);
 	}
+
 	return count;
 }
 int drawEntitiesR(renderbatche_t * batch){

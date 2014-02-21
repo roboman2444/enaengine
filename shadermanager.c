@@ -167,6 +167,9 @@ shaderpermutation_t createPermutation(shaderprogram_t * shader, int permutation)
 	glBindAttribLocation(programid, POSATTRIBLOC, "posattrib");
 	glBindAttribLocation(programid, NORMATTRIBLOC, "normattrib");
 	glBindAttribLocation(programid, TCATTRIBLOC, "tcattrib");
+
+
+
 	glLinkProgram(programid);
 	perm.id = programid;
 
@@ -207,17 +210,17 @@ shaderpermutation_t createPermutation(shaderprogram_t * shader, int permutation)
 	int i;
 	for(i = 0; i < 16; i++){
 		sprintf(texstring, "texture%i", i);
-		glUniform1i(glGetAttribLocation(programid, texstring), i);
+		glUniform1i(glGetUniformLocation(programid, texstring), i);
 	}
 	free(texstring);
 
 //set up other uniforms
-	perm.unimat40 = glGetAttribLocation(programid, "unimat40");
+	perm.unimat40 = glGetUniformLocation(programid, "unimat40");
 	printf("%i\n",perm.unimat40);
-	perm.univec40 = glGetAttribLocation(programid, "univec40");
-	perm.univec30 = glGetAttribLocation(programid, "univec30");
-	perm.univec20 = glGetAttribLocation(programid, "univec20");
-	perm.unifloat0 =glGetAttribLocation(programid, "unifloat0");
+	perm.univec40 = glGetUniformLocation(programid, "univec40");
+	perm.univec30 = glGetUniformLocation(programid, "univec30");
+	perm.univec20 = glGetUniformLocation(programid, "univec20");
+	perm.unifloat0 =glGetUniformLocation(programid, "unifloat0");
 
 	perm.compiled = 2;
 	consolePrintf("Shader %s compile successful\n", shader->name);
