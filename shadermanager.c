@@ -117,7 +117,7 @@ shaderpermutation_t createPermutation(shaderprogram_t * shader, int permutation)
 				snprintf(shaderstring[i], l, "#define %s", shader->defines[i]); //no need for the \n because the defines has it in them
 			} else {
 				shaderstring[i] = malloc(2* sizeof(char));
-				strcpy(shaderstring[i], "\n");
+				strcpy(shaderstring[i], "\0");
 			}
 		}
 	}
@@ -213,7 +213,6 @@ shaderpermutation_t createPermutation(shaderprogram_t * shader, int permutation)
 
 //set up other uniforms
 	perm.unimat40 = glGetUniformLocation(programid, "unimat40");
-	printf("%i\n",perm.unimat40);
 	perm.univec40 = glGetUniformLocation(programid, "univec40");
 	perm.univec30 = glGetUniformLocation(programid, "univec30");
 	perm.univec20 = glGetUniformLocation(programid, "univec20");

@@ -17,7 +17,6 @@ void main(){
 	#else
 		#ifdef POSCOLOR
 			fragColor = vec4(fragposition, 1.0);
-
 		#else
 			fragColor = vec4(1.0);
 		#endif
