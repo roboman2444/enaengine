@@ -5,6 +5,7 @@ typedef struct modelbatche_s {
 	int modelid;
 	int count;
 	matrix4x4_t * matlist;
+//	matrix4x4_t * cammatlist;
 } modelbatche_t;
 typedef struct texturebatche_s {
 	int count;

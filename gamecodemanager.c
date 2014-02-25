@@ -39,7 +39,7 @@ int initGameCodeSystem(void){
 		entteapot->needsmatupdate = TRUE;
 		entteapot->modelid = createAndAddModelRINT("teapot");
 		entteapot->shaderid = createAndAddShaderRINT("staticmodel");
-		entteapot->texturegroupid = 1;
+		entteapot->texturegroupid = 0;
 	entity_t * enthat = addEntityRPOINT("hat");
 		enthat->type = 2;
 		enthat->pos[1] = 8.7;
@@ -50,7 +50,7 @@ int initGameCodeSystem(void){
 		enthat->needsmatupdate = TRUE;
 		enthat->modelid = createAndAddModelRINT("teapot");
 		enthat->shaderid = createAndAddShaderRINT("staticmodel");
-		enthat->texturegroupid = 1;
+		enthat->texturegroupid = 0;
 	entity_t * entcoil = addEntityRPOINT("coil");
 		entcoil->type = 2;
 		entcoil->pos[2] = 10.0;
@@ -60,6 +60,7 @@ int initGameCodeSystem(void){
 		entcoil->modelid = createAndAddModelRINT("coil");
 		entcoil->texturegroupid = createAndAddTexturegroupRINT("coil");
 		entcoil->attachmentid = findEntityByNameRINT("hat");
+		entcoil->shaderperm = 4;
 	entity_t * enttinydragon = addEntityRPOINT("tinydragon");
 		enttinydragon->type = 2;
 		enttinydragon->pos[1] = 3.0;

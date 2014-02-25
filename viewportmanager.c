@@ -191,6 +191,13 @@ void recalcProjectionMatrix(viewport_t * v){
 	v->projection.m[3][3] = 0;
 
 }
+/*void recalcFrustum(viewport_t * v){
+	int i;
+	//double fpx = +1, fnx = -1; fpy = +1, fny = -1;
+	vec3_t forward, left, up, origin, v;
+	Matrix4x4_ToVectors(&v->view, forward, left, up, origin);
+	//#define VectorMAMAM(scale1, b1, scale2, b2, scale3, b3, c) ((c)[0] = (scale1) * (b1)[0] + (scale2) * (b2)[0] + (scale3) * (b3)[0],(c)[1] = (scale1) * (b1)[1] + (scale2) * (b2)[1] + (scale3) * (b3)[1],(c)[2] = (scale1) * (b1)[2] + (scale2) * (b2)[2] + (scale3) * (b3)[2]);
+}*/
 int recalcViewport(viewport_t * v, vec3_t pos, vec3_t angle, float fov, float aspect, float near, float far){
 	if(pos != v->pos || angle != v->angle){
 		v->viewchanged = TRUE;
@@ -208,7 +215,9 @@ int recalcViewport(viewport_t * v, vec3_t pos, vec3_t angle, float fov, float as
 		v->fov = fov;
 		recalcProjectionMatrix(v);
 	}
-//	if(v->viewchanged) Matrix4x4_Concat(&v->viewproj, &v->view, &v->projection);
-	if(v->viewchanged) Matrix4x4_Concat(&v->viewproj, &v->projection, &v->view);
+	if(v->viewchanged){
+		Matrix4x4_Concat(&v->viewproj, &v->projection, &v->view);
+//		recalcFrustum(v);
+	}
 	return v->viewchanged;
 }

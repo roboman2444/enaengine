@@ -15,6 +15,9 @@ int addEntityToModelbatche(entity_t * ent, modelbatche_t * batch){
 	batch->count++;
 	batch->matlist = realloc(batch->matlist, batch->count * sizeof(matrix4x4_t));
 	batch->matlist[count] = ent->mat;
+//	batch->matlist = realloc(batch->cammatlist, batch->count * sizeof(matrix4x4_t));
+//	Matrix4x4_Concat(&cammatlist[count], viewport mat, ent->mat);
+//	batch->cammatlist[count] = ent->mat;
 	return count+1;
 }
 int addEntityToTexturebatche(entity_t * ent, texturebatche_t * batch){

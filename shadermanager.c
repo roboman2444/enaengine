@@ -208,6 +208,7 @@ shaderpermutation_t createPermutation(shaderprogram_t * shader, int permutation)
 	for(i = 0; i < 16; i++){
 		sprintf(texstring, "texture%i", i);
 		glUniform1i(glGetUniformLocation(programid, texstring), i);
+//		consolePrintf("texture uniform %s with space %i at location %i\n", texstring, i, glGetUniformLocation(programid, texstring));
 	}
 	free(texstring);
 
@@ -219,18 +220,18 @@ shaderpermutation_t createPermutation(shaderprogram_t * shader, int permutation)
 	perm.unifloat0 =glGetUniformLocation(programid, "unifloat0");
 
 	perm.compiled = 2;
-	consolePrintf("Shader %s compile successful\n", shader->name);
-			char * error = malloc((100* shader->numdefines) + 100);
-			sprintf(error, "Shader %s compile success. Permutations:\n", shader->name);
-			int count = 0;
-				for(i = 0; i < shader->numdefines; i++){
-				if(permutation & 1<<i){
-					sprintf(error, "%s%s", error, shader->defines[i]);
-					count++;
-				}
-			}
-			consoleNPrintf(strlen(error)+1,error);
-			free(error);
+//	consolePrintf("Shader %s compile successful\n", shader->name);
+	char * error = malloc((100* shader->numdefines) + 100);
+	sprintf(error, "Shader %s compile success. Permutations:\n", shader->name);
+	int count = 0;
+	for(i = 0; i < shader->numdefines; i++){
+		if(permutation & 1<<i){
+			sprintf(error, "%s%s", error, shader->defines[i]);
+			count++;
+		}
+	}
+	consoleNPrintf(strlen(error)+1,error);
+	free(error);
 
 	return perm;
 }

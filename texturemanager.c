@@ -106,15 +106,28 @@ texture_t loadTexture(char * filepath, char type){
 		break;
 		default:
 			//todo make return a default
+			return tex;
 		break;
 	}
 	glGenTextures(1, &tex.id);
 	glBindTexture(GL_TEXTURE_2D, tex.id); //todo set filters, etc
+/*
+	int x,y;
+	unsigned char * i;
+	i = teximage->pixels;
+	for(y = 0; y < tex.height; y++){
+		for(x = 0; x < tex.width; x++){
+			consolePrintf("%i %i %i %i\t", (int)*i, (int)*i+1, (int)*i+2, (int) *i+3);
+			i+=4;
+		}
+		printf("\n");
+	}
+*/
 	glTexImage2D(GL_TEXTURE_2D, 0, texformat, tex.width, tex.height, 0, texformat, GL_UNSIGNED_BYTE, teximage->pixels); //todo different formats
+	consolePrintf("loaded texture %s with dimensions %ix%i format %i and type %i\n", filepath, tex.width, tex.height, teximage->format->BytesPerPixel, tex.type);
 	SDL_FreeSurface(teximage);
 	glBindTexture(GL_TEXTURE_2D, 0);
 
-	consolePrintf("loaded texture %s with dimensions %ix%i and type %i\n", filepath, tex.width, tex.height, tex.type);
 	return tex;
 }
 
@@ -200,7 +213,9 @@ int bindTexturegroup(texturegroup_t * texturegroup){
 			case 5: glActiveTexture(GL_TEXTURE4);break;
 			case 10: continue; break;
 			default: continue; break;
+
 		}
+//		consolePrintf("texture %i at pos %i\n", texturespointer[i].id, texturespointer[i].type);
 		count++;
 		glBindTexture(GL_TEXTURE_2D, texturespointer[i].id);
 	}

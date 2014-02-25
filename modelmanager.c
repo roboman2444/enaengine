@@ -145,6 +145,11 @@ float * getBBoxFromInterleavedMesh(GLfloat * interleavedbuffer, GLuint vertcount
 		if(vert[2] > bbox[4]) bbox[4] = vert[2];
 		else if(vert[2] < bbox[5]) bbox[5] = vert[2];
 	}
+/*
+	for(i = 0; i < 6; i++){
+		consolePrintf("bbox %i:%f\n", i, bbox[i]);
+	}
+*/
 	return bbox;
 }
 

@@ -86,7 +86,7 @@ int glInit(void){
 //	glBlendFunc(GL_SRC_ALPHA,GL_ONE);
 	glViewport(0, 0, 800, 600);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-//	glUseProgram(staticmodel->id);
+//	glEnable(GL_TEXTURE_2D);
 
 	cam = createViewport("cam", 1);
 
@@ -99,6 +99,15 @@ int glDrawModel(model_t * model, matrix4x4_t * modworld, matrix4x4_t * viewproj)
 	matrix4x4_t outmat;
 //	Matrix4x4_Concat(&outmat, modworld, viewproj);
 	Matrix4x4_Concat(&outmat, viewproj, modworld);
+
+//	vec_t  t[3];
+//	vec_t  ot[3];
+	//Matrix4x4_OriginFromMatrix(&outmat, t);
+//	Matrix4x4_Transform(&outmat, ot, t);
+//	if(t[0] > 10.0 || t[0] < -10.0) return FALSE;
+//	if(t[1] > 10.0 || t[1] < -10.0) return FALSE;
+//	if(t[2] > 1.0 || t[2] < -1.0) return FALSE;
+
 	GLfloat out[16];
 	Matrix4x4_ToArrayFloatGL(&outmat, out);
 	glUniformMatrix4fv(currentsp->unimat40, 1, GL_FALSE, out);
@@ -145,6 +154,12 @@ int drawEntitiesT(texturebatche_t * batch){
 	if(!count || !batch->modelbatch) return FALSE;
 	int i;
 	//stuff here
+	texturegroup_t * tex = returnTexturegroupById(batch->textureid);
+	if(!tex){
+		unbindTexturegroup();
+	} else {
+		bindTexturegroup(tex);
+	}
 	for(i = 0; i < count; i++){
 		drawEntitiesM(&batch->modelbatch[i]);
 	}
