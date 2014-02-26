@@ -9,7 +9,7 @@
 #include "hashtables.h"
 #include "viewportmanager.h"
 #include "framebuffermanager.h"
-
+#include "mathlib.h"
 int viewportsOK = 0;
 int viewportcount = 0;
 int viewportArrayFirstOpen = 0;
@@ -191,13 +191,83 @@ void recalcProjectionMatrix(viewport_t * v){
 	v->projection.m[3][3] = 0;
 
 }
-/*void recalcFrustum(viewport_t * v){
+int testPointInFrustum(viewport_t * v, vec3_t p){
 	int i;
-	//double fpx = +1, fnx = -1; fpy = +1, fny = -1;
-	vec3_t forward, left, up, origin, v;
-	Matrix4x4_ToVectors(&v->view, forward, left, up, origin);
-	//#define VectorMAMAM(scale1, b1, scale2, b2, scale3, b3, c) ((c)[0] = (scale1) * (b1)[0] + (scale2) * (b2)[0] + (scale3) * (b3)[0],(c)[1] = (scale1) * (b1)[1] + (scale2) * (b2)[1] + (scale3) * (b3)[1],(c)[2] = (scale1) * (b1)[2] + (scale2) * (b2)[2] + (scale3) * (b3)[2]);
-}*/
+	vec_t * n;
+	for(i = 0; i < 6; i++){
+		n = v->frustum[i].norm;
+		float dist = dot(n, p) + v->frustum[i].d;
+		if(dist < 0.0){
+			return FALSE;
+		}
+	}
+	return TRUE;
+}
+
+void recalcFrustum(viewport_t * v){
+	vec_t m[16];
+	Matrix4x4_ToArrayFloatGL(&v->viewproj, m);
+        v->frustum[0].norm[0] = m[3] - m[0];
+        v->frustum[0].norm[1] = m[7] - m[4];
+        v->frustum[0].norm[2] = m[11] - m[8];
+        v->frustum[0].d = m[15] - m[12];
+
+        v->frustum[1].norm[0] = m[3] + m[0];
+        v->frustum[1].norm[1] = m[7] + m[4];
+        v->frustum[1].norm[2] = m[11] + m[8];
+        v->frustum[1].d = m[15] + m[12];
+
+        v->frustum[2].norm[0] = m[3] - m[1];
+        v->frustum[2].norm[1] = m[7] - m[5];
+        v->frustum[2].norm[2] = m[11] - m[9];
+        v->frustum[2].d = m[15] - m[13];
+
+        v->frustum[3].norm[0] = m[3] + m[1];
+        v->frustum[3].norm[1] = m[7] + m[5];
+        v->frustum[3].norm[2] = m[11] + m[9];
+        v->frustum[3].d = m[15] + m[13];
+
+        v->frustum[4].norm[0] = m[3] - m[2];
+        v->frustum[4].norm[1] = m[7] - m[6];
+        v->frustum[4].norm[2] = m[11] - m[10];
+        v->frustum[4].d = m[15] - m[14];
+
+        v->frustum[5].norm[0] = m[3] + m[2];
+        v->frustum[5].norm[1] = m[7] + m[6];
+        v->frustum[5].norm[2] = m[11] + m[10];
+        v->frustum[5].d = m[15] + m[14];
+
+/*
+	vec3_t forward, left, up, origin;
+	float far, near;
+	Matrix4x4_ToVectors(&v->view, up, left, forward, origin);
+	far = v->far;
+	near = v->near;
+//	float heightvec = v->projection.m[1][1];
+//	float widthvec = v->projection.m[0][0];
+//	float farheight = v->projection.m[1][1]* far; // may need to switch
+//	float farwidth = farheight/v->aspect;
+	vec3_t farp;
+	farp[0] = forward[0] * far + origin[0];
+	farp[1] = forward[1] * far + origin[1];
+	farp[2] = forward[2] * far + origin[2];
+	v->frustum[4].norm[0] = -forward[0];
+	v->frustum[4].norm[1] = -forward[1];
+	v->frustum[4].norm[2] = -forward[2];
+	v->frustum[4].d = dot(v->frustum[4].norm, farp);
+
+	vec3_t nearp;
+	nearp[0] = forward[0] * near + origin[0];
+	nearp[1] = forward[1] * near + origin[1];
+	nearp[2] = forward[2] * near + origin[2];
+	v->frustum[5].norm[0] = forward[0];
+	v->frustum[5].norm[1] = forward[1];
+	v->frustum[5].norm[2] = forward[2];
+
+//	v->frustum[5].d = dot(forward, nearp);
+	v->frustum[5].d = dot(nearp, forward);
+*/
+}
 int recalcViewport(viewport_t * v, vec3_t pos, vec3_t angle, float fov, float aspect, float near, float far){
 	if(pos != v->pos || angle != v->angle){
 		v->viewchanged = TRUE;
@@ -217,7 +287,7 @@ int recalcViewport(viewport_t * v, vec3_t pos, vec3_t angle, float fov, float as
 	}
 	if(v->viewchanged){
 		Matrix4x4_Concat(&v->viewproj, &v->projection, &v->view);
-//		recalcFrustum(v);
+		recalcFrustum(v);
 	}
 	return v->viewchanged;
 }

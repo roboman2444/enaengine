@@ -15,6 +15,7 @@ typedef struct viewport_s {
 	matrix4x4_t view;
 	matrix4x4_t viewproj;
 	int myid;
+	plane_t frustum[6];
 } viewport_t;
 
 typedef struct viewportlistpoint_s {
@@ -51,4 +52,5 @@ int createAndAddViewportRINT(char * name, char type);
 viewport_t createViewport(char * name, char type);
 
 int recalcViewport(viewport_t * v, vec3_t pos, vec3_t angle, float fov, float aspect, float near, float far);
+int testPointInFrustum(viewport_t *v, vec3_t p);
 #endif

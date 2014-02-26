@@ -100,14 +100,6 @@ int glDrawModel(model_t * model, matrix4x4_t * modworld, matrix4x4_t * viewproj)
 //	Matrix4x4_Concat(&outmat, modworld, viewproj);
 	Matrix4x4_Concat(&outmat, viewproj, modworld);
 
-//	vec_t  t[3];
-//	vec_t  ot[3];
-	//Matrix4x4_OriginFromMatrix(&outmat, t);
-//	Matrix4x4_Transform(&outmat, ot, t);
-//	if(t[0] > 10.0 || t[0] < -10.0) return FALSE;
-//	if(t[1] > 10.0 || t[1] < -10.0) return FALSE;
-//	if(t[2] > 1.0 || t[2] < -1.0) return FALSE;
-
 	GLfloat out[16];
 	Matrix4x4_ToArrayFloatGL(&outmat, out);
 	glUniformMatrix4fv(currentsp->unimat40, 1, GL_FALSE, out);
@@ -116,17 +108,27 @@ int glDrawModel(model_t * model, matrix4x4_t * modworld, matrix4x4_t * viewproj)
 	glDrawElements(GL_TRIANGLES, tvbo->numfaces*3, GL_UNSIGNED_INT, 0);
 	return tvbo->numfaces;
 }
-int loadEntitiesIntoQueue(renderbatche_t * batch){
+int loadEntitiesIntoQueue(renderbatche_t * batch, viewport_t * v){
 	int i;
 	int count = 0;
+//	int cullcount =0;
 	for(i =0; i <= entityArrayLastTaken; i++){
 		entity_t *e = &entitylist[i];
 		if(e->type < 2)continue;
 		if(!e->modelid)continue;
+		vec3_t org;
+		Matrix4x4_OriginFromMatrix(&e->mat, org);
+		if(!testPointInFrustum(v, org)){
+//			consolePrintf("culled ent %s\n", e->name);
+//			cullcount++;
+			continue;
+		}
+
 //		glDrawModel(returnModelById(e->modelid), &e->mat, &cam.viewproj); //todo redo
 		addEntityToRenderbatche(e, batch);
 		count++;
 	}
+//	if(cullcount)consolePrintf("cullcount:%i\n", cullcount);
 	return count;
 
 }
@@ -217,7 +219,7 @@ int glMainDraw(void){
 	recalcViewport(&cam, pos, angle, 90.0, 4.0/3.0, 1.0, 1000.0);
 	renderbatche_t b;
 	memset(&b, 0, sizeof(renderbatche_t));
-	loadEntitiesIntoQueue(&b);
+	loadEntitiesIntoQueue(&b, &cam);
 	drawEntitiesR(&b);
 	cleanupRenderbatche(&b);
 	swapBuffers();

@@ -13,4 +13,9 @@ typedef vec_t vec5_t[5];
 typedef vec_t vec6_t[6];
 typedef vec_t vec7_t[7];
 typedef vec_t vec8_t[8];
+
+typedef struct plane_s {
+	vec3_t norm;
+	vec_t d;
+} plane_t;
 #endif
