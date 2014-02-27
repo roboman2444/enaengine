@@ -10,6 +10,7 @@
 #include "modelmanager.h"
 #include "shadermanager.h"
 #include "console.h"
+#include "mathlib.h"
 
 int modelcount = 0;
 int modelArrayFirstOpen = 0;
@@ -96,8 +97,8 @@ int generateNormalsFromMesh(GLfloat * vertbuffer, GLfloat * normbuffer, GLuint *
 		normal[2] = v1[0] * v2[1] - v2[0] * v1[1];
 		//if dontwant to do area weighting, normalize now
 		if(!type){
-			float length;
-			length = sqrt((normal[0] * normal[0]) + (normal[1] * normal[1]) + (normal[2] * normal[2]));
+			float length = vec3length(normal);
+//			length = sqrt((normal[0] * normal[0]) + (normal[1] * normal[1]) + (normal[2] * normal[2]));
 			normal[0] /= length;
 			normal[1] /= length;
 			normal[2] /= length;
@@ -159,11 +160,9 @@ int normalizeNormalsFromInterleavedMesh(GLfloat * interleavedbuffer, GLuint vert
 	for(i = 0; i < vertcount; i++){
 		//todo set up something to have a varialbe offset
 		float * normal = &interleavedbuffer[(i*stride)+3];
-		float length;
-		length = sqrt((normal[0] * normal[0]) + (normal[1] * normal[1]) + (normal[2] * normal[2]));
-		normal[0] /= length;
-		normal[1] /= length;
-		normal[2] /= length;
+		float length = vec3length(normal);
+		vec3div(normal, normal, length);
+
 	}
 	return TRUE;
 }
@@ -189,11 +188,8 @@ int generateNormalsFromInterleavedMesh(GLfloat * interleavedbuffer, GLuint * ind
 		n[2] = v1[0] * v2[1] - v2[0] * v1[1];
 		//if dontwant to do area weighting, normalize now
 		if(!type){ // type 0, no area weighting
-			float length;
-			length = sqrt((n[0] * n[0]) + (n[1] * n[1]) + (n[2] * n[2]));
-			n[0] /= length;
-			n[1] /= length;
-			n[2] /= length;
+			float length = vec3length(n);
+			vec3div(n, n, length);
 		}
 		//todo set up something to have a varialbe offset
 		float *n1 = p1 + 3;

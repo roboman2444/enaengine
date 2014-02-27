@@ -132,7 +132,6 @@ int loadEntitiesIntoQueue(renderbatche_t * batch, viewport_t * v){
 	return count;
 
 }
-
 int drawEntitiesM(modelbatche_t * batch){
 	if(!batch) return FALSE;
 	int count = batch->count;
@@ -157,10 +156,9 @@ int drawEntitiesT(texturebatche_t * batch){
 	int i;
 	//stuff here
 	texturegroup_t * tex = returnTexturegroupById(batch->textureid);
-	if(!tex){
-		unbindTexturegroup();
-	} else {
+	if(tex){
 		bindTexturegroup(tex);
+//		consolePrintf("error:%i\n", glGetError());
 	}
 	for(i = 0; i < count; i++){
 		drawEntitiesM(&batch->modelbatch[i]);

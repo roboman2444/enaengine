@@ -85,9 +85,6 @@ texture_t loadTexture(char * filepath, char type){
 	//todo better errorchecking
 //	if(!(teximage = IMG_Load(filepath))) return FALSE; //todo make return a "defualt"
 	teximage = IMG_Load(filepath);
-	tex.width = teximage->w;
-	tex.height = teximage->h;
-	tex.type = type;
 //	int size = teximage->format->BytesPerPixel * tex.width * tex.height;
 
 	GLint texformat = GL_RGB;
@@ -111,6 +108,7 @@ texture_t loadTexture(char * filepath, char type){
 	}
 	glGenTextures(1, &tex.id);
 	glBindTexture(GL_TEXTURE_2D, tex.id); //todo set filters, etc
+	if(!tex.id) return tex;
 /*
 	int x,y;
 	unsigned char * i;
@@ -124,9 +122,28 @@ texture_t loadTexture(char * filepath, char type){
 	}
 */
 	glTexImage2D(GL_TEXTURE_2D, 0, texformat, tex.width, tex.height, 0, texformat, GL_UNSIGNED_BYTE, teximage->pixels); //todo different formats
+//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
+//	glGenerateMipmap(GL_TEXTURE_2D);
+//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+/*
+	unsigned char * data = malloc(300 * sizeof(GLfloat));
+	int x;
+	for(x = 0; x < 300; x++){
+		data[x] = rand() / (RAND_MAX);
+	}
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 10, 10, 0, GL_RGB, GL_FLOAT, data); //todo different formats
+	free(data);
+*/
+	tex.width = teximage->w;
+	tex.height = teximage->h;
+	tex.type = type;
 	consolePrintf("loaded texture %s with dimensions %ix%i format %i and type %i\n", filepath, tex.width, tex.height, teximage->format->BytesPerPixel, tex.type);
 	SDL_FreeSurface(teximage);
 	glBindTexture(GL_TEXTURE_2D, 0);
+//	if(glIsTexture(tex.id))consolePrintf("yes, its a texture!\n");
+
 
 	return tex;
 }
@@ -183,6 +200,7 @@ texturegroup_t createAndLoadTexturegroup(char * name){
 }
 
 void unbindTexturegroup(void){
+
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, 0);
 		glActiveTexture(GL_TEXTURE2);
@@ -203,23 +221,26 @@ int bindTexturegroup(texturegroup_t * texturegroup){
 	texture_t * texturespointer = texturegroup->textures;
 	if(!texturespointer) return -2;
 	for(i = 0; i < texturegroup->num; i++){
-		switch(texturespointer[i].type){
-			//atm only model textures todo
-			case 0: continue; break;
-			case 1: glActiveTexture(GL_TEXTURE0);break;
-			case 2: glActiveTexture(GL_TEXTURE1);break;
-			case 3: glActiveTexture(GL_TEXTURE2);break;
-			case 4: glActiveTexture(GL_TEXTURE3);break;
-			case 5: glActiveTexture(GL_TEXTURE4);break;
-			case 10: continue; break;
-			default: continue; break;
 
+		switch(texturespointer[i].type){
+				//atm only model textures todo
+				case 0: continue; break;
+				case 1: glActiveTexture(GL_TEXTURE0);break;
+				case 2: glActiveTexture(GL_TEXTURE1);break;
+				case 3: glActiveTexture(GL_TEXTURE2);break;
+				case 4: glActiveTexture(GL_TEXTURE3);break;
+				case 5: glActiveTexture(GL_TEXTURE4);break;
+				case 10: continue; break;
+				default: continue; break;
+			}
+//			consolePrintf("texture %i at pos %i\n", texturespointer[i].id, texturespointer[i].type);
+			count++;
+
+			glBindTexture(GL_TEXTURE_2D, texturespointer[i].id);
+//			consolePrintf("error:%i\n",glGetError());
+//			consolePrintf("texture bound with id %i\n", texturespointer[i].id);
 		}
-//		consolePrintf("texture %i at pos %i\n", texturespointer[i].id, texturespointer[i].type);
-		count++;
-		glBindTexture(GL_TEXTURE_2D, texturespointer[i].id);
-	}
-	glActiveTexture(GL_TEXTURE0);
+//	glActiveTexture(GL_TEXTURE0);
 	return count;
 }
 

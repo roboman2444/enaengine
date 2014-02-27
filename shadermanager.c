@@ -177,7 +177,7 @@ shaderpermutation_t createPermutation(shaderprogram_t * shader, int permutation)
 			fail = 1;
 	}
 
-	if(printProgramLogStatus(programid)|| fail){
+	if(printProgramLogStatus(programid) || fail){
 		fail = TRUE;
 //		if(shader->type & 1){
 			char * error = malloc((100* shader->numdefines) + 100);
@@ -208,7 +208,9 @@ shaderpermutation_t createPermutation(shaderprogram_t * shader, int permutation)
 	for(i = 0; i < 16; i++){
 		sprintf(texstring, "texture%i", i);
 		glUniform1i(glGetUniformLocation(programid, texstring), i);
-//		consolePrintf("texture uniform %s with space %i at location %i\n", texstring, i, glGetUniformLocation(programid, texstring));
+		int j = 0;
+		glGetUniformiv(programid, glGetUniformLocation(programid, texstring), &j);
+//		consolePrintf("texture uniform %s with space %i and location %i\n", texstring, j, glGetUniformLocation(programid, texstring));
 	}
 	free(texstring);
 

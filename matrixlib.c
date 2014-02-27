@@ -1,6 +1,7 @@
 //#include "quakedef.h"
 #include "globaldefs.h"
 #include <math.h>
+#include "mathlib.h"
 #include "matrixlib.h"
 
 #define MATRIX4x4_OPENGLORIENTATION

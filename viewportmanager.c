@@ -196,7 +196,7 @@ int testPointInFrustum(viewport_t * v, vec3_t p){
 	vec_t * n;
 	for(i = 0; i < 6; i++){
 		n = v->frustum[i].norm;
-		float dist = dot(n, p) + v->frustum[i].d;
+		float dist = vec3dot(n, p) + v->frustum[i].d;
 		if(dist < 0.0){
 			return FALSE;
 		}
