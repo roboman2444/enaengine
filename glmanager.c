@@ -116,18 +116,104 @@ int loadEntitiesIntoQueue(renderbatche_t * batch, viewport_t * v){
 		entity_t *e = &entitylist[i];
 		if(e->type < 2)continue;
 		if(!e->modelid)continue;
+
+
+		//entity modelspace model bbox method (generated from model verts in modelmanager.c)
+		model_t * mod = returnModelById(e->modelid);
+		vec_t * bbox = mod->bbox;
+		int j;
+		vec3_t point;
+		vec3_t testvec;
+		for(j = 0; j < 8; j++){
+			point[0] = bbox[(j&1)+0];
+			point[1] = bbox[(j&2)+2];
+			point[2] = bbox[(j&4)+4];
+//			consolePrintf("point: %f %f %f\t", point[0], point[1], point[2]);
+			Matrix4x4_Transform(&e->mat, point, testvec);
+//			consolePrintf("point: %f %f %f\t", testvec[0], testvec[1], testvec[2]);
+
+			if(testPointInFrustum(v, testvec)){
+				addEntityToRenderbatche(e, batch);
+				count++;
+				j = 9;
+			}
+		}
+//		consolePrintf("\n\n");
+
+		//entity worldspace bbox method
+/*
 		vec3_t org;
 		Matrix4x4_OriginFromMatrix(&e->mat, org);
-		if(!testPointInFrustum(v, org)){
-//			consolePrintf("culled ent %s\n", e->name);
-//			cullcount++;
+
+
+		vec3_t testvec;
+		testvec[0] = e->maxs[0] + org[0];
+		testvec[1] = e->maxs[1] + org[1];
+		testvec[2] = e->maxs[2] + org[2];
+		if(testPointInFrustum(v, testvec)){
+			addEntityToRenderbatche(e, batch);
+			count++;
 			continue;
 		}
-
-//		glDrawModel(returnModelById(e->modelid), &e->mat, &cam.viewproj); //todo redo
-		addEntityToRenderbatche(e, batch);
-		count++;
+		testvec[0] = e->maxs[0] + org[0];
+		testvec[1] = e->mins[1] + org[1];
+		testvec[2] = e->maxs[2] + org[2];
+		if(testPointInFrustum(v, testvec)){
+			addEntityToRenderbatche(e, batch);
+			count++;
+			continue;
+		}
+		testvec[0] = e->maxs[0] + org[0];
+		testvec[1] = e->mins[1] + org[1];
+		testvec[2] = e->mins[2] + org[2];
+		if(testPointInFrustum(v, testvec)){
+			addEntityToRenderbatche(e, batch);
+			count++;
+			continue;
+		}
+		testvec[0] = e->maxs[0] + org[0];
+		testvec[1] = e->maxs[1] + org[1];
+		testvec[2] = e->mins[2] + org[2];
+		if(testPointInFrustum(v, testvec)){
+			addEntityToRenderbatche(e, batch);
+			count++;
+			continue;
+		}
+		testvec[0] = e->mins[0] + org[0];
+		testvec[1] = e->maxs[1] + org[1];
+		testvec[2] = e->maxs[2] + org[2];
+		if(testPointInFrustum(v, testvec)){
+			addEntityToRenderbatche(e, batch);
+			count++;
+			continue;
+		}
+		testvec[0] = e->mins[0] + org[0];
+		testvec[1] = e->mins[1] + org[1];
+		testvec[2] = e->maxs[2] + org[2];
+		if(testPointInFrustum(v, testvec)){
+			addEntityToRenderbatche(e, batch);
+			count++;
+			continue;
+		}
+		testvec[0] = e->mins[0] + org[0];
+		testvec[1] = e->mins[1] + org[1];
+		testvec[2] = e->mins[2] + org[2];
+		if(testPointInFrustum(v, testvec)){
+			addEntityToRenderbatche(e, batch);
+			count++;
+			continue;
+		}
+		testvec[0] = e->mins[0] + org[0];
+		testvec[1] = e->maxs[1] + org[1];
+		testvec[2] = e->mins[2] + org[2];
+		if(testPointInFrustum(v, testvec)){
+			addEntityToRenderbatche(e, batch);
+			count++;
+			continue;
+		}
+*/
 	}
+
 //	if(cullcount)consolePrintf("cullcount:%i\n", cullcount);
 	return count;
 

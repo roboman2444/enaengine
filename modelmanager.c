@@ -127,15 +127,17 @@ int generateNormalsFromMesh(GLfloat * vertbuffer, GLfloat * normbuffer, GLuint *
 	}
 	return TRUE;
 }
-float * getBBoxFromInterleavedMesh(GLfloat * interleavedbuffer, GLuint vertcount, int stride){
-	float *bbox = malloc(sizeof(vec6_t));
+vec_t * getBBoxFromInterleavedMesh(GLfloat * interleavedbuffer, GLuint vertcount, int stride){
+	vec_t * bbox = malloc(6*sizeof(vec_t));
+//	memset(bbox, 0 , sizeof(vec6_t));
 	bbox[0] = -3.4028e+38;
 	bbox[1] = 3.4028e+38;
 	bbox[2] = -3.4028e+38;
 	bbox[3] = 3.4028e+38;
 	bbox[4] = -3.4028e+38;
 	bbox[5] = 3.4028e+38;
-	if(stride < 5) return bbox;
+
+	if(stride < 5) return 0;
 	int i;
 	for(i = 0; i < vertcount; i++){
 		float * vert = &interleavedbuffer[(i*stride)];
@@ -442,11 +444,12 @@ int loadModelOBJ(model_t * m, char * filename){//todo flags
 		consolePrintf("Generating vertex normals for Model %s\n", filename);
 		generateNormalsFromInterleavedMesh(interleavedbuffer, indicebuffer, facecount*3, vertcount, 8 , 0);
 	}
-	float * bbox = getBBoxFromInterleavedMesh(interleavedbuffer, vertcount, 8);
+	vec_t * bbox = getBBoxFromInterleavedMesh(interleavedbuffer, vertcount, 8);
 	if(bbox){
-		memcpy(&m->bbox, bbox, 6*sizeof(float));
+		memcpy(m->bbox, bbox, 6*sizeof(vec_t));
 		free(bbox);
 	}
+//	m->bbox = getBBoxFromInterleavedMesh(interleavedbuffer, vertcount, 8);
 //	m->numfaces = malloc(sizeof(GLuint)*2);
 //	m->numlod = 2;
 //	m->numfaces[0] = facecount;

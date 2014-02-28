@@ -203,7 +203,20 @@ int testPointInFrustum(viewport_t * v, vec3_t p){
 	}
 	return TRUE;
 }
-
+/*
+int testBoxInFrustum(viewport_t * v, vec3_t p, vec3_t size){
+	int i;
+	vec_t * n;
+	for(i = 0; i < 6; i++){
+		n = v->frustum[i].norm;
+		float dist = vec3dot(n, p) + v->frustum[i].d;
+		if(dist < 0.0){
+			return FALSE;
+		}
+	}
+	return TRUE;
+}
+*/
 void recalcFrustum(viewport_t * v){
 	vec_t m[16];
 	Matrix4x4_ToArrayFloatGL(&v->viewproj, m);
