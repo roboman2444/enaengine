@@ -33,11 +33,19 @@ int main(int argc, char *argv[]){
 		unsigned int delta = t-to;
 		to = t;
 		timesincelastfpsupdate += delta;
+	/*
 		if(timesincelastfpsupdate > 10000){
 			consolePrintf("%f fps\n", (float)framecount*1000.0/(float)timesincelastfpsupdate);
 			timesincelastfpsupdate -= 10000;
 			framecount = 0;
 		}
+	*/
+		if(timesincelastfpsupdate > 1000){
+			consolePrintf("%f fps\n", (float)framecount*1000.0/(float)timesincelastfpsupdate);
+			timesincelastfpsupdate -= 1000;
+			framecount = 0;
+		}
+
 		accum+= delta;
 		sdlCheckEvent();
 		while(accum>GCTIMESTEP){

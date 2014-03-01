@@ -190,9 +190,6 @@ void gameCodeTick(void){ //todo maybe change to float in seconds
 			e->angle[2] += e->anglevel[2] * GCTIMESTEPSECONDS;
 			e->needsmatupdate = TRUE;
 		}
-		if(e->think && e->nextthink <= tGameTime){
-			e->think();
-		}
 		//todo check if ents are touching!
 /*
 		if(e->needsmatupdate){
@@ -200,6 +197,11 @@ void gameCodeTick(void){ //todo maybe change to float in seconds
 			e->needsmatupdate = FALSE;
 		}
 	*/	calcEntAttachMat(e); //does the checking and updating mat anyway...
+
+		if(e->think && e->nextthink <= tGameTime){
+			e->think();
+		}
+
 	}
 	for(i = 0; i <= entityArrayLastTaken; i++){// make sure they dont update again
 		entitylist[i].needsmatupdate = FALSE;

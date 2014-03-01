@@ -8,7 +8,6 @@ in vec2 fragtexCoord;
 
 #ifdef TEXTURE
 	uniform sampler2D texture0;
-	uniform sampler2D texture1;
 #endif
 
 out vec4 fragColor;
