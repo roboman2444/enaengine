@@ -455,8 +455,10 @@ int bindShaderPerm(shaderpermutation_t * perm){
 	glUseProgram(id);
 //set texture spaces
 	int i;
+	GLuint *tp = &perm->texturespos[0];
 	for(i = 0; i < 16; i++){
-		glUniform1i(perm->texturespos[i], i);
+		if(tp[i] > -1)
+			glUniform1i(tp[i], i);
 //		consolePrintf("texture space %i at uniform loc %i\n", i, perm->texturespos[i]);
 	}
 	//todo error check

@@ -40,9 +40,9 @@ int main(int argc, char *argv[]){
 			framecount = 0;
 		}
 	*/
-		if(timesincelastfpsupdate > 1000){
+		if(timesincelastfpsupdate > 10000){
 			consolePrintf("%f fps\n", (float)framecount*1000.0/(float)timesincelastfpsupdate);
-			timesincelastfpsupdate -= 1000;
+			timesincelastfpsupdate -= 10000;
 			framecount = 0;
 		}
 
