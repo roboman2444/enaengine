@@ -125,7 +125,7 @@ texture_t loadTexture(char * filepath, char type){
 //	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
-//	glGenerateMipmap(GL_TEXTURE_2D);
+	glGenerateMipmap(GL_TEXTURE_2D);
 //	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 /*
 	unsigned char * data = malloc(300 * sizeof(GLfloat));
@@ -141,7 +141,7 @@ texture_t loadTexture(char * filepath, char type){
 	tex.type = type;
 	consolePrintf("loaded texture %s with dimensions %ix%i format %i and type %i\n", filepath, tex.width, tex.height, teximage->format->BytesPerPixel, tex.type);
 	SDL_FreeSurface(teximage);
-	glBindTexture(GL_TEXTURE_2D, 0);
+//	glBindTexture(GL_TEXTURE_2D, 0);
 //	if(glIsTexture(tex.id))consolePrintf("yes, its a texture!\n");
 
 
@@ -221,26 +221,25 @@ int bindTexturegroup(texturegroup_t * texturegroup){
 	texture_t * texturespointer = texturegroup->textures;
 	if(!texturespointer) return -2;
 	for(i = 0; i < texturegroup->num; i++){
-
+/*
 		switch(texturespointer[i].type){
-				//atm only model textures todo
-				case 0: continue; break;
-				case 1: glActiveTexture(GL_TEXTURE0);break;
-				case 2: glActiveTexture(GL_TEXTURE1);break;
-				case 3: glActiveTexture(GL_TEXTURE2);break;
-				case 4: glActiveTexture(GL_TEXTURE3);break;
-				case 5: glActiveTexture(GL_TEXTURE4);break;
-				case 10: continue; break;
-				default: continue; break;
-			}
-//			consolePrintf("texture %i at pos %i\n", texturespointer[i].id, texturespointer[i].type);
-			count++;
-
-			glBindTexture(GL_TEXTURE_2D, texturespointer[i].id);
-//			consolePrintf("error:%i\n",glGetError());
-//			consolePrintf("texture bound with id %i\n", texturespointer[i].id);
+			//atm only model textures todo
+			case 0: continue; break;
+			case 1: glActiveTexture(GL_TEXTURE0);break;
+			case 2: glActiveTexture(GL_TEXTURE1);break;
+			case 3: glActiveTexture(GL_TEXTURE2);break;
+			case 4: glActiveTexture(GL_TEXTURE3);break;
+			case 5: glActiveTexture(GL_TEXTURE4);break;
+			case 10: continue; break;
+			default: continue; break;
 		}
-//	glActiveTexture(GL_TEXTURE0);
+*/
+		count++;
+		glBindTexture(GL_TEXTURE_2D, texturespointer[i].id);
+//		consolePrintf("error:%i\n",glGetError());
+//		consolePrintf("texture bound with id %i and space %i\n", texturespointer[i].id, texturespointer[i].type-1);
+	}
+	glActiveTexture(GL_TEXTURE0);
 	return count;
 }
 

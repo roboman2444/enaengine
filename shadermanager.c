@@ -207,10 +207,7 @@ shaderpermutation_t createPermutation(shaderprogram_t * shader, int permutation)
 	int i;
 	for(i = 0; i < 16; i++){
 		sprintf(texstring, "texture%i", i);
-		glUniform1i(glGetUniformLocation(programid, texstring), i);
-		int j = 0;
-		glGetUniformiv(programid, glGetUniformLocation(programid, texstring), &j);
-//		consolePrintf("texture uniform %s with space %i and location %i\n", texstring, j, glGetUniformLocation(programid, texstring));
+		perm.texturespos[i] = glGetUniformLocation(programid, texstring);
 	}
 	free(texstring);
 
@@ -450,3 +447,18 @@ GLint findShaderAttribPos(shaderprogram_t * shader, char * name){
 	return id;
 }
 */
+
+
+int bindShaderPerm(shaderpermutation_t * perm){
+	if(!perm) return FALSE;
+	GLuint id = perm->id;
+	glUseProgram(id);
+//set texture spaces
+	int i;
+	for(i = 0; i < 16; i++){
+		glUniform1i(perm->texturespos[i], i);
+//		consolePrintf("texture space %i at uniform loc %i\n", i, perm->texturespos[i]);
+	}
+	//todo error check
+	return TRUE;
+}

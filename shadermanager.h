@@ -20,6 +20,7 @@ typedef struct shaderpermutation_s {
 	int univec30;
 	int univec20;
 	int unifloat0;
+	GLuint texturespos[16];
 } shaderpermutation_t;
 
 typedef struct shaderprogram_s
@@ -67,4 +68,7 @@ int printProgramLogStatus(int id);
 int getProgramLogStatus(int id, char ** output);
 shaderpermutation_t * findShaderPermutation(shaderprogram_t * shader, int permutation);
 shaderpermutation_t * addPermutationToShader(shaderprogram_t * shader, int permutation);
+
+
+int bindShaderPerm(shaderpermutation_t * perm);
 #endif

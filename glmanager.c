@@ -271,7 +271,11 @@ int drawEntitiesS(shaderbatche_t * batch){
 
 	//
 	currentsp = perm;
-	glUseProgram(perm->id);
+
+	bindShaderPerm(perm);
+//	glUseProgram(perm->id);
+//	glUniform1i(glGetUniformLocation(perm->id, "texture0"), 0);
+
 	for(i = 0; i < count; i++){
 		drawEntitiesT(&batch->texturebatch[i]);
 	}
