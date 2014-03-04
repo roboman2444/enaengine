@@ -108,6 +108,7 @@ int initGameCodeSystem(void){
 		enttinydragon->attachmentid = findEntityByNameRINT("coil");
 		enttinydragon->shaderperm = 2;
 	int i;
+/*
 	for(i = 0; i < 34; i++){
 		enttinydragon = addEntityRPOINT("hardball");
 		enttinydragon->type = 2;
@@ -118,6 +119,23 @@ int initGameCodeSystem(void){
 		enttinydragon->modelid = createAndAddModelRINT("hardball");
 		enttinydragon->shaderid = createAndAddShaderRINT("staticmodel");
 		enttinydragon->texturegroupid = 0;//findtexturegroupidByName("coil");
+	}
+*/
+	int prevatid = 0;
+	for(i = 0; i < 100; i++){
+		enttinydragon = addEntityRPOINT("bunny");
+		enttinydragon->type = 2;
+		enttinydragon->pos[0] = 5.0;
+		enttinydragon->pos[2] = -2.0;
+		enttinydragon->anglevel[1] = 20.0;
+		enttinydragon->scale = 0.01;
+		enttinydragon->needsmatupdate = TRUE;
+		enttinydragon->modelid = createAndAddModelRINT("bunny");
+		enttinydragon->shaderid = createAndAddShaderRINT("staticmodel");
+		enttinydragon->texturegroupid = createAndAddTexturegroupRINT("bunny");
+		enttinydragon->shaderperm = 4;
+		enttinydragon->attachmentid = prevatid;
+		prevatid = enttinydragon->myid;
 	}
 //	deleteEntity(findEntityByNameRINT("hat"));
 //	deleteEntity(tidhat);

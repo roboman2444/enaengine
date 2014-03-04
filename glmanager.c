@@ -117,6 +117,7 @@ int loadEntitiesIntoQueue(renderbatche_t * batch, viewport_t * v){
 		if(e->type < 2)continue;
 		if(!e->modelid)continue;
 
+//		addEntityToRenderbatche(e, batch);
 
 		//entity modelspace model bbox method (generated from model verts in modelmanager.c)
 		model_t * mod = returnModelById(e->modelid);
@@ -139,6 +140,7 @@ int loadEntitiesIntoQueue(renderbatche_t * batch, viewport_t * v){
 			}
 		}
 //		consolePrintf("\n\n");
+
 
 		//entity worldspace bbox method
 /*
