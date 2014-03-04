@@ -95,7 +95,16 @@ int initGameCodeSystem(void){
 		enttinydragon->texturegroupid = 0;//findtexturegroupidByName("coil");
 		enttinydragon->attachmentid = findEntityByNameRINT("coil");
 		enttinydragon->shaderperm = 2;
-
+/*
+	enttinydragon = addEntityRPOINT("worldtest");
+		enttinydragon->type = 2;
+		enttinydragon->scale = 5.0;
+		enttinydragon->needsmatupdate = TRUE;
+		enttinydragon->shaderid = createAndAddShaderRINT("staticmodel");
+		enttinydragon->modelid = createAndAddModelRINT("apooz");
+		enttinydragon->texturegroupid = createAndAddTexturegroupRINT("kamen");
+		enttinydragon->shaderperm = 4;
+*/
 	enttinydragon = addEntityRPOINT("tinydragon");
 		enttinydragon->type = 2;
 		enttinydragon->pos[2] = -3.0;

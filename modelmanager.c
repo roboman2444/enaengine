@@ -497,7 +497,7 @@ int loadModelOBJ(model_t * m, char * filename){//todo flags
 //	GLint tcattrib = findShaderAttribPos(program, "texCoord"); //todo per model materials?
 //	printf("%i\n", tcattrib);
 	glEnableVertexAttribArray(TCATTRIBLOC);
-	glVertexAttribPointer(TCATTRIBLOC, 2, GL_FLOAT, GL_FALSE, 8*sizeof(GLfloat), (void*)(5*sizeof(GLfloat)));
+	glVertexAttribPointer(TCATTRIBLOC, 2, GL_FLOAT, GL_FALSE, 8*sizeof(GLfloat), (void*)(6*sizeof(GLfloat)));
 
 
 
