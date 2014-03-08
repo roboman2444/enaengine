@@ -11,6 +11,7 @@
 #include "shadermanager.h"
 #include "console.h"
 #include "mathlib.h"
+#include "iqm.h"
 
 int modelcount = 0;
 int modelArrayFirstOpen = 0;
@@ -26,7 +27,7 @@ hashbucket_t modelhashtable[MAXHASHBUCKETS];
 #define NUMANIM 1
 
 char *statictypes[] = {".obj"}; //todo filesys
-char *animtypes[] = {".dpm"}; //todo filesys //todo
+char *animtypes[] = {".iqm"}; //todo filesys //todo
 
 
 int initModelSystem(void){
@@ -266,6 +267,161 @@ GLuint * meshDecimate(GLfloat * interleavedbuffer, GLuint * indices, GLuint indi
 	return indices;
 }
 
+int loadiqmmeshes(model_t * m, const struct iqmheader hdr, unsigned char *buf){
+//    if(meshdata) return false;
+/*
+    lilswap((uint *)&buf[hdr.ofs_vertexarrays], hdr.num_vertexarrays*sizeof(iqmvertexarray)/sizeof(uint));
+    lilswap((uint *)&buf[hdr.ofs_triangles], hdr.num_triangles*sizeof(iqmtriangle)/sizeof(uint));
+    lilswap((uint *)&buf[hdr.ofs_meshes], hdr.num_meshes*sizeof(iqmmesh)/sizeof(uint));
+    lilswap((uint *)&buf[hdr.ofs_joints], hdr.num_joints*sizeof(iqmjoint)/sizeof(uint));
+*/
+//    if(hdr.ofs_adjacency) lilswap((uint *)&buf[hdr.ofs_adjacency], hdr.num_triangles*sizeof(iqmtriangle)/sizeof(uint));
+
+//    meshdata = buf;
+	int nummeshes = hdr.num_meshes;
+	int numtris = hdr.num_triangles;
+	int numverts = hdr.num_vertexes;
+	int numjoints = hdr.num_joints;
+	float *pos = 0;// = malloc(sizeof(float)*3*numverts);
+	float *norm = 0;// = malloc(sizeof(float)*3*numverts);
+	float *texcoord = 0;// = malloc(sizeof(float)*3*numverts);
+	unsigned int *blendindex;// = malloc
+	unsigned int *blendweight;
+//    textures = new GLuint[nummeshes];
+  //  memset(textures, 0, nummeshes*sizeof(GLuint));
+	int i;
+//	const char *str = hdr.ofs_text ? (char *)&buf[hdr.ofs_text] : "";
+	struct iqmvertexarray *vas = (struct iqmvertexarray *)&buf[hdr.ofs_vertexarrays];
+	for(i = 0; i < (int)hdr.num_vertexarrays; i++){
+		struct iqmvertexarray va = vas[i];
+		switch(va.type){
+			case IQM_POSITION: if(va.format != IQM_FLOAT || va.size != 3) return FALSE; pos = (float *)&buf[va.offset]; break;
+			case IQM_NORMAL: if(va.format != IQM_FLOAT || va.size != 3) return FALSE; norm = (float *)&buf[va.offset]; break;
+			//case IQM_TANGENT: if(va.format != IQM_FLOAT || va.size != 4) return FALSE; intangent = (float *)&buf[va.offset]; lilswap(intangent, 4*hdr.num_vertexes); break;
+			case IQM_TEXCOORD: if(va.format != IQM_FLOAT || va.size != 2) return FALSE; texcoord = (float *)&buf[va.offset]; break;
+			case IQM_BLENDINDEXES: if(va.format != IQM_UBYTE || va.size != 4) return FALSE; blendindex = (unsigned int *)&buf[va.offset]; break;
+			case IQM_BLENDWEIGHTS: if(va.format != IQM_UBYTE || va.size != 4) return FALSE; blendweight = (unsigned int *)&buf[va.offset]; break;
+			//case IQM_COLOR: if(va.format != IQM_UBYTE || va.size != 4) return FALSE; incolor = (uchar *)&buf[va.offset]; break;
+			default: break;
+		}
+	}
+	if(!pos) return FALSE;
+	GLfloat * interleavedbuffer = malloc(8*numverts*sizeof(GLfloat));
+	memset(interleavedbuffer, 0 , 8*numverts*sizeof(GLfloat));
+	for(i = 0; i < numverts; i++){
+		interleavedbuffer[(i*8)+0] = pos[(i*3)+0];
+		interleavedbuffer[(i*8)+1] = pos[(i*3)+1];
+		interleavedbuffer[(i*8)+2] = pos[(i*3)+2];
+		if(norm){
+			interleavedbuffer[(i*8)+3] = norm[(i*3)+0];
+			interleavedbuffer[(i*8)+4] = norm[(i*3)+1];
+			interleavedbuffer[(i*8)+5] = norm[(i*3)+2];
+		}
+		if(texcoord){
+			interleavedbuffer[(i*8)+6] = texcoord[(i*3)+0];
+			interleavedbuffer[(i*8)+7] = texcoord[(i*3)+1];
+		}
+	}
+
+	GLuint *tris = (GLuint *)&buf[hdr.ofs_triangles];
+
+	vbo_t * myvbo = createAndAddVBORPOINT(m->name, 1);
+	if(!myvbo) return 0; // todo free and error handle
+	m->vbo = myvbo->myid;
+
+
+	glBindBuffer(GL_ARRAY_BUFFER, myvbo->vboid);
+	glBufferData(GL_ARRAY_BUFFER, numverts * 8 * sizeof(GLfloat), interleavedbuffer, GL_STATIC_DRAW);
+	myvbo->numverts = numverts;
+	free(interleavedbuffer);
+
+	glEnableVertexAttribArray(POSATTRIBLOC);
+	glVertexAttribPointer(POSATTRIBLOC, 3, GL_FLOAT, GL_FALSE, 8*sizeof(GLfloat), 0);
+
+	glEnableVertexAttribArray(NORMATTRIBLOC);
+	glVertexAttribPointer(NORMATTRIBLOC, 3, GL_FLOAT, GL_FALSE, 8*sizeof(GLfloat), (void*)(3*sizeof(GLfloat)));
+
+	glEnableVertexAttribArray(TCATTRIBLOC);
+	glVertexAttribPointer(TCATTRIBLOC, 2, GL_FLOAT, GL_FALSE, 8*sizeof(GLfloat), (void*)(6*sizeof(GLfloat)));
+
+
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,myvbo->indicesid);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER,numtris * 3 *sizeof(GLuint), tris, GL_STATIC_DRAW);
+	myvbo->numfaces = numtris;
+
+	consolePrintf("Model %s.iqm has %i faces and %i verts\n", m->name, numtris, numverts);
+
+
+
+
+/*	meshes = (iqmmesh *)&buf[hdr.ofs_meshes];
+	joints = (iqmjoint *)&buf[hdr.ofs_joints];
+	if(hdr.ofs_adjacency) adjacency = (iqmtriangle *)&buf[hdr.ofs_adjacency];
+
+	baseframe = new Matrix3x4[hdr.num_joints];
+	inversebaseframe = new Matrix3x4[hdr.num_joints];
+	for(int i = 0; i < (int)hdr.num_joints; i++){
+		iqmjoint &j = joints[i];
+		baseframe[i] = Matrix3x4(Quat(j.rotate).normalize(), Vec3(j.translate), Vec3(j.scale));
+		inversebaseframe[i].invert(baseframe[i]);
+		if(j.parent >= 0){
+			baseframe[i] = baseframe[j.parent] * baseframe[i];
+			inversebaseframe[i] *= inversebaseframe[j.parent];
+		}
+	}
+*/
+
+/*
+	for(int i = 0; i < (int)hdr.num_meshes; i++){
+		struct iqmmesh &m = meshes[i];
+		consolePrintf("%s: loaded mesh: %s\n", filename, &str[m.name]);
+//        textures[i] = loadtexture(&str[m.material], 0);
+  //      if(textures[i]) printf("%s: loaded material: %s\n", filename, &str[m.material]);
+	}
+*/
+	return TRUE;
+}
+
+
+
+
+
+int loadModelIQM(model_t *m, char * filename){
+	//mostly copied from the sdk
+	FILE *f = fopen(filename, "rb");
+	if(!f) return FALSE;
+
+	unsigned char *buf = NULL;
+	struct iqmheader hdr;
+	if(fread(&hdr, 1, sizeof(hdr), f) != sizeof(hdr) || memcmp(hdr.magic, IQM_MAGIC, sizeof(hdr.magic)))
+		goto error; //spaghetti!
+	if(hdr.version != IQM_VERSION)goto error;
+	if(hdr.filesize > (16<<20)) goto error; // sanity check... don't load files bigger than 16 MB
+	buf = malloc(hdr.filesize);
+	if(fread(buf + sizeof(hdr), 1, hdr.filesize - sizeof(hdr), f) != hdr.filesize - sizeof(hdr))
+		goto error;
+
+	if(hdr.num_meshes > 0 && !loadiqmmeshes(m, hdr, buf)) goto error;
+//	if(hdr.num_anims > 0 && !loadiqmanims(filename, hdr, buf)) goto error;
+	fclose(f);
+	return TRUE;
+	//todo
+
+	error:
+	consolePrintf("%s: error while loading\n", filename);
+//	if(buf != meshdata && buf != animdata) free(buf);
+	fclose(f);
+	return FALSE;
+	//todo
+}
+
+
+
+
+
+
+
 
 int loadModelOBJ(model_t * m, char * filename){//todo flags
 	unsigned int vertcount = 0;
@@ -296,6 +452,15 @@ int loadModelOBJ(model_t * m, char * filename){//todo flags
 
 //	if(vertcount + tccount + normcount != vertcount*3) return FALSE;
 	if(!vertcount) return FALSE; // no verts
+
+
+	int addcount = 0;
+	if(normcount>tccount && normcount > vertcount){
+		addcount = normcount - vertcount;
+	} else if(tccount > vertcount) {
+		addcount = tccount - vertcount;
+	}
+
 	float 	* vertbuffer = malloc(3*vertcount*sizeof(float));
 	float 	* tcbuffer = malloc(2*tccount*sizeof(float));
 	float 	* normbuffer = malloc(3*normcount*sizeof(float));
@@ -303,16 +468,20 @@ int loadModelOBJ(model_t * m, char * filename){//todo flags
 	int 	* facebuffer = malloc(9*sizeof(int)); //one for verts, tc, and normals
 	GLuint 	* indicebuffer = malloc(3*facecount*sizeof(GLuint));
 	GLfloat * interleavedbuffer = malloc(8*facecount*sizeof(GLfloat));
+	GLfloat * interleavedaddon = malloc(8*addcount*sizeof(GLfloat));
 
 
 
 
-	bzero(vertbuffer, 3*vertcount*sizeof(float));
-	bzero(normbuffer, 3*normcount*sizeof(float));
-	bzero(tcbuffer,   2*  tccount*sizeof(float));
-	bzero(facebuffer, 9*sizeof(int));
-	bzero(indicebuffer, 3*facecount*sizeof(GLuint));
-	bzero(interleavedbuffer, 8*facecount*sizeof(GLfloat));
+	memset(vertbuffer, 0, 3*vertcount*sizeof(float));
+	memset(normbuffer, 0, 3*normcount*sizeof(float));
+	memset(tcbuffer,   0, 2*  tccount*sizeof(float));
+	memset(facebuffer, 0, 9*sizeof(int));
+	memset(indicebuffer, 0, 3*facecount*sizeof(GLuint));
+	memset(interleavedbuffer, 0, 8*facecount*sizeof(GLfloat));
+	memset(interleavedaddon, 0, 8*addcount*sizeof(GLfloat));
+
+
 	rewind(f);
 
 
@@ -320,6 +489,7 @@ int loadModelOBJ(model_t * m, char * filename){//todo flags
 	unsigned int readnorm = 0;
 	unsigned int readtc = 0;
 	unsigned int readface = 0;
+	unsigned int readadd = 0;
 	while(fgets(line, 300, f)){
 		for(over = 0; (line[over] == ' ' || line[over] == '\t') && over < 200; over++); //should be 1 //take off early white spaces
 
@@ -391,15 +561,31 @@ int loadModelOBJ(model_t * m, char * filename){//todo flags
 				interleavedbuffer[(vindice*8)+1] = vertbuffer[(vindice*3)+1];
 				interleavedbuffer[(vindice*8)+2] = vertbuffer[(vindice*3)+2];
 				if(normindice>=0){
-					//todo maybe check if there is already something there...
-					interleavedbuffer[(vindice*8)+3] = vertbuffer[(normindice*3)+0];
-					interleavedbuffer[(vindice*8)+4] = vertbuffer[(normindice*3)+1];
-					interleavedbuffer[(vindice*8)+5] = vertbuffer[(normindice*3)+2];
+/*					if(interleavedaddon){
+						GLfloat def[3];
+						def[0] = interleavedbuffer[(vindice*8)+3];
+						def[1] = interleavedbuffer[(vindice*8)+4];
+						def[2] = interleavedbuffer[(vindice*8)+5];
+						if(def[0] && def[1] && def[2]){
+							//new 
+						} else {
+							interleavedbuffer[(vindice*8)+3] = vertbuffer[(normindice*3)+0];
+							interleavedbuffer[(vindice*8)+4] = vertbuffer[(normindice*3)+1];
+							interleavedbuffer[(vindice*8)+5] = vertbuffer[(normindice*3)+2];
+						}
+					} else {*/
+						interleavedbuffer[(vindice*8)+3] = vertbuffer[(normindice*3)+0];
+						interleavedbuffer[(vindice*8)+4] = vertbuffer[(normindice*3)+1];
+						interleavedbuffer[(vindice*8)+5] = vertbuffer[(normindice*3)+2];
+//					}
 				}
 				if(tcindice>=0){
 					//todo check if there is maybe something there
-					interleavedbuffer[(vindice*8)+6] = tcbuffer[(tcindice*2)+0];
-					interleavedbuffer[(vindice*8)+7] = tcbuffer[(tcindice*2)+1];
+//					if(interleavedaddon){
+//					} else {
+						interleavedbuffer[(vindice*8)+6] = tcbuffer[(tcindice*2)+0];
+						interleavedbuffer[(vindice*8)+7] = tcbuffer[(tcindice*2)+1];
+//					}
 				}
 			}
 			readface++;
@@ -540,7 +726,11 @@ model_t createAndLoadModel(char * name){
 		sprintf(filename, "%s%s", name, animtypes[n]);
 		if(!stat(filename, &s)){ //if file exists... i guess
 			//TODO CALL SOME SORTA LOADING FUNCTION... ANIMATED
-			m.type = 2;
+			if(!loadModelIQM(&m, filename)){
+				free(filename);
+				return m;
+			}
+			m.type = 1; //todo
 			free(filename);
 			return m;
 		}
@@ -578,7 +768,10 @@ model_t createAndLoadTypeModel(char * name, char type){
 	for(n = 0; n < sizeof(animtypes) &&  animtypes[n]; n++){
 		sprintf(filename, "%s%s", name, animtypes[n]);
 		if(!stat(filename, &s)){ //if file exists... i guess
-			//TODO CALL SOME SORTA LOADING FUNCTION... ANIMATED
+			if(!loadModelIQM(&m, filename)){
+				free(filename);
+				return m;
+			}
 			m.type = type;
 			free(filename);
 			return m;

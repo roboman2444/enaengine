@@ -1,6 +1,20 @@
 #ifndef MODELMANAGERHEADER
 #define MODELMANAGERHEADER
 
+
+typedef struct framegroup_s {
+	GLuint offset;
+	GLuint count;
+} framegroup_t;
+
+typedef struct anim_s {
+	char * name;
+	GLuint totalframes;
+	GLuint totalframegroups;
+	framegroup_t * frames;
+	//GLuint uboid;
+} anim_t;
+
 typedef struct model_s {
 	char * name;
 	int myid;
@@ -8,6 +22,7 @@ typedef struct model_s {
 	int vbo;
 	vec6_t bbox;
 	char type; // maybe not
+	int animid;
 //	GLuint * numfaces;
 //	GLuint numlod;
 //	GLuint numverts;
@@ -31,10 +46,6 @@ int modelcount;
 int modelArraySize;
 int modelArrayLastTaken;
 
-//model_t * defaultModel;
-
-
-//model_t * addModelToList(model_t model);
 int initModelSystem(void);
 
 model_t * findModelByNameRPOINT(char * name);
@@ -45,8 +56,7 @@ model_t * returnModelById(int id);
 model_t * addModelRPOINT(model_t mod);
 int addModelRINT(model_t mod);
 int deleteModel(int id);
-//model_t createAndLoadModel(char * name); // not supposed to be called here
-//model_t createAndLoadTypeModel(char * name, char type);
+
 model_t * createAndAddModelRPOINT(char * name);
 int createAndAddModelRINT(char * name);
 #endif

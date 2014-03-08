@@ -23,7 +23,7 @@ float degnumber;
 
 viewport_t * currentvp;
 shaderpermutation_t * currentsp;
-
+unsigned int totalface;
 viewport_t cam;
 
 int glShutdown(void){
@@ -106,6 +106,7 @@ int glDrawModel(model_t * model, matrix4x4_t * modworld, matrix4x4_t * viewproj)
 //	glBindVertexArray(tvbo->vaoid);
 
 	glDrawElements(GL_TRIANGLES, tvbo->numfaces*3, GL_UNSIGNED_INT, 0);
+//	totalface += tvbo->numfaces;
 	return tvbo->numfaces;
 }
 int loadEntitiesIntoQueue(renderbatche_t * batch, viewport_t * v){
@@ -296,6 +297,7 @@ int drawEntitiesR(renderbatche_t * batch){
 	return count;
 }
 int glMainDraw(void){
+//	totalface = 0;
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 	degnumber = degnumber+0.1;
 	if(degnumber>360.0) degnumber -=360.0;
@@ -313,5 +315,6 @@ int glMainDraw(void){
 	drawEntitiesR(&b);
 	cleanupRenderbatche(&b);
 	swapBuffers();
+//	consolePrintf("total faces drawn this frame: %i", totalface);
 	return TRUE;
 }

@@ -242,8 +242,9 @@ shaderprogram_t createAndReadyShader(char * name){
 
 
 // populate define list
-	char * definename = malloc(strlen(name)+6);
-	strcpy(definename, name);strcat(definename, ".define");
+	char * definename = malloc(strlen(name)+8);
+	sprintf(definename, "%s.define", name);
+//	strcpy(definename, name);strcat(definename, ".define");
 
 	FILE *f;
 	if(!(f = fopen(definename, "r"))){
@@ -278,7 +279,7 @@ shaderprogram_t createAndReadyShader(char * name){
 
 
 	char * vertname = malloc(strlen(name)+6);
-	strcpy(vertname, name);strcat(vertname, ".vert");
+	sprintf(vertname, "%s.vert", name);
 	loadFileString(vertname, &shader.vertstring, &shader.vertlength, 1);
 	free(vertname);
 	if(shader.vertlength == 0){
@@ -288,7 +289,8 @@ shaderprogram_t createAndReadyShader(char * name){
 		return shader;
 	}
 	char * fragname = malloc(strlen(name)+6);
-	strcpy(vertname, name);strcat(vertname, ".frag");
+	sprintf(fragname, "%s.frag", name);
+//	strcpy(vertname, name);strcat(vertname, ".frag");
 	loadFileString(fragname, &shader.fragstring, &shader.fraglength, 1);
 	free(fragname);
 	if(shader.fraglength == 0){
@@ -302,7 +304,7 @@ shaderprogram_t createAndReadyShader(char * name){
 	shader.type = shader.type | 2;
 
 	char * geomname = malloc(strlen(name)+6);
-	strcpy(vertname, name);strcat(vertname, ".geom");
+	sprintf(geomname, "%s.geom", name);
 	loadFileString(geomname, &shader.geomstring, &shader.geomlength, 0);
 	free(geomname);
 	if(shader.geomlength < 1){
