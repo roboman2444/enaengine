@@ -318,8 +318,8 @@ int loadiqmmeshes(model_t * m, const struct iqmheader hdr, unsigned char *buf){
 			interleavedbuffer[(i*8)+5] = norm[(i*3)+2];
 		}
 		if(texcoord){
-			interleavedbuffer[(i*8)+6] = texcoord[(i*3)+0];
-			interleavedbuffer[(i*8)+7] = texcoord[(i*3)+1];
+			interleavedbuffer[(i*8)+6] = texcoord[(i*2)+0];
+			interleavedbuffer[(i*8)+7] = texcoord[(i*2)+1];
 		}
 	}
 
