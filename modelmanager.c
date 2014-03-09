@@ -324,6 +324,12 @@ int loadiqmmeshes(model_t * m, const struct iqmheader hdr, unsigned char *buf){
 	}
 
 	GLuint *tris = (GLuint *)&buf[hdr.ofs_triangles];
+	//flipping faces... temp fix
+	for(i = 0; i < numtris; i++){
+		GLuint temp = tris[i*3];
+		tris[i*3] = tris[(i*3)+1];
+		tris[(i*3)+1] = temp;
+	}
 
 	vbo_t * myvbo = createAndAddVBORPOINT(m->name, 1);
 	if(!myvbo) return 0; // todo free and error handle

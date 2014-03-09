@@ -144,7 +144,7 @@ int initGameCodeSystem(void){
 		enttinydragon->pos[0] = 5.0;
 		enttinydragon->pos[2] = -2.0;
 		enttinydragon->anglevel[1] = 20.0;
-		enttinydragon->scale = 0.01;
+		enttinydragon->scale = 0.1;
 		enttinydragon->needsmatupdate = TRUE;
 		enttinydragon->modelid = createAndAddModelRINT("bunny");
 //		enttinydragon->modelid = createAndAddModelRINT("coil");
