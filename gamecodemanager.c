@@ -207,10 +207,13 @@ int calcEntAttachMat(entity_t * e){ //return value is weather e->mat got changed
 	} else if(e->needsmatupdate) return TRUE;
 	return FALSE;
 }
+
 void gameCodeTick(void){ //todo maybe change to float in seconds
 	tGameTime+=GCTIMESTEP;
 	int i;
-	for(i = 0; i <= entityArrayLastTaken; i++){ //todo turn into entityArrayLastTaken
+
+	//ent phys
+	for(i = 0; i <= entityArrayLastTaken; i++){
 		entity_t * e = &entitylist[i];
 		if(!e->type) continue;
 		if(e->vel[0] || e->vel[1] || e->vel[2]){
@@ -225,21 +228,20 @@ void gameCodeTick(void){ //todo maybe change to float in seconds
 			e->angle[2] += e->anglevel[2] * GCTIMESTEPSECONDS;
 			e->needsmatupdate = TRUE;
 		}
-		//todo check if ents are touching!
-/*
-		if(e->needsmatupdate){
-			Matrix4x4_CreateFromQuakeEntity(&e->mat, e->pos[0], e->pos[1], e->pos[2], e->angle[0], e->angle[1], e->angle[2], e->scale);
-			e->needsmatupdate = FALSE;
-		}
-	*/	calcEntAttachMat(e); //does the checking and updating mat anyway...
-
-		if(e->think && e->nextthink <= tGameTime){
-			e->think();
-		}
-
+	}
+	for(i = 0; i <= entityArrayLastTaken; i++){
+		calcEntAttachMat(&entitylist[i]);
 	}
 	for(i = 0; i <= entityArrayLastTaken; i++){// make sure they dont update again
 		entitylist[i].needsmatupdate = FALSE;
 	}
+
+
+//		if(e->think && e->nextthink <= tGameTime){
+//			e->think();
+//		}
+
+
+	//ent gamecode
 
 }

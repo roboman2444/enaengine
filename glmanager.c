@@ -112,13 +112,25 @@ int glDrawModel(model_t * model, matrix4x4_t * modworld, matrix4x4_t * viewproj)
 int loadEntitiesIntoQueue(renderbatche_t * batch, viewport_t * v){
 	int i;
 	int count = 0;
-//	int cullcount =0;
+	int cullcount = 0;
 	for(i =0; i <= entityArrayLastTaken; i++){
 		entity_t *e = &entitylist[i];
 		if(e->type < 2)continue;
 		if(!e->modelid)continue;
 
-		addEntityToRenderbatche(e, batch);
+//		addEntityToRenderbatche(e, batch);
+//entity woldspace sphere method FASTEST TO CULL, may or may not cull as well though
+		model_t * m = returnModelById(e->modelid);
+		vec3_t org;
+		Matrix4x4_OriginFromMatrix(&e->mat, org);
+		if(testSphereInFrustum(v, org, m->spheresize * e->scale)){
+			count++;
+			addEntityToRenderbatche(e, batch);
+//			continue;
+		} else {
+			cullcount++;
+		}
+
 /*
 		//entity modelspace model bbox method (generated from model verts in modelmanager.c)
 		model_t * mod = returnModelById(e->modelid);

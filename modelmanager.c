@@ -128,6 +128,18 @@ int generateNormalsFromMesh(GLfloat * vertbuffer, GLfloat * normbuffer, GLuint *
 	}
 	return TRUE;
 }
+float getSphereFromInterleavedMesh(GLfloat * interleavedbuffer, GLuint vertcount, int stride){
+	if(stride < 5) return 0;
+	float size = 0.0;
+	int i;
+	for(i = 0; i < vertcount; i++){
+		float * vert = &interleavedbuffer[(i*stride)];
+		float mysize = vec3length(vert);
+		if(mysize > size) size = mysize;
+	}
+//	consolePrintf("spheresize = %f\n", size);
+	return size;
+}
 vec_t * getBBoxFromInterleavedMesh(GLfloat * interleavedbuffer, GLuint vertcount, int stride){
 	vec_t * bbox = malloc(6*sizeof(vec_t));
 //	memset(bbox, 0 , sizeof(vec6_t));
@@ -322,6 +334,14 @@ int loadiqmmeshes(model_t * m, const struct iqmheader hdr, unsigned char *buf){
 			interleavedbuffer[(i*8)+7] = texcoord[(i*2)+1];
 		}
 	}
+
+	m->spheresize = getSphereFromInterleavedMesh(interleavedbuffer, numverts, 8);
+	vec_t * bbox = getBBoxFromInterleavedMesh(interleavedbuffer, numverts, 8);
+	if(bbox){
+		memcpy(m->bbox, bbox, 6*sizeof(vec_t));
+		free(bbox);
+	}
+
 
 	GLuint *tris = (GLuint *)&buf[hdr.ofs_triangles];
 	//flipping faces... temp fix
@@ -636,6 +656,7 @@ int loadModelOBJ(model_t * m, char * filename){//todo flags
 		consolePrintf("Generating vertex normals for Model %s\n", filename);
 		generateNormalsFromInterleavedMesh(interleavedbuffer, indicebuffer, facecount*3, vertcount, 8 , 0);
 	}
+	m->spheresize = getSphereFromInterleavedMesh(interleavedbuffer, vertcount, 8);
 	vec_t * bbox = getBBoxFromInterleavedMesh(interleavedbuffer, vertcount, 8);
 	if(bbox){
 		memcpy(m->bbox, bbox, 6*sizeof(vec_t));

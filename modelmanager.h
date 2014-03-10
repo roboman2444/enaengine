@@ -21,6 +21,7 @@ typedef struct model_s {
 	texturegroup_t * texture;
 	int vbo;
 	vec6_t bbox;
+	float spheresize;
 	char type; // maybe not
 	int animid;
 //	GLuint * numfaces;
