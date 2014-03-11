@@ -19,6 +19,7 @@ int loadFileString(const char * filename, char ** output, int * length, int debu
 	if(debugmode > 1) consolePrintf("DEBUG -- Opened file %s with length %i bytes\n", filename, *length);
 	rewind(file);
 	*output = malloc(*length+1);
+	memset(*output, 0, *length+1);
 	fread(*output, 1, *length, file);
 	if(debugmode > 2) consoleNPrintf(*length + 37, "DEBUG -- Opened file contents: \n %s \n", *output);
 	fclose(file);
@@ -38,6 +39,7 @@ int loadFileStringNoLength(const char * filename, char ** output, int debugmode)
 	if(debugmode > 1) consolePrintf("DEBUG -- Opened file %s with length %i bytes\n", filename, length);
 	rewind(file);
 	*output = malloc(length+1);
+	memset(*output, 0, length+1);
 	fread(*output, 1, length, file);
 	if(debugmode > 2) consoleNPrintf(length + 37, "DEBUG -- Opened file contents: \n %s \n", *output);
 	fclose(file);

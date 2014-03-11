@@ -26,8 +26,13 @@ typedef struct entity_s {
 	int texturegroupid;	//second priority
 	int modelid;		//third priority
 
-	vec3_t maxs; //worldspace bounding box
-	vec3_t mins;
+	int needsbboxupdate;
+
+	vec_t bboxp[24];
+	vec_t bbox[6];
+
+//	vec3_t maxs; //worldspace bounding box
+//	vec3_t mins;
 } entity_t;
 
 typedef struct entitylistpoint_s {

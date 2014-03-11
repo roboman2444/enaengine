@@ -23,8 +23,8 @@ int resizeWindow(int width, int height, int bpp, int debugmode){
 	return TRUE;
 }
 int setMSAA(int samples){
-	int msbuf = 0;
-	int mssamp = 0;
+//	int msbuf = 0;
+//	int mssamp = 0;
 //	SDL_GL_GetAttribute(SDL_GL_MULTISAMPLEBUFFERS, &msbuf);
 //	SDL_GL_GetAttribute(SDL_GL_MULTISAMPLESAMPLES, &mssamp);
 	if(samples<2){

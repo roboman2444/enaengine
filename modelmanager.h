@@ -18,15 +18,20 @@ typedef struct anim_s {
 typedef struct model_s {
 	char * name;
 	int myid;
-	texturegroup_t * texture;
+//	texturegroup_t * texture;
 	int vbo;
-	vec6_t bbox;
+	vec_t bboxp[24];
+	vec_t bbox[6];
 	float spheresize;
 	char type; // maybe not
-	int animid;
+//	int animid;
+	GLfloat * interleaveddata;
 //	GLuint * numfaces;
 //	GLuint numlod;
-//	GLuint numverts;
+	GLuint * tris;
+	GLuint numverts;
+	GLuint numfaces;
+	GLuint stride;
 }model_t;
 
 /* types of models ... i should do enums for these
@@ -60,5 +65,6 @@ int deleteModel(int id);
 
 model_t * createAndAddModelRPOINT(char * name);
 int createAndAddModelRINT(char * name);
+
 #endif
 

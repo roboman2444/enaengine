@@ -191,7 +191,7 @@ void recalcProjectionMatrix(viewport_t * v){
 	v->projection.m[3][3] = 0;
 
 }
-int testPointInFrustum(viewport_t * v, vec3_t p){
+int testPointInFrustum(viewport_t * v, vec_t * p){
 	int i;
 	vec_t * n;
 	for(i = 0; i < 6; i++){
@@ -203,7 +203,7 @@ int testPointInFrustum(viewport_t * v, vec3_t p){
 	}
 	return TRUE;
 }
-int testSphereInFrustum(viewport_t * v, vec3_t p, float size){
+int testSphereInFrustum(viewport_t * v, vec_t * p, float size){
 	int i;
 	vec_t * n;
 	for(i = 0; i < 6; i++){
@@ -213,6 +213,27 @@ int testSphereInFrustum(viewport_t * v, vec3_t p, float size){
 			return FALSE;
 		}
 	}
+	return TRUE;
+}
+int testBBoxPointsInFrustum(viewport_t * v, vec_t * points){
+	int i;
+	vec_t * n;
+	float d;
+	for(i = 0; i < 6; i++){
+		n = v->frustum[i].norm;
+		d = v->frustum[i].d;
+		int j;
+		for(j = 0; j < 8; j++){
+			vec_t * p = &points[j*3];
+			float dist = vec3dot(n, p) + d;
+//			consolePrintf("dist:%f\n",dist);
+			if(dist > 0.0) j = 9; // point infront of the plane
+		}
+		if(j < 9 ) return FALSE; //one of the points failed;
+	}
+
+
+//	if(~fits) return FALSE; // not ALL of the fitsbits are set
 	return TRUE;
 }
 /*

@@ -32,6 +32,7 @@ int initGameCodeSystem(void){
 		entdragon->modelid = createAndAddModelRINT("dragon");
 //		entdragon->modelid = createAndAddModelRINT("coil");
 		entdragon->texturegroupid = 0;
+		entdragon->needsbboxupdate = TRUE;
 		entdragon->shaderid = createAndAddShaderRINT("staticmodel");
 		entdragon->shaderperm = 1;
 	entity_t *entteapot = addEntityRPOINT("teapot");
@@ -161,6 +162,31 @@ int initGameCodeSystem(void){
 	gamecodeOK = TRUE;
 	return TRUE; // todo error check
 }
+int recalcEntBBox(entity_t * e){
+	e->needsbboxupdate = FALSE;
+	model_t * m = returnModelById(e->modelid);
+	if(!m) return FALSE;
+	int i;
+	e->bbox[0] = -3.4028e+38;
+	e->bbox[1] = 3.4028e+38;
+	e->bbox[2] = -3.4028e+38;
+	e->bbox[3] = 3.4028e+38;
+	e->bbox[4] = -3.4028e+38;
+	e->bbox[5] = 3.4028e+38;
+
+	for(i = 0; i < 8; i++){
+		int oneplace = i*3;
+		Matrix4x4_Transform(&e->mat, &m->bboxp[oneplace], &e->bboxp[oneplace]);
+
+		if(e->bboxp[oneplace] > e->bbox[0]) e->bbox[0] = e->bboxp[oneplace];
+		else if(e->bboxp[oneplace] < e->bbox[1]) e->bbox[1] = e->bboxp[oneplace];
+		if(e->bboxp[oneplace+1] > e->bbox[2]) e->bbox[2] = e->bboxp[oneplace+1];
+		else if(e->bboxp[oneplace+1] < e->bbox[3]) e->bbox[3] = e->bboxp[oneplace+1];
+		if(e->bboxp[oneplace+2] > e->bbox[4]) e->bbox[4] = e->bboxp[oneplace+2];
+		else if(e->bboxp[oneplace+2] < e->bbox[5]) e->bbox[5] = e->bboxp[oneplace+2];
+	}
+	return TRUE;
+}
 
 int calcEntAttachMat(entity_t * e){ //return value is weather e->mat got changed
 	if(!e->type) return FALSE;
@@ -230,7 +256,9 @@ void gameCodeTick(void){ //todo maybe change to float in seconds
 		}
 	}
 	for(i = 0; i <= entityArrayLastTaken; i++){
-		calcEntAttachMat(&entitylist[i]);
+		entity_t *e = &entitylist[i];
+		calcEntAttachMat(e);
+		if(e->needsmatupdate || e->needsbboxupdate) recalcEntBBox(e);
 	}
 	for(i = 0; i <= entityArrayLastTaken; i++){// make sure they dont update again
 		entitylist[i].needsmatupdate = FALSE;

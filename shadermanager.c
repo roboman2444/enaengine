@@ -114,9 +114,11 @@ shaderpermutation_t createPermutation(shaderprogram_t * shader, int permutation)
 			if(permutation & 1<<i){
 				GLuint l = strlen(shader->defines[i]) + 10;
 				shaderstring[i] = malloc(l); // 8 for the extra #define , 1 for the \n, 1 for the \0
+				memset(shaderstring[i], 0, l);
 				snprintf(shaderstring[i], l, "#define %s", shader->defines[i]); //no need for the \n because the defines has it in them
 			} else {
 				shaderstring[i] = malloc(2* sizeof(char));
+				memset(shaderstring[i], 0, 2);
 				strcpy(shaderstring[i], "\0");
 			}
 		}

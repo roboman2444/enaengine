@@ -58,6 +58,7 @@ int deleteModel(int id){
 	if(!mod->name) return FALSE;
 	deleteFromHashTable(mod->name, id, modelhashtable);
 	free(mod->name);
+	if(mod->interleaveddata) free(mod->interleaveddata);
 	//todo call delete vbo
 //TODO
 //TODO
@@ -99,7 +100,6 @@ int generateNormalsFromMesh(GLfloat * vertbuffer, GLfloat * normbuffer, GLuint *
 		//if dontwant to do area weighting, normalize now
 		if(!type){
 			float length = vec3length(normal);
-//			length = sqrt((normal[0] * normal[0]) + (normal[1] * normal[1]) + (normal[2] * normal[2]));
 			normal[0] /= length;
 			normal[1] /= length;
 			normal[2] /= length;
@@ -119,8 +119,8 @@ int generateNormalsFromMesh(GLfloat * vertbuffer, GLfloat * normbuffer, GLuint *
 	if(type <2){
 		for(i = 0; i < vertcount; i++){
 			float * normal = &normbuffer[i*3];
-			float length;
-			length = sqrt((normal[0] * normal[0]) + (normal[1] * normal[1]) + (normal[2] * normal[2]));
+			float length = vec3length(normal);;
+//			length = sqrt((normal[0] * normal[0]) + (normal[1] * normal[1]) + (normal[2] * normal[2]));
 			normal[0] /= length;
 			normal[1] /= length;
 			normal[2] /= length;
@@ -140,9 +140,20 @@ float getSphereFromInterleavedMesh(GLfloat * interleavedbuffer, GLuint vertcount
 //	consolePrintf("spheresize = %f\n", size);
 	return size;
 }
+vec_t * getBBoxpFromBBox(vec_t * bbox){ //todo move this more globally
+	vec_t * outbox = malloc(24 * sizeof(vec_t));
+	int i;
+	for(i = 0; i < 8; i++){
+		outbox[(i*3)+0] = bbox[(i&1)+0];
+		outbox[(i*3)+1] = bbox[(i&2)+2];
+		outbox[(i*3)+2] = bbox[(i&4)+4];
+	}
+	return outbox;
+}
 vec_t * getBBoxFromInterleavedMesh(GLfloat * interleavedbuffer, GLuint vertcount, int stride){
+	if(stride < 5) return 0;
+
 	vec_t * bbox = malloc(6*sizeof(vec_t));
-//	memset(bbox, 0 , sizeof(vec6_t));
 	bbox[0] = -3.4028e+38;
 	bbox[1] = 3.4028e+38;
 	bbox[2] = -3.4028e+38;
@@ -150,7 +161,6 @@ vec_t * getBBoxFromInterleavedMesh(GLfloat * interleavedbuffer, GLuint vertcount
 	bbox[4] = -3.4028e+38;
 	bbox[5] = 3.4028e+38;
 
-	if(stride < 5) return 0;
 	int i;
 	for(i = 0; i < vertcount; i++){
 		float * vert = &interleavedbuffer[(i*stride)];
@@ -161,6 +171,7 @@ vec_t * getBBoxFromInterleavedMesh(GLfloat * interleavedbuffer, GLuint vertcount
 		if(vert[2] > bbox[4]) bbox[4] = vert[2];
 		else if(vert[2] < bbox[5]) bbox[5] = vert[2];
 	}
+
 /*
 	for(i = 0; i < 6; i++){
 		consolePrintf("bbox %i:%f\n", i, bbox[i]);
@@ -336,10 +347,16 @@ int loadiqmmeshes(model_t * m, const struct iqmheader hdr, unsigned char *buf){
 	}
 
 	m->spheresize = getSphereFromInterleavedMesh(interleavedbuffer, numverts, 8);
+	m->numverts = numverts;
 	vec_t * bbox = getBBoxFromInterleavedMesh(interleavedbuffer, numverts, 8);
+	vec_t *bboxp = getBBoxpFromBBox(bbox);
 	if(bbox){
 		memcpy(m->bbox, bbox, 6*sizeof(vec_t));
 		free(bbox);
+	}
+	if(bboxp){
+		memcpy(m->bboxp, bboxp, 24*sizeof(vec_t));
+		free(bboxp);
 	}
 
 
@@ -359,7 +376,8 @@ int loadiqmmeshes(model_t * m, const struct iqmheader hdr, unsigned char *buf){
 	glBindBuffer(GL_ARRAY_BUFFER, myvbo->vboid);
 	glBufferData(GL_ARRAY_BUFFER, numverts * 8 * sizeof(GLfloat), interleavedbuffer, GL_STATIC_DRAW);
 	myvbo->numverts = numverts;
-	free(interleavedbuffer);
+	m->interleaveddata = interleavedbuffer;
+//	free(interleavedbuffer);
 
 	glEnableVertexAttribArray(POSATTRIBLOC);
 	glVertexAttribPointer(POSATTRIBLOC, 3, GL_FLOAT, GL_FALSE, 8*sizeof(GLfloat), 0);
@@ -375,6 +393,10 @@ int loadiqmmeshes(model_t * m, const struct iqmheader hdr, unsigned char *buf){
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,myvbo->indicesid);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER,numtris * 3 *sizeof(GLuint), tris, GL_STATIC_DRAW);
 	myvbo->numfaces = numtris;
+	m->tris = tris;
+	m->numfaces = numtris;
+	m->stride = 8; //todo
+//	free(tris);
 
 	consolePrintf("Model %s.iqm has %i faces and %i verts\n", m->name, numtris, numverts);
 
@@ -515,7 +537,7 @@ int loadModelOBJ(model_t * m, char * filename){//todo flags
 	unsigned int readnorm = 0;
 	unsigned int readtc = 0;
 	unsigned int readface = 0;
-	unsigned int readadd = 0;
+//	unsigned int readadd = 0;
 	while(fgets(line, 300, f)){
 		for(over = 0; (line[over] == ' ' || line[over] == '\t') && over < 200; over++); //should be 1 //take off early white spaces
 
@@ -658,9 +680,14 @@ int loadModelOBJ(model_t * m, char * filename){//todo flags
 	}
 	m->spheresize = getSphereFromInterleavedMesh(interleavedbuffer, vertcount, 8);
 	vec_t * bbox = getBBoxFromInterleavedMesh(interleavedbuffer, vertcount, 8);
+	vec_t *bboxp = getBBoxpFromBBox(bbox);
 	if(bbox){
 		memcpy(m->bbox, bbox, 6*sizeof(vec_t));
 		free(bbox);
+	}
+	if(bboxp){
+		memcpy(m->bboxp, bboxp, 24*sizeof(vec_t));
+		free(bboxp);
 	}
 //	m->bbox = getBBoxFromInterleavedMesh(interleavedbuffer, vertcount, 8);
 //	m->numfaces = malloc(sizeof(GLuint)*2);
@@ -690,7 +717,9 @@ int loadModelOBJ(model_t * m, char * filename){//todo flags
 	glBindBuffer(GL_ARRAY_BUFFER,myvbo->vboid);
 	glBufferData(GL_ARRAY_BUFFER, vertcount * 8 * sizeof(GLfloat), interleavedbuffer, GL_STATIC_DRAW);
 	myvbo->numverts = vertcount;
-	free(interleavedbuffer);
+	m->numverts = vertcount;
+	m->interleaveddata = interleavedbuffer;
+//	free(interleavedbuffer);
 
 //	shaderprogram_t * program = findProgramByName("staticmodel");//todo per model materials and permutations
 //	printf("\n%i\n", program->id);
@@ -720,8 +749,11 @@ int loadModelOBJ(model_t * m, char * filename){//todo flags
 //	glBufferData(GL_ELEMENT_ARRAY_BUFFER,totalface * 3 *sizeof(GLuint), indicebuffer, GL_STATIC_DRAW);
 //	glBufferData(GL_ELEMENT_ARRAY_BUFFER,6 * sizeof(GLint), muhindices, GL_STATIC_DRAW);
 	myvbo->numfaces = facecount;
+	m->tris = indicebuffer;
+	m->numfaces = facecount;
+	m->stride = 8;
+//	free(indicebuffer);
 
-	free(indicebuffer);
 	//maybe use material based shading
 
 	//todo set flags in the model
