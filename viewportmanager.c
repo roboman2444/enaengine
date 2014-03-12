@@ -227,13 +227,12 @@ int testBBoxPointsInFrustum(viewport_t * v, vec_t * points){
 			vec_t * p = &points[j*3];
 			float dist = vec3dot(n, p) + d;
 //			consolePrintf("dist:%f\n",dist);
-			if(dist > 0.0) j = 9; // point infront of the plane
+			if(dist > 0.0) break; // point infront of the plane
 		}
-		if(j < 9 ) return FALSE; //one of the points failed;
+		if(j==8) return FALSE; //all the points failed the frustum
 	}
 
 
-//	if(~fits) return FALSE; // not ALL of the fitsbits are set
 	return TRUE;
 }
 /*

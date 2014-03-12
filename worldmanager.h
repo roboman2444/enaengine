@@ -31,7 +31,7 @@ typedef struct worldleaf_s{
 	struct worldleaf_s *sw;
 	struct worldleaf_s *nw;
 	int treedepth;
-	vec3_t bbox[8];
+	vec_t * bbox[8];
 	//todo actual list of shit and a vao
 	worldobject_t * list;
 	int numObjects;

@@ -25,6 +25,11 @@ int initWorldSystem(void){
 //todo
 	return TRUE;
 }
+int addObjectToLeaf(worldleaf_t * t, worldobject_t * o){
+}
+int walkLeafForObject(worldobject_t * o){
+	
+}
 int addObjectToWorld(worldobject_t * o){
 	//transform points
 	model_t * m = returnModelById(o->modelid);
@@ -73,8 +78,8 @@ int addObjectToWorld(worldobject_t * o){
 	//construct bpoints
 	for(i = 0; i < 8; i++){
 		o->bboxp[(i*3)+0] = o->bbox[(i&1)+0];
-		o->bboxp[(i*3)+1] = o->bbox[(i&2)+2];
-		o->bboxp[(i*3)+2] = o->bbox[(i&4)+4];
+		o->bboxp[(i*3)+1] = o->bbox[((i&2)>>1)+2];
+		o->bboxp[(i*3)+2] = o->bbox[((i&4)>>2)+4];
 	}
 	o->status = 2;
 
