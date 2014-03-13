@@ -9,6 +9,7 @@
 #include "modelmanager.h"
 #include "shadermanager.h"
 #include "entitymanager.h"
+#include "worldmanager.h"
 
 int gamecodeOK;
 int tGameTime = 0;
@@ -35,6 +36,7 @@ int initGameCodeSystem(void){
 		entdragon->needsbboxupdate = TRUE;
 		entdragon->shaderid = createAndAddShaderRINT("staticmodel");
 		entdragon->shaderperm = 1;
+		addEntityToWorld(entdragon->myid);
 	entity_t *entteapot = addEntityRPOINT("teapot");
 		entteapot->type = 2;
 		entteapot->pos[0] = 10.0;

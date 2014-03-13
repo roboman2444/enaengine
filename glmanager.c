@@ -15,6 +15,7 @@
 #include "viewportmanager.h"
 #include "entitymanager.h"
 #include "renderqueue.h"
+#include "worldmanager.h"
 
 #include <tgmath.h>
 

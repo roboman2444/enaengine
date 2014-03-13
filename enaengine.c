@@ -7,6 +7,9 @@
 #include "sdlmanager.h"
 #include "console.h"
 #include "gamecodemanager.h"
+//#include "worldmanager.h"
+extern int initWorldSystem(void);
+extern int worldOK;
 
 //main
 
@@ -18,6 +21,10 @@ int main(int argc, char *argv[]){
 	sdlInit(800, 600, 24, 1);
 	if(glInit()){
 		consolePrintf("opengl has initailized correctly\n");
+	}
+	initWorldSystem();
+	if(worldOK){
+		consolePrintf("world has initailized correctly\n");
 	}
 	initGameCodeSystem();
 	if(gamecodeOK){

@@ -17,18 +17,88 @@ typedef struct worldTextureQueue_s {
 	worldobject_t * list;
 } worldTextureQueue_t;
 
+worldleaf_t * createWorldLeaf(int depth, vec2_t center){
+	worldleaf_t * leaf = malloc(sizeof(worldleaf_t));
+	memset(leaf, 0 , sizeof(worldleaf_t));
+	leaf->treedepth = depth;
+	leaf->center[0] = center[0];
+	leaf->center[1] = center[1];
+	leaf->size = (float)WORLDMAXSIZE / (float)(depth * depth);
+	leaf->bbox[0] = center[0] + leaf->size;
+	leaf->bbox[1] = center[0] + leaf->size;
+	leaf->bbox[2] = 0.0;
+	leaf->bbox[3] = 0.0;
+	leaf->bbox[4] = center[1] + leaf->size;
+	leaf->bbox[5] = center[1] + leaf->size;
+	//todo make bboxp
+	//todo
+	return leaf;
+}
+
 int initWorldSystem(void){
-	root = malloc(sizeof(worldleaf_t));
-	memset(root, 0 , sizeof(worldleaf_t));
-	root->height = 3.4028e+38;
-	root->negheight = -3.4028e+38;
 //todo
+	vec2_t center = {0.0, 0.0};
+	root = createWorldLeaf(0, center);
+	if(!root) return FALSE;
+	worldOK = TRUE;
 	return TRUE;
 }
-int addObjectToLeaf(worldleaf_t * t, worldobject_t * o){
+int addObjectToLeaf(worldobject_t * o, worldleaf_t *l){
+	//todo
+	//if first object in, set anyway
+	if(!l->numObjects){
+		l->bbox[2] = o->bbox[2];
+		l->bbox[3] = o->bbox[3];
+	} else {
+		if(o->bbox[2] > l->bbox[2]){
+			l->bbox[2] = o->bbox[2];
+		}
+		if(o->bbox[3] < l->bbox[3]){
+			l->bbox[3] = o->bbox[3];
+		}
+	}
+	//todo recalcbboxp
+	l->numObjects++;
+	l->list = realloc(l->list, l->numObjects * sizeof(worldobject_t));
+	l->list[l->numObjects-1] = *o;
+	free(o);
+	return TRUE;
 }
-int walkLeafForObject(worldobject_t * o){
-	
+
+int walkAndAddObject(worldobject_t * o, worldleaf_t * l){
+	char xspace = 0;
+	char yspace = 0;
+	char nofits = 0;
+	if(l->treedepth >= WORLDTREEDEPTH) nofits = TRUE;
+	//find possible space
+	if(o->bbox[0] > l->center[0]) xspace = TRUE;
+	if(o->bbox[4] > l->center[1]) yspace = TRUE;
+
+	//now check the other bounds, make sure its the same as the origional
+	if((o->bbox[1] > l->center[0]) != xspace) nofits = TRUE;
+	if((o->bbox[5] > l->center[1]) != yspace) nofits = TRUE;
+	if(nofits){
+		//todo
+		addObjectToLeaf(o, l);
+		return TRUE;
+	} else {
+		int intspace = xspace + 2*yspace;
+		if(!l->children[intspace]){
+			vec2_t newcenter;
+			newcenter[0] = l->center[0] + ((float)xspace-0.5)*l->size;
+			newcenter[1] = l->center[1] + ((float)yspace-0.5)*l->size;
+			l->children[intspace] = createWorldLeaf(l->treedepth + 1, newcenter);
+		} else {
+			walkAndAddObject(o, l->children[intspace]);
+		}
+		//should figure out top and bottom bounds now...
+		if(l->bbox[2] < l->children[intspace]->bbox[2]) l->bbox[2] = l->children[intspace]->bbox[2];
+		if(l->bbox[3] > l->children[intspace]->bbox[3]) l->bbox[3] = l->children[intspace]->bbox[3];
+		//should recalc bboxp now
+
+		return 2;
+	}
+	return FALSE; // should never hit
 }
 int addObjectToWorld(worldobject_t * o){
 	//transform points
@@ -36,6 +106,8 @@ int addObjectToWorld(worldobject_t * o){
 	if(!m) return FALSE;
 	int vertcount = m->numverts;
 	if(!vertcount) return FALSE;
+	return walkAndAddObject(o, root);
+/*
 	o->interleaveddata = malloc(vertcount * 8 * sizeof(GLfloat));
 	int mstride = m->stride;
 	int i;
@@ -82,7 +154,7 @@ int addObjectToWorld(worldobject_t * o){
 		o->bboxp[(i*3)+2] = o->bbox[((i&4)>>2)+4];
 	}
 	o->status = 2;
-
+*/
 	//walk tree and add
 	return TRUE;
 }
@@ -100,15 +172,9 @@ int addEntityToWorld(int entityid){
 	obj->mat = e->mat;
 	obj->modelid = e->modelid;
 	obj->textureid = e->texturegroupid;
-	Matrix4x4_OriginFromMatrix(&e->mat, obj->pos);
 	obj->status = 1;
 
-	//transform all the models verts
-	//generate model bbox
-
-
-
 	return addObjectToWorld(obj);
-	return TRUE;
+//	return TRUE;
 }
 

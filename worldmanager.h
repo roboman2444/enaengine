@@ -23,18 +23,17 @@ typedef struct worldobject_s{
 } worldobject_t;
 
 typedef struct worldleaf_s{
-	float height;
-	float negheight;
 	vec2_t center;
-	struct worldleaf_s *ne;
-	struct worldleaf_s *se;
-	struct worldleaf_s *sw;
-	struct worldleaf_s *nw;
+	struct worldleaf_s *children[4];
+	/* [0 1] ^^
+	   [2 3] */
 	int treedepth;
-	vec_t * bbox[8];
+	vec_t bbox[6];
+	vec_t bboxp[24];
 	//todo actual list of shit and a vao
-	worldobject_t * list;
 	int numObjects;
+	worldobject_t * list;
+	float size; // ease
 } worldleaf_t;
 
 int worldOK;
