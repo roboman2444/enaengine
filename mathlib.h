@@ -1,3 +1,5 @@
+#ifndef MATHLIBHEADER
+#define MATHLIBHEADER
 #ifndef M_PI
 #define M_PI  3.14159265358979323846
 #endif
@@ -52,3 +54,7 @@
 #define vec2div(a,b,c) vec1div((a),(b),(c)) (a)[1] = (b)[1] / (c);
 #define vec3div(a,b,c) vec2div((a),(b),(c)) (a)[2] = (b)[2] / (c);
 #define vec4div(a,b,c) vec3div((a),(b),(c)) (a)[3] = (b)[3] / (c);
+
+void getBBoxpFromBBox(vec_t * bbox, vec_t *bboxp);
+
+#endif

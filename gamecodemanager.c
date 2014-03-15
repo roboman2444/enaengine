@@ -35,21 +35,25 @@ int initGameCodeSystem(void){
 		entdragon->modelid = createAndAddModelRINT("dragon");
 //		entdragon->modelid = createAndAddModelRINT("coil");
 		entdragon->texturegroupid = 0;
-		recalcEntBBox(entdragon); // needed because this is added to the world before the gamecode runs
 		entdragon->shaderid = createAndAddShaderRINT("staticmodel");
 		entdragon->shaderperm = 1;
+
+		recalcEntBBox(entdragon); // needed because this is added to the world before the gamecode runs
+
 		addEntityToWorld(entdragon->myid);
 		deleteEntity(entdragon->myid);
 	entity_t *entteapot = addEntityRPOINT("teapot");
 		entteapot->type = 2;
 		entteapot->pos[0] = 10.0;
 		entteapot->needsmatupdate = TRUE;
-		calcEntAttachMat(entteapot); // needed because i add it to the world, and the mat needs to be updated beforehand
-		recalcEntBBox(entteapot); // needed because this is added to the world before the gamecode runs
 		entteapot->modelid = createAndAddModelRINT("teapot");
 //		entteapot->modelid = createAndAddModelRINT("coil");
 		entteapot->shaderid = createAndAddShaderRINT("staticmodel");
 		entteapot->texturegroupid = 0;
+
+		calcEntAttachMat(entteapot); // needed because i add it to the world, and the mat needs to be updated beforehand
+		recalcEntBBox(entteapot); // needed because this is added to the world before the gamecode runs
+
 		addEntityToWorld(entteapot->myid);
 		deleteEntity(entteapot->myid);
 	entity_t * enthat = addEntityRPOINT("hat");

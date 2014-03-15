@@ -124,7 +124,7 @@ int loadLeafIntoQueue(worldleaf_t * l, renderbatche_t * batch, viewport_t *v){
 	//todo cull these out
 	worldleaf_t **children = l->children;
 	for(i = 0; i < 4; i++){
-		if(children[i]){
+		if(children[i] && testBBoxPointsInFrustum(v, children[i]->bboxp)){
 			mynum+= loadLeafIntoQueue(children[i], batch, v);
 		}
 	}

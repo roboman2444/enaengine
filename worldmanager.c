@@ -31,7 +31,7 @@ worldleaf_t * createWorldLeaf(int depth, vec2_t center){
 	leaf->bbox[3] = 0.0;
 	leaf->bbox[4] = center[1] + leaf->size;
 	leaf->bbox[5] = center[1] + leaf->size;
-	//todo make bboxp
+	getBBoxpFromBBox(leaf->bbox, leaf->bboxp);
 	//todo
 	return leaf;
 }
@@ -97,6 +97,8 @@ int walkAndAddObject(worldobject_t * o, worldleaf_t * l){
 		if(l->bbox[2] < l->children[intspace]->bbox[2]) l->bbox[2] = l->children[intspace]->bbox[2];
 		if(l->bbox[3] > l->children[intspace]->bbox[3]) l->bbox[3] = l->children[intspace]->bbox[3];
 		//should recalc bboxp now
+		getBBoxpFromBBox(l->bbox, l->bboxp);
+		//todo i can make a more efficient way of doing this, only updating the y values of the points
 
 		return 2;
 	}
@@ -108,57 +110,8 @@ int addObjectToWorld(worldobject_t * o){
 	if(!m) return FALSE;
 	int vertcount = m->numverts;
 	if(!vertcount) return FALSE;
-	return walkAndAddObject(o, root);
-/*
-	o->interleaveddata = malloc(vertcount * 8 * sizeof(GLfloat));
-	int mstride = m->stride;
-	int i;
-	//i need a rotation matrix for surface normals
-	matrix4x4_t rotmat;
-	Matrix4x4_CopyRotateOnly(&rotmat, &o->mat);
-
-	o->bbox[0] = -3.4028e+38;
-	o->bbox[1] = 3.4028e+38;
-	o->bbox[2] = -3.4028e+38;
-	o->bbox[3] = 3.4028e+38;
-	o->bbox[4] = -3.4028e+38;
-	o->bbox[5] = 3.4028e+38;
-	for(i = 0; i < vertcount; i++){
-		int oneplace = i*8;
-		int twoplace = i*mstride;
-		//transform points
-		Matrix4x4_Transform(&o->mat,&m->interleaveddata[twoplace], &o->interleaveddata[oneplace]);
-		//rotate normals
-		Matrix4x4_Transform(&rotmat,&m->interleaveddata[twoplace+3], &o->interleaveddata[oneplace+3]);
-		//copy texcoords
-		if(mstride>5){
-			o->interleaveddata[oneplace+6] = m->interleaveddata[twoplace+6];
-			o->interleaveddata[oneplace+7] = m->interleaveddata[twoplace+7];
-		} else {
-			o->interleaveddata[oneplace+6] = 0.0;
-			o->interleaveddata[oneplace+7] = 0.0;
-
-		}
-
-		//find bbox
-		if(o->interleaveddata[oneplace] > o->bbox[0]) o->bbox[0] = o->interleaveddata[oneplace];
-		else if(o->interleaveddata[oneplace] < o->bbox[1]) o->bbox[1] = o->interleaveddata[oneplace];
-		if(o->interleaveddata[oneplace+1] > o->bbox[2]) o->bbox[2] = o->interleaveddata[oneplace+1];
-		else if(o->interleaveddata[oneplace+1] < o->bbox[3]) o->bbox[3] = o->interleaveddata[oneplace+1];
-		if(o->interleaveddata[oneplace+2] > o->bbox[4]) o->bbox[4] = o->interleaveddata[oneplace+2];
-		else if(o->interleaveddata[oneplace+2] < o->bbox[5]) o->bbox[5] = o->interleaveddata[oneplace+2];
-
-	}
-	//construct bpoints
-	for(i = 0; i < 8; i++){
-		o->bboxp[(i*3)+0] = o->bbox[(i&1)+0];
-		o->bboxp[(i*3)+1] = o->bbox[((i&2)>>1)+2];
-		o->bboxp[(i*3)+2] = o->bbox[((i&4)>>2)+4];
-	}
-	o->status = 2;
-*/
 	//walk tree and add
-	return TRUE;
+	return walkAndAddObject(o, root);
 }
 int addEntityToWorld(int entityid){
 	entity_t *e = returnEntityById(entityid);

@@ -140,20 +140,9 @@ float getSphereFromInterleavedMesh(GLfloat * interleavedbuffer, GLuint vertcount
 //	consolePrintf("spheresize = %f\n", size);
 	return size;
 }
-vec_t * getBBoxpFromBBox(vec_t * bbox){ //todo move this more globally
-	vec_t * outbox = malloc(24 * sizeof(vec_t));
-	int i;
-	for(i = 0; i < 8; i++){
-		outbox[(i*3)+0] = bbox[(i&1)+0];
-		outbox[(i*3)+1] = bbox[((i&2)>>1)+2];
-		outbox[(i*3)+2] = bbox[((i&4)>>2)+4];
-	}
-	return outbox;
-}
-vec_t * getBBoxFromInterleavedMesh(GLfloat * interleavedbuffer, GLuint vertcount, int stride){
+void getBBoxFromInterleavedMesh(GLfloat * interleavedbuffer, GLuint vertcount, int stride, vec_t * bbox){
 	if(stride < 5) return 0;
 
-	vec_t * bbox = malloc(6*sizeof(vec_t));
 	bbox[0] = -3.4028e+38;
 	bbox[1] = 3.4028e+38;
 	bbox[2] = -3.4028e+38;
@@ -177,7 +166,6 @@ vec_t * getBBoxFromInterleavedMesh(GLfloat * interleavedbuffer, GLuint vertcount
 		consolePrintf("bbox %i:%f\n", i, bbox[i]);
 	}
 */
-	return bbox;
 }
 
 int normalizeNormalsFromInterleavedMesh(GLfloat * interleavedbuffer, GLuint vertcount, int stride){
@@ -348,16 +336,8 @@ int loadiqmmeshes(model_t * m, const struct iqmheader hdr, unsigned char *buf){
 
 	m->spheresize = getSphereFromInterleavedMesh(interleavedbuffer, numverts, 8);
 	m->numverts = numverts;
-	vec_t * bbox = getBBoxFromInterleavedMesh(interleavedbuffer, numverts, 8);
-	vec_t *bboxp = getBBoxpFromBBox(bbox);
-	if(bbox){
-		memcpy(m->bbox, bbox, 6*sizeof(vec_t));
-		free(bbox);
-	}
-	if(bboxp){
-		memcpy(m->bboxp, bboxp, 24*sizeof(vec_t));
-		free(bboxp);
-	}
+	getBBoxFromInterleavedMesh(interleavedbuffer, numverts, 8, m->bbox);
+	getBBoxpFromBBox(m->bbox, m->bboxp);
 
 
 	GLuint *tris = (GLuint *)&buf[hdr.ofs_triangles];
@@ -679,16 +659,9 @@ int loadModelOBJ(model_t * m, char * filename){//todo flags
 		generateNormalsFromInterleavedMesh(interleavedbuffer, indicebuffer, facecount*3, vertcount, 8 , 0);
 	}
 	m->spheresize = getSphereFromInterleavedMesh(interleavedbuffer, vertcount, 8);
-	vec_t * bbox = getBBoxFromInterleavedMesh(interleavedbuffer, vertcount, 8);
-	vec_t *bboxp = getBBoxpFromBBox(bbox);
-	if(bbox){
-		memcpy(m->bbox, bbox, 6*sizeof(vec_t));
-		free(bbox);
-	}
-	if(bboxp){
-		memcpy(m->bboxp, bboxp, 24*sizeof(vec_t));
-		free(bboxp);
-	}
+	getBBoxFromInterleavedMesh(interleavedbuffer, vertcount, 8, m->bbox);
+	getBBoxpFromBBox(m->bbox, m->bboxp);
+
 //	m->bbox = getBBoxFromInterleavedMesh(interleavedbuffer, vertcount, 8);
 //	m->numfaces = malloc(sizeof(GLuint)*2);
 //	m->numlod = 2;

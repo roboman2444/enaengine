@@ -79,7 +79,8 @@ int sdlCheckEvent(void){
 		switch(event.type){
 			case SDL_QUIT:
 				//todo make exit functions
-				SDL_Quit();
+				SDL_Quit(); //this segfaults for some reason
+//				exit(0);
 			break;
 			case SDL_KEYDOWN:
 				//todo
