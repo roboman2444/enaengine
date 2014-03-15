@@ -18,6 +18,8 @@ int setupGameCodeCallbacks(void){
 	//todo
 	return TRUE;
 }
+extern int calcEntAttachMat(entity_t *e);
+extern int recalcEntBBox(entity_t *e);
 
 int initGameCodeSystem(void){
 	initEntitySystem();
@@ -33,18 +35,23 @@ int initGameCodeSystem(void){
 		entdragon->modelid = createAndAddModelRINT("dragon");
 //		entdragon->modelid = createAndAddModelRINT("coil");
 		entdragon->texturegroupid = 0;
-		entdragon->needsbboxupdate = TRUE;
+		recalcEntBBox(entdragon); // needed because this is added to the world before the gamecode runs
 		entdragon->shaderid = createAndAddShaderRINT("staticmodel");
 		entdragon->shaderperm = 1;
 		addEntityToWorld(entdragon->myid);
+		deleteEntity(entdragon->myid);
 	entity_t *entteapot = addEntityRPOINT("teapot");
 		entteapot->type = 2;
 		entteapot->pos[0] = 10.0;
 		entteapot->needsmatupdate = TRUE;
+		calcEntAttachMat(entteapot); // needed because i add it to the world, and the mat needs to be updated beforehand
+		recalcEntBBox(entteapot); // needed because this is added to the world before the gamecode runs
 		entteapot->modelid = createAndAddModelRINT("teapot");
 //		entteapot->modelid = createAndAddModelRINT("coil");
 		entteapot->shaderid = createAndAddShaderRINT("staticmodel");
 		entteapot->texturegroupid = 0;
+		addEntityToWorld(entteapot->myid);
+		deleteEntity(entteapot->myid);
 	entity_t * enthat = addEntityRPOINT("hat");
 		enthat->type = 2;
 		enthat->pos[1] = 8.7;
@@ -187,6 +194,7 @@ int recalcEntBBox(entity_t * e){
 		if(e->bboxp[oneplace+2] > e->bbox[4]) e->bbox[4] = e->bboxp[oneplace+2];
 		else if(e->bboxp[oneplace+2] < e->bbox[5]) e->bbox[5] = e->bboxp[oneplace+2];
 	}
+	e->needsbboxupdate = FALSE;
 	return TRUE;
 }
 

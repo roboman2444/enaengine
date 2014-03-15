@@ -7,6 +7,7 @@
 #include "modelmanager.h"
 #include "mathlib.h"
 #include "entitymanager.h"
+#include "console.h"
 
 
 int worldOK = 0;
@@ -88,6 +89,7 @@ int walkAndAddObject(worldobject_t * o, worldleaf_t * l){
 			newcenter[0] = l->center[0] + ((float)xspace-0.5)*l->size;
 			newcenter[1] = l->center[1] + ((float)yspace-0.5)*l->size;
 			l->children[intspace] = createWorldLeaf(l->treedepth + 1, newcenter);
+			walkAndAddObject(o, l->children[intspace]);
 		} else {
 			walkAndAddObject(o, l->children[intspace]);
 		}
@@ -172,6 +174,10 @@ int addEntityToWorld(int entityid){
 	obj->mat = e->mat;
 	obj->modelid = e->modelid;
 	obj->textureid = e->texturegroupid;
+	obj->shaderid = e->shaderid;
+	obj->shaderperm = e->shaderperm;
+	memcpy(obj->bbox, e->bbox, 6 * sizeof(vec_t));
+	memcpy(obj->bboxp, e->bboxp, 24 * sizeof(vec_t));
 	obj->status = 1;
 
 	return addObjectToWorld(obj);

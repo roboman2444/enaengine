@@ -4,6 +4,7 @@
 #include "globaldefs.h"
 #include "matrixlib.h"
 #include "entitymanager.h"
+#include "worldmanager.h"
 #include "renderqueue.h"
 #include "glmanager.h"
 
@@ -83,6 +84,97 @@ int addEntityToRenderbatche(entity_t * ent, renderbatche_t * batch){
 
 	return addEntityToShaderbatche(ent, &batch->shaderbatch[count]);
 }
+
+
+
+
+//todo more streamlined for objects
+int addObjectToModelbatche(worldobject_t * obj, modelbatche_t * batch){
+	if(!batch) return FALSE;
+	int count = batch->count;
+	if(!batch->matlist) count = 0;
+	//doesnt have texture in it
+	batch->count++;
+	batch->matlist = realloc(batch->matlist, batch->count * sizeof(matrix4x4_t));
+	batch->matlist[count] = obj->mat;
+//	batch->matlist = realloc(batch->cammatlist, batch->count * sizeof(matrix4x4_t));
+//	Matrix4x4_Concat(&cammatlist[count], viewport mat, ent->mat);
+//	batch->cammatlist[count] = ent->mat;
+	return count+1;
+}
+int addObjectToTexturebatche(worldobject_t * obj, texturebatche_t * batch){
+	if(!batch) return FALSE;
+	int count = batch->count;
+	int modelid = obj->modelid;
+	if(!batch->modelbatch) count = 0;
+	int i;
+	for(i = 0; i < count; i++){
+		if(batch->modelbatch[i].modelid == modelid){
+			return addObjectToModelbatche(obj, &batch->modelbatch[i]);
+		}
+	}
+	//doesnt have texture in it
+	batch->count++;
+	batch->modelbatch = realloc(batch->modelbatch, batch->count * sizeof(modelbatche_t));
+	batch->modelbatch[count].count = 0;
+	batch->modelbatch[count].modelid = modelid;
+	batch->modelbatch[count].matlist = 0;
+
+	return addObjectToModelbatche(obj, &batch->modelbatch[count]);
+}
+
+
+
+int addObjectToShaderbatche(worldobject_t * obj, shaderbatche_t * batch){
+	if(!batch) return FALSE;
+	int count = batch->count;
+	int textureid = obj->textureid;
+	if(!batch->texturebatch) count = 0;
+	int i;
+	for(i = 0; i < count; i++){
+		if(batch->texturebatch[i].textureid == textureid){
+			return addObjectToTexturebatche(obj, &batch->texturebatch[i]);
+		}
+	}
+	//doesnt have shader in it
+	batch->count++;
+	batch->texturebatch = realloc(batch->texturebatch, batch->count * sizeof(texturebatche_t));
+	batch->texturebatch[count].count = 0;
+	batch->texturebatch[count].textureid = textureid;
+	batch->texturebatch[count].modelbatch = 0;
+
+	return addObjectToTexturebatche(obj, &batch->texturebatch[count]);
+}
+
+
+
+int addObjectToRenderbatche(worldobject_t * obj, renderbatche_t * batch){
+	if(!batch) return FALSE;
+	int count = batch->count;
+	int shaderid = obj->shaderid;
+	int shaderperm = obj->shaderperm;
+	if(!batch->shaderbatch) count = 0;
+	int i;
+	for(i = 0; i < count; i++){
+		if(batch->shaderbatch[i].shaderid == shaderid && batch->shaderbatch[i].shaderperm == shaderperm){
+			return addObjectToShaderbatche(obj, &batch->shaderbatch[i]);
+		}
+	}
+	//doesnt have shader in it
+	batch->count++;
+	batch->shaderbatch = realloc(batch->shaderbatch, batch->count * sizeof(shaderbatche_t));
+	batch->shaderbatch[count].count = 0;
+	batch->shaderbatch[count].shaderid = shaderid;
+	batch->shaderbatch[count].shaderperm = shaderperm;
+	batch->shaderbatch[count].texturebatch = 0;
+
+	return addObjectToShaderbatche(obj, &batch->shaderbatch[count]);
+}
+
+
+
+
+
 
 
 int cleanupModelbatche(modelbatche_t * batch){

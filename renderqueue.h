@@ -25,6 +25,7 @@ typedef struct renderbatche_s {
 	//int something;
 }renderbatche_t; // the e stands for entity
 int addEntityToRenderbatche(entity_t * ent, renderbatche_t * batch);
+int addObjectToRenderbatche(worldobject_t * obj, renderbatche_t * batch);
 
 int cleanupRenderbatche(renderbatche_t * batch);
 

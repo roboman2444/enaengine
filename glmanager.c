@@ -14,8 +14,8 @@
 #include "matrixlib.h"
 #include "viewportmanager.h"
 #include "entitymanager.h"
-#include "renderqueue.h"
 #include "worldmanager.h"
+#include "renderqueue.h"
 
 #include <tgmath.h>
 
@@ -109,6 +109,30 @@ int glDrawModel(model_t * model, matrix4x4_t * modworld, matrix4x4_t * viewproj)
 	glDrawElements(GL_TRIANGLES, tvbo->numfaces*3, GL_UNSIGNED_INT, 0);
 //	totalface += tvbo->numfaces;
 	return tvbo->numfaces;
+}
+int loadLeafIntoQueue(worldleaf_t * l, renderbatche_t * batch, viewport_t *v){
+	int num = l->numObjects;
+	int mynum=0;
+	worldobject_t * list = l->list;
+	int i;
+	for(i = 0; i < num; i++){
+		if(testBBoxPointsInFrustum(v, list[i].bboxp)){
+			addObjectToRenderbatche(&list[i], batch);
+			mynum++;
+		}
+	}
+	//todo cull these out
+	worldleaf_t **children = l->children;
+	for(i = 0; i < 4; i++){
+		if(children[i]){
+			mynum+= loadLeafIntoQueue(children[i], batch, v);
+		}
+	}
+	return mynum;
+
+}
+int loadWorldIntoQueue(renderbatche_t * batch, viewport_t *v){
+	return loadLeafIntoQueue(root, batch, v);
 }
 int loadEntitiesIntoQueue(renderbatche_t * batch, viewport_t * v){
 	int i;
@@ -239,6 +263,8 @@ int glMainDraw(void){
 	renderbatche_t b;
 	memset(&b, 0, sizeof(renderbatche_t));
 	loadEntitiesIntoQueue(&b, &cam);
+//	consolePrintf("worldobjects rendered: %i\n",loadWorldIntoQueue(&b, &cam));
+	loadWorldIntoQueue(&b, &cam);
 	drawEntitiesR(&b);
 	cleanupRenderbatche(&b);
 	swapBuffers();

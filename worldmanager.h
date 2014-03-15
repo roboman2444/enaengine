@@ -12,14 +12,16 @@ typedef struct worldobject_s{
 	matrix4x4_t mat;
 	int modelid;
 	int textureid;
+	int shaderid;
+	int shaderperm;
 	vec_t bboxp[24];
 	vec_t bbox[6];
 	vec3_t pos;
-	float * interleaveddata;
+//	float * interleaveddata;
 	char status;
 
-	GLuint vertstart; //useful for moving
-	GLuint facestart; //useful for moving
+//	GLuint vertstart; //useful for moving
+//	GLuint facestart; //useful for moving
 } worldobject_t;
 
 typedef struct worldleaf_s{
@@ -38,6 +40,7 @@ typedef struct worldleaf_s{
 
 int worldOK;
 int objectNumber;
+worldleaf_t * root;
 
 int initWorldSystem(void);
 
