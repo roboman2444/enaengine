@@ -7,6 +7,7 @@
 #define TCATTRIBLOC 2
 
 
+
 typedef struct shaderpermutation_s {
 	struct shaderpermutation_s * next;
 	GLuint id;

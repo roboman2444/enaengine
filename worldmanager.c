@@ -12,12 +12,105 @@
 
 int worldOK = 0;
 worldleaf_t * root;
-
+/* file structure description
+	header
+	model list
+		just a huge string pretty much. Each name of is seperated by a \0.
+	texture list
+		just a huge string pretty much. Each name of is seperated by a \0.
+	shader list
+		just a huge string pretty much. Each name of is seperated by a \0.
+	object list
+		array of the worldFileObject_t struct
+*/
+typedef struct worldFileHeader_s {
+	unsigned int filesize;
+	unsigned int modellistlength;  // bytes
+	unsigned int modellistcount;   // count
+	unsigned int texturelistlength;// bytes
+	unsigned int texturelistcount; // count
+	unsigned int shaderlistlength; // bytes
+	unsigned int shaderlistcount;  // count
+	unsigned int objectlistcount; // count
+}worldFileHeader_t;
+typedef struct worldFileObject_s {
+	matrix4x4_t mat;
+	unsigned int modelindice;
+	unsigned int textureindice;
+	unsigned int shaderindice;
+	int shaderperm;
+}worldFileObject_t;
+/*
 typedef struct worldTextureQueue_s {
 	int texid;
 	worldobject_t * list;
 } worldTextureQueue_t;
+*/
+char **loadWorldNameList(char *buf, unsigned int bc, unsigned int nc){
+	char  **namelist = malloc(nc * sizeof(char *));
+	unsigned int namei, bytei = 0;
+	for(namei = 0; namei < nc; namei++){
+		namelist[namei] = buf+bytei;
+		while(namelist[bytei]){
+			bytei++; // look for next /0
+			if(bytei > bc){
+				free(namelist);
+				return FALSE;
+			}
+		}
+		bytei++; //bump forward once
+	}
+	return namelist;
+}
+int loadWorld(char * filename){
+	FILE *f = fopen(filename, "rb");
+	if(!f) return FALSE;
+	worldFileHeader_t header;
 
+	char **modelnamelist = 0;
+	char **texturenamelist = 0;
+	char **shadernamelist = 0;
+	char *buf = 0;
+
+	if(fread(&header, 1, sizeof(header), f) != sizeof(header))goto error;
+	if(header.shaderlistlength + header.modellistlength + header.texturelistlength + (header.objectlistcount * sizeof(worldFileObject_t)) != header.filesize) goto error;
+
+	buf = malloc(header.filesize);
+	if(fread(buf, 1, header.filesize, f) != header.filesize) goto error;
+	char * newbuf = buf;
+
+	modelnamelist = loadWorldNameList(newbuf, header.modellistlength, header.modellistcount);
+	if(!modelnamelist) goto error;
+	newbuf += header.modellistlength;
+
+	texturenamelist = loadWorldNameList(newbuf, header.texturelistlength, header.texturelistcount);
+	if(!texturenamelist) goto error;
+	newbuf += header.texturelistlength;
+
+
+	shadernamelist = loadWorldNameList(newbuf, header.shaderlistlength, header.shaderlistcount);
+	if(!shadernamelist) goto error;
+	newbuf += header.shaderlistlength;
+
+	//newbuf is now the start of the actual object list
+	//todo parse it out
+
+	free(shadernamelist);
+	free(texturenamelist);
+	free(modelnamelist);
+	free(buf);
+	fclose(f);
+	return TRUE;
+
+	error:
+		fclose(f);
+		if(buf) free(buf);
+		if(modelnamelist) free(modelnamelist);
+		if(texturenamelist) free(texturenamelist);
+		if(shadernamelist) free(shadernamelist);
+		consolePrintf("%s: error while loading world\n", filename);
+	return FALSE;
+}
 worldleaf_t * createWorldLeaf(int depth, vec2_t center){
 	worldleaf_t * leaf = malloc(sizeof(worldleaf_t));
 	memset(leaf, 0 , sizeof(worldleaf_t));
