@@ -111,7 +111,7 @@ int glDrawModel(model_t * model, matrix4x4_t * modworld, matrix4x4_t * viewproj)
 	return tvbo->numfaces;
 }
 int loadLeafIntoQueue(worldleaf_t * l, renderbatche_t * batch, viewport_t *v){
-	int num = l->numObjects;
+	int num = l->numobjects;
 	int mynum=0;
 	worldobject_t * list = l->list;
 	int i;

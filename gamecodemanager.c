@@ -176,7 +176,6 @@ int initGameCodeSystem(void){
 	return TRUE; // todo error check
 }
 int recalcEntBBox(entity_t * e){
-	e->needsbboxupdate = FALSE;
 	model_t * m = returnModelById(e->modelid);
 	if(!m) return FALSE;
 	int i;

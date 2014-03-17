@@ -9,6 +9,8 @@
 #include "entitymanager.h"
 #include "console.h"
 
+extern int createAndAddTexturegroupRINT(char * name);
+extern int createAndAddShaderRINT(char * name);
 
 int worldOK = 0;
 worldleaf_t * root;
@@ -62,6 +64,30 @@ char **loadWorldNameList(char *buf, unsigned int bc, unsigned int nc){
 	}
 	return namelist;
 }
+int recalcObjBBox(worldobject_t *o){
+	model_t * m = returnModelById(o->modelid);
+	if(!m) return FALSE;
+	int i;
+	o->bbox[0] = -3.4028e+38;
+	o->bbox[1] = 3.4028e+38;
+	o->bbox[2] = -3.4028e+38;
+	o->bbox[3] = 3.4028e+38;
+	o->bbox[4] = -3.4028e+38;
+	o->bbox[5] = 3.4028e+38;
+
+	for(i = 0; i < 8; i++){
+		int oneplace = i*3;
+		Matrix4x4_Transform(&o->mat, &m->bboxp[oneplace], &o->bboxp[oneplace]);
+
+		if(o->bboxp[oneplace] > o->bbox[0]) o->bbox[0] = o->bboxp[oneplace];
+		else if(o->bboxp[oneplace] < o->bbox[1]) o->bbox[1] = o->bboxp[oneplace];
+		if(o->bboxp[oneplace+1] > o->bbox[2]) o->bbox[2] = o->bboxp[oneplace+1];
+		else if(o->bboxp[oneplace+1] < o->bbox[3]) o->bbox[3] = o->bboxp[oneplace+1];
+		if(o->bboxp[oneplace+2] > o->bbox[4]) o->bbox[4] = o->bboxp[oneplace+2];
+		else if(o->bboxp[oneplace+2] < o->bbox[5]) o->bbox[5] = o->bboxp[oneplace+2];
+	}
+	return TRUE;
+}
 int loadWorld(char * filename){
 	FILE *f = fopen(filename, "rb");
 	if(!f) return FALSE;
@@ -94,6 +120,35 @@ int loadWorld(char * filename){
 
 	//newbuf is now the start of the actual object list
 	//todo parse it out
+
+	worldFileObject_t * objbuf = (worldFileObject_t *)newbuf;
+	worldobject_t * obj = malloc(sizeof(worldobject_t));
+
+	int i;
+	for(i = 0; i < header.objectlistcount; i++){
+		obj->mat = objbuf[i].mat;
+		Matrix4x4_OriginFromMatrix(&obj->mat, obj->pos);
+
+		int modelindice = objbuf[i].modelindice;
+		if(modelindice > header.modellistcount||!modelindice)continue;
+
+		int textureindice = objbuf[i].textureindice;
+		if(textureindice > header.texturelistcount)continue;
+
+		int shaderindice = objbuf[i].shaderindice;
+		if(shaderindice > header.shaderlistcount)continue;
+
+		else obj->modelid = createAndAddModelRINT(modelnamelist[modelindice-1]);
+		if(!textureindice) obj->textureid = 0;
+		else obj->textureid = createAndAddTexturegroupRINT(texturenamelist[textureindice-1]);
+		if(!shaderindice) obj->shaderid = 0;
+		else obj->shaderid = createAndAddShaderRINT(modelnamelist[shaderindice-1]);
+		obj->shaderperm = objbuf[i].shaderperm;
+		recalcObjBBox(obj);
+		obj->status = 1;
+		addObjectToWorld(obj);
+	}
+	if(obj) free(obj);
 
 	free(shadernamelist);
 	free(texturenamelist);
@@ -140,7 +195,7 @@ int initWorldSystem(void){
 int addObjectToLeaf(worldobject_t * o, worldleaf_t *l){
 	//todo
 	//if first object in, set anyway
-	if(!l->numObjects){
+	if(!l->numobjects){
 		l->bbox[2] = o->bbox[2];
 		l->bbox[3] = o->bbox[3];
 	} else {
@@ -152,10 +207,10 @@ int addObjectToLeaf(worldobject_t * o, worldleaf_t *l){
 		}
 	}
 	//todo recalcbboxp
-	l->numObjects++;
-	l->list = realloc(l->list, l->numObjects * sizeof(worldobject_t));
-	l->list[l->numObjects-1] = *o;
-	free(o);
+	l->numobjects++;
+	l->list = realloc(l->list, l->numobjects * sizeof(worldobject_t));
+	l->list[l->numobjects-1] = *o;
+//	free(o);
 	return TRUE;
 }
 
@@ -218,6 +273,7 @@ int addEntityToWorld(int entityid){
 	worldobject_t * obj = malloc(sizeof(worldobject_t));
 	memset(obj, 0 , sizeof(worldobject_t));
 	obj->mat = e->mat;
+	Matrix4x4_OriginFromMatrix(&obj->mat, obj->pos);
 	obj->modelid = e->modelid;
 	obj->textureid = e->texturegroupid;
 	obj->shaderid = e->shaderid;
@@ -226,7 +282,9 @@ int addEntityToWorld(int entityid){
 	memcpy(obj->bboxp, e->bboxp, 24 * sizeof(vec_t));
 	obj->status = 1;
 
-	return addObjectToWorld(obj);
+	int returnval = addObjectToWorld(obj);
+	free(obj);
+	return returnval;
 //	return TRUE;
 }
 

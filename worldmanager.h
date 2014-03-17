@@ -33,7 +33,7 @@ typedef struct worldleaf_s{
 	vec_t bbox[6];
 	vec_t bboxp[24];
 	//todo actual list of shit and a vao
-	int numObjects;
+	int numobjects;
 	worldobject_t * list;
 	float size; // ease
 } worldleaf_t;
