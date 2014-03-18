@@ -173,6 +173,10 @@ worldleaf_t * createWorldLeaf(int depth, vec2_t center){
 	leaf->center[0] = center[0];
 	leaf->center[1] = center[1];
 	leaf->size = (float)WORLDMAXSIZE / (float)(2<<depth);
+//	leaf->bbox[0] = 0.0;
+//	leaf->bbox[1] = 0.0;
+//	leaf->bbox[4] = 0.0;
+//	leaf->bbox[5] = 0.0;
 	leaf->bbox[0] = center[0] + leaf->size;
 	leaf->bbox[1] = center[0] - leaf->size;
 	leaf->bbox[2] = 0.0;
@@ -203,12 +207,12 @@ int addObjectToLeaf(worldobject_t * o, worldleaf_t *l){
 //		l->bbox[4] = o->bbox[4];
 //		l->bbox[5] = o->bbox[5];
 	} else {
-		if(o->bbox[2] > l->bbox[2]){
-			l->bbox[2] = o->bbox[2];
-		}
-		if(o->bbox[3] < l->bbox[3]){
-			l->bbox[3] = o->bbox[3];
-		}
+//		if(o->bbox[0] > l->bbox[0])l->bbox[0] = o->bbox[0];
+//		if(o->bbox[1] < l->bbox[1])l->bbox[1] = o->bbox[1];
+		if(o->bbox[2] > l->bbox[2])l->bbox[2] = o->bbox[2];
+		if(o->bbox[3] < l->bbox[3])l->bbox[3] = o->bbox[3];
+//		if(o->bbox[4] > l->bbox[4])l->bbox[4] = o->bbox[4];
+//		if(o->bbox[5] < l->bbox[5])l->bbox[5] = o->bbox[5];
 	}
 	getBBoxpFromBBox(l->bbox, l->bboxp);
 	l->numobjects++;
@@ -246,9 +250,12 @@ int walkAndAddObject(worldobject_t * o, worldleaf_t * l){
 			walkAndAddObject(o, l->children[intspace]);
 		}
 		//should figure out top and bottom bounds now...
-//		if(l->bbox[0] < l->children[intspace]->bbox[0]) consolePrintf("bboxbig\n");
+//		if(l->bbox[0] < l->children[intspace]->bbox[0]) l->bbox[0] = l->children[intspace]->bbox[0];
+//		if(l->bbox[1] > l->children[intspace]->bbox[1]) l->bbox[1] = l->children[intspace]->bbox[1];
 		if(l->bbox[2] < l->children[intspace]->bbox[2]) l->bbox[2] = l->children[intspace]->bbox[2];
 		if(l->bbox[3] > l->children[intspace]->bbox[3]) l->bbox[3] = l->children[intspace]->bbox[3];
+//		if(l->bbox[4] < l->children[intspace]->bbox[4]) l->bbox[4] = l->children[intspace]->bbox[4];
+//		if(l->bbox[5] > l->children[intspace]->bbox[5]) l->bbox[5] = l->children[intspace]->bbox[5];
 		//should recalc bboxp now
 		getBBoxpFromBBox(l->bbox, l->bboxp);
 		//todo i can make a more efficient way of doing this, only updating the y values of the points
