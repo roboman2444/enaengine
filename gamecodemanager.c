@@ -115,16 +115,6 @@ int initGameCodeSystem(void){
 		enttinydragon->texturegroupid = 0;//findtexturegroupidByName("coil");
 		enttinydragon->attachmentid = findEntityByNameRINT("coil");
 		enttinydragon->shaderperm = 2;
-/*
-	enttinydragon = addEntityRPOINT("worldtest");
-		enttinydragon->type = 2;
-		enttinydragon->scale = 5.0;
-		enttinydragon->needsmatupdate = TRUE;
-		enttinydragon->shaderid = createAndAddShaderRINT("staticmodel");
-		enttinydragon->modelid = createAndAddModelRINT("apooz");
-		enttinydragon->texturegroupid = createAndAddTexturegroupRINT("kamen");
-		enttinydragon->shaderperm = 4;
-*/
 	enttinydragon = addEntityRPOINT("tinydragon");
 		enttinydragon->type = 2;
 		enttinydragon->pos[2] = -3.0;
@@ -138,19 +128,7 @@ int initGameCodeSystem(void){
 		enttinydragon->attachmentid = findEntityByNameRINT("coil");
 		enttinydragon->shaderperm = 2;
 	int i;
-/*
-	for(i = 0; i < 34; i++){
-		enttinydragon = addEntityRPOINT("hardball");
-		enttinydragon->type = 2;
-		enttinydragon->pos[0] = i*10.0;
-		enttinydragon->pos[2] = i*10.0;
-		enttinydragon->scale = 1.0;
-		enttinydragon->needsmatupdate = TRUE;
-		enttinydragon->modelid = createAndAddModelRINT("hardball");
-		enttinydragon->shaderid = createAndAddShaderRINT("staticmodel");
-		enttinydragon->texturegroupid = 0;//findtexturegroupidByName("coil");
-	}
-*/
+
 	int prevatid = 0;
 	for(i = 0; i < 100; i++){
 		enttinydragon = addEntityRPOINT("bunny");
@@ -158,9 +136,9 @@ int initGameCodeSystem(void){
 		enttinydragon->pos[0] = 5.0;
 		enttinydragon->pos[2] = -2.0;
 		enttinydragon->anglevel[1] = 20.0;
-		enttinydragon->scale = 0.1;
+		enttinydragon->scale = 1.0;
 		enttinydragon->needsmatupdate = TRUE;
-		enttinydragon->modelid = createAndAddModelRINT("bunny");
+		enttinydragon->modelid = createAndAddModelRINT("cube");
 //		enttinydragon->modelid = createAndAddModelRINT("coil");
 		enttinydragon->shaderid = createAndAddShaderRINT("staticmodel");
 		enttinydragon->texturegroupid = createAndAddTexturegroupRINT("bunny");
@@ -168,8 +146,51 @@ int initGameCodeSystem(void){
 		enttinydragon->attachmentid = prevatid;
 		prevatid = enttinydragon->myid;
 	}
-//	deleteEntity(findEntityByNameRINT("hat"));
-//	deleteEntity(tidhat);
+
+
+	srand(103010);
+	for(i = 0; i < 100000; i++){
+		enttinydragon = addEntityRPOINT("cube");
+		enttinydragon->type = 2;
+		enttinydragon->pos[0] = (rand()/(double)RAND_MAX -0.5) * 10000.0;
+		enttinydragon->pos[2] = (rand()/(double)RAND_MAX -0.5) * 10000.0;
+		enttinydragon->angle[1] = 90.0;
+
+		enttinydragon->scale = (rand()/(double)RAND_MAX) * 1.0;
+		enttinydragon->needsmatupdate = TRUE;
+		enttinydragon->modelid = createAndAddModelRINT("coil");
+		enttinydragon->shaderid = createAndAddShaderRINT("staticmodel");
+		enttinydragon->texturegroupid = createAndAddTexturegroupRINT("coil");
+		enttinydragon->shaderperm = 4;
+
+
+		calcEntAttachMat(enttinydragon); // needed because i add it to the world, and the mat needs to be updated beforehand
+		recalcEntBBox(enttinydragon); // needed because this is added to the world before the gamecode runs
+
+		addEntityToWorld(enttinydragon->myid);
+		deleteEntity(enttinydragon->myid);
+
+	}
+	for(i = 0; i < 100000; i++){
+		enttinydragon = addEntityRPOINT("cube");
+		enttinydragon->type = 2;
+		enttinydragon->pos[0] = (rand()/(double)RAND_MAX -0.5) * 10000.0;
+		enttinydragon->pos[2] = (rand()/(double)RAND_MAX -0.5) * 10000.0;
+
+		enttinydragon->scale = (rand()/(double)RAND_MAX) * 1.0;
+		enttinydragon->needsmatupdate = TRUE;
+		enttinydragon->modelid = createAndAddModelRINT("cube");
+		enttinydragon->shaderid = createAndAddShaderRINT("staticmodel");
+
+
+		calcEntAttachMat(enttinydragon); // needed because i add it to the world, and the mat needs to be updated beforehand
+		recalcEntBBox(enttinydragon); // needed because this is added to the world before the gamecode runs
+
+		addEntityToWorld(enttinydragon->myid);
+		deleteEntity(enttinydragon->myid);
+
+	}
+
 
 
 	gamecodeOK = TRUE;

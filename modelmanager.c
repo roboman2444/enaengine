@@ -140,7 +140,7 @@ float getSphereFromInterleavedMesh(GLfloat * interleavedbuffer, GLuint vertcount
 //	consolePrintf("spheresize = %f\n", size);
 	return size;
 }
-void getBBoxFromInterleavedMesh(GLfloat * interleavedbuffer, GLuint vertcount, int stride, vec_t * bbox){
+int getBBoxFromInterleavedMesh(GLfloat * interleavedbuffer, GLuint vertcount, int stride, vec_t * bbox){
 	if(stride < 5) return 0;
 
 	bbox[0] = -3.4028e+38;
@@ -166,6 +166,7 @@ void getBBoxFromInterleavedMesh(GLfloat * interleavedbuffer, GLuint vertcount, i
 		consolePrintf("bbox %i:%f\n", i, bbox[i]);
 	}
 */
+	return TRUE;
 }
 
 int normalizeNormalsFromInterleavedMesh(GLfloat * interleavedbuffer, GLuint vertcount, int stride){
