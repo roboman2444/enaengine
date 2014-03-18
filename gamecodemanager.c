@@ -149,11 +149,11 @@ int initGameCodeSystem(void){
 
 
 	srand(103010);
-	for(i = 0; i < 100000; i++){
+	for(i = 0; i < 200000; i++){
 		enttinydragon = addEntityRPOINT("cube");
 		enttinydragon->type = 2;
-		enttinydragon->pos[0] = (rand()/(double)RAND_MAX -0.5) * 10000.0;
-		enttinydragon->pos[2] = (rand()/(double)RAND_MAX -0.5) * 10000.0;
+		enttinydragon->pos[0] = (rand()/(double)RAND_MAX -0.5) * 16384.0;
+		enttinydragon->pos[2] = (rand()/(double)RAND_MAX -0.5) * 16384.0;
 		enttinydragon->angle[1] = 90.0;
 
 		enttinydragon->scale = (rand()/(double)RAND_MAX) * 1.0;
@@ -171,13 +171,13 @@ int initGameCodeSystem(void){
 		deleteEntity(enttinydragon->myid);
 
 	}
-	for(i = 0; i < 100000; i++){
+	for(i = 0; i < 200000; i++){
 		enttinydragon = addEntityRPOINT("cube");
 		enttinydragon->type = 2;
-		enttinydragon->pos[0] = (rand()/(double)RAND_MAX -0.5) * 10000.0;
-		enttinydragon->pos[2] = (rand()/(double)RAND_MAX -0.5) * 10000.0;
+		enttinydragon->pos[0] = (rand()/(double)RAND_MAX -0.5) * 16384.0;
+		enttinydragon->pos[2] = (rand()/(double)RAND_MAX -0.5) * 16384.0;
 
-		enttinydragon->scale = (rand()/(double)RAND_MAX) * 1.0;
+		enttinydragon->scale = (rand()/(double)RAND_MAX) * 2.0;
 		enttinydragon->needsmatupdate = TRUE;
 		enttinydragon->modelid = createAndAddModelRINT("cube");
 		enttinydragon->shaderid = createAndAddShaderRINT("staticmodel");

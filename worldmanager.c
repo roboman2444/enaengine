@@ -173,16 +173,16 @@ worldleaf_t * createWorldLeaf(int depth, vec2_t center){
 	leaf->center[0] = center[0];
 	leaf->center[1] = center[1];
 	leaf->size = (float)WORLDMAXSIZE / (float)(2<<depth);
-//	leaf->bbox[0] = 0.0;
-//	leaf->bbox[1] = 0.0;
-//	leaf->bbox[4] = 0.0;
-//	leaf->bbox[5] = 0.0;
+//	leaf->bbox[0] = center[0];
+//	leaf->bbox[1] = center[0];
+//	leaf->bbox[4] = center[1];
+//	leaf->bbox[5] = center[1];
 	leaf->bbox[0] = center[0] + leaf->size;
 	leaf->bbox[1] = center[0] - leaf->size;
-	leaf->bbox[2] = 0.0;
-	leaf->bbox[3] = 0.0;
 	leaf->bbox[4] = center[1] + leaf->size;
 	leaf->bbox[5] = center[1] - leaf->size;
+	leaf->bbox[2] = 0.0;
+	leaf->bbox[3] = 0.0;
 	getBBoxpFromBBox(leaf->bbox, leaf->bboxp);
 	//todo
 	return leaf;
