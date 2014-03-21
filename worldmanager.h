@@ -19,6 +19,8 @@ typedef struct worldobject_s{
 	vec3_t pos;
 //	float * interleaveddata;
 	char status;
+	unsigned char treedepth;
+	unsigned int leafpos;
 
 //	GLuint vertstart; //useful for moving
 //	GLuint facestart; //useful for moving

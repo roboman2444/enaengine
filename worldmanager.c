@@ -26,6 +26,7 @@ worldleaf_t * root;
 		array of the worldFileObject_t struct
 */
 typedef struct worldFileHeader_s {
+	unsigned int version;
 	unsigned int filesize;
 	unsigned int modellistlength;  // bytes
 	unsigned int modellistcount;   // count
@@ -42,27 +43,12 @@ typedef struct worldFileObject_s {
 	unsigned int shaderindice;
 	int shaderperm;
 }worldFileObject_t;
-/*
-typedef struct worldTextureQueue_s {
-	int texid;
-	worldobject_t * list;
-} worldTextureQueue_t;
-*/
-char **loadWorldNameList(char *buf, unsigned int bc, unsigned int nc){
-	char  **namelist = malloc(nc * sizeof(char *));
-	unsigned int namei, bytei = 0;
-	for(namei = 0; namei < nc; namei++){
-		namelist[namei] = buf+bytei;
-		while(namelist[bytei]){
-			bytei++; // look for next /0
-			if(bytei > bc){
-				free(namelist);
-				return FALSE;
-			}
-		}
-		bytei++; //bump forward once
-	}
-	return namelist;
+
+int saveWorld(char * filename){
+	FILE *f = fopen(filename,"wb");
+	if(!f) return FALSE;
+
+	return TRUE;
 }
 int recalcObjBBox(worldobject_t *o){
 	model_t * m = returnModelById(o->modelid);
@@ -88,6 +74,25 @@ int recalcObjBBox(worldobject_t *o){
 	}
 	return TRUE;
 }
+
+
+
+char **loadWorldNameList(char *buf, unsigned int bc, unsigned int nc){
+	char  **namelist = malloc(nc * sizeof(char *));
+	unsigned int namei, bytei = 0;
+	for(namei = 0; namei < nc; namei++){
+		namelist[namei] = buf+bytei;
+		while(namelist[bytei]){
+			bytei++; // look for next /0
+			if(bytei > bc){
+				free(namelist);
+				return FALSE;
+			}
+		}
+		bytei++; //bump forward once
+	}
+	return namelist;
+}
 int loadWorld(char * filename){
 	FILE *f = fopen(filename, "rb");
 	if(!f) return FALSE;
@@ -99,6 +104,7 @@ int loadWorld(char * filename){
 	char *buf = 0;
 
 	if(fread(&header, 1, sizeof(header), f) != sizeof(header))goto error;
+	if(header.version != 1)goto error; //todo different version handles
 	if(header.shaderlistlength + header.modellistlength + header.texturelistlength + (header.objectlistcount * sizeof(worldFileObject_t)) != header.filesize) goto error;
 
 	buf = malloc(header.filesize);
@@ -196,6 +202,102 @@ int initWorldSystem(void){
 	worldOK = TRUE;
 	return TRUE;
 }
+int walkAndDeleteObject(worldleaf_t * l, worldobject_t * o){
+	if(o->treedepth > l->treedepth){
+		int xspace = FALSE;
+		int yspace = FALSE;
+		if(o->pos[0] > l->center[0]) xspace = TRUE;
+		if(o->pos[2] > l->center[1]) yspace = TRUE;
+		worldleaf_t * child = l->children[xspace + 2*yspace];
+		if(!child) return FALSE;
+		int r = walkAndDeleteObject(child, o);
+		if(!child->numobjects){
+			int c;
+			for(c = 0; c < 4 && child->children[c]; c++); // make sure all are null
+			if(c == 4) free(child); //easier than doing the normal delete
+		}
+		if(r>1){
+			r = 0;
+			int i;
+			for(i = 0; i < 6; i++){
+				if(child->bbox[i] == l->bbox[i]) r |= 2<<i;
+			}
+			if(r){
+				//todo
+				//recalc bbox
+				return r;
+			} else {
+				return TRUE;
+			}
+		}
+		return r;
+	} else if(o->treedepth == l->treedepth){
+		int arraypos = o->leafpos;
+		if(arraypos >= l->numobjects) return FALSE;
+		worldobject_t * listobj = &l->list[arraypos];
+		//check to make sure they match, either if the pointers are the same, or if the data match
+		if(o != listobj && memcmp(o, listobj, sizeof(worldobject_t))){
+			return FALSE;
+		}
+		// in leaf containing object
+		int i, r = 0;
+		//check if this object is the edge of the bbox
+		for(i = 0; i < 6; i++){
+			if(o->bbox[i] == l->bbox[i]) r |= 2<<i;
+		}
+		l->numobjects--;
+		*listobj = l->list[l->numobjects]; // replace it with the one at the end
+		l->list = realloc(l->list, l->numobjects * sizeof(worldobject_t)); //resize array
+		if(r){
+			//todo
+			// recalc bbox
+		}
+		return r;
+
+	//todo
+	}
+	return FALSE;
+}
+int deleteObject(worldobject_t * o){
+	if(!o) return FALSE;
+	return walkAndDeleteObject(root, o);
+}
+
+worldleaf_t * walkAndFindObject(worldleaf_t * l, worldobject_t * o){
+	if(o->treedepth > l->treedepth){
+		int xspace = FALSE;
+		int yspace = FALSE;
+		if(o->pos[0] > l->center[0]) xspace = TRUE;
+		if(o->pos[2] > l->center[1]) yspace = TRUE;
+		int intspace = xspace + 2*yspace;
+		if(l->children[intspace]){
+			return walkAndFindObject(l->children[intspace], o);
+		}
+	} else if(o->treedepth == l->treedepth){
+		//i guess i can just return the leaf now... it SHOULD be the leaf containing the obj
+		return l;
+	}
+	return FALSE;
+}
+worldleaf_t * findObject(worldobject_t * o){
+	if(!o) return FALSE;
+	return walkAndFindObject(root, o);
+}
+int deleteLeaf(worldleaf_t *l){
+	if(!l) return FALSE;
+	int i, count = 1;
+	for(i = 0; i < 4; i++){
+		count += deleteLeaf(l->children[i]);
+	}
+	if(l->list)free(l->list);
+	free(l);
+	return(count);
+}
+int deleteWorld(void){
+	int leafcount = deleteLeaf(root);
+	root = 0;
+	return leafcount;
+}
 int addObjectToLeaf(worldobject_t * o, worldleaf_t *l){
 	//todo
 	//if first object in, set anyway
@@ -215,6 +317,8 @@ int addObjectToLeaf(worldobject_t * o, worldleaf_t *l){
 //		if(o->bbox[5] < l->bbox[5])l->bbox[5] = o->bbox[5];
 	}
 	getBBoxpFromBBox(l->bbox, l->bboxp);
+	o->treedepth = l->treedepth;
+	o->leafpos = l->numobjects;
 	l->numobjects++;
 	l->list = realloc(l->list, l->numobjects * sizeof(worldobject_t));
 	l->list[l->numobjects-1] = *o;
@@ -265,7 +369,6 @@ int walkAndAddObject(worldobject_t * o, worldleaf_t * l){
 	return FALSE; // should never hit
 }
 int addObjectToWorld(worldobject_t * o){
-	//transform points
 	model_t * m = returnModelById(o->modelid);
 	if(!m) return FALSE;
 	int vertcount = m->numverts;
@@ -294,7 +397,7 @@ int addEntityToWorld(int entityid){
 	memcpy(obj->bboxp, e->bboxp, 24 * sizeof(vec_t));
 	obj->status = 1;
 
-	int returnval = addObjectToWorld(obj);
+	int returnval = walkAndAddObject(obj, root);
 	free(obj);
 	return returnval;
 //	return TRUE;
