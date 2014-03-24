@@ -133,6 +133,7 @@ int loadLeafIntoQueue(worldleaf_t * l, renderbatche_t * batch, viewport_t *v){
 	return mynum;
 }
 int loadWorldIntoQueue(renderbatche_t * batch, viewport_t *v){
+	if(!root ||  !worldNumObjects) return FALSE;
 	return loadLeafIntoQueue(root, batch, v);
 }
 int loadEntitiesIntoQueue(renderbatche_t * batch, viewport_t * v){
@@ -271,6 +272,6 @@ int glMainDraw(void){
 	drawEntitiesR(&b);
 	cleanupRenderbatche(&b);
 	swapBuffers();
-	consolePrintf("Faces: %li Verts: %li Objects: %li\n", totalface, totalvert, totalcount);
+//	consolePrintf("Faces: %li Verts: %li Objects: %li\n", totalface, totalvert, totalcount);
 	return TRUE;
 }

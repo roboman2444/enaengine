@@ -29,7 +29,7 @@ int initGameCodeSystem(void){
 	}
 	setupGameCodeCallbacks();
 
-
+/*
 	entity_t * entdragon = addEntityRPOINT("dragon");
 		entdragon->type = 2;
 		entdragon->modelid = createAndAddModelRINT("dragon");
@@ -56,6 +56,7 @@ int initGameCodeSystem(void){
 
 		addEntityToWorld(entteapot->myid);
 		deleteEntity(entteapot->myid);
+*/
 	entity_t * enthat = addEntityRPOINT("hat");
 		enthat->type = 2;
 		enthat->pos[1] = 8.7;
@@ -147,7 +148,7 @@ int initGameCodeSystem(void){
 		prevatid = enttinydragon->myid;
 	}
 
-
+/*
 	srand(103010);
 	for(i = 0; i < 200000; i++){
 		enttinydragon = addEntityRPOINT("cube");
@@ -190,7 +191,11 @@ int initGameCodeSystem(void){
 		deleteEntity(enttinydragon->myid);
 
 	}
-
+*/
+//	saveWorld("world2");
+//	deleteWorld();
+	loadWorld("world");
+	loadWorld("world2");
 
 
 	gamecodeOK = TRUE;

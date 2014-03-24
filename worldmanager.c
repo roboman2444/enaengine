@@ -9,11 +9,12 @@
 #include "entitymanager.h"
 #include "console.h"
 
-extern int createAndAddTexturegroupRINT(char * name);
-extern int createAndAddShaderRINT(char * name);
+#include "texturemanager.h"
+#include "shadermanager.h"
 
 int worldOK = 0;
 worldleaf_t * root;
+unsigned int worldNumObjects = 0;
 /* file structure description
 	header
 	model list
@@ -44,11 +45,207 @@ typedef struct worldFileObject_s {
 	int shaderperm;
 }worldFileObject_t;
 
-int saveWorld(char * filename){
-	FILE *f = fopen(filename,"wb");
-	if(!f) return FALSE;
+int saveWorldPopList(int * count, worldobject_t ** list, worldleaf_t * leaf){
 
+	if(!leaf) return FALSE;
+//	consolePrintf("count: %i\n", *count);
+
+	int i;
+	for(i = 0; i < leaf->numobjects && *count < worldNumObjects; i++){
+		if(!leaf->list[i].modelid)continue;
+		list[*count] = &leaf->list[i];
+		*count = *count+1;
+	}
+	for(i = 0; i < 4; i++){
+		saveWorldPopList(count, list, leaf->children[i]);
+	}
 	return TRUE;
+}
+
+int saveWorld(char * filename){
+	consolePrintf("Saving %i objects to %s\n", worldNumObjects, filename);
+	if(!root){
+		consolePrintf("ERROR: No world to save!\n");
+		return FALSE;
+	}
+	if(!worldNumObjects){
+		consolePrintf("ERROR: No world to save!\n");
+		return FALSE;
+	}
+	FILE *f = fopen(filename,"wb");
+	if(!f){
+		consolePrintf("ERROR: could not open file %s for writing\n", filename);
+		return FALSE;
+	}
+	worldFileHeader_t header;
+	header.version = 1;
+	header.objectlistcount = worldNumObjects;
+	worldobject_t ** worldlist = malloc(worldNumObjects * sizeof(worldobject_t *));
+	if(!worldlist){
+		return FALSE;
+	}
+	//populate the list
+	int count = 0;
+	saveWorldPopList(&count, worldlist, root);
+	if(count != worldNumObjects){
+		free(worldlist);
+		consolePrintf("ERROR: leaflist prop failed\n");
+		return FALSE;
+	}
+	worldFileObject_t * objlist = malloc(count*sizeof(worldFileObject_t));
+	memset(objlist, 0, sizeof(worldFileObject_t));
+
+	int modelcount = 0;
+	int texturecount = 0;
+	int shadercount = 0;
+	int *modellist = 0;
+	int *shaderlist = 0;
+	int *texturelist = 0;
+	int i = 0;
+	for(i = 0; i < count; i++){
+//		consolePrintf("count: %i i: %i\n", count, i);
+
+		worldobject_t * testobj = worldlist[i];
+		objlist[i].mat = testobj->mat;
+		//do model texture indice stuff here
+		if(testobj->modelid){
+			int j;
+			for(j = 0; j < modelcount; j++){
+				if(testobj->modelid == modellist[j]){
+					objlist[i].modelindice = j+1;
+					break;
+				}
+			}
+			if(j == modelcount){
+				modelcount++;
+				modellist = realloc(modellist, modelcount * sizeof(int));
+				modellist[j] = testobj->modelid;
+				objlist[i].modelindice = modelcount;
+			}
+		} else {
+			objlist[i].modelindice = 0;
+		}
+		if(testobj->textureid){
+			int j;
+			for(j = 0; j < texturecount; j++){
+				if(testobj->textureid == texturelist[j]){
+					objlist[i].textureindice = j+1;
+					break;
+				}
+			}
+			if(j == texturecount){
+				texturecount++;
+				texturelist = realloc(texturelist, texturecount * sizeof(int));
+				texturelist[j] = testobj->textureid;
+				objlist[i].textureindice = texturecount;
+			}
+		} else {
+			objlist[i].textureindice = 0;
+		}
+		if(testobj->shaderid){
+			int j;
+			for(j = 0; j < shadercount; j++){
+				if(testobj->shaderid == shaderlist[j]){
+					objlist[i].shaderindice = j+1;
+					break;
+				}
+			}
+			if(j == shadercount){
+				shadercount++;
+				shaderlist = realloc(shaderlist, shadercount * sizeof(int));
+				shaderlist[j] = testobj->shaderid;
+				objlist[i].shaderindice = shadercount;
+			}
+			objlist[i].shaderperm = testobj->shaderperm;
+		} else {
+			objlist[i].shaderindice = 0;
+			objlist[i].shaderperm = 0;
+		}
+	}
+	free(worldlist); // dont need anymore
+	header.objectlistcount = count;
+	header.modellistcount = modelcount;
+	header.texturelistcount = texturecount;
+	header.shaderlistcount = shadercount;
+	header.modellistlength = 0;
+	header.shaderlistlength = 0;
+	header.texturelistlength = 0;
+
+	char *modelliststring = 0;
+	char *shaderliststring = 0;
+	char *textureliststring = 0;
+
+	for(i = 0; i < header.modellistcount; i++){
+		model_t * m = returnModelById(modellist[i]);
+		if(!m) continue;
+		int jlen, tlen = header.modellistlength;
+		header.modellistlength += strlen(m->name)+1;
+		modelliststring = realloc(modelliststring, header.modellistlength);
+		if(i){
+			//manual concat ftw
+			for(jlen = 0; tlen < header.modellistlength; tlen++, jlen++){
+				modelliststring[tlen] = m->name[jlen];
+			}
+//			sprintf(modelliststring, "%s\0%s", modelliststring, m->name);
+//			strcat(modelliststring, m->name);
+		} else {
+			strcpy(modelliststring, m->name);
+		}
+	}
+	for(i = 0; i < header.texturelistcount; i++){
+		texturegroup_t * t = returnTexturegroupById(texturelist[i]);
+		if(!t) continue;
+		int jlen, tlen = header.texturelistlength;
+		header.texturelistlength += strlen(t->name)+1;
+		textureliststring = realloc(textureliststring, header.texturelistlength);
+		if(i){
+			for(jlen = 0; tlen < header.texturelistlength; tlen++, jlen++){
+				textureliststring[tlen] = t->name[jlen];
+			}
+
+//			sprintf(textureliststring, "%s\0%s", textureliststring, t->name);
+//			strcat(textureliststring, t->name);
+		} else {
+			strcpy(textureliststring, t->name);
+		}
+
+	}
+	for(i = 0; i < header.shaderlistcount; i++){
+		shaderprogram_t * s = returnShaderById(shaderlist[i]);
+		if(!s) continue;
+		int jlen, tlen = header.shaderlistlength;
+		header.shaderlistlength += strlen(s->name)+1;
+		shaderliststring = realloc(shaderliststring, header.shaderlistlength);
+		if(i){
+			for(jlen = 0; tlen < header.shaderlistlength; tlen++, jlen++){
+				shaderliststring[tlen] = s->name[jlen];
+			}
+
+//			sprintf(shaderliststring, "%s\0%s", shaderliststring, s->name);
+//			strcat(shaderliststring, s->name);
+		} else {
+			strcpy(shaderliststring, s->name);
+		}
+
+
+	}
+
+	header.filesize = header.shaderlistlength + header.modellistlength + header.texturelistlength + (header.objectlistcount * sizeof(worldFileObject_t));
+
+//	now i can start to write
+	fwrite(&header, 1, sizeof(worldFileHeader_t), f);
+	fwrite(modelliststring, 1, header.modellistlength, f);
+	fwrite(textureliststring, 1, header.texturelistlength, f);
+	fwrite(shaderliststring, 1, header.shaderlistlength, f);
+	fwrite(objlist, 1, header.objectlistcount * sizeof(worldFileObject_t), f);
+
+
+	if(modelliststring)free(modelliststring);
+	if(textureliststring)free(textureliststring);
+	if(shaderliststring)free(shaderliststring);
+	free(objlist);
+	fclose(f);
+	return header.filesize;
 }
 int recalcObjBBox(worldobject_t *o){
 	model_t * m = returnModelById(o->modelid);
@@ -82,20 +279,32 @@ char **loadWorldNameList(char *buf, unsigned int bc, unsigned int nc){
 	unsigned int namei, bytei = 0;
 	for(namei = 0; namei < nc; namei++){
 		namelist[namei] = buf+bytei;
-		while(namelist[bytei]){
+/*		while(namelist[bytei]){
 			bytei++; // look for next /0
 			if(bytei > bc){
 				free(namelist);
 				return FALSE;
 			}
 		}
+*/
+		while(buf[bytei]){
+			bytei++; // look for next /0
+			if(bytei > bc){
+				free(namelist);
+				return FALSE;
+			}
+		}
+
 		bytei++; //bump forward once
 	}
 	return namelist;
 }
 int loadWorld(char * filename){
 	FILE *f = fopen(filename, "rb");
-	if(!f) return FALSE;
+	if(!f){
+		consolePrintf("opening file:%s failed\n", filename);
+		return FALSE;
+	}
 	worldFileHeader_t header;
 
 	char **modelnamelist = 0;
@@ -148,7 +357,7 @@ int loadWorld(char * filename){
 		if(!textureindice) obj->textureid = 0;
 		else obj->textureid = createAndAddTexturegroupRINT(texturenamelist[textureindice-1]);
 		if(!shaderindice) obj->shaderid = 0;
-		else obj->shaderid = createAndAddShaderRINT(modelnamelist[shaderindice-1]);
+		else obj->shaderid = createAndAddShaderRINT(shadernamelist[shaderindice-1]);
 		obj->shaderperm = objbuf[i].shaderperm;
 		recalcObjBBox(obj);
 		obj->status = 1;
@@ -161,6 +370,8 @@ int loadWorld(char * filename){
 	free(modelnamelist);
 	free(buf);
 	fclose(f);
+	//maybe check if worldNumObjects = header.objectlistcount...
+	consolePrintf("%i objects loaded from %s\n", header.objectlistcount, filename);
 	return TRUE;
 
 	error:
@@ -252,6 +463,7 @@ int walkAndDeleteObject(worldleaf_t * l, worldobject_t * o){
 			//todo
 			// recalc bbox
 		}
+		worldNumObjects--;
 		return r;
 
 	//todo
@@ -290,12 +502,15 @@ int deleteLeaf(worldleaf_t *l){
 		count += deleteLeaf(l->children[i]);
 	}
 	if(l->list)free(l->list);
+	worldNumObjects -= l->numobjects;
 	free(l);
 	return(count);
 }
 int deleteWorld(void){
 	int leafcount = deleteLeaf(root);
 	root = 0;
+	worldNumObjects = 0;
+	if(!initWorldSystem())return FALSE;
 	return leafcount;
 }
 int addObjectToLeaf(worldobject_t * o, worldleaf_t *l){
@@ -322,6 +537,7 @@ int addObjectToLeaf(worldobject_t * o, worldleaf_t *l){
 	l->numobjects++;
 	l->list = realloc(l->list, l->numobjects * sizeof(worldobject_t));
 	l->list[l->numobjects-1] = *o;
+	worldNumObjects++;
 //	free(o);
 	return TRUE;
 }

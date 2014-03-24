@@ -25,41 +25,56 @@ int addEntityToTexturebatche(entity_t * ent, texturebatche_t * batch){
 	if(!batch) return FALSE;
 	int count = batch->count;
 	int modelid = ent->modelid;
+//	modelbatche_t * b = batch->modelbatch;
 	if(!batch->modelbatch) count = 0;
+//	if(!b) count = 0;
 	int i;
 	for(i = 0; i < count; i++){
 		if(batch->modelbatch[i].modelid == modelid){
+//		if(b[i].modelid == modelid){
 			return addEntityToModelbatche(ent, &batch->modelbatch[i]);
+	//		return addEntityToModelbatche(ent, &b[i]);
 		}
 	}
 	//doesnt have texture in it
 	batch->count++;
 	batch->modelbatch = realloc(batch->modelbatch, batch->count * sizeof(modelbatche_t));
+//	b = batch->modelbatch = realloc(b, batch->count * sizeof(modelbatche_t));
 	batch->modelbatch[count].count = 0;
 	batch->modelbatch[count].modelid = modelid;
 	batch->modelbatch[count].matlist = 0;
+//	b->count = 0;
+//	b->modelid = modelid;
+//	b->matlist = 0;
 
 	return addEntityToModelbatche(ent, &batch->modelbatch[count]);
+//	return addEntityToModelbatche(ent, &b[count]);
 }
 int addEntityToShaderbatche(entity_t * ent, shaderbatche_t * batch){
 	if(!batch) return FALSE;
 	int count = batch->count;
 	int textureid = ent->texturegroupid;
+//	texturebatche_t * b = batch->texturebatch;
 	if(!batch->texturebatch) count = 0;
+//	if(!b) count = 0;
 	int i;
 	for(i = 0; i < count; i++){
 		if(batch->texturebatch[i].textureid == textureid){
+//		if(b[i].textureid == textureid){
 			return addEntityToTexturebatche(ent, &batch->texturebatch[i]);
+//			return addEntityToTexturebatche(ent, &b[i]);
 		}
 	}
 	//doesnt have shader in it
 	batch->count++;
 	batch->texturebatch = realloc(batch->texturebatch, batch->count * sizeof(texturebatche_t));
+//	batch->texturebatch = realloc(b, batch->count * sizeof(texturebatche_t));
 	batch->texturebatch[count].count = 0;
 	batch->texturebatch[count].textureid = textureid;
 	batch->texturebatch[count].modelbatch = 0;
 
 	return addEntityToTexturebatche(ent, &batch->texturebatch[count]);
+//	return addEntityToTexturebatche(ent, &b[count]);
 }
 
 int addEntityToRenderbatche(entity_t * ent, renderbatche_t * batch){
@@ -67,11 +82,15 @@ int addEntityToRenderbatche(entity_t * ent, renderbatche_t * batch){
 	int count = batch->count;
 	int shaderid = ent->shaderid;
 	int shaderperm = ent->shaderperm;
+//	shaderbatche_t *b = batch->shaderbatch;
 	if(!batch->shaderbatch) count = 0;
+//	if(!b) count = 0;
 	int i;
 	for(i = 0; i < count; i++){
 		if(batch->shaderbatch[i].shaderid == shaderid && batch->shaderbatch[i].shaderperm == shaderperm){
+//		if(b[i].shaderid == shaderid && b[i].shaderperm == shaderperm){
 			return addEntityToShaderbatche(ent, &batch->shaderbatch[i]);
+//			return addEntityToShaderbatche(ent, &b[i]);
 		}
 	}
 	//doesnt have shader in it
@@ -83,6 +102,7 @@ int addEntityToRenderbatche(entity_t * ent, renderbatche_t * batch){
 	batch->shaderbatch[count].texturebatch = 0;
 
 	return addEntityToShaderbatche(ent, &batch->shaderbatch[count]);
+//	return addEntityToShaderbatche(ent, &b[count]);
 }
 
 
@@ -106,21 +126,31 @@ int addObjectToTexturebatche(worldobject_t * obj, texturebatche_t * batch){
 	if(!batch) return FALSE;
 	int count = batch->count;
 	int modelid = obj->modelid;
+//	modelbatche_t * b = batch->modelbatch;
 	if(!batch->modelbatch) count = 0;
+//	if(!b) count = 0;
 	int i;
 	for(i = 0; i < count; i++){
 		if(batch->modelbatch[i].modelid == modelid){
+//		if(b[i].modelid == modelid){
 			return addObjectToModelbatche(obj, &batch->modelbatch[i]);
+//			return addObjectToModelbatche(obj, &b[i]);
 		}
 	}
 	//doesnt have texture in it
 	batch->count++;
 	batch->modelbatch = realloc(batch->modelbatch, batch->count * sizeof(modelbatche_t));
+//	batch->modelbatch = realloc(b, batch->count * sizeof(modelbatche_t));
+//	b = batch->modelbatch = realloc(b, batch->count * sizeof(modelbatche_t));
 	batch->modelbatch[count].count = 0;
 	batch->modelbatch[count].modelid = modelid;
 	batch->modelbatch[count].matlist = 0;
+//	b[count].count = 0;
+//	b[count].modelid = modelid;
+//	b[count].matlist = 0;
 
 	return addObjectToModelbatche(obj, &batch->modelbatch[count]);
+//	return addObjectToModelbatche(obj, &b[count]);
 }
 
 

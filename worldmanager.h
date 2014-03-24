@@ -41,7 +41,7 @@ typedef struct worldleaf_s{
 } worldleaf_t;
 
 int worldOK;
-int objectNumber;
+unsigned int worldNumObjects;
 worldleaf_t * root;
 
 int initWorldSystem(void);
@@ -51,5 +51,18 @@ int generateWorldObject(int modelid, int textureid, matrix4x4_t mat);
 int addObjectToWorld(worldobject_t * obj);
 
 int addEntityToWorld(int entityid); //ease of use function
+
+int saveWorld(char * filename);
+int loadWorld(char * filename);
+
+int deleteObject(worldobject_t *o);
+int walkAndDeleteObject(worldleaf_t * l, worldobject_t *o);
+
+worldleaf_t * walkAndFindObject(worldleaf_t * l, worldobject_t * o);
+worldleaf_t * findObject(worldobject_t * o);
+
+
+int deleteLeaf(worldleaf_t *l);
+int deleteWorld(void);
 
 #endif
