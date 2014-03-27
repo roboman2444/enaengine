@@ -1,4 +1,4 @@
-//gloabl includes
+//global includes
 #include <GL/glew.h> //may be unneeded
 #include <GL/gl.h>
 //local includes
@@ -36,7 +36,7 @@ int initGameCodeSystem(void){
 //		entdragon->modelid = createAndAddModelRINT("coil");
 		entdragon->texturegroupid = 0;
 		entdragon->shaderid = createAndAddShaderRINT("staticmodel");
-		entdragon->shaderperm = 1;
+		entdragon->shaderperm = 9;
 
 		recalcEntBBox(entdragon); // needed because this is added to the world before the gamecode runs
 
@@ -50,13 +50,18 @@ int initGameCodeSystem(void){
 //		entteapot->modelid = createAndAddModelRINT("coil");
 		entteapot->shaderid = createAndAddShaderRINT("staticmodel");
 		entteapot->texturegroupid = 0;
+		entteapot->shaderperm = 8;
+
 
 		calcEntAttachMat(entteapot); // needed because i add it to the world, and the mat needs to be updated beforehand
 		recalcEntBBox(entteapot); // needed because this is added to the world before the gamecode runs
 
 		addEntityToWorld(entteapot->myid);
 		deleteEntity(entteapot->myid);
+
+	saveWorld("world");
 */
+
 	entity_t * enthat = addEntityRPOINT("hat");
 		enthat->type = 2;
 		enthat->pos[1] = 8.7;
@@ -147,6 +152,7 @@ int initGameCodeSystem(void){
 		enttinydragon->attachmentid = prevatid;
 		prevatid = enttinydragon->myid;
 	}
+
 
 /*
 	srand(103010);
@@ -253,7 +259,6 @@ int calcEntAttachMat(entity_t * e){ //return value is weather e->mat got changed
 	//			Matrix4x4_CreateFromQuakeEntity(&tempmat, e->pos[0], e->pos[1], e->pos[2], e->angle[0], e->angle[1], e->angle[2], e->scale);
 //				Matrix4x4_CreateFromQuakeEntity(&tempmat, e->pos[0], e->pos[1], e->pos[2], e->angle[0], e->angle[1], e->angle[2], e->scale/attacher->scale);
 				Matrix4x4_CreateFromQuakeEntity(&tempmat, e->pos[0]/attacher->scale, e->pos[1]/attacher->scale, e->pos[2]/attacher->scale, e->angle[0], e->angle[1], e->angle[2], e->scale/attacher->scale);
-				//may need to swap order
 				Matrix4x4_Concat(&e->mat, &attacher->mat, &tempmat);
 
 				return TRUE;
@@ -296,6 +301,7 @@ void gameCodeTick(void){ //todo maybe change to float in seconds
 	}
 	for(i = 0; i <= entityArrayLastTaken; i++){
 		entity_t *e = &entitylist[i];
+		if(!e->type) continue;
 		calcEntAttachMat(e);
 		if(e->needsmatupdate || e->needsbboxupdate) recalcEntBBox(e);
 	}

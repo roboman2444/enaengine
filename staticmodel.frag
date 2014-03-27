@@ -32,4 +32,10 @@ void main(){
 	#else
 		fragColor = vec4(1.0);
 	#endif
+	#ifdef LIGHT
+		vec3 lightnormal = normalize(vec3(1.0, 1.0, 1.0));
+		float n_dot_l = clamp(float(dot(fragnormal, lightnormal)), 0.0, 1.0);
+		//float diffuse = min(max(float(dot(fragnormal, lightnormal)) * 2.0, 0.0), 1.0);
+		fragColor*= n_dot_l;
+	#endif
 }
