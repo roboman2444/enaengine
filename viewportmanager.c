@@ -13,7 +13,7 @@
 int viewportsOK = 0;
 int viewportcount = 0;
 int viewportArrayFirstOpen = 0;
-int viewportArrayLastTaken = 0;
+int viewportArrayLastTaken = -1;
 int viewportArraySize = 0;
 viewport_t *viewportlist;
 

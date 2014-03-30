@@ -15,7 +15,7 @@
 
 int modelcount = 0;
 int modelArrayFirstOpen = 0;
-int modelArrayLastTaken = 0;
+int modelArrayLastTaken = -1;
 int modelArraySize = 0;
 int modelsOK = 0;
 model_t *modellist;

@@ -34,20 +34,20 @@ int setMSAA(int samples){
 	}
 	else{
 		/*if(!msbuf)*/ SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
-//		SDL_GL_GetAttribute(SDL_GL_MULTISAMPLEBUFFERS, &msbuf);
-//		if(!msbuf); //todo cast error
+		//SDL_GL_GetAttribute(SDL_GL_MULTISAMPLEBUFFERS, &msbuf);
+		//if(!msbuf); //todo cast error
 
-//		SDL_GL_GetAttribute(SDL_GL_MULTISAMPLEBUFFERS, &msbuf);//todo
+		//SDL_GL_GetAttribute(SDL_GL_MULTISAMPLEBUFFERS, &msbuf);//todo
 		//returns 0 on success -error code on fail
 	}
 	/*if(mssamp != samples)*/ SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, samples);
-//	SDL_GL_GetAttribute(SDL_GL_MULTISAMPLESAMPLES, &mssamp);
-//	if(mssamp != samples){
-//		return FALSE;
-//		if(samples > 1){
-//			return setMSAA(samples/2);
-//		} else return FALSE;
-//	}
+	//SDL_GL_GetAttribute(SDL_GL_MULTISAMPLESAMPLES, &mssamp);
+	//if(mssamp != samples){
+	//	return FALSE;
+	//	if(samples > 1){
+	//		return setMSAA(samples/2);
+	//	} else return FALSE;
+	//}
 
 	return samples;
 }

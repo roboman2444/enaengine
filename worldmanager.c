@@ -13,7 +13,7 @@
 #include "shadermanager.h"
 
 int worldOK = 0;
-worldleaf_t * root;
+worldleaf_t * worldroot;
 unsigned int worldNumObjects = 0;
 /* file structure description
 	header
@@ -64,7 +64,7 @@ int saveWorldPopList(int * count, worldobject_t ** list, worldleaf_t * leaf){
 
 int saveWorld(char * filename){
 	consolePrintf("Saving %i objects to %s\n", worldNumObjects, filename);
-	if(!root){
+	if(!worldroot){
 		consolePrintf("ERROR: No world to save!\n");
 		return FALSE;
 	}
@@ -86,7 +86,7 @@ int saveWorld(char * filename){
 	}
 	//populate the list
 	int count = 0;
-	saveWorldPopList(&count, worldlist, root);
+	saveWorldPopList(&count, worldlist, worldroot);
 	if(count != worldNumObjects){
 		free(worldlist);
 		consolePrintf("ERROR: leaflist prop failed\n");
@@ -408,8 +408,8 @@ worldleaf_t * createWorldLeaf(int depth, vec2_t center){
 int initWorldSystem(void){
 //todo
 	vec2_t center = {0.0, 0.0};
-	root = createWorldLeaf(0, center);
-	if(!root) return FALSE;
+	worldroot = createWorldLeaf(0, center);
+	if(!worldroot) return FALSE;
 	worldOK = TRUE;
 	return TRUE;
 }
@@ -472,7 +472,7 @@ int walkAndDeleteObject(worldleaf_t * l, worldobject_t * o){
 }
 int deleteObject(worldobject_t * o){
 	if(!o) return FALSE;
-	return walkAndDeleteObject(root, o);
+	return walkAndDeleteObject(worldroot, o);
 }
 
 worldleaf_t * walkAndFindObject(worldleaf_t * l, worldobject_t * o){
@@ -493,7 +493,7 @@ worldleaf_t * walkAndFindObject(worldleaf_t * l, worldobject_t * o){
 }
 worldleaf_t * findObject(worldobject_t * o){
 	if(!o) return FALSE;
-	return walkAndFindObject(root, o);
+	return walkAndFindObject(worldroot, o);
 }
 int deleteLeaf(worldleaf_t *l){
 	if(!l) return FALSE;
@@ -507,8 +507,8 @@ int deleteLeaf(worldleaf_t *l){
 	return(count);
 }
 int deleteWorld(void){
-	int leafcount = deleteLeaf(root);
-	root = 0;
+	int leafcount = deleteLeaf(worldroot);
+	worldroot = 0;
 	worldNumObjects = 0;
 	if(!initWorldSystem())return FALSE;
 	return leafcount;
@@ -590,7 +590,7 @@ int addObjectToWorld(worldobject_t * o){
 	int vertcount = m->numverts;
 	if(!vertcount) return FALSE;
 	//walk tree and add
-	return walkAndAddObject(o, root);
+	return walkAndAddObject(o, worldroot);
 }
 int addEntityToWorld(int entityid){
 	entity_t *e = returnEntityById(entityid);
@@ -604,7 +604,8 @@ int addEntityToWorld(int entityid){
 	worldobject_t * obj = malloc(sizeof(worldobject_t));
 	memset(obj, 0 , sizeof(worldobject_t));
 	obj->mat = e->mat;
-	Matrix4x4_OriginFromMatrix(&obj->mat, obj->pos);
+//	Matrix4x4_OriginFromMatrix(&obj->mat, obj->pos);
+	Matrix4x4_OriginFromMatrix(&e->mat, obj->pos); // uh... this should fix SOMETHING
 	obj->modelid = e->modelid;
 	obj->textureid = e->texturegroupid;
 	obj->shaderid = e->shaderid;
@@ -613,7 +614,7 @@ int addEntityToWorld(int entityid){
 	memcpy(obj->bboxp, e->bboxp, 24 * sizeof(vec_t));
 	obj->status = 1;
 
-	int returnval = walkAndAddObject(obj, root);
+	int returnval = walkAndAddObject(obj, worldroot);
 	free(obj);
 	return returnval;
 //	return TRUE;

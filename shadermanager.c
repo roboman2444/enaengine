@@ -11,7 +11,7 @@
 
 int shadercount = 0;
 int shaderArrayFirstOpen = 0;
-int shaderArrayLastTaken = 0;
+int shaderArrayLastTaken = -1;
 int shaderArraySize = 0;
 int shadersOK = 0;
 

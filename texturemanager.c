@@ -13,7 +13,7 @@
 int texturesOK = 0;
 int texturegroupcount = 0;
 int texturegroupArrayFirstOpen = 0;
-int texturegroupArrayLastTaken = 0;
+int texturegroupArrayLastTaken = -1;
 int texturegroupArraySize = 0;
 
 #define NUMNAMES 5

@@ -55,6 +55,12 @@
 #define vec3div(a,b,c) vec2div((a),(b),(c)) (a)[2] = (b)[2] / (c);
 #define vec4div(a,b,c) vec3div((a),(b),(c)) (a)[3] = (b)[3] / (c);
 
+
+#define vec1comp(a,b) ((a)[0] == (b)[0])
+#define vec2comp(a,b) ((a)[0] == (b)[0] && (a)[1] == (b)[1])
+#define vec3comp(a,b) ((a)[0] == (b)[0] && (a)[1] == (b)[1] && (a)[2] == (b)[2])
+#define vec4comp(a,b) ((a)[0] == (b)[0] && (a)[1] == (b)[1] && (a)[2] == (b)[2] && (a)[3] == (b)[3])
+
 void getBBoxpFromBBox(vec_t * bbox, vec_t *bboxp);
 
 #endif

@@ -10,6 +10,7 @@
 #include "shadermanager.h"
 #include "entitymanager.h"
 #include "worldmanager.h"
+#include "lightmanager.h"
 
 int gamecodeOK;
 int tGameTime = 0;
@@ -305,8 +306,11 @@ void gameCodeTick(void){ //todo maybe change to float in seconds
 		calcEntAttachMat(e);
 		if(e->needsmatupdate || e->needsbboxupdate) recalcEntBBox(e);
 	}
+	//todo maybe convert to an entity "carry" system instead of a light attach system
+	lightLoop();
 	for(i = 0; i <= entityArrayLastTaken; i++){// make sure they dont update again
 		entitylist[i].needsmatupdate = FALSE;
+		entitylist[i].needsbboxupdate = FALSE;
 	}
 
 

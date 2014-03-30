@@ -16,6 +16,7 @@
 #include "entitymanager.h"
 #include "worldmanager.h"
 #include "renderqueue.h"
+#include "lightmanager.h"
 
 #include <tgmath.h>
 
@@ -68,6 +69,11 @@ int glInit(void){
 	if(!particlesOK){
 		//todo call some sort of shutdown of everything
 		 return FALSE;
+	}
+	initLightSystem();
+	if(!lightsOK){
+		//todo call some sort of shutdown of everything
+		return FALSE;
 	}
 
 	glEnable(GL_MULTISAMPLE);
@@ -133,8 +139,8 @@ int loadLeafIntoQueue(worldleaf_t * l, renderbatche_t * batch, viewport_t *v){
 	return mynum;
 }
 int loadWorldIntoQueue(renderbatche_t * batch, viewport_t *v){
-	if(!root ||  !worldNumObjects) return FALSE;
-	return loadLeafIntoQueue(root, batch, v);
+	if(!worldroot ||  !worldNumObjects) return FALSE;
+	return loadLeafIntoQueue(worldroot, batch, v);
 }
 int loadEntitiesIntoQueue(renderbatche_t * batch, viewport_t * v){
 	int i;

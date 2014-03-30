@@ -5,12 +5,11 @@
 #include "globaldefs.h"
 #include "hashtables.h"
 #include "matrixlib.h"
-#include "texturemanager.h"
 #include "entitymanager.h"
 
 int entitycount = 0;
 int entityArrayFirstOpen = 0;
-int entityArrayLastTaken = 0; // may not be used
+int entityArrayLastTaken = -1;
 int entityArraySize = 0;
 int entitiesOK = 0;
 entity_t *entitylist;

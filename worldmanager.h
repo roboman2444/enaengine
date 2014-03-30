@@ -34,7 +34,6 @@ typedef struct worldleaf_s{
 	int treedepth;
 	vec_t bbox[6];
 	vec_t bboxp[24];
-	//todo actual list of shit and a vao
 	int numobjects;
 	worldobject_t * list;
 	float size; // ease
@@ -42,7 +41,7 @@ typedef struct worldleaf_s{
 
 int worldOK;
 unsigned int worldNumObjects;
-worldleaf_t * root;
+worldleaf_t * worldroot;
 
 int initWorldSystem(void);
 
