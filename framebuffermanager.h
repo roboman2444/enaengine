@@ -4,21 +4,43 @@
 typedef struct framebuffer_s
 {
 	char * name;
-	GLuint id;
+	char type;
+	GLuint myid;
 	GLuint width;
 	GLuint height;
-	GLuint aspect; // maybe
-	GLuint fov; // maybe
-	GLuint texid;
-//	texture_t texture;
+	int texturegroupid;
 } framebuffer_t;
 
-framebuffer_t *defaultFrameBuffer;
-int initFrameBufferSystem(void);
-int fbnumber;
-int framebuffersOK;
+typedef struct framebufferlistpoint_s {
+	//gotta free dis stuff after you use it
+	framebuffer_t **list;
+	int count;
+} framebufferlistpoint_t;
+typedef struct framebufferlistint_s {
+	//gotta free dis stuff after you use it
+	int *list;
+	int count;
+} framebufferlistint_t;
 
-framebuffer_t * findFrameBufferByName(char * name);
-framebuffer_t * returnFrameBuffer(int it);
-framebuffer_t * addFrameBufferToList(framebuffer_t fb);
+int initFramebufferSystem(void);
+
+framebuffer_t * framebufferlist;
+int vpnumber;
+int framebuffersOK;
+int framebuffercount;
+int framebufferArraySize;
+int framebufferArrayLastTaken;
+
+framebuffer_t * findFramebufferByNameRPOINT(char * name);
+int findFramebufferByNameRINT(char * name);
+
+framebufferlistpoint_t findFramebuffersByNameRPOINT(char * name);
+framebufferlistint_t findFramebuffersByNameRINT(char * name);
+
+framebuffer_t * returnFramebufferById(int id);
+
+framebuffer_t * createAndAddFramebufferRPOINT(char * name, char type);
+int createAndAddFramebufferRINT(char * name, char type);
+
+framebuffer_t createFramebuffer(char * name, char type);
 #endif

@@ -50,7 +50,7 @@ int glInit(void){
 		//todo call some sort of shutdown of everything
 		 return FALSE;
 	}
-	initFrameBufferSystem();
+	initFramebufferSystem();
 	if(!framebuffersOK){
 		//todo call some sort of shutdown of everything
 		 return FALSE;
@@ -72,6 +72,11 @@ int glInit(void){
 	}
 	initLightSystem();
 	if(!lightsOK){
+		//todo call some sort of shutdown of everything
+		return FALSE;
+	}
+	initViewportSystem();
+	if(!viewportsOK){
 		//todo call some sort of shutdown of everything
 		return FALSE;
 	}

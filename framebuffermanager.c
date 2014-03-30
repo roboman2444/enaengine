@@ -4,51 +4,136 @@
 
 //local includes
 #include "globaldefs.h"
+#include "hashtables.h"
 #include "framebuffermanager.h"
 
-int fbnumber = 0; //the first is an error one/screen
 int framebuffersOK = 0;
-framebuffer_t **fblist;
-framebuffer_t * defaultFrameBuffer;
+int framebuffercount = 0;
+int framebufferArrayFirstOpen = 0;
+int framebufferArrayLastTaken = -1;
+int framebufferArraySize = 0;
+framebuffer_t *framebufferlist;
 
-int initFrameBufferSystem(void){
-	//todo have it figure out screen aspect for the default
-			//	name	id	width	height	aspect	fov	texid
-	framebuffer_t screen = {"default"	,0 	,0	,0	,1	,0	,0	};
-	if(fblist) free(fblist);
-	fblist = 0;
-//	fblist = malloc(0 * sizeof(framebuffer_t *));
-//	if(!fblist) memset(fblist, 0 , fbnumber * sizeof(framebuffer_t *));
-	defaultFrameBuffer = addFrameBufferToList(screen);
+hashbucket_t framebufferhashtable[MAXHASHBUCKETS];
+
+int initFramebufferSystem(void){
+//	framebuffer_t screen = createFramebuffer("default");
+	memset(framebufferhashtable, 0, MAXHASHBUCKETS*sizeof(hashbucket_t));
+	if(framebufferlist) free(framebufferlist);
+	framebufferlist = 0;
+//	framebufferlist = malloc(vpnumber * sizeof(framebuffer_t));
+//	if(!framebufferlist) memset(framebufferlist, 0 , vpnumber * sizeof(framebuffer_t));
+//	defaultFramebuffer = addFramebufferToList(screen);
 	framebuffersOK = TRUE;
 	return TRUE; // todo error check
 }
-framebuffer_t * addFrameBufferToList(framebuffer_t fb){ //todo have this return a framebuffer pointa
-	framebuffer_t * pointfb = malloc(sizeof(framebuffer_t));
-	*pointfb = fb;
-	int current = fbnumber;
-	fbnumber++;
-	fblist = realloc(fblist, fbnumber * sizeof(framebuffer_t *));
-	fblist[current] = pointfb;
-	//fblist[current].name = malloc(sizeof(*fb.name));
-	//strcpy(fblist[current].name, fb.name);
-	return pointfb;
+framebufferlistpoint_t findFramebufferssByNameRPOINT(char * name){
+	framebufferlistpoint_t ret;
+	int hash = getHash(name);
+	hashbucket_t * hb = &framebufferhashtable[hash];
+	if(!hb->name) return ret;
+        for(; hb; hb = hb->next){
+		if(strcmp(hb->name, name)==0){
+//			return returnById(hb->id);
+			ret.count++;
+			ret.list = realloc(ret.list, ret.count * sizeof(framebuffer_t *));
+			ret.list[ret.count-1] = returnFramebufferById(hb->id);
+		}
+        }
+	return ret;
 }
-/*
-framebuffer_t createFrameBuffer (char * name){
+framebufferlistint_t findFramebufferssByNameRINT(char * name){
+	framebufferlistint_t ret;
+	int hash = getHash(name);
+	hashbucket_t * hb = &framebufferhashtable[hash];
+	if(!hb->name) return ret;
+        for(; hb; hb = hb->next){
+		if(strcmp(hb->name, name)==0){
+//			return returnById(hb->id);
+			ret.count++;
+			ret.list = realloc(ret.list, ret.count * sizeof(int));
+			ret.list[ret.count-1] = hb->id;
+		}
+        }
+	return ret;
+}
+framebuffer_t *findFramebufferByNameRPOINT(char * name){
+	return returnFramebufferById(findByNameRINT(name, framebufferhashtable));
+}
+int findFramebufferByNameRINT(char * name){
+	return findByNameRINT(name, framebufferhashtable);
+}
+int deleteFramebuffer(int id){
+	int framebufferindex = (id & 0xFFFF);
+	framebuffer_t * fb = &framebufferlist[framebufferindex];
+	if(fb->myid != id) return FALSE;
+	if(!fb->name) return FALSE;
+	deleteFromHashTable(fb->name, id, framebufferhashtable);
+	free(fb->name);
+
+//todo free framebuffer
+	memset(fb, 0, sizeof(framebuffer_t));
+	if(framebufferindex < framebufferArrayFirstOpen) framebufferArrayFirstOpen = framebufferindex;
+	for(; framebufferArrayLastTaken > 0 && !framebufferlist[framebufferArrayLastTaken].type; framebufferArrayLastTaken--);
+	return TRUE;
+}
+
+framebuffer_t * returnFramebufferById(int id){
+	int framebufferindex = (id & 0xFFFF);
+	framebuffer_t * framebuffer = &framebufferlist[framebufferindex];
+	if(!framebuffer->type) return FALSE;
+	if(framebuffer->myid == id) return framebuffer;
+	return FALSE;
+}
+
+framebuffer_t createFramebuffer (char * name, char type){
+	framebuffer_t fb;
+	fb.type = 0; //todo make useful
+	//todo
+	//todododo
+ 	fb.name = malloc(strlen(name)+1);
+	strcpy(fb.name, name);
+	fb.type = type;
+	return fb;
 //todo
 }
-*/
-framebuffer_t * returnFrameBuffer(int id){
-	if(id >= fbnumber) return fblist[0];
-	return fblist[id];
-}
-framebuffer_t * findFrameBufferByName(char * name){
-	int i;
-	for(i = 0; i<fbnumber; i++){
-		if(!strcmp(name, fblist[i]->name)) return fblist[i];
+
+int addFramebufferRINT(framebuffer_t framebuffer){
+	framebuffercount++;
+	for(; framebufferArrayFirstOpen < framebufferArraySize && framebufferlist[framebufferArrayFirstOpen].type; framebufferArrayFirstOpen++);
+	if(framebufferArrayFirstOpen == framebufferArraySize){	//resize
+		framebufferArraySize++;
+		framebufferlist = realloc(framebufferlist, framebufferArraySize * sizeof(framebuffer_t));
 	}
-	return fblist[0];
+	framebufferlist[framebufferArrayFirstOpen] = framebuffer;
+	int returnid = (framebuffercount << 16) | framebufferArrayFirstOpen;
+	framebufferlist[framebufferArrayFirstOpen].myid = returnid;
+
+	addToHashTable(framebufferlist[framebufferArrayFirstOpen].name, returnid, framebufferhashtable);
+	if(framebufferArrayLastTaken < framebufferArrayFirstOpen) framebufferArrayLastTaken = framebufferArrayFirstOpen; //todo redo
+	return returnid;
+}
+framebuffer_t * addFramebufferRPOINT(framebuffer_t framebuffer){
+	framebuffercount++;
+	for(; framebufferArrayFirstOpen < framebufferArraySize && framebufferlist[framebufferArrayFirstOpen].type; framebufferArrayFirstOpen++);
+	if(framebufferArrayFirstOpen == framebufferArraySize){	//resize
+		framebufferArraySize++;
+		framebufferlist = realloc(framebufferlist, framebufferArraySize * sizeof(framebuffer_t));
+	}
+	framebufferlist[framebufferArrayFirstOpen] = framebuffer;
+	int returnid = (framebuffercount << 16) | framebufferArrayFirstOpen;
+	framebufferlist[framebufferArrayFirstOpen].myid = returnid;
+
+	addToHashTable(framebufferlist[framebufferArrayFirstOpen].name, returnid, framebufferhashtable);
+	if(framebufferArrayLastTaken < framebufferArrayFirstOpen) framebufferArrayLastTaken = framebufferArrayFirstOpen; //todo redo
+	return &framebufferlist[framebufferArrayFirstOpen];
+}
+
+framebuffer_t * createAndAddFramebufferRPOINT(char * name, char type){
+	return addFramebufferRPOINT(createFramebuffer(name, type));
+}
+int createAndAddFramebufferRINT(char * name, char type){
+	return addFramebufferRINT(createFramebuffer(name, type));
 }
 
 /*

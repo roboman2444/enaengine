@@ -29,7 +29,7 @@ typedef struct viewportlistint_s {
 	int count;
 } viewportlistint_t;
 
-int initViewPortSystem(void);
+int initViewportSystem(void);
 
 viewport_t * viewportlist;
 int vpnumber;
