@@ -15,6 +15,7 @@ int resizeWindow(int width, int height, int bpp, int debugmode){
 	if(height<1) height = 1;
 	if(width<1) width = 1;
 	surface = SDL_SetVideoMode(width, height, bpp, videoFlags);
+	//todo resize any framebuffers
 	if(!surface){
 //		fprintf(stderr, "ERROR -- SDL video resize failed: %s \n", SDL_GetError());
 		consolePrintf("ERROR -- SDL video resize failed: %s \n", SDL_GetError());

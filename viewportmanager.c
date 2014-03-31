@@ -336,3 +336,7 @@ int recalcViewport(viewport_t * v, vec3_t pos, vec3_t angle, float fov, float as
 	}
 	return v->viewchanged;
 }
+int generateFramebufferForViewport(viewport_t *v){
+	//todo
+	return FALSE;
+}

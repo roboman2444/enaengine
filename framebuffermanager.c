@@ -16,15 +16,22 @@ framebuffer_t *framebufferlist;
 
 hashbucket_t framebufferhashtable[MAXHASHBUCKETS];
 
+extern framebuffer_t * addFramebufferRPOINT(framebuffer_t fb);
+
 int initFramebufferSystem(void){
-//	framebuffer_t screen = createFramebuffer("default");
 	memset(framebufferhashtable, 0, MAXHASHBUCKETS*sizeof(hashbucket_t));
 	if(framebufferlist) free(framebufferlist);
 	framebufferlist = 0;
-//	framebufferlist = malloc(vpnumber * sizeof(framebuffer_t));
-//	if(!framebufferlist) memset(framebufferlist, 0 , vpnumber * sizeof(framebuffer_t));
-//	defaultFramebuffer = addFramebufferToList(screen);
 	framebuffersOK = TRUE;
+	framebuffer_t * screen = malloc(sizeof(framebuffer_t));
+	screen->width = 800; //todo cvar?
+	screen->height = 600;
+	screen->id = 0;
+	screen->texturegroupid = 0;
+	screen->name = malloc(7);
+	sprintf(screen->name, "screen");
+	addFramebufferRPOINT(*screen);
+	free(screen);
 	return TRUE; // todo error check
 }
 framebufferlistpoint_t findFramebufferssByNameRPOINT(char * name){
@@ -89,9 +96,14 @@ framebuffer_t * returnFramebufferById(int id){
 framebuffer_t createFramebuffer (char * name, char type){
 	framebuffer_t fb;
 	fb.type = 0; //todo make useful
+	fb.id = 0;
 	//todo
 	//todododo
- 	fb.name = malloc(strlen(name)+1);
+
+
+
+
+	fb.name = malloc(strlen(name)+1);
 	strcpy(fb.name, name);
 	fb.type = type;
 	return fb;
@@ -135,52 +147,3 @@ framebuffer_t * createAndAddFramebufferRPOINT(char * name, char type){
 int createAndAddFramebufferRINT(char * name, char type){
 	return addFramebufferRINT(createFramebuffer(name, type));
 }
-
-/*
-int createFramebuffer(char * name){
-	char * vertname = malloc(strlen(name) + 5);
-
-	strcpy(vertname, name);strcat(vertname, ".vert");
-
-	char * vertstring;
-	int vertlength;
-
-	loadFileString(vertname, &vertstring, &vertlength, 2);
-
-	free(vertname);
-	if(vertlength == 0){	//error
-		free(vertstring);
-		return FALSE;
-	}
-	char * fragname = malloc(strlen(name) + 5); //add on 5 extra characters for .frag
-	strcpy(fragname,name); strcat(fragname, ".frag");
-	char * fragstring;
-	int fraglength;
-	loadFileString(fragname, &fragstring, &fraglength, 2);
-	free(fragname);
-	if(fraglength == 0){	//error
-		free(fragstring);
-		return FALSE;
-	}
-	GLuint vertid = glCreateShader(GL_VERTEX_SHADER);
-	GLuint fragid = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(vertid, 1, (const GLchar**) &vertstring, &vertlength);
-	glShaderSource(fragid, 1, (const GLchar**) &fragstring, &fraglength);
-	free(vertstring); free(fragstring);
-	//TODO errorcheck
-	glCompileShader(vertid);
-	glCompileShader(fragid);
-	//TODO errorcheck
-	//TODO errorcheck for compilation
-
-	GLuint programid = glCreateProgram();
-	//TODO errorcheck
-	glAttachShader(programid, vertid);
-	glAttachShader(programid, fragid);
-	glLinkProgram(programid);
-	//TODO errorcheck
-	printProgramLogStatus(programid);
-	int id = addProgramToList(name, programid, vertid, fragid);
-	return id; //so far i am assuming that it works
-}
-*/

@@ -1,13 +1,13 @@
 #ifndef FRAMEBUFFERMANAGERHEADER
 #define FRAMEBUFFERMANAGERHEADER
 
-typedef struct framebuffer_s
-{
+typedef struct framebuffer_s{
 	char * name;
 	char type;
-	GLuint myid;
+	int myid;
 	GLuint width;
 	GLuint height;
+	GLuint id;
 	int texturegroupid;
 } framebuffer_t;
 

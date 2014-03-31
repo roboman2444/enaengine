@@ -26,7 +26,8 @@ float degnumber;
 viewport_t * currentvp;
 shaderpermutation_t * currentsp;
 unsigned long totalface, totalcount, totalvert;
-viewport_t cam;
+int camid;
+viewport_t * cam = 0;
 
 int glShutdown(void){
 	return FALSE;
@@ -100,7 +101,9 @@ int glInit(void){
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 //	glEnable(GL_TEXTURE_2D);
 
-	cam = createViewport("cam", 1);
+	cam = createAndAddViewportRPOINT("cam", 1);
+	camid = cam->myid;
+	cam->fbid = findFramebufferByNameRINT("screen");
 
 
 	return TRUE; // so far so good
@@ -198,7 +201,7 @@ int drawEntitiesM(modelbatche_t * batch){
 	glBindVertexArray(tvbo->vaoid);
 	for(i = 0; i < count; i++){
 	//todo
-		glDrawModel(m, &batch->matlist[i], &cam.viewproj);
+		glDrawModel(m, &batch->matlist[i], &cam->viewproj);
 	}
 	return count;
 }
@@ -260,6 +263,22 @@ int drawEntitiesR(renderbatche_t * batch){
 	}
 	return count;
 }
+
+int glDrawViewport(viewport_t *v){
+	framebuffer_t *f = returnFramebufferById(v->fbid);
+	if(!f) return FALSE;
+	glBindFramebuffer(GL_FRAMEBUFFER, f->id);
+	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+	glViewport(0, 0, f->width, f->height);
+	renderbatche_t b;
+
+	memset(&b, 0, sizeof(renderbatche_t));
+	loadEntitiesIntoQueue(&b, v);
+	loadWorldIntoQueue(&b, v);
+	drawEntitiesR(&b);
+	cleanupRenderbatche(&b);
+	return TRUE;
+}
 int glMainDraw(void){
 	totalface = 0;
 	totalcount = 0;
@@ -273,15 +292,10 @@ int glMainDraw(void){
 	pos[2] = cos(degnumber *(-M_PI / 180.0))*15.0;
 //	angle[2] = -90.0;
 	angle[1] = degnumber;
+	cam = returnViewportById(camid);
 
-	recalcViewport(&cam, pos, angle, 90.0, 4.0/3.0, 1.0, 1000.0);
-	renderbatche_t b;
-	memset(&b, 0, sizeof(renderbatche_t));
-	loadEntitiesIntoQueue(&b, &cam);
-//	consolePrintf("worldobjects rendered: %i\n",loadWorldIntoQueue(&b, &cam));
-	loadWorldIntoQueue(&b, &cam);
-	drawEntitiesR(&b);
-	cleanupRenderbatche(&b);
+	recalcViewport(cam, pos, angle, 90.0, 4.0/3.0, 1.0, 1000.0);
+	glDrawViewport(cam);
 	swapBuffers();
 //	consolePrintf("Faces: %li Verts: %li Objects: %li\n", totalface, totalvert, totalcount);
 	return TRUE;

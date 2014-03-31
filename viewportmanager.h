@@ -9,6 +9,7 @@ typedef struct viewport_s {
 	float near;
 	float far;
 	int viewchanged;
+	int fbid;
 	vec3_t pos;
 	vec3_t angle;
 	matrix4x4_t projection;
