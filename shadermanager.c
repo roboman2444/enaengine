@@ -161,6 +161,8 @@ shaderpermutation_t createPermutation(shaderprogram_t * shader, int permutation)
 	glAttachShader(programid, fragid);
 //	glUseProgram(programid);
 	glBindFragDataLocation(programid, 0, "fragColor"); //todo move this
+	glBindFragDataLocation(programid, 1, "normColor"); //todo move this
+	glBindFragDataLocation(programid, 2, "specColor"); //todo move this
 
 
 	glBindAttribLocation(programid, POSATTRIBLOC, "posattrib");

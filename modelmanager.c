@@ -60,7 +60,7 @@ int makeCubeModel(void){
 		points[(i*8)+7] =  (i&2)    -1.0;
 
 	}
-	m.spheresize = 1.0;
+	m.spheresize = 1.7320508075688772935274463415058723669428052538103806;
 //	getBBoxFromInterleavedMesh(points, 8, 8, m.bbox);
 //	getBBoxpFromBBox(m.bbox, m.bboxp);
 
@@ -113,6 +113,126 @@ int makeCubeModel(void){
 	return addModelRINT(m);
 	return TRUE;
 }
+int makeCubeModel2(void){
+	model_t m;// = malloc(sizeof(model_T));
+//	memset(m, 0, sizeof(model_t));
+//	consolePrintf("generating cube\n");
+	m.type = 1;
+	m.name = malloc(strlen("cube2")+1);
+	strcpy(m.name, "cube2");
+
+	GLfloat points[192] = {
+		-1.0, -1.0, -1.0, 1.0, 1.0, 1.0, 0.0, 0.0,
+		1.0, -1.0, -1.0, 1.0, 1.0, 1.0, 1.0, 0.0,
+		1.0,  1.0, -1.0, 1.0, 1.0, 1.0, 1.0, 1.0,
+		-1.0,  1.0, -1.0, 1.0, 1.0, 1.0, 0.0, 1.0,
+
+		-1.0, -1.0,  1.0, 1.0, 1.0, 1.0, 0.0, 0.0,
+		1.0, -1.0,  1.0, 1.0, 1.0, 1.0, 1.0, 0.0,
+		1.0,  1.0,  1.0, 1.0, 1.0, 1.0, 1.0, 1.0,
+		-1.0,  1.0,  1.0, 1.0, 1.0, 1.0, 0.0, 1.0,
+
+		-1.0,  1.0,  1.0, 1.0, 1.0, 1.0, 1.0, 0.0,
+//		-1.0, -1.0, -1.0, 1.0, 1.0, 1.0, 0.0, 1.0,
+		-1.0,  1.0, -1.0, 1.0, 1.0, 1.0, 1.0, 1.0,
+		-1.0, -1.0, -1.0, 1.0, 1.0, 1.0, 0.0, 1.0,
+//		-1.0,  1.0,  1.0, 1.0, 1.0, 1.0, 1.0, 0.0,
+		-1.0, -1.0,  1.0, 1.0, 1.0, 1.0, 0.0, 0.0,
+
+		1.0,  1.0,  1.0, 1.0, 1.0, 1.0, 1.0, 0.0,
+		1.0,  1.0, -1.0, 1.0, 1.0, 1.0, 1.0, 1.0,
+		1.0, -1.0, -1.0, 1.0, 1.0, 1.0, 0.0, 1.0,
+		1.0, -1.0,  1.0, 1.0, 1.0, 1.0, 0.0, 0.0,
+
+		-1.0, -1.0, -1.0, 1.0, 1.0, 1.0, 0.0, 1.0,
+		1.0, -1.0, -1.0, 1.0, 1.0, 1.0, 1.0, 1.0,
+		1.0, -1.0,  1.0, 1.0, 1.0, 1.0, 1.0, 0.0,
+		-1.0, -1.0,  1.0, 1.0, 1.0, 1.0, 0.0, 0.0,
+
+		-1.0,  1.0, -1.0, 1.0, 1.0, 1.0, 0.0, 1.0,
+		1.0,  1.0, -1.0, 1.0, 1.0, 1.0, 1.0, 1.0,
+		1.0,  1.0,  1.0, 1.0, 1.0, 1.0, 1.0, 0.0,
+		-1.0,  1.0,  1.0, 1.0, 1.0, 1.0, 0.0, 0.0	};
+	int i;
+	for(i = 0; i < 3; i++){
+		m.bbox[i*2] = 1.0;
+		m.bbox[(i*2)+1] = -1.0;
+	}
+	for(i = 0; i < 8; i++){
+		m.bboxp[(i*3)+0] = ((i&1)<<1)-1.0;
+		m.bboxp[(i*3)+1] =  (i&2)    -1.0;
+		m.bboxp[(i*3)+2] = ((i&4)>>1)-1.0;
+	}
+	m.spheresize = 1.7320508075688772935274463415058723669428052538103806;
+//	getBBoxFromInterleavedMesh(points, 8, 8, m.bbox);
+//	getBBoxpFromBBox(m.bbox, m.bboxp);
+
+
+	GLuint tris[36] = {
+//				0, 1, 2,
+//				2, 3, 0,
+				0, 2, 1,
+				2, 0, 3,
+
+				4, 5, 6,
+				6, 7, 4,
+//				4, 6, 5,
+//				6, 4, 7,
+
+				8, 9, 10,
+				10,11, 8,
+//				8, 10, 9,
+//				10,8, 11,
+
+//				12, 13, 14,
+//				14, 15, 12,
+				12, 14, 13,
+				14, 12, 15,
+
+				16, 17, 18,
+				18, 19, 16,
+//				16, 18, 17,
+//				18, 16, 19,
+
+//				20, 21, 22,
+//				22, 23, 20
+				20, 22, 21,
+				22, 20, 23
+	};
+
+	vbo_t * myvbo = createAndAddVBORPOINT(m.name, 1);
+	if(!myvbo) return FALSE; // todo free and error handle
+	m.vbo = myvbo->myid;
+
+
+	glBindBuffer(GL_ARRAY_BUFFER, myvbo->vboid);
+	glBufferData(GL_ARRAY_BUFFER, 192 * sizeof(GLfloat), points, GL_STATIC_DRAW);
+	myvbo->numverts = 24;
+	m.interleaveddata = points;
+//	free(interleavedbuffer);
+
+	glEnableVertexAttribArray(POSATTRIBLOC);
+	glVertexAttribPointer(POSATTRIBLOC, 3, GL_FLOAT, GL_FALSE, 8*sizeof(GLfloat), 0);
+
+	glEnableVertexAttribArray(NORMATTRIBLOC);
+	glVertexAttribPointer(NORMATTRIBLOC, 3, GL_FLOAT, GL_FALSE, 8*sizeof(GLfloat), (void*)(3*sizeof(GLfloat)));
+
+	glEnableVertexAttribArray(TCATTRIBLOC);
+	glVertexAttribPointer(TCATTRIBLOC, 2, GL_FLOAT, GL_FALSE, 8*sizeof(GLfloat), (void*)(6*sizeof(GLfloat)));
+
+
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,myvbo->indicesid);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, 12 * 3 *sizeof(GLuint), tris, GL_STATIC_DRAW);
+	myvbo->numfaces = 12;
+	m.tris = tris;
+	m.numfaces = 12;
+	m.numverts = 24;
+	m.stride = 8; //todo
+
+	return addModelRINT(m);
+	return TRUE;
+}
 
 int initModelSystem(void){
 //	modelhashtable = malloc(MAXHASHBUCKETS * 2* sizeof(hashbucket_t));
@@ -126,6 +246,7 @@ int initModelSystem(void){
 //	defaultModel = addModelToList(none);
 
 	makeCubeModel();
+	makeCubeModel2();
 	modelsOK = TRUE;
 	return TRUE;
 }

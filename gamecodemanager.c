@@ -145,7 +145,7 @@ int initGameCodeSystem(void){
 		enttinydragon->anglevel[1] = 20.0;
 		enttinydragon->scale = 1.0;
 		enttinydragon->needsmatupdate = TRUE;
-		enttinydragon->modelid = createAndAddModelRINT("cube");
+		enttinydragon->modelid = createAndAddModelRINT("cube2");
 //		enttinydragon->modelid = createAndAddModelRINT("coil");
 		enttinydragon->shaderid = createAndAddShaderRINT("staticmodel");
 		enttinydragon->texturegroupid = createAndAddTexturegroupRINT("bunny");

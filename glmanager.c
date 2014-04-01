@@ -27,6 +27,7 @@ viewport_t * currentvp;
 shaderpermutation_t * currentsp;
 unsigned long totalface, totalcount, totalvert;
 int camid;
+int wireshaderid; //todo redo
 viewport_t * cam = 0;
 GLfloat fsquadpoints[12] = {-1.0, -1.0, 	1.0, -1.0, 	 1.0, 1.0,
 			    -1.0, -1.0, 	1.0,  1.0, 	-1.0, 1.0};
@@ -108,9 +109,12 @@ int glInit(void){
 	cam->fbid = findFramebufferByNameRINT("screen");
 	resizeViewport(cam, 800, 600);
 
+	wireshaderid = createAndAddShaderRINT("wireframe");
+
 
 	return TRUE; // so far so good
 }
+
 int glDrawModel(model_t * model, matrix4x4_t * modworld, matrix4x4_t * viewproj){
 	vbo_t * tvbo = returnVBOById(model->vbo);
 	if(!tvbo) return FALSE;
@@ -273,18 +277,22 @@ int glDrawViewport(viewport_t *v){
 	glBindFramebuffer(GL_FRAMEBUFFER, f->id);
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 	glViewport(0, 0, f->width, f->height);
-	renderbatche_t b;
 
+	renderbatche_t b;
 	memset(&b, 0, sizeof(renderbatche_t));
+
 	loadEntitiesIntoQueue(&b, v);
 	loadWorldIntoQueue(&b, v);
+
+
 	drawEntitiesR(&b);
+
 	cleanupRenderbatche(&b);
 	return TRUE;
 }
 void glDrawFSQuad(void){
 	glVertexPointer(2, GL_FLOAT, 0, fsquadpoints);
-	glDrawArrays(GL_TRIANGLES, 0, sizeof(GLfloat) * 12);
+	glDrawArrays(GL_TRIANGLES, 0, 2);
 }
 int glMainDraw(void){
 	totalface = 0;
