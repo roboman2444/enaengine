@@ -4,6 +4,7 @@
 typedef struct viewport_s {
 	char * name;
 	char type;
+	int myid;
 	float aspect; // maybe
 	float fov;
 	float near;
@@ -15,7 +16,6 @@ typedef struct viewport_s {
 	matrix4x4_t projection;
 	matrix4x4_t view;
 	matrix4x4_t viewproj;
-	int myid;
 	plane_t frustum[6];
 } viewport_t;
 
@@ -56,4 +56,5 @@ int recalcViewport(viewport_t * v, vec3_t pos, vec3_t angle, float fov, float as
 int testPointInFrustum(viewport_t *v, vec_t *p);
 int testSphereInFrustum(viewport_t *v, vec_t *p, float size);
 int testBBoxPointsInFrustum(viewport_t *v, vec_t *points);
+int resizeViewport(viewport_t *v, int width, int height);
 #endif

@@ -27,7 +27,11 @@ int initFramebufferSystem(void){
 	screen->width = 800; //todo cvar?
 	screen->height = 600;
 	screen->id = 0;
-	screen->texturegroupid = 0;
+	screen->id0 = 0;
+	screen->id0 = 0;
+	screen->id0 = 0;
+	screen->type = 255;
+//	screen->texturegroupid = 0;
 	screen->name = malloc(7);
 	sprintf(screen->name, "screen");
 	addFramebufferRPOINT(*screen);
@@ -79,6 +83,7 @@ int deleteFramebuffer(int id){
 	free(fb->name);
 
 //todo free framebuffer
+	//todo
 	memset(fb, 0, sizeof(framebuffer_t));
 	if(framebufferindex < framebufferArrayFirstOpen) framebufferArrayFirstOpen = framebufferindex;
 	for(; framebufferArrayLastTaken > 0 && !framebufferlist[framebufferArrayLastTaken].type; framebufferArrayLastTaken--);
@@ -93,11 +98,91 @@ framebuffer_t * returnFramebufferById(int id){
 	return FALSE;
 }
 
+int resizeFramebuffer(framebuffer_t *fb, int width, int height){
+	if(!fb) return FALSE;
+	if(fb->type == 255){
+		fb->width = width;
+		fb->height = height;
+		return TRUE;
+	}
+	if(height < 1 || height == fb->height) return TRUE;
+	if(width < 1  || width  == fb->width)  return TRUE;
+	glBindTexture(GL_TEXTURE_2D, fb->id0);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, fb->id0, 0);
+
+	if(fb->type >1){
+		glBindTexture(GL_TEXTURE_2D, fb->id1);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, fb->id1, 0);
+	}
+	if(fb->type > 2){
+		glBindTexture(GL_TEXTURE_2D, fb->id2);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, fb->id2, 0);
+	}
+	glBindRenderbuffer(GL_RENDERBUFFER, fb->rb);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, width, height);
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, fb->rb);
+	fb->width = width;
+	fb->height = height;
+	return TRUE;
+}
+
 framebuffer_t createFramebuffer (char * name, char type){
+	if(!type) type = 1;
 	framebuffer_t fb;
 	fb.type = 0; //todo make useful
 	fb.id = 0;
-	//todo
+	fb.width = 1;
+	fb.height = 1;
+	glGenFramebuffers(1, &fb.id);
+	glGenTextures(1, &fb.id0);
+	glBindTexture(GL_TEXTURE_2D, fb.id0);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F,1, 1, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, fb.id0, 0);
+
+	if(type >1){
+		glGenTextures(1, &fb.id1);
+		glBindTexture(GL_TEXTURE_2D, fb.id1);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, 1, 1, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, fb.id1, 0);
+	}
+	if(type > 2){
+		glGenTextures(1, &fb.id2);
+		glBindTexture(GL_TEXTURE_2D, fb.id2);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, 1, 1, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, fb.id2, 0);
+	}
+	glGenRenderbuffers(1, &fb.rb);
+	glBindRenderbuffer(GL_RENDERBUFFER, fb.rb);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, 1, 1);
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, fb.rb);
+
 	//todododo
 
 

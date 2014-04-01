@@ -10,6 +10,7 @@ const SDL_VideoInfo *videoInfo;
 int videoFlags;
 
 //functions
+extern int glResizeViewports(int width, int height);
 int resizeWindow(int width, int height, int bpp, int debugmode){
 	if(debugmode) consolePrintf("DEBUG -- SDL video resize to: %ix%i with %i bits per pixel \n", width, height, bpp);
 	if(height<1) height = 1;
@@ -20,6 +21,12 @@ int resizeWindow(int width, int height, int bpp, int debugmode){
 //		fprintf(stderr, "ERROR -- SDL video resize failed: %s \n", SDL_GetError());
 		consolePrintf("ERROR -- SDL video resize failed: %s \n", SDL_GetError());
 		return FALSE;
+	}
+	int r = glResizeViewports(width, height);
+	if(!r){
+		consolePrintf("ERROR -- GL framebuffers resize failed\n");
+		return FALSE;
+
 	}
 	return TRUE;
 }

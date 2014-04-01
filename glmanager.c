@@ -28,6 +28,8 @@ shaderpermutation_t * currentsp;
 unsigned long totalface, totalcount, totalvert;
 int camid;
 viewport_t * cam = 0;
+GLfloat fsquadpoints[12] = {-1.0, -1.0, 	1.0, -1.0, 	 1.0, 1.0,
+			    -1.0, -1.0, 	1.0,  1.0, 	-1.0, 1.0};
 
 int glShutdown(void){
 	return FALSE;
@@ -97,13 +99,14 @@ int glInit(void){
 	glCullFace(GL_BACK);
 //	glEnable(GL_BLEND);
 //	glBlendFunc(GL_SRC_ALPHA,GL_ONE);
-	glViewport(0, 0, 800, 600);
+//	glViewport(0, 0, 800, 600);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 //	glEnable(GL_TEXTURE_2D);
 
 	cam = createAndAddViewportRPOINT("cam", 1);
 	camid = cam->myid;
 	cam->fbid = findFramebufferByNameRINT("screen");
+	resizeViewport(cam, 800, 600);
 
 
 	return TRUE; // so far so good
@@ -279,6 +282,10 @@ int glDrawViewport(viewport_t *v){
 	cleanupRenderbatche(&b);
 	return TRUE;
 }
+void glDrawFSQuad(void){
+	glVertexPointer(2, GL_FLOAT, 0, fsquadpoints);
+	glDrawArrays(GL_TRIANGLES, 0, sizeof(GLfloat) * 12);
+}
 int glMainDraw(void){
 	totalface = 0;
 	totalcount = 0;
@@ -294,9 +301,17 @@ int glMainDraw(void){
 	angle[1] = degnumber;
 	cam = returnViewportById(camid);
 
-	recalcViewport(cam, pos, angle, 90.0, 4.0/3.0, 1.0, 1000.0);
+	recalcViewport(cam, pos, angle, 90.0, cam->aspect, 1.0, 1000.0);
 	glDrawViewport(cam);
 	swapBuffers();
 //	consolePrintf("Faces: %li Verts: %li Objects: %li\n", totalface, totalvert, totalcount);
 	return TRUE;
+}
+int glResizeViewports(int width, int height){
+	if(!viewportsOK) return FALSE;
+	if(!width) width = 1;
+	if(!height) height = 1;
+	int count =0;
+	count+=resizeViewport(findViewportByNameRPOINT("cam"), width, height);
+	return count;
 }

@@ -30,7 +30,7 @@ int initViewportSystem(void){
 	viewportsOK = TRUE;
 	return TRUE; // todo error check
 }
-viewportlistpoint_t findViewportssByNameRPOINT(char * name){
+viewportlistpoint_t findViewportsByNameRPOINT(char * name){
 	viewportlistpoint_t ret;
 	int hash = getHash(name);
 	hashbucket_t * hb = &viewporthashtable[hash];
@@ -45,7 +45,7 @@ viewportlistpoint_t findViewportssByNameRPOINT(char * name){
         }
 	return ret;
 }
-viewportlistint_t findViewportssByNameRINT(char * name){
+viewportlistint_t findViewportsByNameRINT(char * name){
 	viewportlistint_t ret;
 	int hash = getHash(name);
 	hashbucket_t * hb = &viewporthashtable[hash];
@@ -60,7 +60,7 @@ viewportlistint_t findViewportssByNameRINT(char * name){
         }
 	return ret;
 }
-viewport_t *findViewportByNameRPOINT(char * name){
+viewport_t * findViewportByNameRPOINT(char * name){
 	return returnViewportById(findByNameRINT(name, viewporthashtable));
 }
 int findViewportByNameRINT(char * name){
@@ -82,10 +82,10 @@ int deleteViewport(int id){
 }
 
 viewport_t * returnViewportById(int id){
-	int viewportindex = (id & 0xFFFF);
-	viewport_t * viewport = &viewportlist[viewportindex];
-	if(!viewport->type) return FALSE;
-	if(viewport->myid == id) return viewport;
+	int index = (id & 0xFFFF);
+	viewport_t * v = &viewportlist[index];
+	if(!v->type) return FALSE;
+	if(v->myid == id) return v;
 	return FALSE;
 }
 
@@ -339,4 +339,28 @@ int recalcViewport(viewport_t * v, vec3_t pos, vec3_t angle, float fov, float as
 int generateFramebufferForViewport(viewport_t *v){
 	//todo
 	return FALSE;
+}
+int resizeViewport(viewport_t *v, int width, int height){
+	if(!v){
+		return FALSE;
+	}
+//	if(v->height == height) return FALSE;
+//	if(v->width == v->width) return FALSE;
+//	v->height = height;
+//	v->width = width;
+	float aspect = (float)width/(float)height;
+//	if(aspect != v->aspect){
+		v->aspect = aspect;
+//		recalcViewport(v, v->pos, v->angle, v->fov, aspect, v->near, v->far);
+		recalcProjectionMatrix(v);
+		Matrix4x4_Concat(&v->viewproj, &v->projection, &v->view);
+		recalcFrustum(v);
+
+//	}
+	framebuffer_t *fb = returnFramebufferById(v->fbid);
+	if(!fb){
+		return FALSE;
+	}
+	return resizeFramebuffer(fb, width, height);
+
 }

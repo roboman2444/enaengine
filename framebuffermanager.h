@@ -3,12 +3,16 @@
 
 typedef struct framebuffer_s{
 	char * name;
-	char type;
+	unsigned char type;
 	int myid;
 	GLuint width;
 	GLuint height;
 	GLuint id;
-	int texturegroupid;
+	GLuint id0;
+	GLuint id1;
+	GLuint id2;
+	GLuint rb;
+//	int texturegroupid;
 } framebuffer_t;
 
 typedef struct framebufferlistpoint_s {
@@ -43,4 +47,5 @@ framebuffer_t * createAndAddFramebufferRPOINT(char * name, char type);
 int createAndAddFramebufferRINT(char * name, char type);
 
 framebuffer_t createFramebuffer(char * name, char type);
+int resizeFramebuffer(framebuffer_t *fb, int width, int height);
 #endif
