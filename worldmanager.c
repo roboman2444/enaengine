@@ -353,6 +353,7 @@ int loadWorld(char * filename){
 		int shaderindice = objbuf[i].shaderindice;
 		if(shaderindice > header.shaderlistcount)continue;
 
+		if(!modelindice) obj->modelid = 0;
 		else obj->modelid = createAndAddModelRINT(modelnamelist[modelindice-1]);
 		if(!textureindice) obj->textureid = 0;
 		else obj->textureid = createAndAddTexturegroupRINT(texturenamelist[textureindice-1]);
@@ -588,7 +589,7 @@ int addObjectToWorld(worldobject_t * o){
 	model_t * m = returnModelById(o->modelid);
 	if(!m) return FALSE;
 	int vertcount = m->numverts;
-	if(!vertcount) return FALSE;
+	if(!vertcount)return FALSE;
 	//walk tree and add
 	return walkAndAddObject(o, worldroot);
 }

@@ -29,6 +29,90 @@ hashbucket_t modelhashtable[MAXHASHBUCKETS];
 char *statictypes[] = {".obj"}; //todo filesys
 char *animtypes[] = {".iqm"}; //todo filesys //todo
 
+int makeCubeModel(void){
+	model_t m;// = malloc(sizeof(model_T));
+//	memset(m, 0, sizeof(model_t));
+//	consolePrintf("generating cube\n");
+	m.type = 1;
+	m.name = malloc(strlen("cube")+1);
+	strcpy(m.name, "cube");
+
+	GLfloat * points = malloc(sizeof(GLfloat)*64);
+	int i;
+	for(i = 0; i < 3; i++){
+		m.bbox[i*2] = 1.0;
+		m.bbox[(i*2)+1] = -1.0;
+	}
+	for(i = 0; i < 8; i++){
+		points[(i*8)+0] = ((i&1)<<1)-1.0;
+		points[(i*8)+1] =  (i&2)    -1.0;
+		points[(i*8)+2] = ((i&4)>>1)-1.0;
+
+		m.bboxp[(i*3)+0] = ((i&1)<<1)-1.0;
+		m.bboxp[(i*3)+1] =  (i&2)    -1.0;
+		m.bboxp[(i*3)+2] = ((i&4)>>1)-1.0;
+
+		points[(i*8)+3] = points[(i*8)+0] * 0.57735;
+		points[(i*8)+4] = points[(i*8)+1] * 0.57735;
+		points[(i*8)+5] = points[(i*8)+2] * 0.57735;
+
+		points[(i*8)+6] = ((i&1)<<1)-1.0;
+		points[(i*8)+7] =  (i&2)    -1.0;
+
+	}
+	m.spheresize = 1.0;
+//	getBBoxFromInterleavedMesh(points, 8, 8, m.bbox);
+//	getBBoxpFromBBox(m.bbox, m.bboxp);
+
+
+	GLuint tris[36] = {
+				0, 2, 3,
+				0, 3, 1,
+				4, 5, 7,
+				4, 7, 6,
+				2, 0, 4,
+				2, 4, 6,
+				0, 1, 5,
+				0, 5, 4,
+				1, 3, 7,
+				1, 7, 5,
+				3, 2, 6,
+				3, 6, 7
+	};
+
+	vbo_t * myvbo = createAndAddVBORPOINT(m.name, 1);
+	if(!myvbo) return FALSE; // todo free and error handle
+	m.vbo = myvbo->myid;
+
+
+	glBindBuffer(GL_ARRAY_BUFFER, myvbo->vboid);
+	glBufferData(GL_ARRAY_BUFFER, 8 * 8 * sizeof(GLfloat), points, GL_STATIC_DRAW);
+	myvbo->numverts = 8;
+	m.interleaveddata = points;
+//	free(interleavedbuffer);
+
+	glEnableVertexAttribArray(POSATTRIBLOC);
+	glVertexAttribPointer(POSATTRIBLOC, 3, GL_FLOAT, GL_FALSE, 8*sizeof(GLfloat), 0);
+
+	glEnableVertexAttribArray(NORMATTRIBLOC);
+	glVertexAttribPointer(NORMATTRIBLOC, 3, GL_FLOAT, GL_FALSE, 8*sizeof(GLfloat), (void*)(3*sizeof(GLfloat)));
+
+	glEnableVertexAttribArray(TCATTRIBLOC);
+	glVertexAttribPointer(TCATTRIBLOC, 2, GL_FLOAT, GL_FALSE, 8*sizeof(GLfloat), (void*)(6*sizeof(GLfloat)));
+
+
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,myvbo->indicesid);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, 12 * 3 *sizeof(GLuint), tris, GL_STATIC_DRAW);
+	myvbo->numfaces = 12;
+	m.tris = tris;
+	m.numfaces = 12;
+	m.numverts = 8;
+	m.stride = 8; //todo
+
+	return addModelRINT(m);
+	return TRUE;
+}
 
 int initModelSystem(void){
 //	modelhashtable = malloc(MAXHASHBUCKETS * 2* sizeof(hashbucket_t));
@@ -40,6 +124,8 @@ int initModelSystem(void){
 //	if(!modellist) memset(modellist, 0 , modelnumber * sizeof(model_t));
 //	addModelRINT("default");
 //	defaultModel = addModelToList(none);
+
+	makeCubeModel();
 	modelsOK = TRUE;
 	return TRUE;
 }

@@ -303,6 +303,7 @@ int glMainDraw(void){
 
 	recalcViewport(cam, pos, angle, 90.0, cam->aspect, 1.0, 1000.0);
 	glDrawViewport(cam);
+//	glDrawFSQuad();
 	swapBuffers();
 //	consolePrintf("Faces: %li Verts: %li Objects: %li\n", totalface, totalvert, totalcount);
 	return TRUE;

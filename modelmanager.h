@@ -65,6 +65,7 @@ int deleteModel(int id);
 
 model_t * createAndAddModelRPOINT(char * name);
 int createAndAddModelRINT(char * name);
+//int makeCubeModel(void);
 
 #endif
 
