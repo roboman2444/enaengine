@@ -75,7 +75,7 @@ int deleteViewport(int id){
 	free(viewport->name);
 
 //todo free viewport
-	bzero(viewport, sizeof(viewport_t));
+	memset(viewport, 0, sizeof(viewport_t));
 	if(viewportindex < viewportArrayFirstOpen) viewportArrayFirstOpen = viewportindex;
 	for(; viewportArrayLastTaken > 0 && !viewportlist[viewportArrayLastTaken].type; viewportArrayLastTaken--);
 	return TRUE;

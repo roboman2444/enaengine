@@ -53,8 +53,7 @@ int deleteVBO(int id){
 	glDeleteBuffers(2, &vbo->vboid); //deletes both
 	glDeleteVertexArrays(1, &vbo->vaoid);
 
-//todo free vbo
-	bzero(vbo, sizeof(vbo_t));
+	memset(vbo,0, sizeof(vbo_t));
 	if(vboindex < vboArrayFirstOpen) vboArrayFirstOpen = vboindex;
 	for(; vboArrayLastTaken > 0 && !vbolist[vboArrayLastTaken].type; vboArrayLastTaken--);
 	return TRUE;

@@ -5,6 +5,7 @@
 #include "matrixlib.h"
 #include "entitymanager.h"
 #include "worldmanager.h"
+#include "lightmanager.h"
 #include "renderqueue.h"
 #include "glmanager.h"
 
@@ -202,11 +203,6 @@ int addObjectToRenderbatche(worldobject_t * obj, renderbatche_t * batch){
 }
 
 
-
-
-
-
-
 int cleanupModelbatche(modelbatche_t * batch){
 	if(!batch) return FALSE;
 	if(batch->matlist)free(batch->matlist);
@@ -252,4 +248,16 @@ int cleanupRenderbatche(renderbatche_t * batch){
 	batch->count = 0;
 	batch->shaderbatch = 0;
 	return TRUE;
+}
+
+void addLightToLightbatche(int lightid, lightbatche_t * batch){
+	batch->count++;
+	batch->lightlist = realloc(batch->lightlist, batch->count * sizeof(int));
+	batch->lightlist[batch->count] = lightid;
+}
+
+void cleanupLightbatche(lightbatche_t * batch){
+	if(!batch) return;
+	if(batch->lightlist) free(batch->lightlist);
+	batch->count = 0;
 }

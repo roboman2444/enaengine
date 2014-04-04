@@ -39,5 +39,7 @@ vbo_t * returnVBOById(int id);
 vbo_t * createAndAddVBORPOINT(char * name, char type);
 int createAndAddVBORINT(char * name, char type);
 vbo_t createVBO(char *name, char type);
+
+int deleteVBO(int vboid);
 #endif
 

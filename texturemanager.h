@@ -19,6 +19,7 @@ typedef struct texture_s {
 4 - spec
 5 - gloss
 
+
 10 - envmap(cubemap) unused/error
 11 - envmap color
 12 - envmap depth (used for shadowmaps of point lights)

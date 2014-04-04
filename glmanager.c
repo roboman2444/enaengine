@@ -23,15 +23,18 @@
 
 float degnumber;
 
+//state rendering stuff
 viewport_t * currentvp;
 shaderpermutation_t * currentsp;
+char currentMatNeeds = 0;
+
 unsigned long totalface, totalcount, totalvert;
 int camid;
 int wireshaderid; //todo redo
+int lightingshaderid = 0;
 viewport_t * cam = 0;
 GLfloat fsquadpoints[12] = {-1.0, -1.0, 	1.0, -1.0, 	 1.0, 1.0,
 			    -1.0, -1.0, 	1.0,  1.0, 	-1.0, 1.0};
-
 int glShutdown(void){
 	return FALSE;
 }
@@ -283,8 +286,6 @@ int glDrawViewport(viewport_t *v){
 
 	loadEntitiesIntoQueue(&b, v);
 	loadWorldIntoQueue(&b, v);
-
-
 	drawEntitiesR(&b);
 
 	cleanupRenderbatche(&b);

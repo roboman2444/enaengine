@@ -260,23 +260,44 @@ int findModelByNameRINT(char * name){ //todo global
 
 int deleteModel(int id){
 	int modelindex = (id & 0xFFFF);
-	model_t * mod = &modellist[modelindex];
-	if(mod->myid != id) return FALSE;
-	if(!mod->name) return FALSE;
-	deleteFromHashTable(mod->name, id, modelhashtable);
-	free(mod->name);
-	if(mod->interleaveddata) free(mod->interleaveddata);
+	model_t * m = &modellist[modelindex];
+	if(m->myid != id) return FALSE;
+	if(!m->name) return FALSE;
+	deleteFromHashTable(m->name, id, modelhashtable);
+	free(m->name);
+	if(m->interleaveddata) free(m->interleaveddata);
 	//todo call delete vbo
 //TODO
 //TODO
 //TODO
 //TODO
-//delte VAO and whatnot
-	bzero(mod, sizeof(model_t));
+	vbo_t * v = returnVBOById(m->vbo);
+	if(v) deleteVBO(v->myid);
+
+	memset(m, 0, sizeof(model_t));
 	if(modelindex < modelArrayFirstOpen) modelArrayFirstOpen = modelindex;
 	for(; modelArrayLastTaken > 0 && !modellist[modelArrayLastTaken].type; modelArrayLastTaken--);
 	return TRUE;
 }
+
+int deleteAllModels(void){
+	int i, count = 0;
+	for(i = 0; i < modelArrayLastTaken; i++){
+		model_t *m = &modellist[i];
+		count += deleteModel(m->myid);
+	}
+	memset(modelhashtable, 0, MAXHASHBUCKETS *sizeof(hashbucket_t));
+//	model_t none = {"default", findTextureGroupByName("default"), 0, 0};
+	if(modellist) free(modellist);
+	modellist = 0;
+	modelcount = 0;
+	modelArrayFirstOpen = 0;
+	modelArrayLastTaken = -1;
+	modelArraySize = 0;
+
+	return count;
+}
+
 model_t * returnModelById(int id){
 	int modelindex = (id & 0xFFFF);
 	model_t * mod = &modellist[modelindex];

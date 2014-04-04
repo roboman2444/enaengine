@@ -10,7 +10,7 @@ typedef struct viewport_s {
 	float near;
 	float far;
 	int viewchanged;
-	int fbid;
+	int fbid; //todo add more for ssao, deferred, etc
 	vec3_t pos;
 	vec3_t angle;
 	matrix4x4_t projection;

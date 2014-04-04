@@ -112,7 +112,7 @@ int deleteLight(int id){
 	if(!ent->name) return FALSE;
 	deleteFromHashTable(ent->name, id, lighthashtable);
 	free(ent->name);
-	bzero(ent, sizeof(light_t));
+	memset(ent, 0, sizeof(light_t));
 //	ent->type = 0;
 //	ent->model = 0;
 //	ent->name = 0;
@@ -131,7 +131,7 @@ light_t * returnLightById(int id){
 }
 light_t createLight(char * name){
 	light_t newlight;
-	bzero(&newlight, sizeof(light_t));
+	memset(&newlight, 0, sizeof(light_t));
 	newlight.type = 1;
 	newlight.name = malloc(strlen(name)+1); // todo maybe put this somewhere else...
 	strcpy(newlight.name, name);

@@ -48,7 +48,7 @@ int deleteShader(int id){
 	//todo
 	//much todo
 
-	bzero(shader, sizeof(shaderprogram_t));
+	memset(shader, 0, sizeof(shaderprogram_t));
 	if(shaderindex < shaderArrayFirstOpen) shaderArrayFirstOpen = shaderindex;
 	for(; shaderArrayLastTaken > 0 && !shaderlist[shaderArrayLastTaken].type; shaderArrayLastTaken--);
 	return TRUE;
@@ -217,6 +217,7 @@ shaderpermutation_t createPermutation(shaderprogram_t * shader, int permutation)
 
 //set up other uniforms
 	perm.unimat40 = glGetUniformLocation(programid, "unimat40");
+	perm.unimat41 = glGetUniformLocation(programid, "unimat41");
 	perm.univec40 = glGetUniformLocation(programid, "univec40");
 	perm.univec30 = glGetUniformLocation(programid, "univec30");
 	perm.univec20 = glGetUniformLocation(programid, "univec20");

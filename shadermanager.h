@@ -14,7 +14,7 @@ typedef struct shaderpermutation_s {
 	char compiled;
 	int permutation;
 	int unimat40;
-	//int unimat41;
+	int unimat41;
 	//int unimat42;
 	//int unimat43;
 	int univec40;

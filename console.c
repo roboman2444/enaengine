@@ -102,11 +102,11 @@ int resizeConsoleBuffer(int size){
 	char **newBuffer = malloc(size * sizeof(char *));
 
 //	if(!newBuffer); //todo debug
-	bzero(newBuffer, size*sizeof(char *));
+	memset(newBuffer, 0, size*sizeof(char *));
 
 	if(consoleOutputBuffer){ //if there already is one
 
-		//TODO since newBuffer is already bzero'd  i can probably only reset the parts that were set. Some hocus pocus with consoleStringsPrinted
+		//TODO since newBuffer is already zero'd  i can probably only reset the parts that were set. Some hocus pocus with consoleStringsPrinted
 
 		if(consoleStringsPrinted > size) consoleStringsPrinted = size; // set the number of printed strings to the size of the buffer if they are too much... needed if i eventually resize the buffer back up to that size or such
 
@@ -128,7 +128,7 @@ int resizeConsoleBuffer(int size){
 		free(consoleOutputBuffer);
 		consoleCircleBufferPlace = n;
 	} else { // and if you are doing the init
-		bzero(newBuffer, size * sizeof(char*));
+		memset(newBuffer, 0, size * sizeof(char*));
 		consoleCircleBufferPlace = 0;//just in case
 		consoleStringsPrinted = 0;
 	}

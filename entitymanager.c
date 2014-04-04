@@ -71,7 +71,7 @@ int deleteEntity(int id){
 	if(!ent->name) return FALSE;
 	deleteFromHashTable(ent->name, id, entityhashtable);
 	free(ent->name);
-	bzero(ent, sizeof(entity_t));
+	memset(ent, 0, sizeof(entity_t));
 //	ent->type = 0;
 //	ent->model = 0;
 //	ent->name = 0;
@@ -90,7 +90,7 @@ entity_t * returnEntityById(int id){
 }
 entity_t createEntity(char * name){
 	entity_t newent;
-	bzero(&newent, sizeof(entity_t));
+	memset(&newent, 0, sizeof(entity_t));
 	newent.type = 1;
 	newent.name = malloc(strlen(name)+1); // todo maybe put this somewhere else...
 	strcpy(newent.name, name);
