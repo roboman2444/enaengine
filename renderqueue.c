@@ -249,13 +249,13 @@ int cleanupRenderbatche(renderbatche_t * batch){
 	batch->shaderbatch = 0;
 	return TRUE;
 }
-
+//deprecated?
 void addLightToLightbatche(int lightid, lightbatche_t * batch){
 	batch->count++;
 	batch->lightlist = realloc(batch->lightlist, batch->count * sizeof(int));
 	batch->lightlist[batch->count] = lightid;
 }
-
+//deprecated?
 void cleanupLightbatche(lightbatche_t * batch){
 	if(!batch) return;
 	if(batch->lightlist) free(batch->lightlist);

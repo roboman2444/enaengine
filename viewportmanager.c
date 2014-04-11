@@ -83,6 +83,7 @@ int deleteViewport(int id){
 
 viewport_t * returnViewportById(int id){
 	int index = (id & 0xFFFF);
+//	if(index > viewportArrayLastTaken) return FALSE;
 	viewport_t * v = &viewportlist[index];
 	if(!v->type) return FALSE;
 	if(v->myid == id) return v;
@@ -97,6 +98,8 @@ viewport_t createViewport (char * name, char type){
 	v.near = 1.0;
 	v.far = 1000.0;
 	v.viewchanged = TRUE;
+	v.outfbid = 0;
+	v.dfbid = 0;
 	int i;
 	for(i = 0; i < 3; i++){
 		v.pos[i] = 0.0;
@@ -104,8 +107,6 @@ viewport_t createViewport (char * name, char type){
 	}
  	v.name = malloc(strlen(name)+1);
 	strcpy(v.name, name);
-//	recalcViewMatrix(&v); //todo may not need
-//	recalcProjectionMatrix(&v);
 	Matrix4x4_CreateIdentity(&v.view);
 	Matrix4x4_CreateIdentity(&v.projection);
 	Matrix4x4_CreateIdentity(&v.viewproj);
@@ -153,22 +154,10 @@ int createAndAddViewportRINT(char * name, char type){
 }
 
 void recalcViewMatrix(viewport_t * v){
-/*	Matrix4x4_CreateIdentity(&v->view);
-	Matrix4x4_ConcatRotate(&v->view, v->angle[2], 0.0, 0.0, 1.0);
-	Matrix4x4_ConcatRotate(&v->view, v->angle[0], -1.0, 0.0, 0.0);
-	Matrix4x4_ConcatRotate(&v->view, v->angle[1], 0.0, 1.0, 0.0);
-	Matrix4x4_ConcatRotate(&v->view, -90.0, 1.0, 0.0, 0.0); // rotate up?
-	Matrix4x4_ConcatScale3(&v->view, 1.0, -1.0, 1.0);
-	Matrix4x4_ConcatTranslate(&v->view, -v->pos[0], -v->pos[1], -v->pos[2]);
-*/
-//	Matrix4x4_CreateIdentity(&v->view);
-//	Matrix4x4_ConcatRotate(&v->view, -90.0, 1.0, 0.0, 0.0); // rotate up?
 	Matrix4x4_CreateRotate(&v->view, v->angle[2], 0.0, 0.0, 1.0);
 	Matrix4x4_ConcatRotate(&v->view, v->angle[0], 1.0, 0.0, 0.0);
 	Matrix4x4_ConcatRotate(&v->view, v->angle[1], 0.0, 1.0, 0.0);
 	Matrix4x4_ConcatTranslate(&v->view, -v->pos[0], -v->pos[1], -v->pos[2]);
-//	Matrix4x4_ConcatScale3(&v->view, 1.0, -1.0, 1.0);
-
 }
 void recalcProjectionMatrix(viewport_t * v){
 	double sine, cotangent, deltaZ;
@@ -180,8 +169,6 @@ void recalcProjectionMatrix(viewport_t * v){
 		return;
 	}
 	cotangent = cos(radians) / sine;
-
-//	Matrix4x4_CreateIdentity(&v->projection);
 
 	v->projection.m[0][0] = cotangent / v->aspect;
 	v->projection.m[1][1] = cotangent;
@@ -215,7 +202,7 @@ int testSphereInFrustum(viewport_t * v, vec_t * p, float size){
 	}
 	return TRUE;
 }
-int testBBoxPointsInFrustum(viewport_t * v, vec_t * points){
+int testBBoxPInFrustum(viewport_t * v, vec_t * points){
 	int i;
 	vec_t * n;
 	float d;
@@ -235,20 +222,6 @@ int testBBoxPointsInFrustum(viewport_t * v, vec_t * points){
 
 	return TRUE;
 }
-/*
-int testBoxInFrustum(viewport_t * v, vec3_t p, vec3_t size){
-	int i;
-	vec_t * n;
-	for(i = 0; i < 6; i++){
-		n = v->frustum[i].norm;
-		float dist = vec3dot(n, p) + v->frustum[i].d;
-		if(dist < 0.0){
-			return FALSE;
-		}
-	}
-	return TRUE;
-}
-*/
 void recalcFrustum(viewport_t * v){
 	vec_t m[16];
 	Matrix4x4_ToArrayFloatGL(&v->viewproj, m);
@@ -357,10 +330,13 @@ int resizeViewport(viewport_t *v, int width, int height){
 		recalcFrustum(v);
 
 //	}
-	framebuffer_t *fb = returnFramebufferById(v->fbid);
-	if(!fb){
+	framebuffer_t *outfb = returnFramebufferById(v->outfbid);
+	if(!outfb){
 		return FALSE;
 	}
-	return resizeFramebuffer(fb, width, height);
+	framebuffer_t *dfb = returnFramebufferById(v->dfbid);
+	if(dfb) resizeFramebuffer(dfb, width, height);
+
+	return resizeFramebuffer(outfb, width, height);
 
 }

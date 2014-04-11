@@ -33,6 +33,7 @@ int camid;
 int wireshaderid; //todo redo
 int lightingshaderid = 0;
 viewport_t * cam = 0;
+int lightvbo = 0;
 GLfloat fsquadpoints[12] = {-1.0, -1.0, 	1.0, -1.0, 	 1.0, 1.0,
 			    -1.0, -1.0, 	1.0,  1.0, 	-1.0, 1.0};
 int glShutdown(void){
@@ -109,10 +110,14 @@ int glInit(void){
 
 	cam = createAndAddViewportRPOINT("cam", 1);
 	camid = cam->myid;
-	cam->fbid = findFramebufferByNameRINT("screen");
+	cam->outfbid = findFramebufferByNameRINT("screen");
+	cam->dfbid = createAndAddFramebufferRINT("screend", 3);
 	resizeViewport(cam, 800, 600);
 
 	wireshaderid = createAndAddShaderRINT("wireframe");
+
+	vbo_t * lvbo = createAndAddVBORPOINT("lights", 2);
+	lightvbo = lvbo->myid;
 
 
 	return TRUE; // so far so good
@@ -142,7 +147,7 @@ int loadLeafIntoQueue(worldleaf_t * l, renderbatche_t * batch, viewport_t *v){
 	worldobject_t * list = l->list;
 	int i;
 	for(i = 0; i < num; i++){
-		if(testBBoxPointsInFrustum(v, list[i].bboxp)){
+		if(testBBoxPInFrustum(v, list[i].bboxp)){
 			addObjectToRenderbatche(&list[i], batch);
 			mynum++;
 		}
@@ -150,7 +155,7 @@ int loadLeafIntoQueue(worldleaf_t * l, renderbatche_t * batch, viewport_t *v){
 	//todo cull these out
 	worldleaf_t **children = l->children;
 	for(i = 0; i < 4; i++){
-		if(children[i] && testBBoxPointsInFrustum(v, children[i]->bboxp)){
+		if(children[i] && testBBoxPInFrustum(v, children[i]->bboxp)){
 			mynum+= loadLeafIntoQueue(children[i], batch, v);
 		}
 	}
@@ -185,7 +190,7 @@ int loadEntitiesIntoQueue(renderbatche_t * batch, viewport_t * v){
 //entity worldspace bboxp method
 		//best way to cull atm
 
-		if(testBBoxPointsInFrustum(v, e->bboxp)){
+		if(testBBoxPInFrustum(v, e->bboxp)){
 			count++;
 			addEntityToRenderbatche(e, batch);
 		} else {
@@ -273,13 +278,109 @@ int drawEntitiesR(renderbatche_t * batch){
 	}
 	return count;
 }
+void glDrawFSQuad(void){
+	glVertexPointer(2, GL_FLOAT, 0, fsquadpoints);
+	glDrawArrays(GL_TRIANGLES, 0, 2);
+}
+GLuint tris[36] = {
+			0, 2, 3,
+			0, 3, 1,
+			4, 5, 7,
+			4, 7, 6,
+			2, 0, 4,
+			2, 4, 6,
+			0, 1, 5,
+			0, 5, 4,
+			1, 3, 7,
+			1, 7, 5,
+			3, 2, 6,
+			3, 6, 7
+	};
+int glDrawLights(viewport_t *v){
+	framebuffer_t *df = returnFramebufferById(v->dfbid);
+	framebuffer_t *of = returnFramebufferById(v->outfbid);
+	vbo_t * lvbo = returnVBOById(lightvbo);
+	if(!df || !of || !lvbo) return FALSE;
+	int i, count = 0;
+//	lightbatche_t outlights;
+	GLuint *indices = 0;
+	GLfloat *points = 0;
+	for(i = 0; i <= lightArrayLastTaken; i++){
+		light_t * l = &lightlist[i];
+		if(!l->type) continue;
+		//todo make into a special function that will return something else if the light intersects the nearplane
+		//todo also make a special case for non point lights
+		if(testSphereInFrustum(v, l->pos, l->scale)){
+			//set indices up
+			unsigned int j = 36 * count;
+			int t;
+			unsigned int bump = 8 * count;
+			count++;
+			indices = realloc(indices, 36 * count * sizeof(GLuint));
+			for(t = 0; t < 36; t++, j++){
+				indices[j] = tris[i] + bump;
+			}
+			//copy bboxp
+			points = realloc(points, 24 * count * sizeof(GLfloat));
+			memcpy(&points[24*(count-1)], l->bboxp, 24*sizeof(GLfloat));
+			//do i really need a lightbatch? cant i just generate stuff here and then render?
+//			addLightToLightbatche(l->myid, &outlights);
+		}
+	}
+	if(!count) return FALSE;
 
+	//todo can i do this more efficiently
+	glBindVertexArray(lvbo->vaoid);
+	glBindBuffer(GL_ARRAY_BUFFER, lvbo->vboid);
+	glBufferData(GL_ARRAY_BUFFER, count * 24 * sizeof(GLfloat), points, GL_STATIC_DRAW); // change to stream?
+
+	glEnableVertexAttribArray(POSATTRIBLOC);
+	glVertexAttribPointer(POSATTRIBLOC, 3, GL_FLOAT, GL_FALSE, 3* sizeof(GLfloat), 0); // may not be needed every time
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, lvbo->indicesid);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, 36 * count * sizeof(GLuint), indices, GL_STATIC_DRAW);
+	lvbo->numfaces = 12 * count;
+	lvbo->numverts = 8 * count;
+
+	glBindFramebuffer(GL_FRAMEBUFFER, of->id);
+	glDepthMask(GL_FALSE);
+	glClear(GL_COLOR_BUFFER_BIT);//todo set OF to use the same renderbuffer for depth as DF
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, df->id0);
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, df->id1);
+	glActiveTexture(GL_TEXTURE2);
+	glBindTexture(GL_TEXTURE_2D, df->id2);
+
+
+	GLfloat out[16];
+	Matrix4x4_ToArrayFloatGL(&v->viewproj, out);
+	glUniformMatrix4fv(currentsp->unimat40, 1, GL_FALSE, out);
+	glDrawElements(GL_TRIANGLES, count * 36, GL_UNSIGNED_INT, 0);
+
+
+//may not be needed, but its a good sanity check
+	glDepthMask(GL_TRUE);
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, 0);
+	glActiveTexture(GL_TEXTURE2);
+	glBindTexture(GL_TEXTURE_2D, 0);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+
+
+	return count;
+}
 int glDrawViewport(viewport_t *v){
-	framebuffer_t *f = returnFramebufferById(v->fbid);
-	if(!f) return FALSE;
-	glBindFramebuffer(GL_FRAMEBUFFER, f->id);
+	framebuffer_t *df = returnFramebufferById(v->dfbid);
+	framebuffer_t *of = returnFramebufferById(v->outfbid);
+	if(!df || !of) return FALSE;
+//	glBindFramebuffer(GL_FRAMEBUFFER, df->id);
+	glBindFramebuffer(GL_FRAMEBUFFER, of->id);
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-	glViewport(0, 0, f->width, f->height);
+	//glViewport(0, 0, df->width, df->height);
+	glViewport(0, 0, of->width, of->height);
 
 	renderbatche_t b;
 	memset(&b, 0, sizeof(renderbatche_t));
@@ -289,11 +390,12 @@ int glDrawViewport(viewport_t *v){
 	drawEntitiesR(&b);
 
 	cleanupRenderbatche(&b);
+
+//	glBindFramebuffer(GL_FRAMEBUFFER, of->id);
+//	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+//	glDrawFSQuad();
+
 	return TRUE;
-}
-void glDrawFSQuad(void){
-	glVertexPointer(2, GL_FLOAT, 0, fsquadpoints);
-	glDrawArrays(GL_TRIANGLES, 0, 2);
 }
 int glMainDraw(void){
 	totalface = 0;

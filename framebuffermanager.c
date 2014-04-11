@@ -28,8 +28,8 @@ int initFramebufferSystem(void){
 	screen->height = 600;
 	screen->id = 0;
 	screen->id0 = 0;
-	screen->id0 = 0;
-	screen->id0 = 0;
+	screen->id1 = 0;
+	screen->id2 = 0;
 	screen->type = 255;
 //	screen->texturegroupid = 0;
 	screen->name = malloc(7);

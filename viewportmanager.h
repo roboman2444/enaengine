@@ -10,7 +10,8 @@ typedef struct viewport_s {
 	float near;
 	float far;
 	int viewchanged;
-	int fbid; //todo add more for ssao, deferred, etc
+	int outfbid; //todo add more for ssao, deferred, etc
+	int dfbid; //todo add more for ssao, deferred, etc
 	vec3_t pos;
 	vec3_t angle;
 	matrix4x4_t projection;
@@ -55,6 +56,6 @@ viewport_t createViewport(char * name, char type);
 int recalcViewport(viewport_t * v, vec3_t pos, vec3_t angle, float fov, float aspect, float near, float far);
 int testPointInFrustum(viewport_t *v, vec_t *p);
 int testSphereInFrustum(viewport_t *v, vec_t *p, float size);
-int testBBoxPointsInFrustum(viewport_t *v, vec_t *points);
+int testBBoxPInFrustum(viewport_t *v, vec_t *points);
 int resizeViewport(viewport_t *v, int width, int height);
 #endif
