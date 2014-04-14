@@ -85,6 +85,12 @@ int initGameCodeSystem(void){
 		entcoil->texturegroupid = createAndAddTexturegroupRINT("coil");
 		entcoil->attachmentid = findEntityByNameRINT("hat");
 		entcoil->shaderperm = 4;
+
+	light_t * light = addLightRPOINT("light");
+		light->type = 2;
+		light->attachmentid = entcoil->myid;
+		light->scale = 20.0;
+
 	entity_t * enttinydragon = addEntityRPOINT("tinydragon");
 		enttinydragon->type = 2;
 		enttinydragon->pos[1] = 3.0;
@@ -201,8 +207,8 @@ int initGameCodeSystem(void){
 */
 //	saveWorld("world2");
 //	deleteWorld();
-	loadWorld("world");
-	loadWorld("world2");
+//	loadWorld("world");
+//	loadWorld("world2");
 
 
 	gamecodeOK = TRUE;

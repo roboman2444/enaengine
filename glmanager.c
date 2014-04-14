@@ -29,9 +29,9 @@ shaderpermutation_t * currentsp;
 char currentMatNeeds = 0;
 
 unsigned long totalface, totalcount, totalvert;
-int camid;
-int wireshaderid; //todo redo
-int lightingshaderid = 0;
+int camid = 0;
+int wireshaderid = 0; //todo redo
+int lightshaderid = 0;
 viewport_t * cam = 0;
 int lightvbo = 0;
 GLfloat fsquadpoints[12] = {-1.0, -1.0, 	1.0, -1.0, 	 1.0, 1.0,
@@ -114,7 +114,8 @@ int glInit(void){
 	cam->dfbid = createAndAddFramebufferRINT("screend", 3);
 	resizeViewport(cam, 800, 600);
 
-	wireshaderid = createAndAddShaderRINT("wireframe");
+//	wireshaderid = createAndAddShaderRINT("wireframe");
+	lightshaderid = createAndAddShaderRINT("deferredlight");
 
 	vbo_t * lvbo = createAndAddVBORPOINT("lights", 2);
 	lightvbo = lvbo->myid;
@@ -322,12 +323,28 @@ int glDrawLights(viewport_t *v){
 			}
 			//copy bboxp
 			points = realloc(points, 24 * count * sizeof(GLfloat));
-			memcpy(&points[24*(count-1)], l->bboxp, 24*sizeof(GLfloat));
+
+			memcpy(&points[24*(count-1)], l->bboxp, 24*sizeof(GLfloat)); // size of 1
+
+/*
+			j = (count-1) * 24;
+			for(t = 0; t < 24; t++, j++){
+				points[j] = l->bboxp[t] * l->scale;
+			}
+*/
+//			consolePrintf("Yeah!%i\n", count);
 			//do i really need a lightbatch? cant i just generate stuff here and then render?
 //			addLightToLightbatche(l->myid, &outlights);
 		}
 	}
 	if(!count) return FALSE;
+
+	shaderprogram_t * shader = returnShaderById(lightshaderid);
+	shaderpermutation_t * perm = addPermutationToShader(shader, 0);
+	if(perm->compiled < 2) return FALSE;
+	currentsp = perm;
+	bindShaderPerm(perm);
+
 
 	//todo can i do this more efficiently
 	glBindVertexArray(lvbo->vaoid);
@@ -342,9 +359,9 @@ int glDrawLights(viewport_t *v){
 	lvbo->numfaces = 12 * count;
 	lvbo->numverts = 8 * count;
 
-	glBindFramebuffer(GL_FRAMEBUFFER, of->id);
-	glDepthMask(GL_FALSE);
-	glClear(GL_COLOR_BUFFER_BIT);//todo set OF to use the same renderbuffer for depth as DF
+//	glBindFramebuffer(GL_FRAMEBUFFER, of->id);
+//	glDepthMask(GL_FALSE);
+//	glClear(GL_COLOR_BUFFER_BIT);//todo set OF to use the same renderbuffer for depth as DF
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, df->id0);
 	glActiveTexture(GL_TEXTURE1);
@@ -353,14 +370,18 @@ int glDrawLights(viewport_t *v){
 	glBindTexture(GL_TEXTURE_2D, df->id2);
 
 
+//	glDisable(GL_DEPTH_TEST);
+//	glDisable(GL_CULL_FACE);
 	GLfloat out[16];
 	Matrix4x4_ToArrayFloatGL(&v->viewproj, out);
 	glUniformMatrix4fv(currentsp->unimat40, 1, GL_FALSE, out);
 	glDrawElements(GL_TRIANGLES, count * 36, GL_UNSIGNED_INT, 0);
+//	glEnable(GL_DEPTH_TEST);
+//	glEnable(GL_CULL_FACE);
 
 
 //may not be needed, but its a good sanity check
-	glDepthMask(GL_TRUE);
+//	glDepthMask(GL_TRUE);
 	glActiveTexture(GL_TEXTURE1);
 	glBindTexture(GL_TEXTURE_2D, 0);
 	glActiveTexture(GL_TEXTURE2);
@@ -391,6 +412,7 @@ int glDrawViewport(viewport_t *v){
 
 	cleanupRenderbatche(&b);
 
+	glDrawLights(v);
 //	glBindFramebuffer(GL_FRAMEBUFFER, of->id);
 //	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 //	glDrawFSQuad();

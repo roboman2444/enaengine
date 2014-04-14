@@ -8,7 +8,7 @@ int loadFileString(const char * filename, char ** output, int * length, int debu
 	FILE *file = fopen(filename, "r");
 	if(!file){
 //		if(debugmode)fprintf(stderr, "ERROR -- file does not exist\n");
-		if(debugmode)consolePrintf("ERROR -- file does not exist\n");
+		if(debugmode)consolePrintf("ERROR -- file %s does not exist\n", filename);
 		*length = 0;
 		return FALSE;
 	}
@@ -30,7 +30,7 @@ int loadFileString(const char * filename, char ** output, int * length, int debu
 int loadFileStringNoLength(const char * filename, char ** output, int debugmode){
 	FILE *file = fopen(filename, "r");
 	if(!file){
-		if(debugmode)consolePrintf("ERROR -- file does not exist\n");
+		if(debugmode)consolePrintf("ERROR -- file %s does not exist\n", filename);
 		return FALSE;
 	}
 	fseek(file, 0, SEEK_END);
