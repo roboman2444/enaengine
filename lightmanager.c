@@ -50,7 +50,14 @@ int lightLoop(void){
 				recalcLightBBox(l);
 				recheckLightLeaf(l);
 				count++;
+				l->needsupdate = 0;
+//	consolePrintf("updated light\n");
 			}
+		} else if(l->needsupdate){
+				recalcLightBBox(l);
+				recheckLightLeaf(l);
+				count++;
+				l->needsupdate = 0;
 		}
 	}
 	return count;

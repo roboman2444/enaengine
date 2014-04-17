@@ -87,9 +87,10 @@ int initGameCodeSystem(void){
 		entcoil->shaderperm = 4;
 
 	light_t * light = addLightRPOINT("light");
-		light->type = 2;
+		light->type = 1;
 		light->attachmentid = entcoil->myid;
-		light->scale = 20.0;
+		light->needsupdate = 1;
+		light->scale = 5.0;
 
 	entity_t * enttinydragon = addEntityRPOINT("tinydragon");
 		enttinydragon->type = 2;
@@ -207,8 +208,8 @@ int initGameCodeSystem(void){
 */
 //	saveWorld("world2");
 //	deleteWorld();
-//	loadWorld("world");
-//	loadWorld("world2");
+	loadWorld("world");
+	loadWorld("world2");
 
 
 	gamecodeOK = TRUE;

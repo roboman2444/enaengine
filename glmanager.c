@@ -105,7 +105,7 @@ int glInit(void){
 //	glEnable(GL_BLEND);
 //	glBlendFunc(GL_SRC_ALPHA,GL_ONE);
 //	glViewport(0, 0, 800, 600);
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+//	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 //	glEnable(GL_TEXTURE_2D);
 
 	cam = createAndAddViewportRPOINT("cam", 1);
@@ -319,7 +319,7 @@ int glDrawLights(viewport_t *v){
 			count++;
 			indices = realloc(indices, 36 * count * sizeof(GLuint));
 			for(t = 0; t < 36; t++, j++){
-				indices[j] = tris[i] + bump;
+				indices[j] = tris[t] + bump;
 			}
 			//copy bboxp
 			points = realloc(points, 24 * count * sizeof(GLfloat));
@@ -329,7 +329,7 @@ int glDrawLights(viewport_t *v){
 /*
 			j = (count-1) * 24;
 			for(t = 0; t < 24; t++, j++){
-				points[j] = l->bboxp[t] * l->scale;
+				points[j] = l->bboxp[t];// * l->scale;
 			}
 */
 //			consolePrintf("Yeah!%i\n", count);
@@ -359,9 +359,12 @@ int glDrawLights(viewport_t *v){
 	lvbo->numfaces = 12 * count;
 	lvbo->numverts = 8 * count;
 
-//	glBindFramebuffer(GL_FRAMEBUFFER, of->id);
-//	glDepthMask(GL_FALSE);
-//	glClear(GL_COLOR_BUFFER_BIT);//todo set OF to use the same renderbuffer for depth as DF
+
+
+	glBindFramebuffer(GL_FRAMEBUFFER, of->id);
+	glDepthMask(GL_FALSE);
+	glClear(GL_COLOR_BUFFER_BIT);//todo set OF to use the same renderbuffer for depth as DF
+	glViewport(0, 0, of->width, of->height);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, df->id0);
 	glActiveTexture(GL_TEXTURE1);
@@ -376,6 +379,7 @@ int glDrawLights(viewport_t *v){
 	Matrix4x4_ToArrayFloatGL(&v->viewproj, out);
 	glUniformMatrix4fv(currentsp->unimat40, 1, GL_FALSE, out);
 	glDrawElements(GL_TRIANGLES, count * 36, GL_UNSIGNED_INT, 0);
+//	glDrawArrays(GL_POINTS, 0, count * 8);
 //	glEnable(GL_DEPTH_TEST);
 //	glEnable(GL_CULL_FACE);
 
@@ -397,11 +401,11 @@ int glDrawViewport(viewport_t *v){
 	framebuffer_t *df = returnFramebufferById(v->dfbid);
 	framebuffer_t *of = returnFramebufferById(v->outfbid);
 	if(!df || !of) return FALSE;
-//	glBindFramebuffer(GL_FRAMEBUFFER, df->id);
-	glBindFramebuffer(GL_FRAMEBUFFER, of->id);
+	glBindFramebuffer(GL_FRAMEBUFFER, df->id);
+//	glBindFramebuffer(GL_FRAMEBUFFER, of->id);
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-	//glViewport(0, 0, df->width, df->height);
-	glViewport(0, 0, of->width, of->height);
+	glViewport(0, 0, df->width, df->height);
+//	glViewport(0, 0, of->width, of->height);
 
 	renderbatche_t b;
 	memset(&b, 0, sizeof(renderbatche_t));

@@ -18,7 +18,7 @@ typedef struct light_s {
 //	matrix4x4_t mat;
 	int attachmentid;
 
-	int needsbboxupdate;
+	int needsupdate;
 
 	vec_t bboxp[24];
 	vec_t bbox[6];
