@@ -159,6 +159,14 @@ int initGameCodeSystem(void){
 		enttinydragon->shaderperm = 4;
 		enttinydragon->attachmentid = prevatid;
 		prevatid = enttinydragon->myid;
+
+
+	light_t * light = addLightRPOINT("light");
+		light->type = 1;
+		light->attachmentid = enttinydragon->myid;
+		light->needsupdate = 1;
+		light->scale = 1.0;
+
 	}
 
 
