@@ -16,7 +16,7 @@ void main(){
 //	fragtexCoord = tcattrib;
 //	fragposition = posattrib;
 	gl_Position = unimat40 * vec4(posattrib, 1.0);
-	fragposition = vec3(gl_Position);
-//	fragtexCoord = (vec2(gl_Position) + vec2(1.0)) * 0.5;
-	fragtexCoord = vec2(gl_Position);
+	fragposition = gl_Position.xyz;
+	fragtexCoord = (gl_Position.xy * 0.5)+ vec2(0.5);
+//	fragtexCoord = vec2(gl_Position);
 }

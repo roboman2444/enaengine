@@ -109,6 +109,7 @@ int resizeFramebuffer(framebuffer_t *fb, int width, int height){
 	if(width  == fb->width)  return TRUE;
 	if(height < 1) height = 1;
 	if(width < 1) width = 1;
+	glBindFramebuffer(GL_FRAMEBUFFER, fb->id);
 	glBindTexture(GL_TEXTURE_2D, fb->id0);
 	//todo flags for hdr or not
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB/*16F*/, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
@@ -152,6 +153,8 @@ framebuffer_t createFramebuffer (char * name, char type){
 	fb.width = 1;
 	fb.height = 1;
 	glGenFramebuffers(1, &fb.id);
+	glBindFramebuffer(GL_FRAMEBUFFER, fb.id);
+
 	glGenTextures(1, &fb.id0);
 	glBindTexture(GL_TEXTURE_2D, fb.id0);
 	//todo flags for hdr or not

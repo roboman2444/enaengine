@@ -15,7 +15,7 @@ void main(){
 		fragColor = vec4(0.1);
 //		fragColor = vec4(fragposition, 1.0);
 //		fragColor = texture2D(texture0, fragposition.xy);
-		fragColor += max(texture2D(texture0, fragtexCoord), 0.0) * 1.0;
+		fragColor += texture2D(texture0, fragtexCoord);
 //		fragColor += texture2D(texture1, fragtexCoord) * 2.0;
 //		fragColor += texture2D(texture2, fragtexCoord) * 2.0;
 }
