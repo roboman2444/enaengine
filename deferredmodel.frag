@@ -45,7 +45,7 @@ void main(){
 	fragColor = vec4(dcolor,1.0);
 	#ifdef DEFERRED
 		normColor.rgb = ncolor;
-//		normColor.a = depth;
+		normColor.a = fragposition.z;
 		specColor.rg = scolor;
 	#endif
 }

@@ -175,20 +175,7 @@ int loadEntitiesIntoQueue(renderbatche_t * batch, viewport_t * v){
 		if(e->type < 2)continue;
 		if(!e->modelid)continue;
 
-//		addEntityToRenderbatche(e, batch);
-//entity woldspace sphere method FASTEST TO CULL, may or may not cull as well though
-/*
-		model_t * m = returnModelById(e->modelid);
-		vec3_t org;
-		Matrix4x4_OriginFromMatrix(&e->mat, org);
-		if(testSphereInFrustum(v, org, m->spheresize * e->scale)){
-			count++;
-			addEntityToRenderbatche(e, batch);
-		} else {
-			cullcount++;
-		}
-*/
-//entity worldspace bboxp method
+		//entity worldspace bboxp method
 		//best way to cull atm
 
 		if(testBBoxPInFrustum(v, e->bboxp)){
@@ -326,13 +313,6 @@ int glDrawLights(viewport_t *v){
 
 			memcpy(&points[24*(count-1)], l->bboxp, 24*sizeof(GLfloat)); // size of 1
 
-/*
-			j = (count-1) * 24;
-			for(t = 0; t < 24; t++, j++){
-				points[j] = l->bboxp[t];// * l->scale;
-			}
-*/
-//			consolePrintf("Yeah!%i\n", count);
 			//do i really need a lightbatch? cant i just generate stuff here and then render?
 //			addLightToLightbatche(l->myid, &outlights);
 		}
@@ -363,7 +343,8 @@ int glDrawLights(viewport_t *v){
 
 	glBindFramebuffer(GL_FRAMEBUFFER, of->id);
 	glDepthMask(GL_FALSE);
-	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);//todo set OF to use the same renderbuffer for depth as DF
+	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT| GL_STENCIL_BUFFER_BIT);//todo set OF to use the same renderbuffer for depth as DF
+//	glClearBufferfi(of->rb​, GLint drawBuffer​, GLfloat depth​, GLint stencil​);
 	glViewport(0, 0, of->width, of->height);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, df->id0);
@@ -404,7 +385,7 @@ int glDrawViewport(viewport_t *v){
 	if(!df || !of) return FALSE;
 	glBindFramebuffer(GL_FRAMEBUFFER, df->id);
 //	glBindFramebuffer(GL_FRAMEBUFFER, of->id);
-	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT| GL_STENCIL_BUFFER_BIT);//todo set OF to use the same renderbuffer for depth as DF
 	glViewport(0, 0, df->width, df->height);
 //	glViewport(0, 0, of->width, of->height);
 
