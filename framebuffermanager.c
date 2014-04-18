@@ -140,6 +140,8 @@ int resizeFramebuffer(framebuffer_t *fb, int width, int height){
 	glBindRenderbuffer(GL_RENDERBUFFER, fb->rb);
 	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height);
 //	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, fb->rb);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
 	fb->width = width;
 	fb->height = height;
 	return TRUE;
@@ -152,6 +154,7 @@ framebuffer_t createFramebuffer (char * name, char type){
 	fb.id = 0;
 	fb.width = 1;
 	fb.height = 1;
+
 	glGenFramebuffers(1, &fb.id);
 	glBindFramebuffer(GL_FRAMEBUFFER, fb.id);
 
@@ -189,6 +192,7 @@ framebuffer_t createFramebuffer (char * name, char type){
 	glBindRenderbuffer(GL_RENDERBUFFER, fb.rb);
 	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, 1, 1);
 	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, fb.rb);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	//todododo
 

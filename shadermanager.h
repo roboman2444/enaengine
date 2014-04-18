@@ -20,6 +20,7 @@ typedef struct shaderpermutation_s {
 	int univec40;
 	int univec30;
 	int univec20;
+	int uniscreensizefix;
 	int unifloat0;
 	GLuint texturespos[16];
 } shaderpermutation_t;

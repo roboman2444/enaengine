@@ -363,7 +363,7 @@ int glDrawLights(viewport_t *v){
 
 	glBindFramebuffer(GL_FRAMEBUFFER, of->id);
 	glDepthMask(GL_FALSE);
-	glClear(GL_COLOR_BUFFER_BIT);//todo set OF to use the same renderbuffer for depth as DF
+	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);//todo set OF to use the same renderbuffer for depth as DF
 	glViewport(0, 0, of->width, of->height);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, df->id0);
@@ -378,6 +378,7 @@ int glDrawLights(viewport_t *v){
 	GLfloat out[16];
 	Matrix4x4_ToArrayFloatGL(&v->viewproj, out);
 	glUniformMatrix4fv(currentsp->unimat40, 1, GL_FALSE, out);
+	glUniform2f(currentsp->uniscreensizefix, 1.0/of->width, 1.0/of->height);
 	glDrawElements(GL_TRIANGLES, count * 36, GL_UNSIGNED_INT, 0);
 //	glDrawArrays(GL_POINTS, 0, count * 8);
 //	glEnable(GL_DEPTH_TEST);
