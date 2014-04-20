@@ -75,7 +75,7 @@ int sdlInit(int width, int height, int bpp, int debugmode){
 	else			    videoFlags |= SDL_SWSURFACE;
 	if(videoInfo->blit_hw) 	    videoFlags |= SDL_HWACCEL;
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-	setMSAA(16);
+//	setMSAA(16);
 	return resizeWindow(width, height, bpp, debugmode);
 }
 void swapBuffers(void){

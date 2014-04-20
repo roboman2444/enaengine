@@ -17,6 +17,7 @@
 #include "worldmanager.h"
 #include "renderqueue.h"
 #include "lightmanager.h"
+#include "textmanager.h"
 
 #include <tgmath.h>
 
@@ -85,6 +86,11 @@ int glInit(void){
 	}
 	initViewportSystem();
 	if(!viewportsOK){
+		//todo call some sort of shutdown of everything
+		return FALSE;
+	}
+	initTextSystem();
+	if(!textOK){
 		//todo call some sort of shutdown of everything
 		return FALSE;
 	}
@@ -353,6 +359,10 @@ int glDrawLights(viewport_t *v){
 	glActiveTexture(GL_TEXTURE2);
 	glBindTexture(GL_TEXTURE_2D, df->id2);
 
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_ONE,GL_ONE);
+
+
 
 //	glDisable(GL_DEPTH_TEST);
 //	glDisable(GL_CULL_FACE);
@@ -367,7 +377,9 @@ int glDrawLights(viewport_t *v){
 
 
 //may not be needed, but its a good sanity check
-//	glDepthMask(GL_TRUE);
+	glDepthMask(GL_TRUE);
+	glDisable(GL_BLEND);
+
 	glActiveTexture(GL_TEXTURE1);
 	glBindTexture(GL_TEXTURE_2D, 0);
 	glActiveTexture(GL_TEXTURE2);
@@ -409,7 +421,7 @@ int glMainDraw(void){
 	totalface = 0;
 	totalcount = 0;
 	totalvert = 0;
-	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 	degnumber = degnumber+0.1;
 	if(degnumber>360.0) degnumber -=360.0;
 	vec3_t pos = {0.0, 9.0, 15.0};
