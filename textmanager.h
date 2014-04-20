@@ -3,13 +3,13 @@
 
 typedef struct text_s{
 	char type;
+	int myid;
 	int numchars;
 	GLuint textureid;
 	GLuint height;
 	GLuint width;
 //	texture_t * texture;
 	char * name;
-	int myid;
 }text_t;
 
 typedef struct font_s{

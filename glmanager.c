@@ -35,8 +35,12 @@ int wireshaderid = 0; //todo redo
 int lightshaderid = 0;
 viewport_t * cam = 0;
 int lightvbo = 0;
-GLfloat fsquadpoints[12] = {-1.0, -1.0, 	1.0, -1.0, 	 1.0, 1.0,
-			    -1.0, -1.0, 	1.0,  1.0, 	-1.0, 1.0};
+int textvbo = 0; //temporary
+int textshaderid = 0; // temporary
+//GLfloat fsquadpoints[12] = {-1.0, -1.0, 	1.0, -1.0, 	 1.0, 1.0,
+//			    -1.0, -1.0, 	1.0,  1.0, 	-1.0, 1.0};
+GLfloat fsquadpoints[16] = {-1.0, -1.0, -1.0, -1.0,   1.0, -1.0, 1.0, -1.0,   1.0, 1.0, 1.0, 1.0,   -1.0, 1.0, -1.0, 1.0};
+GLuint rectangleindices[6] = { 0, 1, 2, 0, 2, 3};
 int glShutdown(void){
 	return FALSE;
 }
@@ -125,6 +129,11 @@ int glInit(void){
 
 	vbo_t * lvbo = createAndAddVBORPOINT("lights", 2);
 	lightvbo = lvbo->myid;
+
+	//temporary
+	vbo_t * tvbo = createAndAddVBORPOINT("text", 2);
+	textvbo = tvbo->myid;
+	textshaderid = createAndAddShaderRINT("text");
 
 
 	return TRUE; // so far so good
@@ -434,6 +443,44 @@ int glMainDraw(void){
 
 	recalcViewport(cam, pos, angle, 90.0, cam->aspect, 1.0, 1000.0);
 	glDrawViewport(cam);
+
+//temporary
+//	glEnable(GL_BLEND);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	text_t * t = createAndAddTextRPOINT("Text Rendering Works!", "FreeMono.ttf");
+	glBindTexture(GL_TEXTURE_2D, t->textureid);
+	vbo_t * tvbo = returnVBOById(textvbo);
+	shaderprogram_t * shader = returnShaderById(textshaderid);
+	shaderpermutation_t * perm = addPermutationToShader(shader, 0);
+	if(perm->compiled < 2) return FALSE;
+	currentsp = perm;
+	bindShaderPerm(perm);
+//	GLfloat * blah = malloc(16 * sizeof(GLfloat));
+//	memcpy(blah, fsquadpoints, 16 * sizeof(GLfloat));
+//	GLfloat * bleh = malloc(6 * sizeof(GLuint));
+//	memcpy(bleh, rectangleindices, 6 * sizeof(GLuint));
+	glBindVertexArray(tvbo->vaoid);
+	glBindBuffer(GL_ARRAY_BUFFER, tvbo->vboid);
+	glBufferData(GL_ARRAY_BUFFER, 16 * sizeof(GLfloat), fsquadpoints, GL_STATIC_DRAW); // change to stream?
+	glEnableVertexAttribArray(POSATTRIBLOC);
+	glVertexAttribPointer(POSATTRIBLOC, 2, GL_FLOAT, GL_FALSE, 2* sizeof(GLfloat), 0); // may not be needed every time
+	glEnableVertexAttribArray(TCATTRIBLOC);
+	glVertexAttribPointer(TCATTRIBLOC, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (void*)(2*sizeof(GLfloat))); // may not be needed every time
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, tvbo->indicesid);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6 * sizeof(GLuint), rectangleindices, GL_STATIC_DRAW);
+	tvbo->numfaces = 2;
+	tvbo->numverts = 4;
+	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+//	free(bleh);
+//	free(blah);
+//	glDisable(GL_BLEND);
+
+
+
+
+
 //	glDrawFSQuad();
 	swapBuffers();
 //	consolePrintf("Faces: %li Verts: %li Objects: %li\n", totalface, totalvert, totalcount);

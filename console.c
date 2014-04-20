@@ -27,7 +27,24 @@ int consoleStringsPrinted = 0; // useful to not print blank lines + reallocation
 
 char *tempPrint;
 
+char consoleDisplayNeedsUpdate;
+char currentConsoleTextTrackerFlag;
+
+//a flag system to delete text not drawn in the past x frames
+//todo
+typedef struct consoleTextTracker_s {
+	int textid;
+	char flag;
+} consoleTextTracker_t;
+
+consoleTextTracker_t * texttracker;
+
 vbo_t * consoleVBO;
+
+int updateConsoleText(void){
+	return TRUE;
+}
+/*
 consolechar_t generateCharacter(float offsetx, float offsety, float scalex, float scaley, char c){
 	consolechar_t output;
 	output.verts[0] = offsetx;
@@ -43,6 +60,7 @@ consolechar_t generateCharacter(float offsetx, float offsety, float scalex, floa
 	output.verts[13]= offsety+scaley;
 	return output;
 }
+*/
 /*
 int updateConsoleVBO(void){
 	if(!consoleVBO) return 0; // something bad
@@ -93,6 +111,7 @@ int deleteConsoleBuffer(void){
 	consoleOutputBuffer = 0;
 	consoleCircleBufferPlace = 0;
 	consoleStringsPrinted = 0;
+	consoleDisplayNeedsUpdate = TRUE;
 	return TRUE; // should do for now
 }
 
@@ -135,6 +154,7 @@ int resizeConsoleBuffer(int size){
 
 	consoleOutputBuffer = newBuffer;
 	maxConsoleBufferLines = size;
+	consoleDisplayNeedsUpdate = TRUE;
 	return maxConsoleBufferLines;
 }
 int initConsoleSystem(void){ //should work for now
@@ -143,6 +163,8 @@ int initConsoleSystem(void){ //should work for now
 //	consoleVBO = createAndAddVBO("console", 2); //todo set type to something
 //	consoleVAOid = consoleVBO->vaoid;
 //	resizeConsoleBuffer(5); for testing resizing
+	consoleDisplayNeedsUpdate = TRUE;
+	currentConsoleTextTrackerFlag = 0;
 	return TRUE; // good enough for now
 }
 int consolePrintf(const char *format, ...){//very similar to printf... oh noes muh gnu source code as a ref!
@@ -180,7 +202,7 @@ int consolePrintf(const char *format, ...){//very similar to printf... oh noes m
 	//maybe call a function to update vbos for the console or something
 
 
-
+	consoleDisplayNeedsUpdate = TRUE;
 	return done;
 }
 
@@ -223,7 +245,7 @@ int consoleNPrintf(size_t size, const char *format, ...){//very similar to print
 	//maybe call a function to update vbos for the console or something
 
 
-
+	consoleDisplayNeedsUpdate = TRUE;
 	return done;
 }
 int printConsoleBackwards(void){

@@ -47,15 +47,20 @@ int initTextSystem(void){
 }
 
 text_t * findTextByNameRPOINT(char * name){
+//	consolePrintf("text id:%i\n", findByNameRINT(name, texthashtable));
+	if(!textlist) return FALSE;
 	return returnTextById(findByNameRINT(name, texthashtable));
 }
 int findTextByNameRINT(char * name){
+	if(!textlist) return FALSE;
 	return findByNameRINT(name, texthashtable);
 }
 font_t * findFontByNameRPOINT(char * name){
+	if(!fontlist) return FALSE;
 	return returnFontById(findByNameRINT(name, fonthashtable));
 }
 int findFontByNameRINT(char * name){
+	if(!fontlist) return FALSE;
 	return findByNameRINT(name, fonthashtable);
 }
 int deleteText(int id){
@@ -63,20 +68,23 @@ int deleteText(int id){
 	text_t * tex = &textlist[textindex];
 	if(tex->myid != id) return FALSE;
 	if(!tex->name) return FALSE;
-	int i = 0;
-/*
-	if(tex->texture){
-		for(i = 0; i < tex->num; i++){
-			deleteTexture(tex->textures[i]);
-		}
-		free(tex->textures);
-	}
-*/
+	glDeleteTextures(1, &tex->textureid);
 	free(tex->name);
 	memset(tex,0, sizeof(text_t));
 	if(textindex < textArrayFirstOpen) textArrayFirstOpen = textindex;
 	for(; textArrayLastTaken > 0 && !textlist[textArrayLastTaken].type; textArrayLastTaken--);
-	return i;
+	return TRUE;
+}
+int deleteUnmarkedText(void){
+	unsigned int count = 0, i;
+	for(i = 0; i < textArrayLastTaken; i++){
+		text_t * tex = &textlist[i];
+		if(tex->type && tex->type < 3){
+			count++;
+			deleteText(tex->myid);
+		}
+	}
+	return count;
 }
 int deleteFont(int id){
 	int fontindex = (id & 0xFFFF);
