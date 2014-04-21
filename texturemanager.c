@@ -131,18 +131,25 @@ texture_t loadTexture(char * filepath, char type){
 	free(data);
 */
 
-	glTexImage2D(GL_TEXTURE_2D, 0, texformat, teximage->w, teximage->h, 0, texformat, GL_UNSIGNED_BYTE, teximage->pixels); //todo different formats
+	//todo sdl surfaces miiiight have flipped texture data, look into this and maybe todo flip it like textmanager does
+	tex.width = teximage->w;
+	tex.height = teximage->h;
+
+	//find mipmap max level
+	unsigned char level;
+	for(level = 0; level < 255; level++){
+		if(1<<level > tex.width && 1<<level > tex.height) break;
+	}
+	glTexImage2D(GL_TEXTURE_2D, 0, texformat, tex.width, tex.height, 0, texformat, GL_UNSIGNED_BYTE, teximage->pixels); //todo different formats
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 //	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 //	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, level);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	glGenerateMipmap(GL_TEXTURE_2D);
 
-	tex.width = teximage->w;
-	tex.height = teximage->h;
 	tex.type = type;
 	consolePrintf("loaded texture %s with dimensions %ix%i format %i and type %i\n", filepath, tex.width, tex.height, teximage->format->BytesPerPixel, tex.type);
 	SDL_FreeSurface(teximage);

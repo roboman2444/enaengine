@@ -30,10 +30,12 @@ font_t *fontlist;
 int initTextSystem(void){
 	memset(texthashtable, 0, MAXHASHBUCKETS * sizeof(hashbucket_t));
 	if(textlist) free(textlist);
-	textlist = 0;
+	textlist = malloc(sizeof(text_t));
+	memset(textlist, 0 , sizeof(text_t));
 	memset(fonthashtable, 0, MAXHASHBUCKETS * sizeof(hashbucket_t));
 	if(fontlist) free(fontlist);
-	fontlist = 0;
+	fontlist = malloc(sizeof(font_t));
+	memset(fontlist, 0 , sizeof(font_t));
 //	textlist = malloc(textnumber * sizeof(text_t));
 //	if(!textlist) memset(textlist, 0, textnumber * sizeof(text_t));
 //	defaulttext = addtextToList(createtext("default", 0));
@@ -48,11 +50,11 @@ int initTextSystem(void){
 
 text_t * findTextByNameRPOINT(char * name){
 //	consolePrintf("text id:%i\n", findByNameRINT(name, texthashtable));
-	if(!textlist) return FALSE;
+//	if(!textlist) return FALSE;
 	return returnTextById(findByNameRINT(name, texthashtable));
 }
 int findTextByNameRINT(char * name){
-	if(!textlist) return FALSE;
+//	if(!textlist) return FALSE;
 	return findByNameRINT(name, texthashtable);
 }
 font_t * findFontByNameRPOINT(char * name){
@@ -112,7 +114,7 @@ font_t * returnFontById(int id){
 	if(tex->myid == id) return tex;
 	return FALSE;
 }
-
+//todo font size, style, color, and text either blended or shaded (for alpha blended/tested or no transparency)
 text_t createAndRenderText(char * name, char * fontname){
 	text_t tex;
 	tex.type = 1;
@@ -128,25 +130,50 @@ text_t createAndRenderText(char * name, char * fontname){
 	SDL_Color textColor = {255, 255, 255};
 	//blended does argb
 	s = TTF_RenderText_Blended((TTF_Font*)f->font, name, textColor);
+//	s = TTF_RenderText_Solid((TTF_Font*)f->font, name, textColor);
 	if(!s) return tex;
-	glGenTextures(1, &tex.textureid);
-	glBindTexture(GL_TEXTURE_2D, tex.textureid);
-	glTexImage2D(GL_TEXTURE_2D, 0 , GL_RGBA, s->w, s->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, s->pixels);
-	//todo mipmaps and sampling
 	tex.width = s->w;
 	tex.height = s->h;
+
+	char * newdata = malloc(tex.width * tex.height * 4);
+//flips the image vertically
+	int  y, posy, multwidth = tex.width *4;
+	for(posy = tex.height, y = 0; y < tex.height; posy--, y++){
+		memcpy(newdata + y*multwidth, s->pixels + posy*multwidth, multwidth);
+	}
+
+	unsigned char level;
+	for(level = 0; level < 255; level++){
+		if(1<<level > tex.width && 1<<level > tex.height) break;
+	}
+
+	glGenTextures(1, &tex.textureid);
+	glBindTexture(GL_TEXTURE_2D, tex.textureid);
+//	glTexImage2D(GL_TEXTURE_2D, 0 , GL_RGBA, s->w, s->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, s->pixels);
+	glTexImage2D(GL_TEXTURE_2D, 0 , GL_RGBA, tex.width, tex.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, newdata);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, level);
+	glGenerateMipmap(GL_TEXTURE_2D);
+	free(newdata);
 	SDL_FreeSurface(s);
+	//todo mipmaps and sampling
 	tex.type = 2;
+	consolePrintf("rendered text \"%s\" with font %s\n", name, fontname );
 	return tex;
 }
+//todo font size
 font_t createAndLoadFont(char * filename /*,int size*/){
 	font_t font;
 	font.type = 1;
 	font.filename = malloc(strlen(filename)+1);
 	strcpy(font.filename, filename);
-	font.font = TTF_OpenFont(font.filename, 14 ); //todo size
+	font.font = TTF_OpenFont(font.filename, 256 ); //todo size
 	if(!font.font) return font;
 	font.type = 2;
+	consolePrintf("loaded font %s\n", filename);
 	return font;
 }
 

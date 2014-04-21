@@ -39,7 +39,7 @@ int textvbo = 0; //temporary
 int textshaderid = 0; // temporary
 //GLfloat fsquadpoints[12] = {-1.0, -1.0, 	1.0, -1.0, 	 1.0, 1.0,
 //			    -1.0, -1.0, 	1.0,  1.0, 	-1.0, 1.0};
-GLfloat fsquadpoints[16] = {-1.0, -1.0, -1.0, -1.0,   1.0, -1.0, 1.0, -1.0,   1.0, 1.0, 1.0, 1.0,   -1.0, 1.0, -1.0, 1.0};
+GLfloat fsquadpoints[16] = {-1.0, -1.0, 0.0, 0.0,   1.0, -1.0, 1.0, 0.0,   1.0, 1.0, 1.0, 1.0,   -1.0, 1.0, 0.0, 1.0};
 GLuint rectangleindices[6] = { 0, 1, 2, 0, 2, 3};
 int glShutdown(void){
 	return FALSE;
@@ -445,10 +445,13 @@ int glMainDraw(void){
 	glDrawViewport(cam);
 
 //temporary
-//	glEnable(GL_BLEND);
-
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+	glDisable(GL_DEPTH_TEST);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+//	glViewport(0, 0, 800, 600);
 	text_t * t = createAndAddTextRPOINT("Text Rendering Works!", "FreeMono.ttf");
+	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, t->textureid);
 	vbo_t * tvbo = returnVBOById(textvbo);
 	shaderprogram_t * shader = returnShaderById(textshaderid);
@@ -462,20 +465,23 @@ int glMainDraw(void){
 //	memcpy(bleh, rectangleindices, 6 * sizeof(GLuint));
 	glBindVertexArray(tvbo->vaoid);
 	glBindBuffer(GL_ARRAY_BUFFER, tvbo->vboid);
-	glBufferData(GL_ARRAY_BUFFER, 16 * sizeof(GLfloat), fsquadpoints, GL_STATIC_DRAW); // change to stream?
 	glEnableVertexAttribArray(POSATTRIBLOC);
-	glVertexAttribPointer(POSATTRIBLOC, 2, GL_FLOAT, GL_FALSE, 2* sizeof(GLfloat), 0); // may not be needed every time
+	glVertexAttribPointer(POSATTRIBLOC, 2, GL_FLOAT, GL_FALSE, 4* sizeof(GLfloat), 0); // may not be needed every time
 	glEnableVertexAttribArray(TCATTRIBLOC);
-	glVertexAttribPointer(TCATTRIBLOC, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (void*)(2*sizeof(GLfloat))); // may not be needed every time
+	glVertexAttribPointer(TCATTRIBLOC, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (void*)(2*sizeof(GLfloat))); // may not be needed every time
+	glBufferData(GL_ARRAY_BUFFER, 16 * sizeof(GLfloat), fsquadpoints, GL_STATIC_DRAW); // change to stream?
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, tvbo->indicesid);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6 * sizeof(GLuint), rectangleindices, GL_STATIC_DRAW);
 	tvbo->numfaces = 2;
 	tvbo->numverts = 4;
+
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
 
 //	free(bleh);
 //	free(blah);
-//	glDisable(GL_BLEND);
+	glDisable(GL_BLEND);
+	glEnable(GL_DEPTH_TEST);
 
 
 
