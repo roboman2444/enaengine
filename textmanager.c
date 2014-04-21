@@ -138,7 +138,7 @@ text_t createAndRenderText(char * name, char * fontname){
 	char * newdata = malloc(tex.width * tex.height * 4);
 //flips the image vertically
 	int  y, posy, multwidth = tex.width *4;
-	for(posy = tex.height, y = 0; y < tex.height; posy--, y++){
+	for(posy = tex.height-1, y = 0; y < tex.height; posy--, y++){
 		memcpy(newdata + y*multwidth, s->pixels + posy*multwidth, multwidth);
 	}
 
