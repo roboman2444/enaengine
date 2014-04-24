@@ -268,28 +268,28 @@ font_t * addFontRPOINT(font_t tex){
 	return &fontlist[fontArrayFirstOpen];
 
 }
-int createAndAddTextRINT(char * name, char * fontname){
+int createAndAddTextRINT(char * name, char * fontname/*, int size*/){
 	int m = findTextByNameRINT(name); //todo list and make sure that is is same font/size
-	if(m) return m;
-	return addTextRINT(createAndRenderText(name, fontname));
+	if(m) return m; //todo instead of return single, return LIST and check that its the same size and font
+	return addTextRINT(createAndRenderText(name, fontname /*, size*/));
 //	return &textlist[addtextToList(createAndLoadtext(name))];
 }
-text_t * createAndAddTextRPOINT(char * name, char * fontname){
+text_t * createAndAddTextRPOINT(char * name, char * fontname /*, int size*/){
 	text_t * m = findTextByNameRPOINT(name);
-	if(m) return m;
-	return addTextRPOINT(createAndRenderText(name, fontname));
+	if(m) return m; //todo instead of return single, return LIST and check that its the same size and font
+	return addTextRPOINT(createAndRenderText(name, fontname /*, size*/));
 //	return &textlist[addtextToList(createAndLoadtext(name))];
 }
 
-int createAndAddFontRINT(char * name){
+int createAndAddFontRINT(char * name /*, int size*/){
 	int m = findFontByNameRINT(name);
 	if(m) return m;
-	return addFontRINT(createAndLoadFont(name));
+	return addFontRINT(createAndLoadFont(name/*, size*/));
 //	return &fontlist[addFontToList(createAndLoadFont(name))];
 }
-font_t * createAndAddFontRPOINT(char * name){
+font_t * createAndAddFontRPOINT(char * name /*, int size*/){
 	font_t * m = findFontByNameRPOINT(name);
 	if(m) return m;
-	return addFontRPOINT(createAndLoadFont(name));
+	return addFontRPOINT(createAndLoadFont(name /*, size*/));
 //	return &fontlist[addFontToList(createAndLoadFont(name))];
 }

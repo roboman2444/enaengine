@@ -82,6 +82,10 @@ void swapBuffers(void){
 	SDL_GL_SwapBuffers();
 }
 int sdlCheckEvent(void){
+	char queueresizedo = 0;
+	int queuewidth = 0, queueheight = 0;
+	char queuebpp = 24, queuedebug = 0;
+
 	SDL_Event event;
 	while (SDL_PollEvent(&event)){
 		switch(event.type){
@@ -97,7 +101,12 @@ int sdlCheckEvent(void){
 				//todo
 			break;
 			case SDL_VIDEORESIZE:
-				resizeWindow(event.resize.w, event.resize.h, 24, 0);
+				queuewidth = event.resize.w;
+				queueheight = event.resize.h;
+//				queuebpp = 24;
+//				queuedebug = 0;
+				queueresizedo = 1;
+//				resizeWindow(event.resize.w, event.resize.h, 24, 0);
 				//call stuff to change stuff blah
 			break;
 			case SDL_MOUSEMOTION:
@@ -112,6 +121,9 @@ int sdlCheckEvent(void){
 			default:
 			break;
 		}
+	}
+	if(queueresizedo){
+		resizeWindow(queuewidth, queueheight, queuebpp, queuedebug);
 	}
 	return TRUE;
 }
