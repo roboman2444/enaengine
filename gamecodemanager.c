@@ -81,8 +81,11 @@ int initGameCodeSystem(void){
 		entcoil->anglevel[2] = 360.0;
 		entcoil->needsmatupdate = TRUE;
 		entcoil->shaderid = createAndAddShaderRINT("staticmodel");
+		entcoil->modelid = createAndAddModelRINT("bunny");
+//		entcoil->scale = 0.1;
 		entcoil->modelid = createAndAddModelRINT("coil");
 		entcoil->texturegroupid = createAndAddTexturegroupRINT("coil");
+//		entcoil->texturegroupid = createAndAddTexturegroupRINT("bunny");
 		entcoil->attachmentid = findEntityByNameRINT("hat");
 		entcoil->shaderperm = 4;
 
@@ -153,6 +156,7 @@ int initGameCodeSystem(void){
 		enttinydragon->scale = 1.0;
 		enttinydragon->needsmatupdate = TRUE;
 		enttinydragon->modelid = createAndAddModelRINT("cube2");
+//		enttinydragon->modelid = createAndAddModelRINT("bunny2");
 //		enttinydragon->modelid = createAndAddModelRINT("coil");
 		enttinydragon->shaderid = createAndAddShaderRINT("staticmodel");
 		enttinydragon->texturegroupid = createAndAddTexturegroupRINT("bunny");

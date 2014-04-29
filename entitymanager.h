@@ -38,13 +38,13 @@ typedef struct entity_s {
 typedef struct entitylistpoint_s {
 	//gotta use this stuff after you use it
 	entity_t **list;
-	int count;
+	unsigned int count;
 } entitylistpoint_t; // yeah yeah i know naming
 
 typedef struct entitylistint_s {
 	//gotta use this stuff after you use it
 	int *list;
-	int count;
+	unsigned int count;
 } entitylistint_t; // yeah yeah i know naming
 
 entity_t *entitylist;
