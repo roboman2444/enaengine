@@ -1,0 +1,16 @@
+Text-
+	Text search by name & font, name & font & size, name & font & size & format, etc
+	Text render by format, render by size, etc.
+Renderbatch
+	Renderbatch with flags (transparency, blending, depth test, depth mask, etc)
+		- state flags in glmanager for less switching around
+	Generic "shove vertex and indice data here" renderbatch
+	Generic "shove VAO here" renderbatch
+Lights
+	Actually get lights rendering
+	Non point lights
+	Experiment with the lightloop with entities attaching lights to themselves, not lights attaching to entities
+	Lights that have camera in them - seperate methods
+	Global lights (rendered as FSquad no matter what)
+Console
+	get it rendering text
