@@ -201,8 +201,15 @@ font_t * returnFontById(int id){
 	if(tex->myid == id) return tex;
 	return FALSE;
 }
+text_t createAndRenderTextFindFont(char * name, char * fontname, unsigned short size, char style, char fgcolor[3]){
+	int f = createAndAddFontRINT(fontname, size);
+	return createAndRenderText(name, f, style, fgcolor);
+}
 //todo font size, style, color, and text either blended or shaded (for alpha blended/tested or no transparency)
-text_t createAndRenderText(char * name, char * fontname){
+//todo font is only a fontid, font lookup by name and size will be done with a helper function for speed
+text_t createAndRenderText(char * name, int font, char style, char fgcolor[3]){
+	//todo bgcolor
+	//todo bold italic etc
 	text_t tex;
 	tex.type = 1;
 	tex.numchars = strlen(name);
@@ -210,25 +217,57 @@ text_t createAndRenderText(char * name, char * fontname){
 	tex.name = malloc(tex.numchars+1);
 	strcpy(tex.name, name);
 
-	font_t * f = createAndAddFontRPOINT(fontname, 512);
+	font_t *f = returnFontById(font);
+
 	if(!f)return tex;
 	if(!f->font || f->type < 2) return tex;
 	SDL_Surface * s;
-	SDL_Color textColor = {255, 255, 255};
+	SDL_Color textColor;// = fgcolor;
+	textColor.r = fgcolor[0];
+	textColor.g = fgcolor[1];
+	textColor.b = fgcolor[2];
+//	SDL_Color textColor = {255, 128, 128};
+	SDL_Color backColor = {0, 0, 0};
 	//blended does argb
-	s = TTF_RenderText_Blended((TTF_Font*)f->font, name, textColor);
+	if(style & TEXT_FORMAT_ALPHA) s = TTF_RenderText_Blended((TTF_Font*)f->font, name, textColor);
+	else s = TTF_RenderText_Shaded((TTF_Font*)f->font, name, textColor, backColor);
 //	s = TTF_RenderText_Solid((TTF_Font*)f->font, name, textColor);
 	if(!s) return tex;
 	tex.width = s->w;
 	tex.height = s->h;
 
-	char * newdata = malloc(tex.width * tex.height * 4);
 //flips the image vertically
-	int  y, posy, multwidth = tex.width *4;
-	for(posy = tex.height-1, y = 0; y < tex.height; posy--, y++){
-		memcpy(newdata + y*multwidth, s->pixels + posy*multwidth, multwidth);
+	int  y, posy, multwidth;
+	char * newdata;
+	if(style & TEXT_FORMAT_ALPHA){
+		newdata = malloc(tex.width * tex.height * 4);
+		multwidth = tex.width *4;
+		for(posy = tex.height-1, y = 0; y < tex.height; posy--, y++){
+			memcpy(newdata + y*multwidth, s->pixels + posy*multwidth, multwidth);
+		}
+	} else {
+	/*
+		newdata = malloc(tex.width * tex.height * 3);
+		multwidth = tex.width * 3;
+		for(posy = tex.height-1, y = 0; y < tex.height; posy--, y++){
+			int x;
+			for(x = 0; x < tex.width; x++)
+			((char *)newdata)[(y*multwidth)+(x*3)+0] = ((char *)s->pixels)[(posy*tex.width)+x] * fgcolor[0];
+			((char *)newdata)[(y*multwidth)+(x*3)+1] = ((char *)s->pixels)[(posy*tex.width)+x] * fgcolor[1];
+			((char *)newdata)[(y*multwidth)+(x*3)+2] = ((char *)s->pixels)[(posy*tex.width)+x] * fgcolor[2];
+//			memcpy(newdata + y*multwidth, s->pixels + posy*multwidth, multwidth);
+		}
+	*/
+	//todo fix
+		newdata = malloc(tex.width * tex.height);
+		for(posy = tex.height-1, y = 0; y < tex.height; posy--, y++){
+			memcpy(newdata + y*tex.width, s->pixels + posy*tex.width, tex.width);
+		}
+
 	}
 
+
+	//find mipmap level
 	unsigned char level;
 	for(level = 0; level < 255; level++){
 		if(1<<level > tex.width && 1<<level > tex.height) break;
@@ -237,7 +276,9 @@ text_t createAndRenderText(char * name, char * fontname){
 	glGenTextures(1, &tex.textureid);
 	glBindTexture(GL_TEXTURE_2D, tex.textureid);
 //	glTexImage2D(GL_TEXTURE_2D, 0 , GL_RGBA, s->w, s->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, s->pixels);
-	glTexImage2D(GL_TEXTURE_2D, 0 , GL_RGBA, tex.width, tex.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, newdata);
+	if(style & TEXT_FORMAT_ALPHA) glTexImage2D(GL_TEXTURE_2D, 0 , GL_RGBA, tex.width, tex.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, newdata);
+//	else glTexImage2D(GL_TEXTURE_2D, 0 , GL_RGB, tex.width, tex.height, 0, GL_RGB, GL_UNSIGNED_BYTE, newdata);
+	else glTexImage2D(GL_TEXTURE_2D, 0 , GL_RED, tex.width, tex.height, 0, GL_RED, GL_UNSIGNED_BYTE, newdata);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -246,9 +287,13 @@ text_t createAndRenderText(char * name, char * fontname){
 	glGenerateMipmap(GL_TEXTURE_2D);
 	free(newdata);
 	SDL_FreeSurface(s);
-	//todo mipmaps and sampling
+
 	tex.type = 2;
-	consolePrintf("rendered text \"%s\" with font %s\n", name, fontname );
+	tex.style = style;
+	tex.color[0] = fgcolor[0];
+	tex.color[1] = fgcolor[1];
+	tex.color[2] = fgcolor[2];
+	consolePrintf("rendered text \"%s\" with font %s\n", name, f->filename );
 	return tex;
 }
 //todo font size
@@ -354,18 +399,33 @@ font_t * addFontRPOINT(font_t tex){
 	return &fontlist[fontArrayFirstOpen];
 
 }
-int createAndAddTextRINT(char * name, char * fontname){
+int createAndAddTextFindFontRINT(char * name, char * fontname, unsigned short size, char style, char fgcolor[3]){
 	int m = findTextByNameRINT(name); //todo list and make sure that is is same font/size
 //	consolePrintf("text id: %i\n", m);
 	if(m) return m; //todo instead of return single, return LIST and check that its the same size and font
-	return addTextRINT(createAndRenderText(name, fontname));
+	return addTextRINT(createAndRenderTextFindFont(name, fontname, size, style, fgcolor));
 //	return &textlist[addtextToList(createAndLoadtext(name))];
 }
-text_t * createAndAddTextRPOINT(char * name, char * fontname){
+text_t * createAndAddTextFindFontRPOINT(char * name, char * fontname, unsigned short size, char style, char fgcolor[3]){
 	text_t * m = findTextByNameRPOINT(name);
 //	if(m) consolePrintf("text id: %i\n", m->myid);
 	if(m) return m; //todo instead of return single, return LIST and check that its the same size and font
-	return addTextRPOINT(createAndRenderText(name, fontname));
+	return addTextRPOINT(createAndRenderTextFindFont(name, fontname, size, style, fgcolor));
+//	return &textlist[addtextToList(createAndLoadtext(name))];
+}
+
+int createAndAddTextRINT(char * name, int font, char style, char fgcolor[3]){
+	int m = findTextByNameRINT(name); //todo list and make sure that is is same font/size
+//	consolePrintf("text id: %i\n", m);
+	if(m) return m; //todo instead of return single, return LIST and check that its the same size and font
+	return addTextRINT(createAndRenderText(name, font, style, fgcolor));
+//	return &textlist[addtextToList(createAndLoadtext(name))];
+}
+text_t * createAndAddTextRPOINT(char * name, int font, char style, char fgcolor[3]){
+	text_t * m = findTextByNameRPOINT(name);
+//	if(m) consolePrintf("text id: %i\n", m->myid);
+	if(m) return m; //todo instead of return single, return LIST and check that its the same size and font
+	return addTextRPOINT(createAndRenderText(name, font, style, fgcolor));
 //	return &textlist[addtextToList(createAndLoadtext(name))];
 }
 

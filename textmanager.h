@@ -3,12 +3,14 @@
 
 typedef struct text_s{
 	char type;
+	char style;
 	int myid;
 	int numchars;
 	GLuint textureid;
 	GLuint height;
 	GLuint width;
 //	texture_t * texture;
+	char color[3];
 	char * name;
 }text_t;
 
@@ -43,6 +45,13 @@ typedef struct textlistint_s {
 	unsigned int count;
 } textlistint_t;
 
+
+//maybe enum these?
+#define TEXT_FORMAT_ALPHA	1
+#define TEXT_FORMAT_BOLD	2
+#define TEXT_FORMAT_ITALIC	4
+#define	TEXT_FORMAT_UNDERLINE	8
+
 int textOK;
 int textnumber;
 int fontnumber;
@@ -59,7 +68,8 @@ int fontArrayLastTaken;
 
 int initTextSystem(void);
 
-text_t createAndRenderText(char * name, char * fontname);
+text_t createAndRenderText(char * name, int font, char style, char fgcolor[3]);
+text_t createAndRenderTextFindFont(char * name, char * fontname, unsigned short size, char style, char fgcolor[3]);
 font_t createAndLoadFont(char * name, unsigned short size);
 
 text_t * addTextRPOINT(text_t text);
@@ -85,8 +95,11 @@ int deleteFont(int id);
 
 //text_t loadText(char *filepath, char type);
 
-text_t * createAndAddTextRPOINT(char * name, char * fontname);
-int createAndAddTextRINT(char * name, char * fontname);
+text_t * createAndAddTextFindFontRPOINT(char * name, char * fontname, unsigned short size, char style, char fgcolor[3]);
+int createAndAddTextFindFontRINT(char * name, char * fontname, unsigned short size, char style, char fgcolor[3]);
+text_t * createAndAddTextRPOINT(char * name, int font, char style, char fgcolor[3]);
+int createAndAddTextRINT(char * name, int font, char style, char fgcolor[3]);
+
 font_t * createAndAddFontRPOINT(char * name, unsigned short size);
 int createAndAddFontRINT(char * name, unsigned short size);
 

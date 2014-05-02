@@ -37,6 +37,7 @@ viewport_t * cam = 0;
 int lightvbo = 0;
 int textvbo = 0; //temporary
 int textshaderid = 0; // temporary
+unsigned int currentflags = 0;
 //GLfloat fsquadpoints[12] = {-1.0, -1.0, 	1.0, -1.0, 	 1.0, 1.0,
 //			    -1.0, -1.0, 	1.0,  1.0, 	-1.0, 1.0};
 GLfloat fsquadpoints[16] = {-1.0, -1.0, 0.0, 0.0,   1.0, -1.0, 1.0, 0.0,   1.0, 1.0, 1.0, 1.0,   -1.0, 1.0, 0.0, 1.0};
@@ -446,11 +447,12 @@ int glMainDraw(void){
 
 //temporary
 	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glDisable(GL_DEPTH_TEST);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 //	glViewport(0, 0, 800, 600);
-	text_t * t = createAndAddTextRPOINT("Text Rendering Works!", "FreeMono.ttf");
+	char fg[3] = {128, 255, 255};
+	text_t * t = createAndAddTextFindFontRPOINT("Text Rendering Works!", "FreeMono.ttf", 512, 1, fg);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, t->textureid);
 	vbo_t * tvbo = returnVBOById(textvbo);
