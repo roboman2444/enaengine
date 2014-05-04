@@ -148,6 +148,7 @@ texture_t loadTexture(char * filepath, char type){
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, level);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT,16);//Anisotropic Filtering Attempt
 	glGenerateMipmap(GL_TEXTURE_2D);
 
 	tex.type = type;

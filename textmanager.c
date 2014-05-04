@@ -284,6 +284,7 @@ text_t createAndRenderText(char * name, int font, char style, char fgcolor[3]){
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, level);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, 16);//Anisotropic Filtering Attempt
 	glGenerateMipmap(GL_TEXTURE_2D);
 	free(newdata);
 	SDL_FreeSurface(s);
