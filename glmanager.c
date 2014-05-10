@@ -42,6 +42,8 @@ unsigned int currentflags = 0;
 //			    -1.0, -1.0, 	1.0,  1.0, 	-1.0, 1.0};
 GLfloat fsquadpoints[16] = {-1.0, -1.0, 0.0, 0.0,   1.0, -1.0, 1.0, 0.0,   1.0, 1.0, 1.0, 1.0,   -1.0, 1.0, 0.0, 1.0};
 GLuint rectangleindices[6] = { 0, 1, 2, 0, 2, 3};
+
+vbo_t * consoleVBO = 0; //temp
 int glShutdown(void){
 	return FALSE;
 }
@@ -124,6 +126,8 @@ int glInit(void){
 	cam->outfbid = findFramebufferByNameRINT("screen");
 	cam->dfbid = createAndAddFramebufferRINT("screend", 3);
 	resizeViewport(cam, 800, 600);
+	screenWidth = 800;
+	screenHeight = 600;
 
 //	wireshaderid = createAndAddShaderRINT("wireframe");
 	lightshaderid = createAndAddShaderRINT("deferredlight");
@@ -427,6 +431,89 @@ int glDrawViewport(viewport_t *v){
 
 	return TRUE;
 }
+int updateConsoleVBO(void){
+	updateConsoleText();
+	if(!consoleVBO){
+		consoleVBO = createAndAddVBORPOINT("console", 2);
+		glBindVertexArray(consoleVBO->vaoid);
+		glBindBuffer(GL_ARRAY_BUFFER, consoleVBO->vboid);
+                glEnableVertexAttribArray(POSATTRIBLOC);
+                glVertexAttribPointer(POSATTRIBLOC, 2, GL_FLOAT, GL_FALSE, 4* sizeof(GLfloat), 0);
+                glEnableVertexAttribArray(TCATTRIBLOC);
+                glVertexAttribPointer(TCATTRIBLOC, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (void*)(2*sizeof(GLfloat)));
+	}
+
+	GLfloat * points = malloc(16 * consoleDrawLines * sizeof(GLfloat));
+//	memset(points, 0.0 , 16* consoleDrawLines * sizeof(GLfloat));
+	GLuint * indices = malloc(6 * consoleDrawLines * sizeof(GLuint));
+
+	unsigned int currentheight = 0;
+	int i;
+	for(i = 0; i < consoleDrawLines; i++){
+		int k;
+		for(k = 0; k <6; k++) indices[(i*6)+k] = rectangleindices[k] + 4*i;
+//		indices[0+i*6] = 0 + 4*i;
+//		indices[1+i*6] = 1 + 4*i;
+//		indices[2+i*6] = 2 + 4*i;
+//		indices[3+i*6] = 0 + 4*i;
+//		indices[4+i*6] = 1 + 4*i;
+//		indices[5+i*6] = 2 + 4*i;
+		for(k = 0; k <16; k++) points[(i*16)+k] = fsquadpoints[k];
+//		memcpy(&points[i*16], fsquadpoints, 16 * sizeof(GLfloat));
+		points[i*16 +13] = 1.0 - 2.0*((float)currentheight/(float)screenHeight);
+		points[i*16 +9] = 1.0 - 2.0*((float)currentheight/(float)screenHeight);
+		currentheight += texttracker[i].height;
+//		currentheight += 10;
+//		currentheight = i*10 +10;
+		points[i*16 +5] = 1.0 - 2.0*((float)currentheight/(float)screenHeight);
+		points[i*16 +1] = 1.0 - 2.0*((float)currentheight/(float)screenHeight);
+
+		points[i*16+4] = 2.0*((float)texttracker[i].width/(float)screenWidth) -1.0;
+//		points[i*16+4] = 1.0-2.0*((float)texttracker[i].width/(float)screenWidth);
+		points[i*16+8] = 2.0*((float)texttracker[i].width/(float)screenWidth) - 1.0;
+
+//		points[i*16+0] = -0.9;
+//		points[i*16+12] = -0.9;
+	}
+	glBindVertexArray(consoleVBO->vaoid);
+	glBindBuffer(GL_ARRAY_BUFFER, consoleVBO->vboid);
+	glBufferData(GL_ARRAY_BUFFER, 16 * consoleDrawLines * sizeof(GLfloat), points, GL_STATIC_DRAW); // change to stream?
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, consoleVBO->indicesid);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6 *consoleDrawLines* sizeof(GLuint), indices, GL_STATIC_DRAW);
+	free(points);
+	free(indices);
+	consoleVBO->numfaces = 2*consoleDrawLines;
+	consoleVBO->numverts = 4*consoleDrawLines;
+	consoleDisplayNeedsUpdate = 0;
+
+	return TRUE;
+}
+int glDrawConsole(void){
+	if(consoleDisplayNeedsUpdate)updateConsoleVBO();
+
+	glActiveTexture(GL_TEXTURE0);
+//	glBindTexture(GL_TEXTURE_2D, t->textureid);
+//	vbo_t * tvbo = returnVBOById(textvbo);
+	shaderprogram_t * shader = returnShaderById(textshaderid);
+	shaderpermutation_t * perm = addPermutationToShader(shader, 0);
+	if(perm->compiled < 2) return FALSE;
+	currentsp = perm;
+	bindShaderPerm(perm);
+	glBindVertexArray(consoleVBO->vaoid);
+//	printf("consoledraw = %i\n", consoleDrawLines);
+	int i;
+	for(i =0; i < consoleDrawLines; i++){
+//		text_t *t = returnTextById(texttracker[i].textid);
+		glBindTexture(GL_TEXTURE_2D, texttracker[i].textureid);
+//		glBindTexture(GL_TEXTURE_2D, t->textureid);
+		glDrawRangeElements(GL_TRIANGLES, i*4, (i*4)+4, 6, GL_UNSIGNED_INT,  (void*)(i*6*sizeof(GLuint)));
+//		texttracker[i].textureid;
+	}
+//	glDrawElements(GL_TRIANGLES, 6*consoleDrawLines, GL_UNSIGNED_INT, 0);
+
+	return TRUE;
+}
+
 int glMainDraw(void){
 	totalface = 0;
 	totalcount = 0;
@@ -477,7 +564,9 @@ int glMainDraw(void){
 	tvbo->numfaces = 2;
 	tvbo->numverts = 4;
 
-	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+//	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+	glDrawConsole();
 
 
 //	free(bleh);
@@ -500,5 +589,9 @@ int glResizeViewports(int width, int height){
 	if(!height) height = 1;
 	int count =0;
 	count+=resizeViewport(findViewportByNameRPOINT("cam"), width, height);
+	screenHeight = height;
+	screenWidth = width;
+	consoleDisplayNeedsUpdate = 1;
+//	updateConsoleVBO();
 	return count;
 }

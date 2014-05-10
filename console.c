@@ -9,6 +9,7 @@
 #include "console.h"
 #include "vbomanager.h"
 #include "shadermanager.h"
+#include "textmanager.h"
 
 typedef struct consolechar_s { //todo redo
 	GLfloat verts[16];
@@ -16,8 +17,6 @@ typedef struct consolechar_s { //todo redo
 
 char ** consoleOutputBuffer;
 
-int consoleWidth = 64;
-int consoleHeight = 48;
 
 int maxConsoleBufferLines = 2048; //todo make into cvar
 int maxConsoleBufferLineLength = 2048; //todo make cvar/define
@@ -27,22 +26,70 @@ int consoleStringsPrinted = 0; // useful to not print blank lines + reallocation
 
 char *tempPrint;
 
-char consoleDisplayNeedsUpdate;
+int consoleDisplayNeedsUpdate;
 char currentConsoleTextTrackerFlag;
+
+
+char * consoleFont = "FreeMono.ttf";
+
+
+
+int consoleWidth = 64;
+int consoleHeight = 20;
+
 
 //a flag system to delete text not drawn in the past x frames
 //todo
-typedef struct consoleTextTracker_s {
-	int textid;
-	char flag;
-} consoleTextTracker_t;
 
 consoleTextTracker_t * texttracker;
+unsigned int consoleDrawLines;
 
-vbo_t * consoleVBO;
+//int consoleVBO;
 
 int updateConsoleText(void){
+	currentConsoleTextTrackerFlag = !currentConsoleTextTrackerFlag;
+/*
+	if(!consoleVBO){
+		consoleVBO= createAndAddVBORPOINT("console", 2);
+		glBindVertexArray(consoleVBO->vaoid);
+		glEnableVertexAttribArray(POSATTRIBLOC);
+		glVertexAttribPointer(POSATTRIBLOC, 2, GL_FLOAT, GL_FALSE, 4* sizeof(GLfloat), 0);
+		glEnableVertexAttribArray(TCATTRIBLOC);
+		glVertexAttribPointer(TCATTRIBLOC, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (void*)(2*sizeof(GLfloat)));
+	}
+*/
+	if(!texttracker){
+		texttracker = malloc(consoleHeight * sizeof(consoleTextTracker_t));
+		memset(texttracker, 0, consoleHeight * sizeof(consoleTextTracker_t));
+	}
+	consoleDrawLines= consoleStringsPrinted;
+	if(consoleDrawLines > consoleHeight) consoleDrawLines = consoleHeight;
+
+	int n, p = consoleCircleBufferPlace - consoleDrawLines;
+	for(n = 0; n < consoleDrawLines; n++){
+//		printf("p = %i\n",p);
+		char fg[3] = {255, 255, 255};
+		text_t *t = createAndAddTextFindFontRPOINT(consoleOutputBuffer[p], consoleFont, 10, 1, fg);
+		texttracker[n].flag = currentConsoleTextTrackerFlag;
+		texttracker[n].textid = t->myid;
+		texttracker[n].textureid = t->textureid;
+		texttracker[n].width = t->width;
+		texttracker[n].height = t->height;
+//		printf("texttracker: %i, %ix%i\n", t->textureid, t->width, t->height);
+		p = (p+1) % maxConsoleBufferLines;
+	}
+
+
 	return TRUE;
+
+
+/*
+	int i;
+	for(i = 0; i < consoleHeight; i++;){
+		//delete old crap
+		if(texttracker[i].flag
+	}
+*/
 }
 /*
 consolechar_t generateCharacter(float offsetx, float offsety, float scalex, float scaley, char c){
@@ -167,7 +214,7 @@ int initConsoleSystem(void){ //should work for now
 	currentConsoleTextTrackerFlag = 0;
 	return TRUE; // good enough for now
 }
-int consolePrintf(const char *format, ...){//very similar to printf... oh noes muh gnu source code as a ref!
+int consolePrintf(const char *format, ...){//very similar to printf...
 	va_list arg;
 	int done;
 
@@ -211,7 +258,7 @@ int consolePrintf(const char *format, ...){//very similar to printf... oh noes m
 	So, if you are doing consoleNPrintf( SOMESIZE, "yar har %s\n", string); with string being 200 characters long,
 	you have to take into account of the length of "yar har \n" as well. (so final would be 210 or so characters long.
 */
-int consoleNPrintf(size_t size, const char *format, ...){//very similar to printf... oh noes muh gnu source code as a ref!
+int consoleNPrintf(size_t size, const char *format, ...){//very similar to printf...
 	va_list arg;
 	int done;
 

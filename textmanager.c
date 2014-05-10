@@ -294,7 +294,8 @@ text_t createAndRenderText(char * name, int font, char style, char fgcolor[3]){
 	tex.color[0] = fgcolor[0];
 	tex.color[1] = fgcolor[1];
 	tex.color[2] = fgcolor[2];
-	consolePrintf("rendered text \"%s\" with font %s\n", name, f->filename );
+//	consolePrintf("rendered text \"%s\" with font %s\n", name, f->filename );
+//	printf("rendered text \"%s\" with font %s\n", name, f->filename );
 	return tex;
 }
 //todo font size
