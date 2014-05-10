@@ -46,7 +46,9 @@ unsigned int consoleDrawLines;
 
 //int consoleVBO;
 
-int updateConsoleText(void){
+int updateConsoleText(unsigned int offset){
+
+	if(offset > consoleStringsPrinted - consoleHeight) offset = consoleStringsPrinted - consoleHeight;
 	currentConsoleTextTrackerFlag = !currentConsoleTextTrackerFlag;
 /*
 	if(!consoleVBO){
@@ -65,7 +67,7 @@ int updateConsoleText(void){
 	consoleDrawLines= consoleStringsPrinted;
 	if(consoleDrawLines > consoleHeight) consoleDrawLines = consoleHeight;
 
-	int n, p = consoleCircleBufferPlace - consoleDrawLines;
+	int n, p = consoleCircleBufferPlace - consoleDrawLines - offset;
 	for(n = 0; n < consoleDrawLines; n++){
 //		printf("p = %i\n",p);
 		char fg[3] = {255, 255, 255};

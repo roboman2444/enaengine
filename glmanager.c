@@ -140,7 +140,6 @@ int glInit(void){
 	textvbo = tvbo->myid;
 	textshaderid = createAndAddShaderRINT("text");
 
-
 	return TRUE; // so far so good
 }
 
@@ -431,8 +430,8 @@ int glDrawViewport(viewport_t *v){
 
 	return TRUE;
 }
-int updateConsoleVBO(void){
-	updateConsoleText();
+int updateConsoleVBO(unsigned int offset){
+	updateConsoleText(offset);
 	if(!consoleVBO){
 		consoleVBO = createAndAddVBORPOINT("console", 2);
 		glBindVertexArray(consoleVBO->vaoid);
@@ -489,7 +488,7 @@ int updateConsoleVBO(void){
 	return TRUE;
 }
 int glDrawConsole(void){
-	if(consoleDisplayNeedsUpdate)updateConsoleVBO();
+	if(consoleDisplayNeedsUpdate)updateConsoleVBO(consoleoffset);
 
 	glActiveTexture(GL_TEXTURE0);
 //	glBindTexture(GL_TEXTURE_2D, t->textureid);

@@ -4,7 +4,7 @@ int initConsoleSystem(void); // works for now
 int consolePrintf(const char *format, ...);
 int consoleNPrintf(size_t size, const char *format, ...);
 int printConsoleBackwards(void);
-int updateConsoleText(void);
+int updateConsoleText(unsigned int offset);
 
 //int consoleVAOid;
 
@@ -19,4 +19,6 @@ typedef struct consoleTextTracker_s {
 unsigned int consoleDrawLines;
 consoleTextTracker_t * texttracker;
 int consoleDisplayNeedsUpdate;
+
+int consoleoffset; //temp, will move
 #endif

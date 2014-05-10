@@ -95,8 +95,25 @@ int sdlCheckEvent(void){
 //				exit(0);
 			break;
 			case SDL_KEYDOWN:
-				//todo
-			break;
+				switch(event.key.keysym.sym){
+		                	case SDLK_ESCAPE:
+		                	        SDL_Quit();
+		                	break;
+		                	case SDLK_PAGEUP:
+						consoleoffset++;
+						consoleDisplayNeedsUpdate = 1;
+		                	break;
+		                	case SDLK_PAGEDOWN:
+						consoleoffset--;
+						if(consoleoffset <0) consoleoffset = 0;
+						consoleDisplayNeedsUpdate = 1;
+		                	break;
+					default:
+					break;
+				}
+	
+					//todo
+				break;
 			case SDL_KEYUP:
 				//todo
 			break;
