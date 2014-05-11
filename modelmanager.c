@@ -108,7 +108,6 @@ int makeCubeModel(void){
 	m.tris = tris;
 	m.numfaces = 12;
 	m.numverts = 8;
-	m.stride = 8; //todo
 
 	return addModelRINT(m);
 	return TRUE;
@@ -228,7 +227,7 @@ int makeCubeModel2(void){
 	m.tris = tris;
 	m.numfaces = 12;
 	m.numverts = 24;
-	m.stride = 8; //todo
+	//m.stride = 8; //todo
 
 	return addModelRINT(m);
 	return TRUE;
@@ -604,7 +603,7 @@ int loadiqmmeshes(model_t * m, const struct iqmheader hdr, unsigned char *buf){
 	myvbo->numfaces = numtris;
 	m->tris = tris;
 	m->numfaces = numtris;
-	m->stride = 8; //todo
+	//m->stride = 8; //todo
 //	free(tris);
 
 	consolePrintf("Model %s.iqm has %i faces and %i verts\n", m->name, numtris, numverts);
@@ -953,7 +952,7 @@ int loadModelOBJ(model_t * m, char * filename){//todo flags
 	myvbo->numfaces = facecount;
 	m->tris = indicebuffer;
 	m->numfaces = facecount;
-	m->stride = 8;
+//	m->stride = 8;
 //	free(indicebuffer);
 
 	//maybe use material based shading

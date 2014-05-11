@@ -9,6 +9,8 @@
 #include "filemanager.h"
 #include "console.h"
 
+#include "vbomanager.h" //for attriblocs
+
 int shadercount = 0;
 int shaderArrayFirstOpen = 0;
 int shaderArrayLastTaken = -1;

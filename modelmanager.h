@@ -31,7 +31,7 @@ typedef struct model_s {
 	GLuint * tris;
 	GLuint numverts;
 	GLuint numfaces;
-	GLuint stride;
+//	GLuint stride;
 }model_t;
 
 /* types of models ... i should do enums for these

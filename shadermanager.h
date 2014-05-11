@@ -2,10 +2,6 @@
 #define SHADERMANAGERHEADER
 
 #define PERMHASHSIZE 256
-#define POSATTRIBLOC 0
-#define NORMATTRIBLOC 1
-#define TCATTRIBLOC 2
-
 
 
 typedef struct shaderpermutation_s {

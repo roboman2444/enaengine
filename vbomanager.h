@@ -1,6 +1,10 @@
 #ifndef VBOMANAGERHEADER
 #define VBOMANAGERHEADER
 
+#define POSATTRIBLOC 0
+#define NORMATTRIBLOC 1
+#define TCATTRIBLOC 2
+
 typedef struct vbo_s {
 	char * name;
 
@@ -13,6 +17,13 @@ typedef struct vbo_s {
 	GLuint numfaces;
 	int myid;
 	char type; // maybe not
+
+	char setup;
+
+	unsigned char posstride;
+	unsigned char normstride;
+	unsigned char tcstride;
+	unsigned char totalstride;
 }vbo_t;
 
 typedef struct ubo_s {

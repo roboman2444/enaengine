@@ -310,8 +310,8 @@ int glDrawLights(viewport_t *v){
 	if(!df || !of || !lvbo) return FALSE;
 	int i, count = 0;
 //	lightbatche_t outlights;
-	GLuint *indices = 0;
-	GLfloat *points = 0;
+	GLuint *lnoshadowindices = 0;
+	GLfloat *lnoshadowpoints = 0;
 	for(i = 0; i <= lightArrayLastTaken; i++){
 		light_t * l = &lightlist[i];
 		if(!l->type) continue;
@@ -323,14 +323,14 @@ int glDrawLights(viewport_t *v){
 			int t;
 			unsigned int bump = 8 * count;
 			count++;
-			indices = realloc(indices, 36 * count * sizeof(GLuint));
+			lnoshadowindices = realloc(lnoshadowindices, 36 * count * sizeof(GLuint));
 			for(t = 0; t < 36; t++, j++){
-				indices[j] = tris[t] + bump;
+				lnoshadowindices[j] = tris[t] + bump;
 			}
 			//copy bboxp
-			points = realloc(points, 24 * count * sizeof(GLfloat));
+			lnoshadowpoints = realloc(lnoshadowpoints, 24 * count * sizeof(GLfloat));
 
-			memcpy(&points[24*(count-1)], l->bboxp, 24*sizeof(GLfloat)); // size of 1
+			memcpy(&lnoshadowpoints[24*(count-1)], l->bboxp, 24*sizeof(GLfloat)); // size of 1
 
 			//do i really need a lightbatch? cant i just generate stuff here and then render?
 //			addLightToLightbatche(l->myid, &outlights);
@@ -348,13 +348,13 @@ int glDrawLights(viewport_t *v){
 	//todo can i do this more efficiently
 	glBindVertexArray(lvbo->vaoid);
 	glBindBuffer(GL_ARRAY_BUFFER, lvbo->vboid);
-	glBufferData(GL_ARRAY_BUFFER, count * 24 * sizeof(GLfloat), points, GL_STATIC_DRAW); // change to stream?
+	glBufferData(GL_ARRAY_BUFFER, count * 24 * sizeof(GLfloat), lnoshadowpoints, GL_STATIC_DRAW); // change to stream?
 
 	glEnableVertexAttribArray(POSATTRIBLOC);
 	glVertexAttribPointer(POSATTRIBLOC, 3, GL_FLOAT, GL_FALSE, 3* sizeof(GLfloat), 0); // may not be needed every time
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, lvbo->indicesid);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, 36 * count * sizeof(GLuint), indices, GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, 36 * count * sizeof(GLuint), lnoshadowindices, GL_STATIC_DRAW);
 	lvbo->numfaces = 12 * count;
 	lvbo->numverts = 8 * count;
 

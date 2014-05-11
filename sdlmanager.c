@@ -95,6 +95,7 @@ int sdlCheckEvent(void){
 //				exit(0);
 			break;
 			case SDL_KEYDOWN:
+				//todo move to own place
 				switch(event.key.keysym.sym){
 		                	case SDLK_ESCAPE:
 		                	        SDL_Quit();
@@ -111,7 +112,6 @@ int sdlCheckEvent(void){
 					default:
 					break;
 				}
-	
 					//todo
 				break;
 			case SDL_KEYUP:
