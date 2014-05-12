@@ -54,8 +54,13 @@ int createAndAddViewportRINT(char * name, char type);
 viewport_t createViewport(char * name, char type);
 
 int recalcViewport(viewport_t * v, vec3_t pos, vec3_t angle, float fov, float aspect, float near, float far);
+
 int testPointInFrustum(viewport_t *v, vec_t *p);
 int testSphereInFrustum(viewport_t *v, vec_t *p, float size);
 int testBBoxPInFrustum(viewport_t *v, vec_t *points);
+
+int testSphereInFrustumNearPlane(viewport_t *v, vec_t *p, float size);
+int testBBoxPInFrustumNearPlane(viewport_t *v, vec_t *points);
+
 int resizeViewport(viewport_t *v, int width, int height);
 #endif

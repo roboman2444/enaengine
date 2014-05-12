@@ -308,35 +308,68 @@ int glDrawLights(viewport_t *v){
 	framebuffer_t *of = returnFramebufferById(v->outfbid);
 	vbo_t * lvbo = returnVBOById(lightvbo);
 	if(!df || !of || !lvbo) return FALSE;
-	int i, count = 0;
+	int i;
+	int lnoshadowcount = 0;
+	int lnoshadowinsidecount = 0;
 //	lightbatche_t outlights;
 	GLuint *lnoshadowindices = 0;
 	GLfloat *lnoshadowpoints = 0;
+	GLuint *lnoshadowinsideindices = 0;
+	GLfloat *lnoshadowinsidepoints = 0;
 	for(i = 0; i <= lightArrayLastTaken; i++){
 		light_t * l = &lightlist[i];
 		if(!l->type) continue;
-		//todo make into a special function that will return something else if the light intersects the nearplane
 		//todo also make a special case for non point lights
-		if(testSphereInFrustum(v, l->pos, l->scale)){
+		int result = testSphereInFrustumNearPlane(v, l->pos, l->scale);
+		//todo convert this to a lightbatch system (so i can later generate a since particle style quad for it and sort/prune)
+		/*
+			idea to speed up sorting / pruning
+			in the if statement for tested
+			if less than maxlightcount, keep track of the highest distance from light (if mydist > greatdist) greatdist = mydist;)
+			Once the count of lights gets to maxLightCount, dont add any lights that are over greatdist
+			Best case, doesnt add any lights over the maxlightcount, no need to sort.
+			Worst case, adds all lights (greatdist gets set to the furthest away light possible)
+			(also store the distance you computed in this loop somewhere, dont re-calc it)
+		*/
+		if(result == 1){
 			//set indices up
-			unsigned int j = 36 * count;
+			unsigned int j = 36 * lnoshadowcount;
 			int t;
-			unsigned int bump = 8 * count;
-			count++;
-			lnoshadowindices = realloc(lnoshadowindices, 36 * count * sizeof(GLuint));
+			unsigned int bump = 8 * lnoshadowcount;
+			lnoshadowcount++;
+			//todo maybe have a loop through that marks each light as in or not, and counts
+			lnoshadowindices = realloc(lnoshadowindices, 36 * lnoshadowcount * sizeof(GLuint));
 			for(t = 0; t < 36; t++, j++){
 				lnoshadowindices[j] = tris[t] + bump;
 			}
 			//copy bboxp
-			lnoshadowpoints = realloc(lnoshadowpoints, 24 * count * sizeof(GLfloat));
+			lnoshadowpoints = realloc(lnoshadowpoints, 24 * lnoshadowcount * sizeof(GLfloat));
 
-			memcpy(&lnoshadowpoints[24*(count-1)], l->bboxp, 24*sizeof(GLfloat)); // size of 1
+			memcpy(&lnoshadowpoints[24*(lnoshadowcount-1)], l->bboxp, 24*sizeof(GLfloat)); // size of 1
 
 			//do i really need a lightbatch? cant i just generate stuff here and then render?
 //			addLightToLightbatche(l->myid, &outlights);
+		} else if (result ==2){
+//			consolePrintf("light %i hits nearplane\n", l->myid);
+
+			//set indices up
+			unsigned int j = 36 * lnoshadowinsidecount;
+			int t;
+			unsigned int bump = 8 * lnoshadowinsidecount;
+			lnoshadowinsidecount++;
+			//todo maybe have a loop through that marks each light as in or not, and counts
+			lnoshadowinsideindices = realloc(lnoshadowinsideindices, lnoshadowinsidecount * 36 * sizeof(GLuint));
+			for(t = 0; t < 36; t++, j++){
+				lnoshadowinsideindices[j] = tris[t] + bump;
+			}
+			//copy bboxp
+			lnoshadowinsidepoints = realloc(lnoshadowinsidepoints, 24 * lnoshadowinsidecount * sizeof(GLfloat));
+
+			memcpy(&lnoshadowinsidepoints[24*(lnoshadowinsidecount-1)], l->bboxp, 24*sizeof(GLfloat)); // size of 1
 		}
 	}
-	if(!count) return FALSE;
+	//todo one for each batch
+	if(!lnoshadowcount) return FALSE;
 
 	shaderprogram_t * shader = returnShaderById(lightshaderid);
 	shaderpermutation_t * perm = addPermutationToShader(shader, 0);
@@ -348,15 +381,20 @@ int glDrawLights(viewport_t *v){
 	//todo can i do this more efficiently
 	glBindVertexArray(lvbo->vaoid);
 	glBindBuffer(GL_ARRAY_BUFFER, lvbo->vboid);
-	glBufferData(GL_ARRAY_BUFFER, count * 24 * sizeof(GLfloat), lnoshadowpoints, GL_STATIC_DRAW); // change to stream?
+	glBufferData(GL_ARRAY_BUFFER, lnoshadowcount * 24 * sizeof(GLfloat), lnoshadowpoints, GL_STATIC_DRAW); // change to stream?
+	//todo just reuse each frame, no need to free
+	free(lnoshadowpoints);
 
 	glEnableVertexAttribArray(POSATTRIBLOC);
 	glVertexAttribPointer(POSATTRIBLOC, 3, GL_FLOAT, GL_FALSE, 3* sizeof(GLfloat), 0); // may not be needed every time
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, lvbo->indicesid);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, 36 * count * sizeof(GLuint), lnoshadowindices, GL_STATIC_DRAW);
-	lvbo->numfaces = 12 * count;
-	lvbo->numverts = 8 * count;
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, 36 * lnoshadowcount * sizeof(GLuint), lnoshadowindices, GL_STATIC_DRAW);
+	free(lnoshadowindices);
+	free(lnoshadowinsidepoints);
+	free(lnoshadowinsideindices);
+	lvbo->numfaces = 12 * lnoshadowcount;
+	lvbo->numverts = 8 * lnoshadowcount;
 
 
 
@@ -383,7 +421,7 @@ int glDrawLights(viewport_t *v){
 	Matrix4x4_ToArrayFloatGL(&v->viewproj, out);
 	glUniformMatrix4fv(currentsp->unimat40, 1, GL_FALSE, out);
 	glUniform2f(currentsp->uniscreensizefix, 1.0/of->width, 1.0/of->height);
-	glDrawElements(GL_TRIANGLES, count * 36, GL_UNSIGNED_INT, 0);
+	glDrawElements(GL_TRIANGLES, lnoshadowcount * 36, GL_UNSIGNED_INT, 0);
 //	glDrawArrays(GL_POINTS, 0, count * 8);
 //	glEnable(GL_DEPTH_TEST);
 //	glEnable(GL_CULL_FACE);
@@ -402,7 +440,7 @@ int glDrawLights(viewport_t *v){
 
 
 
-	return count;
+	return lnoshadowcount + lnoshadowinsidecount;
 }
 int glDrawViewport(viewport_t *v){
 	framebuffer_t *df = returnFramebufferById(v->dfbid);

@@ -71,6 +71,9 @@ int initLightSystem(void){
 //	lightlist = malloc(lightcount * sizeof(light_t));
 //	if(!lightlist) memset(lightlist, 0 , lightcount * sizeof(light_t));
 //	addLightRINT("default");
+	//todo make this useful, gonna need a large list to put the lights in viewport into, then sort front to back and remove back ones
+	maxVisLights = 50;
+	maxShadowLights = 20;
 	lightsOK = TRUE;
 	return TRUE; // todo error check
 }

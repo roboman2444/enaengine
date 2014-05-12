@@ -118,10 +118,12 @@ int createAndAddVBORINT(char * name, char type){
 	return addVBORINT(createVBO(name, type));
 }
 int setUpVBO(vbo_t * vbo, unsigned char posstride, unsigned char normstride, unsigned char tcstride){
+	GLuint totalstride = (posstride + tcstride + normstride);
+	if(!totalstride) return FALSE;
+	if(!vbo) return FALSE;
 	glBindVertexArray(vbo->vaoid);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo->vboid);
 	GLuint curstride = 0;
-	GLuint totalstride = (posstride + tcstride + normstride);
 	GLuint totalstridesize = totalstride * sizeof(GLfloat);
 	if(posstride){
 		glEnableVertexAttribArray(POSATTRIBLOC);

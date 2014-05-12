@@ -222,6 +222,67 @@ int testBBoxPInFrustum(viewport_t * v, vec_t * points){
 
 	return TRUE;
 }
+int testSphereInFrustumNearPlane(viewport_t * v, vec_t * p, float size){
+	int i;
+	vec_t * n;
+	for(i = 0; i < 5; i++){
+		n = v->frustum[i].norm;
+		float dist = vec3dot(n, p) + v->frustum[i].d;
+		if(dist < -size){
+			return FALSE;
+		}
+	}
+	n = v->frustum[5].norm;
+	float dist = vec3dot(n, p) + v->frustum[i].d;
+	if(dist < -size){
+		return FALSE;
+	} else if(dist < size){
+		return 2;
+	}
+
+	return TRUE;
+}
+int testBBoxPInFrustumNearPlane(viewport_t * v, vec_t * points){
+	int i;
+	vec_t * n;
+	float d;
+	for(i = 0; i < 5; i++){
+		n = v->frustum[i].norm;
+		d = v->frustum[i].d;
+		int j;
+		for(j = 0; j < 8; j++){
+			vec_t * p = &points[j*3];
+			float dist = vec3dot(n, p) + d;
+//			consolePrintf("dist:%f\n",dist);
+			if(dist > 0.0) break; // point infront of the plane
+		}
+		if(j==8) return FALSE; //all the points failed the frustum
+	}
+	n = v->frustum[5].norm;
+	d = v->frustum[5].d;
+	int j;
+	char test = 0;
+	for(j = 0; j < 8; j++){
+		vec_t * p = &points[j*3];
+		float dist = vec3dot(n, p) + d;
+//		consolePrintf("dist:%f\n",dist);
+		//if(dist > 0.0) break; // point infront of the plane
+		if(dist > 0.0){
+			//pre check to see if there are points that are on both sides of plane
+			if(test &2) return 2;
+			test = test | 1;
+		} else {
+			//pre check to see if there are points on both sides of plane
+			if(test & 2) return 2;
+			test = test | 2;
+		}
+	}
+	if(test == 1) return FALSE;
+	//points on both side of plane
+	else if (test == 2) return 2;
+
+	return TRUE;
+}
 void recalcFrustum(viewport_t * v){
 	vec_t m[16];
 	Matrix4x4_ToArrayFloatGL(&v->viewproj, m);

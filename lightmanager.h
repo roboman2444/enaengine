@@ -57,6 +57,9 @@ int lightArraySize;
 int lightArrayLastTaken;
 int lightsOK;
 
+int maxVisLights;
+int maxShadowLights;
+
 //returns first light it finds with name
 light_t * findLightByNameRPOINT(char * nam);
 int findLightByNameRINT(char * name);
