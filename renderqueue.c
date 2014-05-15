@@ -5,7 +5,7 @@
 #include "matrixlib.h"
 #include "entitymanager.h"
 #include "worldmanager.h"
-#include "lightmanager.h"
+//#include "lightmanager.h"
 #include "renderqueue.h"
 #include "glmanager.h"
 
@@ -249,6 +249,7 @@ int cleanupRenderbatche(renderbatche_t * batch){
 	batch->shaderbatch = 0;
 	return TRUE;
 }
+/*
 //deprecated?
 void addLightToLightbatche(int lightid, lightbatche_t * batch){
 	batch->count++;
@@ -261,3 +262,4 @@ void cleanupLightbatche(lightbatche_t * batch){
 	if(batch->lightlist) free(batch->lightlist);
 	batch->count = 0;
 }
+*/

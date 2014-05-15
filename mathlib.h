@@ -14,19 +14,30 @@
 #define vec4length(a) sqrt(vec4dot((a),(a)))
 //#define vec4norm(a,b) {float dontusel = vec4length((b));(a)[0] = (b)[0]/dontusel;(a)[1] = (b)[1]/dontusel;(a)[2] = (b)[2]/dontusel;}
 
-
 //add a vector to a vector
 #define vec1addvec(a,b,c) (a)[0] = (b)[0] + (c)[0];
 #define vec2addvec(a,b,c) vec1addvec((a),(b),(c)) (a)[1] = (b)[1] + (c)[1];
 #define vec3addvec(a,b,c) vec2addvec((a),(b),(c)) (a)[2] = (b)[2] + (c)[2];
 #define vec4addvec(a,b,c) vec3addvec((a),(b),(c)) (a)[3] = (b)[3] + (c)[3];
 
+//subtract a vector from a vector
+#define vec1subvec(a,b,c) (a)[0] = (b)[0] - (c)[0];
+#define vec2subvec(a,b,c) vec1addvec((a),(b),(c)) (a)[1] = (b)[1] - (c)[1];
+#define vec3subvec(a,b,c) vec2addvec((a),(b),(c)) (a)[2] = (b)[2] - (c)[2];
+#define vec4subvec(a,b,c) vec3addvec((a),(b),(c)) (a)[3] = (b)[3] - (c)[3];
+
 
 //add a scaler to a vector
-#define vec1add(a,b,c) (a)[0] = (b)[0] + c;
+#define vec1add(a,b,c) (a)[0] = (b)[0] + (c);
 #define vec2add(a,b,c) vec1add((a),(b),(c)) (a)[1] = (b)[1] + (c);
 #define vec3add(a,b,c) vec2add((a),(b),(c)) (a)[2] = (b)[2] + (c);
 #define vec4add(a,b,c) vec3add((a),(b),(c)) (a)[3] = (b)[3] + (c);
+
+//subtracts a scaler from a vector
+#define vec1sub(a,b,c) (a)[0] = (b)[0] - (c);
+#define vec2sub(a,b,c) vec1sub((a),(b),(c)) (a)[1] = (b)[1] - (c);
+#define vec3sub(a,b,c) vec2sub((a),(b),(c)) (a)[2] = (b)[2] - (c);
+#define vec4sub(a,b,c) vec3sub((a),(b),(c)) (a)[3] = (b)[3] - (c);
 
 
 //multiply a vector by a vector
@@ -36,7 +47,7 @@
 #define vec4multvec(a,b,c) vec3multvec((a),(b),(c)) (a)[3] = (b)[3] * (c)[3];
 
 //multiply a vector by a scaler
-#define vec1mult(a,b,c) (a)[0] = (b)[0] * c;
+#define vec1mult(a,b,c) (a)[0] = (b)[0] * (c);
 #define vec2mult(a,b,c) vec1mult((a),(b),(c)) (a)[1] = (b)[1] * (c);
 #define vec3mult(a,b,c) vec2mult((a),(b),(c)) (a)[2] = (b)[2] * (c);
 #define vec4mult(a,b,c) vec3mult((a),(b),(c)) (a)[3] = (b)[3] * (c);
@@ -50,7 +61,7 @@
 
 
 //divide a vector by a scaler
-#define vec1div(a,b,c) (a)[0] = (b)[0] / c;
+#define vec1div(a,b,c) (a)[0] = (b)[0] / (c);
 #define vec2div(a,b,c) vec1div((a),(b),(c)) (a)[1] = (b)[1] / (c);
 #define vec3div(a,b,c) vec2div((a),(b),(c)) (a)[2] = (b)[2] / (c);
 #define vec4div(a,b,c) vec3div((a),(b),(c)) (a)[3] = (b)[3] / (c);
@@ -62,5 +73,10 @@
 #define vec4comp(a,b) ((a)[0] == (b)[0] && (a)[1] == (b)[1] && (a)[2] == (b)[2] && (a)[3] == (b)[3])
 
 void getBBoxpFromBBox(vec_t * bbox, vec_t *bboxp);
-
+// distance from one vector to another (dist between points)
+vec_t vec3distvec(vec3_t b, vec3_t c);
+vec_t vec4distvec(vec4_t b, vec4_t c);
+// non sqrt-d distance from one vector to another (good for comparisons)
+vec_t vec3distfastvec(vec3_t b, vec3_t c);
+vec_t vec4distfastvec(vec4_t b, vec4_t c);
 #endif

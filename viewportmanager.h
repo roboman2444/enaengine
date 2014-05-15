@@ -18,17 +18,21 @@ typedef struct viewport_s {
 	matrix4x4_t view;
 	matrix4x4_t viewproj;
 	plane_t frustum[6];
+
+	vec3_t v_forward;
+	vec3_t v_up;
+	vec3_t v_right;
 } viewport_t;
 
 typedef struct viewportlistpoint_s {
 	//gotta free dis stuff after you use it
 	viewport_t **list;
-	int count;
+	unsigned int count;
 } viewportlistpoint_t;
 typedef struct viewportlistint_s {
 	//gotta free dis stuff after you use it
 	int *list;
-	int count;
+	unsigned int count;
 } viewportlistint_t;
 
 int initViewportSystem(void);

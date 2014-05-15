@@ -1,6 +1,8 @@
 #include "globaldefs.h"
 #include "particlemanager.h"
 
+
+/*
 //#include "texturemanager.h" //todo
 particlesystem_t *particlesyslist;
 int particleSysCount = 0;
@@ -11,11 +13,6 @@ int particlesOK = 0;
 #define MAXJUMPLEVEL 10
 
 
-/* particle math
-
-
-*/
-//TODO
 
 extern int delParticle(int lid, int id);
 int partPhysics(int lid, float timescale){
@@ -42,10 +39,6 @@ int partPhysics(int lid, float timescale){
 	return TRUE; //todo errorcheck
 }
 
-/* particle management
-
-
-*/
 void resizePartList(int id, int count){
 	particlesyslist[id].max = count;
 	particlesyslist[id].particlelist = realloc(particlesyslist[id].particlelist, count * sizeof(particle_t));
@@ -91,10 +84,6 @@ int addParticle(int lid, vec3_t pos, vec3_t gravity, vec3_t vel, float life, flo
 	return TRUE;
 	//todo debugging modes?
 }
-/* particle system management
-
-
-*/
 
 int maxSystems;
 int topOfSysList=0;
@@ -112,7 +101,7 @@ int initParticleSystem(int max){
 	return FALSE;
 }
 
-int searchForOpenSys(/*int start, int end*/){
+int searchForOpenSys(){
 	//todo start at firstopen slot, go until top of list or an type 0... wait 1+topoflist should technically be open
 //	for(; particlesyslist[start].active && start < end; start++);
 //	return start;
@@ -160,3 +149,4 @@ int delParticleSys(int id){
 	searchForTopSys();
 	return TRUE; //todo errorcheck
 }
+*/

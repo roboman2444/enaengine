@@ -24,17 +24,19 @@ typedef struct renderbatche_s {
 	shaderbatche_t * shaderbatch;
 	//int something;
 }renderbatche_t; // the e stands for entity
+/*
 typedef struct lightbatche_s {
 	int count;
-	int * lightlist;
+	light_t * lightlist;
 } lightbatche_t;
+*/
 int addEntityToRenderbatche(entity_t * ent, renderbatche_t * batch);
 int addObjectToRenderbatche(worldobject_t * obj, renderbatche_t * batch);
 
 int cleanupRenderbatche(renderbatche_t * batch);
 
 
-void addLightToLightbatche( int lightid, lightbatche_t * batch);
-void cleanupLightbatche(lightbatche_t * batch);
+//void addLightToLightbatche(light_t * l, lightbatche_t * batch);
+//void cleanupLightbatche(lightbatche_t * batch);
 
 #endif

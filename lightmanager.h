@@ -25,6 +25,18 @@ typedef struct light_s {
 
 } light_t;
 
+/*
+typedef struct lightbatch_s {
+	unsigned int count;
+	int * lightlist;
+} lightbatch_t;
+*/
+/*
+typedef struct lightbatches_s {
+	lightbatch_t noshadowout;
+	lightbatch_t noshadowin;
+} lightbatches_t;
+*/
 
 /// might not do a quadtree for lights... too slow to dynamically recreate
 typedef struct lightleaf_s {
@@ -34,21 +46,30 @@ typedef struct lightleaf_s {
 	vec_t bbox[6];
 	vec_t bboxp[24];
 	int numlights;
-	light_t *list; // maybe set to a jumping adjust isntead of dynamic... or linked list
+	light_t *list; // maybe set to a jumping adjust instead of dynamic... or linked list
 	float size;
 } lightleaf_t;
 
 typedef struct lightlistpoint_s {
 	//gotta use this stuff after you use it
 	light_t **list;
-	int count;
+	unsigned int count;
 } lightlistpoint_t; // yeah yeah i know naming
 
 typedef struct lightlistint_s {
 	//gotta use this stuff after you use it
 	int *list;
-	int count;
+	unsigned int count;
 } lightlistint_t; // yeah yeah i know naming
+
+
+
+typedef struct lightrenderout_s {
+	lightlistpoint_t lout;
+	lightlistpoint_t lin;
+	lightlistpoint_t lshadowout;
+	lightlistpoint_t lshadowin;
+} lightrenderout_t;
 
 light_t *lightlist;
 int initLightSystem(void);
@@ -75,4 +96,6 @@ int addLightRINT(char * name);
 int deleteLight(int id);
 
 int lightLoop(void);
+
+lightrenderout_t readyLightsForRender(viewport_t *v, unsigned int max, unsigned int maxshadowed);
 #endif

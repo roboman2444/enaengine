@@ -37,7 +37,7 @@ typedef struct texture_s {
 
 typedef struct texturegroup_s{
 	char type;
-	int num;
+	unsigned char num;
 	texture_t * textures; //first should be diffuse, second normal, etc
 	char * name;
 	int myid;

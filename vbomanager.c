@@ -74,6 +74,7 @@ vbo_t createVBO(char * name, char type){
 	glGenBuffers(1, &v.vboid);	if(!v.vboid) return v;
 	glGenBuffers(1, &v.indicesid);	if(!v.indicesid) return v;
 	v.name = malloc(strlen(name)+1);
+	v.setup =0;
 	strcpy(v.name, name);
 //	v.type = type; //todo type stuff
 	v.type = 2;

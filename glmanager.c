@@ -81,11 +81,13 @@ int glInit(void){
 		//todo call some sort of shutdown of everything
 		 return FALSE;
 	}
+/*
 	initParticleSystem(128);
 	if(!particlesOK){
 		//todo call some sort of shutdown of everything
 		 return FALSE;
 	}
+*/
 	initLightSystem();
 	if(!lightsOK){
 		//todo call some sort of shutdown of everything
@@ -304,99 +306,20 @@ GLuint tris[36] = {
 			3, 6, 7
 	};
 int glDrawLights(viewport_t *v){
+	lightrenderout_t out = readyLightsForRender(v, 50, 0);
+	if(!out.lin.count && out.lout.count) return FALSE;
+
 	framebuffer_t *df = returnFramebufferById(v->dfbid);
 	framebuffer_t *of = returnFramebufferById(v->outfbid);
-	vbo_t * lvbo = returnVBOById(lightvbo);
+	vbo_t * lvbo = returnVBOById(lightvbo); //todo
 	if(!df || !of || !lvbo) return FALSE;
-	int i;
-	int lnoshadowcount = 0;
-	int lnoshadowinsidecount = 0;
-//	lightbatche_t outlights;
-	GLuint *lnoshadowindices = 0;
-	GLfloat *lnoshadowpoints = 0;
-	GLuint *lnoshadowinsideindices = 0;
-	GLfloat *lnoshadowinsidepoints = 0;
-	for(i = 0; i <= lightArrayLastTaken; i++){
-		light_t * l = &lightlist[i];
-		if(!l->type) continue;
-		//todo also make a special case for non point lights
-		int result = testSphereInFrustumNearPlane(v, l->pos, l->scale);
-		//todo convert this to a lightbatch system (so i can later generate a since particle style quad for it and sort/prune)
-		/*
-			idea to speed up sorting / pruning
-			in the if statement for tested
-			if less than maxlightcount, keep track of the highest distance from light (if mydist > greatdist) greatdist = mydist;)
-			Once the count of lights gets to maxLightCount, dont add any lights that are over greatdist
-			Best case, doesnt add any lights over the maxlightcount, no need to sort.
-			Worst case, adds all lights (greatdist gets set to the furthest away light possible)
-			(also store the distance you computed in this loop somewhere, dont re-calc it)
-		*/
-		if(result == 1){
-			//set indices up
-			unsigned int j = 36 * lnoshadowcount;
-			int t;
-			unsigned int bump = 8 * lnoshadowcount;
-			lnoshadowcount++;
-			//todo maybe have a loop through that marks each light as in or not, and counts
-			lnoshadowindices = realloc(lnoshadowindices, 36 * lnoshadowcount * sizeof(GLuint));
-			for(t = 0; t < 36; t++, j++){
-				lnoshadowindices[j] = tris[t] + bump;
-			}
-			//copy bboxp
-			lnoshadowpoints = realloc(lnoshadowpoints, 24 * lnoshadowcount * sizeof(GLfloat));
 
-			memcpy(&lnoshadowpoints[24*(lnoshadowcount-1)], l->bboxp, 24*sizeof(GLfloat)); // size of 1
-
-			//do i really need a lightbatch? cant i just generate stuff here and then render?
-//			addLightToLightbatche(l->myid, &outlights);
-		} else if (result ==2){
-//			consolePrintf("light %i hits nearplane\n", l->myid);
-
-			//set indices up
-			unsigned int j = 36 * lnoshadowinsidecount;
-			int t;
-			unsigned int bump = 8 * lnoshadowinsidecount;
-			lnoshadowinsidecount++;
-			//todo maybe have a loop through that marks each light as in or not, and counts
-			lnoshadowinsideindices = realloc(lnoshadowinsideindices, lnoshadowinsidecount * 36 * sizeof(GLuint));
-			for(t = 0; t < 36; t++, j++){
-				lnoshadowinsideindices[j] = tris[t] + bump;
-			}
-			//copy bboxp
-			lnoshadowinsidepoints = realloc(lnoshadowinsidepoints, 24 * lnoshadowinsidecount * sizeof(GLfloat));
-
-			memcpy(&lnoshadowinsidepoints[24*(lnoshadowinsidecount-1)], l->bboxp, 24*sizeof(GLfloat)); // size of 1
-		}
-	}
-	//todo one for each batch
-	if(!lnoshadowcount) return FALSE;
 
 	shaderprogram_t * shader = returnShaderById(lightshaderid);
 	shaderpermutation_t * perm = addPermutationToShader(shader, 0);
 	if(perm->compiled < 2) return FALSE;
 	currentsp = perm;
 	bindShaderPerm(perm);
-
-
-	//todo can i do this more efficiently
-	glBindVertexArray(lvbo->vaoid);
-	glBindBuffer(GL_ARRAY_BUFFER, lvbo->vboid);
-	glBufferData(GL_ARRAY_BUFFER, lnoshadowcount * 24 * sizeof(GLfloat), lnoshadowpoints, GL_STATIC_DRAW); // change to stream?
-	//todo just reuse each frame, no need to free
-	free(lnoshadowpoints);
-
-	glEnableVertexAttribArray(POSATTRIBLOC);
-	glVertexAttribPointer(POSATTRIBLOC, 3, GL_FLOAT, GL_FALSE, 3* sizeof(GLfloat), 0); // may not be needed every time
-
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, lvbo->indicesid);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, 36 * lnoshadowcount * sizeof(GLuint), lnoshadowindices, GL_STATIC_DRAW);
-	free(lnoshadowindices);
-	free(lnoshadowinsidepoints);
-	free(lnoshadowinsideindices);
-	lvbo->numfaces = 12 * lnoshadowcount;
-	lvbo->numverts = 8 * lnoshadowcount;
-
-
 
 	glBindFramebuffer(GL_FRAMEBUFFER, of->id);
 	glDepthMask(GL_FALSE);
@@ -405,42 +328,107 @@ int glDrawLights(viewport_t *v){
 	glViewport(0, 0, of->width, of->height);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, df->id0);
-	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, df->id1);
-	glActiveTexture(GL_TEXTURE2);
-	glBindTexture(GL_TEXTURE_2D, df->id2);
-
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_ONE,GL_ONE);
 
 
 
+
+	//todo can i do this more efficiently
+	if(!lvbo->setup) setUpVBO(lvbo, 3, 0, 0);
+	else {
+		glBindVertexArray(lvbo->vaoid);
+		glBindBuffer(GL_ARRAY_BUFFER, lvbo->vboid);
+	}
+
+//	consolePrintf("lcount is %i:%i\n", out.lin.count, out.lout.count);
+	if(out.lin.count){
+		GLfloat * inlightpoints = malloc(out.lin.count * 24 * sizeof(GLfloat));
+		GLuint * inlightindices = malloc(out.lin.count * 36 * sizeof(GLuint));
+		int i;
+		for(i = 0; i < out.lin.count; i++){
+			memcpy(&inlightpoints[i*24], out.lin.list[i]->bboxp, 24* sizeof(GLfloat));
+			unsigned int bump = 8 * i;
+			unsigned int j = 32 * i;
+			int t;
+			for(t = 0; t < 36; t++, j++){
+				inlightindices[j] = tris[t] + bump;
+			}
+		}
+
+		glBufferData(GL_ARRAY_BUFFER, out.lin.count * 24 * sizeof(GLfloat), inlightpoints, GL_STATIC_DRAW); // change to stream?
+		//todo just reuse each frame, no need to free
+		free(inlightpoints);
+//	glEnableVertexAttribArray(POSATTRIBLOC);
+	glVertexAttribPointer(POSATTRIBLOC, 3, GL_FLOAT, GL_FALSE, 3* sizeof(GLfloat), 0); // may not be needed every time
+
+
+
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, lvbo->indicesid);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, 36 * out.lin.count * sizeof(GLuint), inlightindices, GL_STATIC_DRAW);
+		free(inlightindices);
+		lvbo->numfaces = 12 * out.lin.count;
+		lvbo->numverts = 8 * out.lin.count;
+
+		GLfloat mout[16];
+		Matrix4x4_ToArrayFloatGL(&v->viewproj, mout);
+		glUniformMatrix4fv(currentsp->unimat40, 1, GL_FALSE, mout);
+		glUniform2f(currentsp->uniscreensizefix, 1.0/of->width, 1.0/of->height);
+		glDrawElements(GL_TRIANGLES, out.lin.count * 36, GL_UNSIGNED_INT, 0);
+	}
+
+
+	if(out.lout.count){
+		glBindBuffer(GL_ARRAY_BUFFER, lvbo->vboid);
+		GLfloat * outlightpoints = malloc(out.lin.count * 24 * sizeof(GLfloat));
+		GLuint * outlightindices = malloc(out.lin.count * 36 * sizeof(GLuint));
+		int i;
+		for(i = 0; i < out.lout.count; i++){
+			memcpy(&outlightpoints[i*24], out.lout.list[i]->bboxp, 24* sizeof(GLfloat));
+			unsigned int bump = 8 * i;
+			unsigned int j = 32 * i;
+			int t;
+			for(t = 0; t < 36; t++, j++){
+			outlightindices[j] = tris[t] + bump;
+			}
+		}
+
+		glBufferData(GL_ARRAY_BUFFER, out.lout.count * 24 * sizeof(GLfloat), outlightpoints, GL_STATIC_DRAW); // change to stream?
+		//todo just reuse each frame, no need to free
+		free(outlightpoints);
+
+//	glEnableVertexAttribArray(POSATTRIBLOC);
+	glVertexAttribPointer(POSATTRIBLOC, 3, GL_FLOAT, GL_FALSE, 3* sizeof(GLfloat), 0); // may not be needed every time
+
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, lvbo->indicesid);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, 36 * out.lout.count * sizeof(GLuint), outlightindices, GL_STATIC_DRAW);
+		free(outlightindices);
+		lvbo->numfaces = 12 * out.lout.count;
+		lvbo->numverts = 8 * out.lout.count;
+
+		glDisable(GL_DEPTH_TEST);
+		glCullFace(GL_FRONT);
+
+
+		GLfloat mout[16];
+		Matrix4x4_ToArrayFloatGL(&v->viewproj, mout);
+		glUniformMatrix4fv(currentsp->unimat40, 1, GL_FALSE, mout);
+		glUniform2f(currentsp->uniscreensizefix, 1.0/of->width, 1.0/of->height);
+		glDrawElements(GL_TRIANGLES, out.lout.count * 36, GL_UNSIGNED_INT, 0);
+		glCullFace(GL_BACK);
+		glEnable(GL_DEPTH_TEST);
+
+
+	}
+
+
 //	glDisable(GL_DEPTH_TEST);
 //	glDisable(GL_CULL_FACE);
-	GLfloat out[16];
-	Matrix4x4_ToArrayFloatGL(&v->viewproj, out);
-	glUniformMatrix4fv(currentsp->unimat40, 1, GL_FALSE, out);
-	glUniform2f(currentsp->uniscreensizefix, 1.0/of->width, 1.0/of->height);
-	glDrawElements(GL_TRIANGLES, lnoshadowcount * 36, GL_UNSIGNED_INT, 0);
-//	glDrawArrays(GL_POINTS, 0, count * 8);
-//	glEnable(GL_DEPTH_TEST);
-//	glEnable(GL_CULL_FACE);
 
 
-//may not be needed, but its a good sanity check
 	glDepthMask(GL_TRUE);
 	glDisable(GL_BLEND);
-
-	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, 0);
-	glActiveTexture(GL_TEXTURE2);
-	glBindTexture(GL_TEXTURE_2D, 0);
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, 0);
-
-
-
-	return lnoshadowcount + lnoshadowinsidecount;
+	return TRUE;
 }
 int glDrawViewport(viewport_t *v){
 	framebuffer_t *df = returnFramebufferById(v->dfbid);
@@ -572,9 +560,11 @@ int glMainDraw(void){
 //temporary
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+//	glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA); //premult wont work for text because SDL_TTF only renders text with the alpha channel, solid color for RGB
 	glDisable(GL_DEPTH_TEST);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 //	glViewport(0, 0, 800, 600);
+/*
 	char fg[3] = {128, 255, 255};
 	text_t * t = createAndAddTextFindFontRPOINT("Text Rendering Works!", "FreeMono.ttf", 512, 1, fg);
 	glActiveTexture(GL_TEXTURE0);
@@ -601,7 +591,8 @@ int glMainDraw(void){
 	tvbo->numfaces = 2;
 	tvbo->numverts = 4;
 
-//	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+*/
 
 	glDrawConsole();
 

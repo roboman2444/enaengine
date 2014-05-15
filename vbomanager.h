@@ -52,5 +52,6 @@ int createAndAddVBORINT(char * name, char type);
 vbo_t createVBO(char *name, char type);
 
 int deleteVBO(int vboid);
+int setUpVBO(vbo_t * vbo, unsigned char posstride, unsigned char normstride, unsigned char tcstride);
 #endif
 

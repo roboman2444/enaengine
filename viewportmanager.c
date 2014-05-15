@@ -153,10 +153,19 @@ int createAndAddViewportRINT(char * name, char type){
 	return addViewportRINT(createViewport(name, type));
 }
 
+
+vec3_t stockv_forward = { 0.0, 0.0, 1.0 };
+vec3_t stockv_up = { 0.0, 1.0, 1.0 };
+vec3_t stockv_right = { 1.0, 0.0, 0.0 };
+
 void recalcViewMatrix(viewport_t * v){
 	Matrix4x4_CreateRotate(&v->view, v->angle[2], 0.0, 0.0, 1.0);
 	Matrix4x4_ConcatRotate(&v->view, v->angle[0], 1.0, 0.0, 0.0);
 	Matrix4x4_ConcatRotate(&v->view, v->angle[1], 0.0, 1.0, 0.0);
+	//putting in vectors stuff here, because why not?
+	Matrix4x4_Transform(&v->view, stockv_forward, v->v_forward);
+	Matrix4x4_Transform(&v->view, stockv_up, v->v_up);
+	Matrix4x4_Transform(&v->view, stockv_right, v->v_right);
 	Matrix4x4_ConcatTranslate(&v->view, -v->pos[0], -v->pos[1], -v->pos[2]);
 }
 void recalcProjectionMatrix(viewport_t * v){
@@ -356,6 +365,7 @@ int recalcViewport(viewport_t * v, vec3_t pos, vec3_t angle, float fov, float as
 		v->angle[0] = angle[0];
 		v->angle[1] = angle[1];
 		v->angle[2] = angle[2];
+//		recalcViewVectors(v); // done in matrix anyway
 		recalcViewMatrix(v);
 	}
 	if(fov != v->fov || aspect != v->aspect || v->near!= near || v->far != far){

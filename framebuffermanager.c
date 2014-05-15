@@ -38,7 +38,7 @@ int initFramebufferSystem(void){
 	free(screen);
 	return TRUE; // todo error check
 }
-framebufferlistpoint_t findFramebufferssByNameRPOINT(char * name){
+framebufferlistpoint_t findFramebuffersByNameRPOINT(char * name){
 	framebufferlistpoint_t ret;
 	int hash = getHash(name);
 	hashbucket_t * hb = &framebufferhashtable[hash];
@@ -53,7 +53,7 @@ framebufferlistpoint_t findFramebufferssByNameRPOINT(char * name){
         }
 	return ret;
 }
-framebufferlistint_t findFramebufferssByNameRINT(char * name){
+framebufferlistint_t findFramebuffersByNameRINT(char * name){
 	framebufferlistint_t ret;
 	int hash = getHash(name);
 	hashbucket_t * hb = &framebufferhashtable[hash];

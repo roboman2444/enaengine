@@ -18,12 +18,12 @@ typedef struct framebuffer_s{
 typedef struct framebufferlistpoint_s {
 	//gotta free dis stuff after you use it
 	framebuffer_t **list;
-	int count;
+	unsigned int count;
 } framebufferlistpoint_t;
 typedef struct framebufferlistint_s {
 	//gotta free dis stuff after you use it
 	int *list;
-	int count;
+	unsigned int count;
 } framebufferlistint_t;
 
 int initFramebufferSystem(void);

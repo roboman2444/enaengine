@@ -10,6 +10,7 @@
 #include "shadermanager.h"
 #include "entitymanager.h"
 #include "worldmanager.h"
+#include "viewportmanager.h"
 #include "lightmanager.h"
 
 int gamecodeOK;
