@@ -355,12 +355,13 @@ int glDrawLights(viewport_t *v){
 				inlightindices[j] = tris[t] + bump;
 			}
 		}
+		free(out.lin.list);
 
 		glBufferData(GL_ARRAY_BUFFER, out.lin.count * 24 * sizeof(GLfloat), inlightpoints, GL_STATIC_DRAW); // change to stream?
 		//todo just reuse each frame, no need to free
 		free(inlightpoints);
-//	glEnableVertexAttribArray(POSATTRIBLOC);
-	glVertexAttribPointer(POSATTRIBLOC, 3, GL_FLOAT, GL_FALSE, 3* sizeof(GLfloat), 0); // may not be needed every time
+	//	glEnableVertexAttribArray(POSATTRIBLOC);
+		glVertexAttribPointer(POSATTRIBLOC, 3, GL_FLOAT, GL_FALSE, 3* sizeof(GLfloat), 0); // may not be needed every time
 
 
 
@@ -369,6 +370,7 @@ int glDrawLights(viewport_t *v){
 		free(inlightindices);
 		lvbo->numfaces = 12 * out.lin.count;
 		lvbo->numverts = 8 * out.lin.count;
+
 
 		GLfloat mout[16];
 		Matrix4x4_ToArrayFloatGL(&v->viewproj, mout);
@@ -380,8 +382,8 @@ int glDrawLights(viewport_t *v){
 
 	if(out.lout.count){
 		glBindBuffer(GL_ARRAY_BUFFER, lvbo->vboid);
-		GLfloat * outlightpoints = malloc(out.lin.count * 24 * sizeof(GLfloat));
-		GLuint * outlightindices = malloc(out.lin.count * 36 * sizeof(GLuint));
+		GLfloat * outlightpoints = malloc(out.lout.count * 24 * sizeof(GLfloat));
+		GLuint * outlightindices = malloc(out.lout.count * 36 * sizeof(GLuint));
 		int i;
 		for(i = 0; i < out.lout.count; i++){
 			memcpy(&outlightpoints[i*24], out.lout.list[i]->bboxp, 24* sizeof(GLfloat));
@@ -389,16 +391,17 @@ int glDrawLights(viewport_t *v){
 			unsigned int j = 32 * i;
 			int t;
 			for(t = 0; t < 36; t++, j++){
-			outlightindices[j] = tris[t] + bump;
+				outlightindices[j] = tris[t] + bump;
 			}
 		}
+		free(out.lout.list);
 
 		glBufferData(GL_ARRAY_BUFFER, out.lout.count * 24 * sizeof(GLfloat), outlightpoints, GL_STATIC_DRAW); // change to stream?
 		//todo just reuse each frame, no need to free
 		free(outlightpoints);
 
-//	glEnableVertexAttribArray(POSATTRIBLOC);
-	glVertexAttribPointer(POSATTRIBLOC, 3, GL_FLOAT, GL_FALSE, 3* sizeof(GLfloat), 0); // may not be needed every time
+	//	glEnableVertexAttribArray(POSATTRIBLOC);
+		glVertexAttribPointer(POSATTRIBLOC, 3, GL_FLOAT, GL_FALSE, 3* sizeof(GLfloat), 0); // may not be needed every time
 
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, lvbo->indicesid);
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, 36 * out.lout.count * sizeof(GLuint), outlightindices, GL_STATIC_DRAW);

@@ -205,8 +205,9 @@ int lightQuickPartition(lightlistdist_t list, int l, int r){
 	pivot = list.dist[l];
 	i = l; j = r+1;
 	while(1){
+	//todo fix this?
 		do ++i; while(list.dist[i] <= pivot && i<= r);
-		do --j; while (list.dist[i] > pivot);
+		do --j; while (list.dist[j] > pivot);
 		if(i >= j) break;
 		//swap em
 		td = list.dist[i]; list.dist[i] = list.dist[j]; list.dist[j] = td;
@@ -306,8 +307,10 @@ void lightHashSortPrune(lightlistdist_t * list, vec_t lmaxdist, unsigned int max
 		//sort my new lightlistdist
 		lightQuickSort(tosort, 0 , tosort.count-1);
 	} else { // buckets lined up perfectly so that pivot slot can be full
+
 		pivot++;
 	}
+
 
 	// go through buckets, pushing their data into my output list
 	unsigned int outarrayloc = 0;
@@ -319,12 +322,15 @@ void lightHashSortPrune(lightlistdist_t * list, vec_t lmaxdist, unsigned int max
 			outarrayloc++;
 		}
 	}
+
 	//now copy over the temporary list
 	if(lcount != max){
 		unsigned int tlistlength = max - outarrayloc;
 		memcpy(&list->list[outarrayloc], tosort.list, tlistlength * sizeof(light_t *));
 		memcpy(&list->dist[outarrayloc], tosort.dist, tlistlength * sizeof(vec_t));
 	}
+
+
 	//at this point my input list should be pruned and fixed
 
 	//free temp lightlistdist
@@ -339,7 +345,7 @@ void lightHashSortPrune(lightlistdist_t * list, vec_t lmaxdist, unsigned int max
 			free(b);
 		}
 	}
-	free(table);
+	if(table)free(table);
 }
 
 
