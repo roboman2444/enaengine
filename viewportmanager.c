@@ -276,20 +276,22 @@ int testBBoxPInFrustumNearPlane(viewport_t * v, vec_t * points){
 		float dist = vec3dot(n, p) + d;
 //		consolePrintf("dist:%f\n",dist);
 		//if(dist > 0.0) break; // point infront of the plane
+		//point in front of nearplane
 		if(dist > 0.0){
 			//pre check to see if there are points that are on both sides of plane
 			if(test &2) return 2;
 			test = test | 1;
 		} else {
 			//pre check to see if there are points on both sides of plane
-			if(test & 2) return 2;
+			if(test & 1) return 2;
 			test = test | 2;
 		}
 	}
-	if(test == 1) return FALSE;
+	//point still behind plane
+	if(test == 2) return FALSE;
 	//points on both side of plane
-	else if (test == 2) return 2;
-
+	else if (test == 3) return 2;
+	//points only in front of plane
 	return TRUE;
 }
 void recalcFrustum(viewport_t * v){

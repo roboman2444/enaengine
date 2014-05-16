@@ -368,7 +368,7 @@ lightrenderout_t readyLightsForRender(viewport_t *v, unsigned int max, unsigned 
 		light_t *l = &lightlist[i];
 		if(!l->type) continue;
 		//get lights test to frustum, if it isnt even in it, move on
-		int result = testSphereInFrustumNearPlane(v, l->pos, l->scale);
+		int result = testBBoxPInFrustumNearPlane(v, l->bboxp);
 		if(!result) continue;
 
 		vec_t dist = vec3distvec(v->pos, l->pos) * l->scale;
