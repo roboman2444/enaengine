@@ -307,7 +307,7 @@ GLuint tris[36] = {
 	};
 int glDrawLights(viewport_t *v){
 	lightrenderout_t out = readyLightsForRender(v, 50, 0);
-	if(!out.lin.count && out.lout.count) return FALSE;
+	if(!out.lin.count && !out.lout.count) return FALSE;
 
 	framebuffer_t *df = returnFramebufferById(v->dfbid);
 	framebuffer_t *of = returnFramebufferById(v->outfbid);
@@ -361,7 +361,7 @@ int glDrawLights(viewport_t *v){
 		//todo just reuse each frame, no need to free
 		free(inlightpoints);
 	//	glEnableVertexAttribArray(POSATTRIBLOC);
-		glVertexAttribPointer(POSATTRIBLOC, 3, GL_FLOAT, GL_FALSE, 3* sizeof(GLfloat), 0); // may not be needed every time
+//		glVertexAttribPointer(POSATTRIBLOC, 3, GL_FLOAT, GL_FALSE, 3* sizeof(GLfloat), 0); // may not be needed every time
 
 
 
