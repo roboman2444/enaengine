@@ -10,6 +10,7 @@
 #include "console.h"
 
 #include "vbomanager.h" //for attriblocs
+#include "ubomanager.h" //for ubo size
 
 int shadercount = 0;
 int shaderArrayFirstOpen = 0;
@@ -170,6 +171,7 @@ shaderpermutation_t createPermutation(shaderprogram_t * shader, int permutation)
 	glBindAttribLocation(programid, POSATTRIBLOC, "posattrib");
 	glBindAttribLocation(programid, NORMATTRIBLOC, "normattrib");
 	glBindAttribLocation(programid, TCATTRIBLOC, "tcattrib");
+	glBindAttribLocation(programid, INSTANCEATTRIBLOC, "instanceattrib");
 
 
 
@@ -225,6 +227,10 @@ shaderpermutation_t createPermutation(shaderprogram_t * shader, int permutation)
 	perm.univec20 = glGetUniformLocation(programid, "univec20");
 	perm.uniscreensizefix = glGetUniformLocation(programid, "uniscreensizefix");
 	perm.unifloat0 =glGetUniformLocation(programid, "unifloat0");
+//uniform blocks
+	perm.uniblock0 = glGetUniformBlockIndex(programid, "uniblock0"); //todo maybe i dont need to keep this around
+	if(perm.uniblock0 > -1) glUniformBlockBinding(programid, perm.uniblock0, 0);	//todo make a ubo manager that i can just slap data in and out of, have each shader bind to this
+	//it will be very useful for some stuff i guess
 
 	perm.compiled = 2;
 //	consolePrintf("Shader %s compile successful\n", shader->name);
@@ -465,10 +471,9 @@ int bindShaderPerm(shaderpermutation_t * perm){
 	glUseProgram(id);
 //set texture spaces
 	int i;
-	GLuint *tp = &perm->texturespos[0];
+	GLint *tp = &perm->texturespos[0];
 	for(i = 0; i < 16; i++){
-		if(tp[i] > -1)
-			glUniform1i(tp[i], i);
+		if(tp[i] > -1) glUniform1i(tp[i], i);
 //		consolePrintf("texture space %i at uniform loc %i\n", i, perm->texturespos[i]);
 	}
 	//todo error check

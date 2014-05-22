@@ -2,28 +2,34 @@
 #include <GL/gl.h>
 
 #include "globaldefs.h"
-#include "vbomanager.h"
+#include "ubomanager.h"
 #include "hashtables.h"
+#include "console.h"
 
-int vboOK = 0;
-int vbocount = 0;
-int vboArrayFirstOpen = 0;
-int vboArrayLastTaken = -1;
-int vboArraySize = 0;
-vbo_t *vbolist;
+GLint maxUBOSize;
+int uboOK = 0;
+//int ubocount = 0;
+//int uboArrayFirstOpen = 0;
+//int uboArrayLastTaken = -1;
+//int uboArraySize = 0;
+//ubo_t *ubolist;
 
-hashbucket_t vbohashtable[MAXHASHBUCKETS];
+//hashbucket_t vbohashtable[MAXHASHBUCKETS];
 
-int initVBOSystem(void){
-	memset(vbohashtable, 0, MAXHASHBUCKETS*sizeof(hashbucket_t));
-	if(vbolist) free(vbolist);
-	vbolist = 0;
+int initUBOSystem(void){
+//	memset(vbohashtable, 0, MAXHASHBUCKETS*sizeof(hashbucket_t));
+//	if(vbolist) free(vbolist);
+//	vbolist = 0;
 
-	vboOK = TRUE;
+	glGetIntegerv(GL_MAX_UNIFORM_BLOCK_SIZE, &maxUBOSize);
+
+	consolePrintf("max uniform size is %i\n", maxUBOSize);
+
+	uboOK = TRUE;
 	return TRUE;
 }
 
-
+/*
 vbo_t * findVBOByNameRPOINT(char * name){
 	return returnVBOById(findByNameRINT(name, vbohashtable));
 }
@@ -137,3 +143,4 @@ int setUpVBO(vbo_t * vbo, unsigned char posstride, unsigned char normstride, uns
 
 	return totalstride;
 }
+*/

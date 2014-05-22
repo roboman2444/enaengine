@@ -1,11 +1,8 @@
-#ifndef VBOMANAGERHEADER
-#define VBOMANAGERHEADER
+#ifndef UBOMANAGERHEADER
+#define UBOMANAGERHEADER
 
-#define POSATTRIBLOC 0
-#define NORMATTRIBLOC 1
-#define TCATTRIBLOC 2
-#define INSTANCEATTRIBLOC 5
-
+#define UBOBLOCKLOC 0
+/*
 typedef struct vbo_s {
 	char * name;
 
@@ -27,15 +24,24 @@ typedef struct vbo_s {
 	unsigned char totalstride;
 }vbo_t;
 
-int vboOK;
-int vbonumber;
-vbo_t * vbolist;
-int vbocount;
-int vboArraySize;
-int vboArrayLastTaken;
+typedef struct ubo_s {
+	char * name;
+	GLuint id;// maybe not
+	char type; // maybe not
+}ubo_t;
+*/
 
-int initVBOSystem(void);
+GLint maxUBOSize;
 
+int uboOK;
+//int ubonumber;
+//ubo_t * ubolist;
+//int ubocount;
+//int uboArraySize;
+//int uboArrayLastTaken;
+
+int initUBOSystem(void);
+/*
 vbo_t * findVBOByNameRPOINT(char * name);
 int findVBOByNameRINT(char * name);
 
@@ -47,5 +53,6 @@ vbo_t createVBO(char *name, char type);
 
 int deleteVBO(int vboid);
 int setUpVBO(vbo_t * vbo, unsigned char posstride, unsigned char normstride, unsigned char tcstride);
+*/
 #endif
 

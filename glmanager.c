@@ -18,6 +18,7 @@
 #include "renderqueue.h"
 #include "lightmanager.h"
 #include "textmanager.h"
+#include "ubomanager.h"
 
 #include <tgmath.h>
 
@@ -37,6 +38,7 @@ viewport_t * cam = 0;
 int lightvbo = 0;
 int textvbo = 0; //temporary
 int textshaderid = 0; // temporary
+int cubeModel = 0; // todo move this as well as the other primitives into modelmanager
 unsigned int currentflags = 0;
 //GLfloat fsquadpoints[12] = {-1.0, -1.0, 	1.0, -1.0, 	 1.0, 1.0,
 //			    -1.0, -1.0, 	1.0,  1.0, 	-1.0, 1.0};
@@ -73,6 +75,11 @@ int glInit(void){
 	}
 	initVBOSystem();
 	if(!vboOK){
+		return FALSE;
+		//todo call some sort of shutdown of everything
+	}
+	initUBOSystem();
+	if(!uboOK){
 		return FALSE;
 		//todo call some sort of shutdown of everything
 	}
@@ -141,6 +148,7 @@ int glInit(void){
 	vbo_t * tvbo = createAndAddVBORPOINT("text", 2);
 	textvbo = tvbo->myid;
 	textshaderid = createAndAddShaderRINT("text");
+	cubeModel = findModelByNameRINT("cube");
 
 	return TRUE; // so far so good
 }
@@ -330,84 +338,59 @@ int glDrawLights(viewport_t *v){
 	glBindTexture(GL_TEXTURE_2D, df->id0);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_ONE,GL_ONE);
-
-
-
+	model_t * cuber = returnModelById(cubeModel);
+	vbo_t * cvbo = returnVBOById(cuber->vbo);
+	if(!cvbo) return FALSE;
+	glBindVertexArray(cvbo->vaoid);
 
 	//todo can i do this more efficiently
-	if(!lvbo->setup) setUpVBO(lvbo, 3, 0, 0);
-	else {
-		glBindVertexArray(lvbo->vaoid);
+
 		glBindBuffer(GL_ARRAY_BUFFER, lvbo->vboid);
-	}
 
 //	consolePrintf("lcount is %i:%i\n", out.lin.count, out.lout.count);
 	if(out.lin.count){
-		GLfloat * inlightpoints = malloc(out.lin.count * 24 * sizeof(GLfloat));
-		GLuint * inlightindices = malloc(out.lin.count * 36 * sizeof(GLuint));
+		GLfloat * instancedata = malloc(out.lin.count * 4 * sizeof(GLfloat));
 		int i;
 		for(i = 0; i < out.lin.count; i++){
-			memcpy(&inlightpoints[i*24], out.lin.list[i]->bboxp, 24* sizeof(GLfloat));
-			unsigned int bump = 8 * i;
-			unsigned int j = 32 * i;
-			int t;
-			for(t = 0; t < 36; t++, j++){
-				inlightindices[j] = tris[t] + bump;
-			}
+			int burp = 4*i;
+			instancedata[burp] = out.lin.list[i]->pos[0];
+			instancedata[burp+1] = out.lin.list[i]->pos[1];
+			instancedata[burp+2] = out.lin.list[i]->pos[2];
+			instancedata[burp+3] = out.lin.list[i]->scale;
 		}
 		free(out.lin.list);
 
-		glBufferData(GL_ARRAY_BUFFER, out.lin.count * 24 * sizeof(GLfloat), inlightpoints, GL_STATIC_DRAW); // change to stream?
-		//todo just reuse each frame, no need to free
-		free(inlightpoints);
-	//	glEnableVertexAttribArray(POSATTRIBLOC);
-//		glVertexAttribPointer(POSATTRIBLOC, 3, GL_FLOAT, GL_FALSE, 3* sizeof(GLfloat), 0); // may not be needed every time
-
-
-
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, lvbo->indicesid);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, 36 * out.lin.count * sizeof(GLuint), inlightindices, GL_STATIC_DRAW);
-		free(inlightindices);
-		lvbo->numfaces = 12 * out.lin.count;
-		lvbo->numverts = 8 * out.lin.count;
+		glBufferData(GL_ARRAY_BUFFER, out.lin.count * 4 * sizeof(GLfloat), instancedata, GL_STREAM_DRAW); // change to stream?
+		free(instancedata);
 
 
 		GLfloat mout[16];
 		Matrix4x4_ToArrayFloatGL(&v->viewproj, mout);
 		glUniformMatrix4fv(currentsp->unimat40, 1, GL_FALSE, mout);
 		glUniform2f(currentsp->uniscreensizefix, 1.0/of->width, 1.0/of->height);
-		glDrawElements(GL_TRIANGLES, out.lin.count * 36, GL_UNSIGNED_INT, 0);
+		glEnableVertexAttribArray(INSTANCEATTRIBLOC); //tell the location
+		glVertexAttribPointer( INSTANCEATTRIBLOC, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), 0 ); //tell other data
+		glVertexAttribDivisor( INSTANCEATTRIBLOC, 1 ); //is it instanced?
+		glDrawElementsInstanced(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0, out.lin.count);
+
 	}
 
 
 	if(out.lout.count){
-		glBindBuffer(GL_ARRAY_BUFFER, lvbo->vboid);
-		GLfloat * outlightpoints = malloc(out.lout.count * 24 * sizeof(GLfloat));
-		GLuint * outlightindices = malloc(out.lout.count * 36 * sizeof(GLuint));
+		GLfloat * instancedata = malloc(out.lout.count * 4 * sizeof(GLfloat));
 		int i;
 		for(i = 0; i < out.lout.count; i++){
-			memcpy(&outlightpoints[i*24], out.lout.list[i]->bboxp, 24* sizeof(GLfloat));
-			unsigned int bump = 8 * i;
-			unsigned int j = 32 * i;
-			int t;
-			for(t = 0; t < 36; t++, j++){
-				outlightindices[j] = tris[t] + bump;
-			}
+			int burp = 4*i;
+			instancedata[burp] = out.lout.list[i]->pos[0];
+			instancedata[burp+1] = out.lout.list[i]->pos[1];
+			instancedata[burp+2] = out.lout.list[i]->pos[2];
+			instancedata[burp+3] = out.lout.list[i]->scale;
 		}
 		free(out.lout.list);
 
-		glBufferData(GL_ARRAY_BUFFER, out.lout.count * 24 * sizeof(GLfloat), outlightpoints, GL_STATIC_DRAW); // change to stream?
-		//todo just reuse each frame, no need to free
-		free(outlightpoints);
+		glBufferData(GL_ARRAY_BUFFER, out.lout.count * 4 * sizeof(GLfloat), instancedata, GL_STREAM_DRAW); // change to stream?
+		free(instancedata);
 
-	//	glEnableVertexAttribArray(POSATTRIBLOC);
-		glVertexAttribPointer(POSATTRIBLOC, 3, GL_FLOAT, GL_FALSE, 3* sizeof(GLfloat), 0); // may not be needed every time
-
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, lvbo->indicesid);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, 36 * out.lout.count * sizeof(GLuint), outlightindices, GL_STATIC_DRAW);
-		free(outlightindices);
-		lvbo->numfaces = 12 * out.lout.count;
-		lvbo->numverts = 8 * out.lout.count;
 
 		glDisable(GL_DEPTH_TEST);
 		glCullFace(GL_FRONT);
@@ -417,7 +400,11 @@ int glDrawLights(viewport_t *v){
 		Matrix4x4_ToArrayFloatGL(&v->viewproj, mout);
 		glUniformMatrix4fv(currentsp->unimat40, 1, GL_FALSE, mout);
 		glUniform2f(currentsp->uniscreensizefix, 1.0/of->width, 1.0/of->height);
-		glDrawElements(GL_TRIANGLES, out.lout.count * 36, GL_UNSIGNED_INT, 0);
+		glEnableVertexAttribArray(INSTANCEATTRIBLOC); //tell the location
+		glVertexAttribPointer( INSTANCEATTRIBLOC, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), 0 ); //tell other data
+		glVertexAttribDivisor( INSTANCEATTRIBLOC, 1 ); //is it instanced?
+		glDrawElementsInstanced(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0, out.lout.count);
+
 		glCullFace(GL_BACK);
 		glEnable(GL_DEPTH_TEST);
 
