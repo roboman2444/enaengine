@@ -35,8 +35,7 @@ int camid = 0;
 int wireshaderid = 0; //todo redo
 int lightshaderid = 0;
 viewport_t * cam = 0;
-GLuint linstancevbo = 0;
-GLuint minstancevbo = 0;
+GLuint instancevbo = 0;
 int textvbo = 0; //temporary
 int textshaderid = 0; // temporary
 int cubeModel = 0; // todo move this as well as the other primitives into modelmanager
@@ -141,8 +140,7 @@ int glInit(void){
 
 //	wireshaderid = createAndAddShaderRINT("wireframe");
 	lightshaderid = createAndAddShaderRINT("deferredlight");
-	glGenBuffers(1, &linstancevbo);
-	glGenBuffers(1, &minstancevbo);
+	glGenBuffers(1, &instancevbo);
 
 	//temporary
 	vbo_t * tvbo = createAndAddVBORPOINT("text", 2);
@@ -152,7 +150,7 @@ int glInit(void){
 
 	return TRUE; // so far so good
 }
-
+// deprecated and wont work for most shaders
 int glDrawModel(model_t * model, matrix4x4_t * modworld, matrix4x4_t * viewproj){
 	vbo_t * tvbo = returnVBOById(model->vbo);
 	if(!tvbo) return FALSE;
@@ -237,7 +235,7 @@ int drawEntitiesM(modelbatche_t * batch){
 	}
 */
 
-	glBindBuffer(GL_ARRAY_BUFFER, minstancevbo);
+	glBindBuffer(GL_ARRAY_BUFFER, instancevbo);
 		for(i = 0; i < 4; i++){
 			glEnableVertexAttribArray(INSTANCEATTRIBLOC+i); //tell the location
 			glVertexAttribPointer(INSTANCEATTRIBLOC+i, 4, GL_FLOAT, GL_FALSE, 16 * sizeof(GLfloat), (char *)(i*4*sizeof(GLfloat)) ); //tell other data
@@ -377,7 +375,7 @@ int glDrawLights(viewport_t *v){
 
 	//todo can i do this more efficiently
 
-	glBindBuffer(GL_ARRAY_BUFFER, linstancevbo);
+	glBindBuffer(GL_ARRAY_BUFFER, instancevbo);
 	glEnableVertexAttribArray(INSTANCEATTRIBLOC); //tell the location
 	glVertexAttribPointer( INSTANCEATTRIBLOC, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), 0 ); //tell other data
 	glVertexAttribDivisor( INSTANCEATTRIBLOC, 1 ); //is it instanced?
