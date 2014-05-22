@@ -219,6 +219,8 @@ int loadEntitiesIntoQueue(renderbatche_t * batch, viewport_t * v){
 
 }
 int drawEntitiesM(modelbatche_t * batch){
+
+	//todo i need something to go through all the model batches and double check that there is more than x ents in there to draw. If not, it repositions it into a new shaderbatch where it does not use instancing
 	if(!batch) return FALSE;
 	int count = batch->count;
 	if(!count || !batch->matlist) return FALSE;

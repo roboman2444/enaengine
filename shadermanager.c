@@ -103,6 +103,7 @@ shaderpermutation_t createPermutation(shaderprogram_t * shader, int permutation)
 	shaderpermutation_t perm;
 	memset(&perm, 0 , sizeof(shaderpermutation_t));
 	perm.permutation = permutation;
+//	perm.sysflags = flags;
 
 	if(!(shader->type & 2)) return perm;
 	GLuint vertid = glCreateShader(GL_VERTEX_SHADER);
@@ -262,6 +263,7 @@ shaderprogram_t createAndReadyShader(char * name){
 
 	FILE *f;
 	if(!(f = fopen(definename, "r"))){
+		consolePrintf("Count not find .define file for shader %s\n", name);
 		//todo debug?
 	} else {
 		shader.defines = malloc(32 * sizeof(char *));
@@ -290,6 +292,21 @@ shaderprogram_t createAndReadyShader(char * name){
 	}
 	if(f)fclose(f);
 	free(definename);
+
+	char * flagname = malloc(strlen(name)+7);
+	sprintf(flagname, "%s.flags", name);
+	if(!(f = fopen(flagname, "r"))){
+		shader.sysflags = 0;
+		consolePrintf("Count not find .flags file for shader %s\n", name);
+		//todo debug?
+	} else {
+		char * dfstring = malloc(32*sizeof(char));
+		fgets(dfstring, 32, f);
+		shader.sysflags = atoi(dfstring);
+		free(dfstring);
+	}
+	if(f)fclose(f);
+	free(flagname);
 
 
 	char * vertname = malloc(strlen(name)+6);

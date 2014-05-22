@@ -106,33 +106,40 @@ vbo_t * createAndAddVBORPOINT(char * name, char type){
 int createAndAddVBORINT(char * name, char type){
 	return addVBORINT(createVBO(name, type));
 }
-int setUpVBO(vbo_t * vbo, unsigned char posstride, unsigned char normstride, unsigned char tcstride){
-	GLuint totalstride = (posstride + tcstride + normstride);
+int setUpVBOStride(vbo_t * vbo, unsigned char posstride, unsigned char normstride, unsigned char tcstride, unsigned char tangentstride){
+	GLuint totalstride = posstride + normstride + tcstride + tangentstride;
 	if(!totalstride) return FALSE;
 	if(!vbo) return FALSE;
 	glBindVertexArray(vbo->vaoid);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo->vboid);
 	GLuint curstride = 0;
 	GLuint totalstridesize = totalstride * sizeof(GLfloat);
+	//todo make this more general?
 	if(posstride){
 		glEnableVertexAttribArray(POSATTRIBLOC);
-		glVertexAttribPointer(POSATTRIBLOC, posstride, GL_FLOAT, GL_FALSE, totalstridesize, (void*)&curstride);
+		glVertexAttribPointer(POSATTRIBLOC, posstride, GL_FLOAT, GL_FALSE, totalstridesize, (void*)curstride);
 		curstride += posstride * sizeof(GLfloat);
 	}
 	if(normstride){
 		glEnableVertexAttribArray(NORMATTRIBLOC);
-		glVertexAttribPointer(NORMATTRIBLOC, normstride, GL_FLOAT, GL_FALSE, totalstridesize, (void*)&curstride);
+		glVertexAttribPointer(NORMATTRIBLOC, normstride, GL_FLOAT, GL_FALSE, totalstridesize, (void*)curstride);
 		curstride += normstride * sizeof(GLfloat);
 	}
 	if(tcstride){
 		glEnableVertexAttribArray(TCATTRIBLOC);
-		glVertexAttribPointer(TCATTRIBLOC, tcstride, GL_FLOAT, GL_FALSE, totalstridesize, (void*)&curstride);
+		glVertexAttribPointer(TCATTRIBLOC, tcstride, GL_FLOAT, GL_FALSE, totalstridesize, (void*)curstride);
 		curstride += tcstride * sizeof(GLfloat);
+	}
+	if(tangentstride){
+		glEnableVertexAttribArray(TANGENTATTRIBLOC);
+		glVertexAttribPointer(TANGENTATTRIBLOC, tangentstride, GL_FLOAT, GL_FALSE, totalstridesize, (void*)curstride);
+		curstride += tangentstride * sizeof(GLfloat);
 	}
 	vbo->setup = TRUE;
 	vbo->posstride = posstride;
 	vbo->normstride = normstride;
 	vbo->tcstride = tcstride;
+	vbo->tangentstride = tangentstride;
 	vbo->totalstride = totalstride;
 
 	return totalstride;

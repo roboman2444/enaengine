@@ -100,6 +100,8 @@ int makeCubeModel(void){
 	glEnableVertexAttribArray(TCATTRIBLOC);
 	glVertexAttribPointer(TCATTRIBLOC, 2, GL_FLOAT, GL_FALSE, 8*sizeof(GLfloat), (void*)(6*sizeof(GLfloat)));
 
+//	setUpVBOStride(myvbo, 3, 3, 2, 0);
+
 
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,myvbo->indicesid);
@@ -218,6 +220,8 @@ int makeCubeModel2(void){
 
 	glEnableVertexAttribArray(TCATTRIBLOC);
 	glVertexAttribPointer(TCATTRIBLOC, 2, GL_FLOAT, GL_FALSE, 8*sizeof(GLfloat), (void*)(6*sizeof(GLfloat)));
+
+//	setUpVBOStride(myvbo, 3, 3, 2, 0);
 
 
 
@@ -523,7 +527,8 @@ int loadiqmmeshes(model_t * m, const struct iqmheader hdr, unsigned char *buf){
 	int numjoints = hdr.num_joints;
 	float *pos = 0;// = malloc(sizeof(float)*3*numverts);
 	float *norm = 0;// = malloc(sizeof(float)*3*numverts);
-	float *texcoord = 0;// = malloc(sizeof(float)*3*numverts);
+	float *texcoord = 0;// = malloc(sizeof(float)*2*numverts);
+	float *tangent = 0;// = malloc(sizeof(float)*3*numverts);
 	unsigned int *blendindex;// = malloc
 	unsigned int *blendweight;
 //    textures = new GLuint[nummeshes];
@@ -534,39 +539,71 @@ int loadiqmmeshes(model_t * m, const struct iqmheader hdr, unsigned char *buf){
 	for(i = 0; i < (int)hdr.num_vertexarrays; i++){
 		struct iqmvertexarray va = vas[i];
 		switch(va.type){
-			case IQM_POSITION: if(va.format != IQM_FLOAT || va.size != 3) return FALSE; pos = (float *)&buf[va.offset]; break;
-			case IQM_NORMAL: if(va.format != IQM_FLOAT || va.size != 3) return FALSE; norm = (float *)&buf[va.offset]; break;
-			//case IQM_TANGENT: if(va.format != IQM_FLOAT || va.size != 4) return FALSE; intangent = (float *)&buf[va.offset]; lilswap(intangent, 4*hdr.num_vertexes); break;
-			case IQM_TEXCOORD: if(va.format != IQM_FLOAT || va.size != 2) return FALSE; texcoord = (float *)&buf[va.offset]; break;
-			case IQM_BLENDINDEXES: if(va.format != IQM_UBYTE || va.size != 4) return FALSE; blendindex = (unsigned int *)&buf[va.offset]; break;
-			case IQM_BLENDWEIGHTS: if(va.format != IQM_UBYTE || va.size != 4) return FALSE; blendweight = (unsigned int *)&buf[va.offset]; break;
+			case IQM_POSITION: if(va.format != IQM_FLOAT || va.size == 3) pos = (float *)&buf[va.offset]; break;
+			case IQM_NORMAL: if(va.format != IQM_FLOAT || va.size == 3) norm = (float *)&buf[va.offset]; break;
+			case IQM_TANGENT: if(va.format != IQM_FLOAT || va.size == 4) tangent = (float *)&buf[va.offset];
+			case IQM_TEXCOORD: if(va.format != IQM_FLOAT || va.size == 2) texcoord = (float *)&buf[va.offset]; break;
+			case IQM_BLENDINDEXES: if(va.format != IQM_UBYTE || va.size == 4) blendindex = (unsigned int *)&buf[va.offset]; break;
+			case IQM_BLENDWEIGHTS: if(va.format != IQM_UBYTE || va.size == 4) blendweight = (unsigned int *)&buf[va.offset]; break;
 			//case IQM_COLOR: if(va.format != IQM_UBYTE || va.size != 4) return FALSE; incolor = (uchar *)&buf[va.offset]; break;
 			default: break;
 		}
 	}
 	if(!pos) return FALSE;
-	GLfloat * interleavedbuffer = malloc(8*numverts*sizeof(GLfloat));
-	memset(interleavedbuffer, 0 , 8*numverts*sizeof(GLfloat));
+
+	vbo_t * myvbo = createAndAddVBORPOINT(m->name, 1);
+	if(!myvbo) return 0; // todo free and error handle
+	m->vbo = myvbo->myid;
+
+	GLuint stride = 0;
+	char poss =0, norms = 0, tcs = 0, tangents = 0;
+	if(pos) stride += (poss = 3);
+	if(norm) stride += (norms = 3);
+	if(texcoord) stride += (tcs = 2);
+	if(tangent) stride += (tangents = 4);
+
+	GLfloat * interleavedbuffer = malloc(stride*numverts*sizeof(GLfloat));
+	memset(interleavedbuffer, 0 , stride*numverts*sizeof(GLfloat));
 	for(i = 0; i < numverts; i++){
-		interleavedbuffer[(i*8)+0] = pos[(i*3)+0];
-		interleavedbuffer[(i*8)+1] = pos[(i*3)+1];
-		interleavedbuffer[(i*8)+2] = pos[(i*3)+2];
+		unsigned int stridem = i*stride;
+		interleavedbuffer[stridem+0] = pos[(i*3)+0];
+		interleavedbuffer[stridem+1] = pos[(i*3)+1];
+		interleavedbuffer[stridem+2] = pos[(i*3)+2];
 		if(norm){
-			interleavedbuffer[(i*8)+3] = norm[(i*3)+0];
-			interleavedbuffer[(i*8)+4] = norm[(i*3)+1];
-			interleavedbuffer[(i*8)+5] = norm[(i*3)+2];
+			interleavedbuffer[stridem+3] = norm[(i*3)+0];
+			interleavedbuffer[stridem+4] = norm[(i*3)+1];
+			interleavedbuffer[stridem+5] = norm[(i*3)+2];
 		}
 		if(texcoord){
-			interleavedbuffer[(i*8)+6] = texcoord[(i*2)+0];
-			interleavedbuffer[(i*8)+7] = texcoord[(i*2)+1];
+			interleavedbuffer[stridem+6] = texcoord[(i*2)+0];
+			interleavedbuffer[stridem+7] = texcoord[(i*2)+1];
+		}
+
+		if(tangent){
+			interleavedbuffer[stridem+8] = tangent[(i*4)+0];
+			interleavedbuffer[stridem+9] = tangent[(i*4)+1];
+			interleavedbuffer[stridem+10] = tangent[(i*4)+2];
+			interleavedbuffer[stridem+11] = tangent[(i*4)+3];
 		}
 	}
 
-	m->spheresize = getSphereFromInterleavedMesh(interleavedbuffer, numverts, 8);
+	m->spheresize = getSphereFromInterleavedMesh(interleavedbuffer, numverts, stride);
 	m->numverts = numverts;
-	getBBoxFromInterleavedMesh(interleavedbuffer, numverts, 8, m->bbox);
+	getBBoxFromInterleavedMesh(interleavedbuffer, numverts, stride, m->bbox);
 	getBBoxpFromBBox(m->bbox, m->bboxp);
 
+
+
+
+
+	glBindBuffer(GL_ARRAY_BUFFER, myvbo->vboid);
+	glBufferData(GL_ARRAY_BUFFER, numverts * stride * sizeof(GLfloat), interleavedbuffer, GL_STATIC_DRAW);
+	myvbo->numverts = numverts;
+//	m->interleaveddata = interleavedbuffer;
+	free(interleavedbuffer);
+
+
+	setUpVBOStride(myvbo, poss, norms, tcs, tangents);
 
 	GLuint *tris = (GLuint *)&buf[hdr.ofs_triangles];
 	//flipping faces... temp fix
@@ -575,26 +612,6 @@ int loadiqmmeshes(model_t * m, const struct iqmheader hdr, unsigned char *buf){
 		tris[i*3] = tris[(i*3)+1];
 		tris[(i*3)+1] = temp;
 	}
-
-	vbo_t * myvbo = createAndAddVBORPOINT(m->name, 1);
-	if(!myvbo) return 0; // todo free and error handle
-	m->vbo = myvbo->myid;
-
-
-	glBindBuffer(GL_ARRAY_BUFFER, myvbo->vboid);
-	glBufferData(GL_ARRAY_BUFFER, numverts * 8 * sizeof(GLfloat), interleavedbuffer, GL_STATIC_DRAW);
-	myvbo->numverts = numverts;
-	m->interleaveddata = interleavedbuffer;
-//	free(interleavedbuffer);
-
-	glEnableVertexAttribArray(POSATTRIBLOC);
-	glVertexAttribPointer(POSATTRIBLOC, 3, GL_FLOAT, GL_FALSE, 8*sizeof(GLfloat), 0);
-
-	glEnableVertexAttribArray(NORMATTRIBLOC);
-	glVertexAttribPointer(NORMATTRIBLOC, 3, GL_FLOAT, GL_FALSE, 8*sizeof(GLfloat), (void*)(3*sizeof(GLfloat)));
-
-	glEnableVertexAttribArray(TCATTRIBLOC);
-	glVertexAttribPointer(TCATTRIBLOC, 2, GL_FLOAT, GL_FALSE, 8*sizeof(GLfloat), (void*)(6*sizeof(GLfloat)));
 
 
 
@@ -606,7 +623,7 @@ int loadiqmmeshes(model_t * m, const struct iqmheader hdr, unsigned char *buf){
 	//m->stride = 8; //todo
 //	free(tris);
 
-	consolePrintf("Model %s.iqm has %i faces and %i verts\n", m->name, numtris, numverts);
+	consolePrintf("Model %s.iqm has %i faces and %i verts with a stride of %i\n", m->name, numtris, numverts, stride);
 
 
 
@@ -661,6 +678,7 @@ int loadModelIQM(model_t *m, char * filename){
 	if(hdr.num_meshes > 0 && !loadiqmmeshes(m, hdr, buf)) goto error;
 //	if(hdr.num_anims > 0 && !loadiqmanims(filename, hdr, buf)) goto error;
 	fclose(f);
+	free(buf);
 	return TRUE;
 	//todo
 
@@ -919,8 +937,8 @@ int loadModelOBJ(model_t * m, char * filename){//todo flags
 	glBufferData(GL_ARRAY_BUFFER, vertcount * 8 * sizeof(GLfloat), interleavedbuffer, GL_STATIC_DRAW);
 	myvbo->numverts = vertcount;
 	m->numverts = vertcount;
-	m->interleaveddata = interleavedbuffer;
-//	free(interleavedbuffer);
+//	m->interleaveddata = interleavedbuffer;
+	free(interleavedbuffer);
 
 //	shaderprogram_t * program = findProgramByName("staticmodel");//todo per model materials and permutations
 //	printf("\n%i\n", program->id);

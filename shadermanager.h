@@ -8,6 +8,7 @@ typedef struct shaderpermutation_s {
 	struct shaderpermutation_s * next;
 	GLuint id;
 	char compiled;
+	char sysflags; //instancing is 1
 	int permutation;
 	int unimat40;
 	int unimat41;
@@ -26,6 +27,7 @@ typedef struct shaderprogram_s
 {
 	char * name;
 	char type;
+	char sysflags; //supports instancing is 1
 	int numdefines; // maybe change to unsigned char
 	char **defines;
 	int myid;
