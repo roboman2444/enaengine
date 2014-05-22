@@ -35,7 +35,8 @@ int camid = 0;
 int wireshaderid = 0; //todo redo
 int lightshaderid = 0;
 viewport_t * cam = 0;
-int lightvbo = 0;
+GLuint linstancevbo = 0;
+GLuint minstancevbo = 0;
 int textvbo = 0; //temporary
 int textshaderid = 0; // temporary
 int cubeModel = 0; // todo move this as well as the other primitives into modelmanager
@@ -140,9 +141,8 @@ int glInit(void){
 
 //	wireshaderid = createAndAddShaderRINT("wireframe");
 	lightshaderid = createAndAddShaderRINT("deferredlight");
-
-	vbo_t * lvbo = createAndAddVBORPOINT("lights", 2);
-	lightvbo = lvbo->myid;
+	glGenBuffers(1, &linstancevbo);
+	glGenBuffers(1, &minstancevbo);
 
 	//temporary
 	vbo_t * tvbo = createAndAddVBORPOINT("text", 2);
@@ -231,10 +231,42 @@ int drawEntitiesM(modelbatche_t * batch){
 	vbo_t * tvbo = returnVBOById(m->vbo);
 	if(!tvbo) return FALSE;
 	glBindVertexArray(tvbo->vaoid);
+/*
 	for(i = 0; i < count; i++){
-	//todo
 		glDrawModel(m, &batch->matlist[i], &cam->viewproj);
 	}
+*/
+
+	glBindBuffer(GL_ARRAY_BUFFER, minstancevbo);
+		for(i = 0; i < 4; i++){
+			glEnableVertexAttribArray(INSTANCEATTRIBLOC+i); //tell the location
+			glVertexAttribPointer(INSTANCEATTRIBLOC+i, 4, GL_FLOAT, GL_FALSE, 16 * sizeof(GLfloat), (char *)(i*4*sizeof(GLfloat)) ); //tell other data
+			glVertexAttribDivisor(INSTANCEATTRIBLOC+i, 1); //is it instanced?
+		}
+		GLfloat * instancedata = malloc(16 *count* sizeof(GLfloat));
+
+
+
+		for(i = 0; i < count; i++){
+//		glDrawModel(m, &batch->matlist[i], &cam->viewproj);
+
+			unsigned int bump = i * 16;
+			matrix4x4_t outmat;
+		//	Matrix4x4_Concat(&outmat, modworld, viewproj);
+			Matrix4x4_Concat(&outmat, &cam->viewproj, &batch->matlist[i]);
+			Matrix4x4_ToArrayFloatGL(&outmat, &instancedata[bump]);
+			//todo
+
+		}
+
+		glBufferData(GL_ARRAY_BUFFER, count * 16 * sizeof(GLfloat), instancedata, GL_DYNAMIC_DRAW); // change to stream?
+		free(instancedata);
+
+		glDrawElementsInstanced(GL_TRIANGLES, tvbo->numfaces * 3, GL_UNSIGNED_INT, 0, count);
+		totalface += tvbo->numfaces * count;
+		totalvert += tvbo->numverts * count;
+		totalcount+= count;
+
 	return count;
 }
 int drawEntitiesT(texturebatche_t * batch){
@@ -319,8 +351,8 @@ int glDrawLights(viewport_t *v){
 
 	framebuffer_t *df = returnFramebufferById(v->dfbid);
 	framebuffer_t *of = returnFramebufferById(v->outfbid);
-	vbo_t * lvbo = returnVBOById(lightvbo); //todo
-	if(!df || !of || !lvbo) return FALSE;
+//	vbo_t * lvbo = returnVBOById(lightvbo); //todo
+	if(!df || !of) return FALSE;
 
 
 	shaderprogram_t * shader = returnShaderById(lightshaderid);
@@ -345,7 +377,10 @@ int glDrawLights(viewport_t *v){
 
 	//todo can i do this more efficiently
 
-		glBindBuffer(GL_ARRAY_BUFFER, lvbo->vboid);
+	glBindBuffer(GL_ARRAY_BUFFER, linstancevbo);
+	glEnableVertexAttribArray(INSTANCEATTRIBLOC); //tell the location
+	glVertexAttribPointer( INSTANCEATTRIBLOC, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), 0 ); //tell other data
+	glVertexAttribDivisor( INSTANCEATTRIBLOC, 1 ); //is it instanced?
 
 //	consolePrintf("lcount is %i:%i\n", out.lin.count, out.lout.count);
 	if(out.lin.count){
@@ -360,7 +395,7 @@ int glDrawLights(viewport_t *v){
 		}
 		free(out.lin.list);
 
-		glBufferData(GL_ARRAY_BUFFER, out.lin.count * 4 * sizeof(GLfloat), instancedata, GL_STREAM_DRAW); // change to stream?
+		glBufferData(GL_ARRAY_BUFFER, out.lin.count * 4 * sizeof(GLfloat), instancedata, GL_DYNAMIC_DRAW); // change to stream?
 		free(instancedata);
 
 
@@ -368,9 +403,6 @@ int glDrawLights(viewport_t *v){
 		Matrix4x4_ToArrayFloatGL(&v->viewproj, mout);
 		glUniformMatrix4fv(currentsp->unimat40, 1, GL_FALSE, mout);
 		glUniform2f(currentsp->uniscreensizefix, 1.0/of->width, 1.0/of->height);
-		glEnableVertexAttribArray(INSTANCEATTRIBLOC); //tell the location
-		glVertexAttribPointer( INSTANCEATTRIBLOC, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), 0 ); //tell other data
-		glVertexAttribDivisor( INSTANCEATTRIBLOC, 1 ); //is it instanced?
 		glDrawElementsInstanced(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0, out.lin.count);
 
 	}
@@ -400,9 +432,6 @@ int glDrawLights(viewport_t *v){
 		Matrix4x4_ToArrayFloatGL(&v->viewproj, mout);
 		glUniformMatrix4fv(currentsp->unimat40, 1, GL_FALSE, mout);
 		glUniform2f(currentsp->uniscreensizefix, 1.0/of->width, 1.0/of->height);
-		glEnableVertexAttribArray(INSTANCEATTRIBLOC); //tell the location
-		glVertexAttribPointer( INSTANCEATTRIBLOC, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), 0 ); //tell other data
-		glVertexAttribDivisor( INSTANCEATTRIBLOC, 1 ); //is it instanced?
 		glDrawElementsInstanced(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0, out.lout.count);
 
 		glCullFace(GL_BACK);

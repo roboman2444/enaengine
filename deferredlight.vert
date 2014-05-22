@@ -9,7 +9,6 @@ in vec3 posattrib;
 //in vec3 normattrib;
 //in vec2 tcattrib;
 //out vec3 fragnormal;
-
 in vec4 instanceattrib;
 out vec3 fragposition;
 out vec2 fragtexcoord;

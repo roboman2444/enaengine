@@ -4,7 +4,7 @@
 #define POSATTRIBLOC 0
 #define NORMATTRIBLOC 1
 #define TCATTRIBLOC 2
-#define INSTANCEATTRIBLOC 5
+#define INSTANCEATTRIBLOC 6
 
 typedef struct vbo_s {
 	char * name;
