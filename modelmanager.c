@@ -88,8 +88,8 @@ int makeCubeModel(void){
 	glBindBuffer(GL_ARRAY_BUFFER, myvbo->vboid);
 	glBufferData(GL_ARRAY_BUFFER, 8 * 8 * sizeof(GLfloat), points, GL_STATIC_DRAW);
 	myvbo->numverts = 8;
-	m.interleaveddata = points;
-//	free(interleavedbuffer);
+//	m.interleaveddata = points;
+	free(points);
 
 	glEnableVertexAttribArray(POSATTRIBLOC);
 	glVertexAttribPointer(POSATTRIBLOC, 3, GL_FLOAT, GL_FALSE, 8*sizeof(GLfloat), 0);
@@ -269,11 +269,6 @@ int deleteModel(int id){
 	deleteFromHashTable(m->name, id, modelhashtable);
 	free(m->name);
 	if(m->interleaveddata) free(m->interleaveddata);
-	//todo call delete vbo
-//TODO
-//TODO
-//TODO
-//TODO
 	vbo_t * v = returnVBOById(m->vbo);
 	if(v) deleteVBO(v->myid);
 
