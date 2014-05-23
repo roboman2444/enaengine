@@ -106,8 +106,8 @@ vbo_t * createAndAddVBORPOINT(char * name, char type){
 int createAndAddVBORINT(char * name, char type){
 	return addVBORINT(createVBO(name, type));
 }
-int setUpVBOStride(vbo_t * vbo, unsigned char posstride, unsigned char normstride, unsigned char tcstride, unsigned char tangentstride){
-	GLuint totalstride = posstride + normstride + tcstride + tangentstride;
+int setUpVBOStride(vbo_t * vbo, unsigned char posstride, unsigned char normstride, unsigned char tcstride, unsigned char tangentstride, unsigned char blendistride, unsigned char blendwstride){
+	GLuint totalstride = posstride + normstride + tcstride + tangentstride + blendistride + blendwstride;
 	if(!totalstride) return FALSE;
 	if(!vbo) return FALSE;
 	glBindVertexArray(vbo->vaoid);
@@ -134,6 +134,16 @@ int setUpVBOStride(vbo_t * vbo, unsigned char posstride, unsigned char normstrid
 		glEnableVertexAttribArray(TANGENTATTRIBLOC);
 		glVertexAttribPointer(TANGENTATTRIBLOC, tangentstride, GL_FLOAT, GL_FALSE, totalstridesize, (void*)curstride);
 		curstride += tangentstride * sizeof(GLfloat);
+	}
+	if(blendistride){
+		glEnableVertexAttribArray(BLENDIATTRIBLOC);
+		glVertexAttribPointer(BLENDIATTRIBLOC, blendistride, GL_UNSIGNED_BYTE, GL_FALSE, totalstridesize, (void*)curstride);
+		curstride += blendistride * sizeof(GLfloat);
+	}
+	if(blendwstride){
+		glEnableVertexAttribArray(BLENDWATTRIBLOC);
+		glVertexAttribPointer(BLENDWATTRIBLOC, blendwstride, GL_UNSIGNED_BYTE, GL_TRUE, totalstridesize, (void*)curstride);
+		curstride += blendwstride * sizeof(GLfloat);
 	}
 	vbo->setup = TRUE;
 	vbo->posstride = posstride;

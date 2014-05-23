@@ -551,11 +551,12 @@ int loadiqmmeshes(model_t * m, const struct iqmheader hdr, unsigned char *buf){
 	m->vbo = myvbo->myid;
 
 	GLuint stride = 0;
-	char poss =0, norms = 0, tcs = 0, tangents = 0;
+	char poss =0, norms = 0, tcs = 0, tangents = 0, blendi = 0, blendw = 0;
 	if(pos) stride += (poss = 3);
 	if(norm) stride += (norms = 3);
 	if(texcoord) stride += (tcs = 2);
 	if(tangent) stride += (tangents = 4);
+	if(blendindex && blendweight){ stride += 2; blendi = 1; blendw = 1;}
 
 	GLfloat * interleavedbuffer = malloc(stride*numverts*sizeof(GLfloat));
 	memset(interleavedbuffer, 0 , stride*numverts*sizeof(GLfloat));
@@ -573,12 +574,15 @@ int loadiqmmeshes(model_t * m, const struct iqmheader hdr, unsigned char *buf){
 			interleavedbuffer[stridem+6] = texcoord[(i*2)+0];
 			interleavedbuffer[stridem+7] = texcoord[(i*2)+1];
 		}
-
 		if(tangent){
 			interleavedbuffer[stridem+8] = tangent[(i*4)+0];
 			interleavedbuffer[stridem+9] = tangent[(i*4)+1];
 			interleavedbuffer[stridem+10] = tangent[(i*4)+2];
 			interleavedbuffer[stridem+11] = tangent[(i*4)+3];
+		}
+		if(blendi && blendw){
+			interleavedbuffer[stridem+12] = ((GLuint*)blendindex)[i];
+			interleavedbuffer[stridem+13] = ((GLuint*)blendweight)[i];
 		}
 	}
 
@@ -598,7 +602,7 @@ int loadiqmmeshes(model_t * m, const struct iqmheader hdr, unsigned char *buf){
 	free(interleavedbuffer);
 
 
-	setUpVBOStride(myvbo, poss, norms, tcs, tangents);
+	setUpVBOStride(myvbo, poss, norms, tcs, tangents, blendi, blendw);
 
 	GLuint *tris = (GLuint *)&buf[hdr.ofs_triangles];
 	//flipping faces... temp fix

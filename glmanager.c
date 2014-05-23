@@ -238,12 +238,13 @@ int drawEntitiesM(modelbatche_t * batch){
 */
 
 	glBindBuffer(GL_ARRAY_BUFFER, instancevbo);
+		size_t instancedatasize = 16 * count * sizeof(GLfloat);
 		for(i = 0; i < 4; i++){
 			glEnableVertexAttribArray(INSTANCEATTRIBLOC+i); //tell the location
 			glVertexAttribPointer(INSTANCEATTRIBLOC+i, 4, GL_FLOAT, GL_FALSE, 16 * sizeof(GLfloat), (char *)(i*4*sizeof(GLfloat)) ); //tell other data
 			glVertexAttribDivisor(INSTANCEATTRIBLOC+i, 1); //is it instanced?
 		}
-		GLfloat * instancedata = malloc(16 *count* sizeof(GLfloat));
+		GLfloat * instancedata = malloc(instancedatasize);
 
 
 
@@ -259,7 +260,7 @@ int drawEntitiesM(modelbatche_t * batch){
 
 		}
 
-		glBufferData(GL_ARRAY_BUFFER, count * 16 * sizeof(GLfloat), instancedata, GL_DYNAMIC_DRAW); // change to stream?
+		glBufferData(GL_ARRAY_BUFFER, instancedatasize, instancedata, GL_DYNAMIC_DRAW); // change to stream?
 		free(instancedata);
 
 		glDrawElementsInstanced(GL_TRIANGLES, tvbo->numfaces * 3, GL_UNSIGNED_INT, 0, count);
@@ -384,7 +385,8 @@ int glDrawLights(viewport_t *v){
 
 //	consolePrintf("lcount is %i:%i\n", out.lin.count, out.lout.count);
 	if(out.lin.count){
-		GLfloat * instancedata = malloc(out.lin.count * 4 * sizeof(GLfloat));
+		size_t instancedatasize = 4 * out.lin.count * sizeof(GLfloat);
+		GLfloat * instancedata = malloc(instancedatasize);
 		int i;
 		for(i = 0; i < out.lin.count; i++){
 			int burp = 4*i;
@@ -395,7 +397,7 @@ int glDrawLights(viewport_t *v){
 		}
 		free(out.lin.list);
 
-		glBufferData(GL_ARRAY_BUFFER, out.lin.count * 4 * sizeof(GLfloat), instancedata, GL_DYNAMIC_DRAW); // change to stream?
+		glBufferData(GL_ARRAY_BUFFER, instancedatasize, instancedata, GL_DYNAMIC_DRAW); // change to stream?
 		free(instancedata);
 
 
@@ -409,7 +411,8 @@ int glDrawLights(viewport_t *v){
 
 
 	if(out.lout.count){
-		GLfloat * instancedata = malloc(out.lout.count * 4 * sizeof(GLfloat));
+		size_t instancedatasize = 4 * out.lout.count * sizeof(GLfloat);
+		GLfloat * instancedata = malloc(instancedatasize);
 		int i;
 		for(i = 0; i < out.lout.count; i++){
 			int burp = 4*i;
@@ -420,7 +423,7 @@ int glDrawLights(viewport_t *v){
 		}
 		free(out.lout.list);
 
-		glBufferData(GL_ARRAY_BUFFER, out.lout.count * 4 * sizeof(GLfloat), instancedata, GL_STREAM_DRAW); // change to stream?
+		glBufferData(GL_ARRAY_BUFFER, instancedatasize, instancedata, GL_STREAM_DRAW); // change to stream?
 		free(instancedata);
 
 

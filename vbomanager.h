@@ -5,6 +5,8 @@
 #define NORMATTRIBLOC 1
 #define TCATTRIBLOC 2
 #define TANGENTATTRIBLOC 3
+#define BLENDIATTRIBLOC 4
+#define BLENDWATTRIBLOC 5
 #define INSTANCEATTRIBLOC 6
 
 typedef struct vbo_s {
@@ -48,6 +50,6 @@ int createAndAddVBORINT(char * name, char type);
 vbo_t createVBO(char *name, char type);
 
 int deleteVBO(int vboid);
-int setUpVBOStride(vbo_t * vbo, unsigned char posstride, unsigned char normstride, unsigned char tcstride, unsigned char tangentstride);
+int setUpVBOStride(vbo_t * vbo, unsigned char posstride, unsigned char normstride, unsigned char tcstride, unsigned char tangentstride, unsigned char blendistride, unsigned char blendwstride);
 #endif
 
