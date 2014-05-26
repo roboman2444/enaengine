@@ -204,19 +204,79 @@ int loadEntitiesIntoQueue(renderbatche_t * batch, viewport_t * v){
 
 		//entity worldspace bboxp method
 		//best way to cull atm
-
 		if(testBBoxPInFrustum(v, e->bboxp)){
 			count++;
 			addEntityToRenderbatche(e, batch);
 		} else {
 			cullcount++;
 		}
-
 	}
-
-//	if(cullcount)consolePrintf("cullcount:%i\n", cullcount);
 	return count;
+}
+int loadEntitiesIntoQueues(renderbatche_t * forwardbatch, renderbatche_t * deferredbatch, viewport_t * v){
+	int i;
+	int count = 0;
+	int cullcount = 0;
+	for(i =0; i <= entityArrayLastTaken; i++){
+		entity_t *e = &entitylist[i];
+		if(e->type < 2)continue;
+		if(!e->modelid)continue;
 
+		//entity worldspace bboxp method
+		//best way to cull atm
+		if(testBBoxPInFrustum(v, e->bboxp)){
+			count++;
+			if(!(e->flags & 2)) //test if its "forward" flag is set
+				addEntityToRenderbatche(e, forwardbatch);
+			if(!(e->flags & 1)) //test if its "deferred" flag is set
+				addEntityToRenderbatche(e, deferredbatch);
+		} else {
+			cullcount++;
+		}
+	}
+	return count;
+}
+int loadEntitiesIntoQueueForward(renderbatche_t * batch, viewport_t * v){
+	int i;
+	int count = 0;
+	int cullcount = 0;
+	for(i =0; i <= entityArrayLastTaken; i++){
+		entity_t *e = &entitylist[i];
+		if(e->type < 2)continue;
+		if(!(e->flags & 2))continue; //test if its "forward" flag is set
+		if(!e->modelid)continue;
+
+		//entity worldspace bboxp method
+		//best way to cull atm
+		if(testBBoxPInFrustum(v, e->bboxp)){
+			count++;
+			addEntityToRenderbatche(e, batch);
+		} else {
+			cullcount++;
+		}
+	}
+	return count;
+}
+int loadEntitiesIntoQueueDeferred(renderbatche_t * batch, viewport_t * v){
+	int i;
+	int count = 0;
+	int cullcount = 0;
+	for(i =0; i <= entityArrayLastTaken; i++){
+		entity_t *e = &entitylist[i];
+		if(e->type < 2)continue;
+		if(!(e->flags & 1))continue; //test if its "deferred" flag is set
+		if(!e->modelid)continue;
+
+		//entity worldspace bboxp method
+		//best way to cull atm
+		if(testBBoxPInFrustum(v, e->bboxp)){
+			count++;
+			addEntityToRenderbatche(e, batch);
+		} else {
+			cullcount++;
+		}
+	}
+	return count;
 }
 int drawEntitiesM(modelbatche_t * batch){
 

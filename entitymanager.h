@@ -5,7 +5,6 @@ typedef struct entity_s {
 	char * name;
 	int myid;
 	char type;
-	char transparent;
 	vec3_t pos;
 	vec3_t angle;
 	vec3_t anglevel;
@@ -30,6 +29,7 @@ typedef struct entity_s {
 
 	vec_t bboxp[24];
 	vec_t bbox[6];
+	char flags;
 
 //	vec3_t maxs; //worldspace bounding box
 //	vec3_t mins;

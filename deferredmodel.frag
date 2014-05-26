@@ -11,6 +11,9 @@ in vec2 fragtexCoord;
 	uniform sampler2D texture0;
 #endif
 #ifdef NORMTEXTURE
+//	in vec4 fragtangent;
+	in vec3 tvector;
+	in vec3 svector;
 	uniform sampler2D texture1;
 #endif
 #ifdef SPECTEXTURE
@@ -32,9 +35,9 @@ void main(){
 	#ifdef NORMTEXTURE
 		vec3 texnormal = texture2D(texture1, fragtexCoord).rgb;
 		vec3 ncolor = texnormal;
-//		vec3 ncolor = normalize(texnormal.x * vertexsvector + texnormal.y * vertextvector + texnormal.z * vertexnormal);
+		vec3 ncolor = normalize(texnormal.x * vertexsvector + texnormal.y * vertextvector + texnormal.z * vertexnormal);
 	#else
-		vec3 ncolor = normalize(vec3(1.0));
+		vec3 ncolor = normalize(fragnormal);
 	#endif
 	#ifdef SPECTEXTURE
 		vec2 scolor = texture2D(texture3, fragtexCoord).rg;
@@ -43,6 +46,9 @@ void main(){
 	#endif
 
 	fragColor = vec4(dcolor,1.0);
+	#ifdef NORMTEXTURE
+		fragColor = tvector;
+	#endif
 	#ifdef DEFERRED
 		normColor.rgb = ncolor;
 		normColor.a = fragposition.z;

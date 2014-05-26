@@ -31,15 +31,16 @@ int initGameCodeSystem(void){
 	}
 	setupGameCodeCallbacks();
 
-/*
+#ifdef RESAVEWORLD
 	entity_t * entdragon = addEntityRPOINT("dragon");
 		entdragon->type = 2;
 		entdragon->modelid = createAndAddModelRINT("dragon");
-//		entdragon->modelid = createAndAddModelRINT("coil");
 		entdragon->texturegroupid = 0;
 		entdragon->shaderid = createAndAddShaderRINT("staticmodel");
 		entdragon->shaderperm = 9;
+		entdragon->flags = 1;
 
+		calcEntAttachMat(entdragon); // needed because i add it to the world, and the mat needs to be updated beforehand
 		recalcEntBBox(entdragon); // needed because this is added to the world before the gamecode runs
 
 		addEntityToWorld(entdragon->myid);
@@ -49,11 +50,10 @@ int initGameCodeSystem(void){
 		entteapot->pos[0] = 10.0;
 		entteapot->needsmatupdate = TRUE;
 		entteapot->modelid = createAndAddModelRINT("teapot");
-//		entteapot->modelid = createAndAddModelRINT("coil");
 		entteapot->shaderid = createAndAddShaderRINT("staticmodel");
 		entteapot->texturegroupid = 0;
 		entteapot->shaderperm = 8;
-
+		entteapot->flags = 1;
 
 		calcEntAttachMat(entteapot); // needed because i add it to the world, and the mat needs to be updated beforehand
 		recalcEntBBox(entteapot); // needed because this is added to the world before the gamecode runs
@@ -62,7 +62,8 @@ int initGameCodeSystem(void){
 		deleteEntity(entteapot->myid);
 
 	saveWorld("world");
-*/
+	deleteWorld();
+#endif
 
 	entity_t * enthat = addEntityRPOINT("hat");
 		enthat->type = 2;
@@ -141,10 +142,10 @@ int initGameCodeSystem(void){
 		enttinydragon->needsmatupdate = TRUE;
 		enttinydragon->modelid = createAndAddModelRINT("dragon");
 //		enttinydragon->modelid = createAndAddModelRINT("coil");
-		enttinydragon->shaderid = createAndAddShaderRINT("staticmodel");
+		enttinydragon->shaderid = createAndAddShaderRINT("deferredmodel");
 		enttinydragon->texturegroupid = 0;//findtexturegroupidByName("coil");
 		enttinydragon->attachmentid = findEntityByNameRINT("coil");
-		enttinydragon->shaderperm = 2;
+		enttinydragon->shaderperm = 0;
 	int i;
 
 	int prevatid = 0;
@@ -175,7 +176,7 @@ int initGameCodeSystem(void){
 	}
 
 
-/*
+#ifdef RESAVEWORLD
 	srand(103010);
 	for(i = 0; i < 200000; i++){
 		enttinydragon = addEntityRPOINT("cube");
@@ -190,6 +191,7 @@ int initGameCodeSystem(void){
 		enttinydragon->shaderid = createAndAddShaderRINT("staticmodel");
 		enttinydragon->texturegroupid = createAndAddTexturegroupRINT("coil");
 		enttinydragon->shaderperm = 4;
+		enttinydragon->flags = 1;
 
 
 		calcEntAttachMat(enttinydragon); // needed because i add it to the world, and the mat needs to be updated beforehand
@@ -209,6 +211,7 @@ int initGameCodeSystem(void){
 		enttinydragon->needsmatupdate = TRUE;
 		enttinydragon->modelid = createAndAddModelRINT("cube");
 		enttinydragon->shaderid = createAndAddShaderRINT("staticmodel");
+		enttinydragon->flags = 1;
 
 
 		calcEntAttachMat(enttinydragon); // needed because i add it to the world, and the mat needs to be updated beforehand
@@ -218,9 +221,10 @@ int initGameCodeSystem(void){
 		deleteEntity(enttinydragon->myid);
 
 	}
-*/
-//	saveWorld("world2");
-//	deleteWorld();
+
+	saveWorld("world2");
+	deleteWorld();
+#endif
 	loadWorld("world");
 	loadWorld("world2");
 

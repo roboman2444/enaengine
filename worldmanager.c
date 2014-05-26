@@ -43,6 +43,7 @@ typedef struct worldFileObject_s {
 	unsigned int textureindice;
 	unsigned int shaderindice;
 	int shaderperm;
+	char flags;
 }worldFileObject_t;
 
 int saveWorldPopList(int * count, worldobject_t ** list, worldleaf_t * leaf){
@@ -65,11 +66,11 @@ int saveWorldPopList(int * count, worldobject_t ** list, worldleaf_t * leaf){
 int saveWorld(char * filename){
 	consolePrintf("Saving %i objects to %s\n", worldNumObjects, filename);
 	if(!worldroot){
-		consolePrintf("ERROR: No world to save!\n");
+		consolePrintf("ERROR: No root world to save!\n");
 		return FALSE;
 	}
 	if(!worldNumObjects){
-		consolePrintf("ERROR: No world to save!\n");
+		consolePrintf("ERROR: No world objects to save!\n");
 		return FALSE;
 	}
 	FILE *f = fopen(filename,"wb");
@@ -78,7 +79,7 @@ int saveWorld(char * filename){
 		return FALSE;
 	}
 	worldFileHeader_t header;
-	header.version = 1;
+	header.version = 2;
 	header.objectlistcount = worldNumObjects;
 	worldobject_t ** worldlist = malloc(worldNumObjects * sizeof(worldobject_t *));
 	if(!worldlist){
@@ -161,6 +162,7 @@ int saveWorld(char * filename){
 			objlist[i].shaderindice = 0;
 			objlist[i].shaderperm = 0;
 		}
+		objlist[i].flags = testobj->flags;
 	}
 	free(worldlist); // dont need anymore
 	header.objectlistcount = count;
@@ -313,7 +315,7 @@ int loadWorld(char * filename){
 	char *buf = 0;
 
 	if(fread(&header, 1, sizeof(header), f) != sizeof(header))goto error;
-	if(header.version != 1)goto error; //todo different version handles
+	if(header.version != 2)goto error; //todo different version handles
 	if(header.shaderlistlength + header.modellistlength + header.texturelistlength + (header.objectlistcount * sizeof(worldFileObject_t)) != header.filesize) goto error;
 
 	buf = malloc(header.filesize);
@@ -361,6 +363,7 @@ int loadWorld(char * filename){
 		else obj->shaderid = createAndAddShaderRINT(shadernamelist[shaderindice-1]);
 		obj->shaderperm = objbuf[i].shaderperm;
 		recalcObjBBox(obj);
+		obj->flags = objbuf[i].flags;
 		obj->status = 1;
 		addObjectToWorld(obj);
 	}
@@ -599,7 +602,7 @@ int addEntityToWorld(int entityid){
 
 	model_t *m = returnModelById(e->modelid);
 	if(!m) return FALSE;
-	if(!m->interleaveddata) return FALSE;
+//	if(!m->interleaveddata) return FALSE;
 	if(!m->numverts) return FALSE;
 
 	worldobject_t * obj = malloc(sizeof(worldobject_t));

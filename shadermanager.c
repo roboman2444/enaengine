@@ -172,9 +172,10 @@ shaderpermutation_t createPermutation(shaderprogram_t * shader, int permutation)
 	glBindAttribLocation(programid, POSATTRIBLOC, "posattrib");
 	glBindAttribLocation(programid, NORMATTRIBLOC, "normattrib");
 	glBindAttribLocation(programid, TCATTRIBLOC, "tcattrib");
-	glBindAttribLocation(programid, INSTANCEATTRIBLOC, "instanceattrib");
+	glBindAttribLocation(programid, TANGENTATTRIBLOC, "tangentattrib");
 	glBindAttribLocation(programid, BLENDIATTRIBLOC, "blendiattrib");
 	glBindAttribLocation(programid, BLENDWATTRIBLOC, "blendwattrib");
+	glBindAttribLocation(programid, INSTANCEATTRIBLOC, "instanceattrib");
 
 
 

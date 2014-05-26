@@ -516,16 +516,16 @@ int loadiqmmeshes(model_t * m, const struct iqmheader hdr, unsigned char *buf){
 //    if(hdr.ofs_adjacency) lilswap((uint *)&buf[hdr.ofs_adjacency], hdr.num_triangles*sizeof(iqmtriangle)/sizeof(uint));
 
 //    meshdata = buf;
-	int nummeshes = hdr.num_meshes;
+	int nummeshes = hdr.num_meshes; //todo have multiple meshes support, including bboxes
 	int numtris = hdr.num_triangles;
 	int numverts = hdr.num_vertexes;
-	int numjoints = hdr.num_joints;
+	//int numjoints = hdr.num_joints;
 	float *pos = 0;// = malloc(sizeof(float)*3*numverts);
 	float *norm = 0;// = malloc(sizeof(float)*3*numverts);
 	float *texcoord = 0;// = malloc(sizeof(float)*2*numverts);
 	float *tangent = 0;// = malloc(sizeof(float)*3*numverts);
-	unsigned int *blendindex;// = malloc
-	unsigned int *blendweight;
+	unsigned int *blendindex = 0;// = malloc
+	unsigned int *blendweight = 0;
 //    textures = new GLuint[nummeshes];
   //  memset(textures, 0, nummeshes*sizeof(GLuint));
 	int i;
@@ -655,6 +655,9 @@ int loadiqmmeshes(model_t * m, const struct iqmheader hdr, unsigned char *buf){
 	return TRUE;
 }
 
+int loadiqmanims(model_t *m, const struct iqmheader hdr, unsigned char *buf){
+	return TRUE;
+}
 
 
 
@@ -675,7 +678,7 @@ int loadModelIQM(model_t *m, char * filename){
 		goto error;
 
 	if(hdr.num_meshes > 0 && !loadiqmmeshes(m, hdr, buf)) goto error;
-//	if(hdr.num_anims > 0 && !loadiqmanims(filename, hdr, buf)) goto error;
+	if(hdr.num_anims > 0 && !loadiqmanims(m, hdr, buf)) goto error;
 	fclose(f);
 	free(buf);
 	return TRUE;

@@ -22,6 +22,7 @@ typedef struct worldobject_s{
 	unsigned char treedepth;
 	unsigned int leafpos;
 
+	char flags;
 //	GLuint vertstart; //useful for moving
 //	GLuint facestart; //useful for moving
 } worldobject_t;
