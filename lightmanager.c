@@ -9,6 +9,7 @@
 #include "mathlib.h"
 #include "viewportmanager.h"
 #include "lightmanager.h"
+#include "console.h"
 
 int lightcount = 0;
 int lightArrayFirstOpen = 0;

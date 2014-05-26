@@ -9,6 +9,10 @@
 #define MAXHASHBUCKETS 128
 //#define PI 3.1415926535
 
+
+#define DEFERREDFLAG 1
+#define FORWARDFLAG  2
+
 //global includes
 #include <stdio.h>
 #include <stdlib.h>

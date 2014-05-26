@@ -169,6 +169,33 @@ int glDrawModel(model_t * model, matrix4x4_t * modworld, matrix4x4_t * viewproj)
 	totalcount++;
 	return tvbo->numfaces;
 }
+int loadLeafIntoQueues(worldleaf_t * l, renderbatche_t * forwardbatch, renderbatche_t * deferredbatch, viewport_t *v){
+	int num = l->numobjects;
+	int mynum=0;
+	worldobject_t * list = l->list;
+	int i;
+	for(i = 0; i < num; i++){
+		if(testBBoxPInFrustum(v, list[i].bboxp)){
+			if(list[i].flags & DEFERREDFLAG)
+				addObjectToRenderbatche(&list[i], deferredbatch);
+			if(list[i].flags & FORWARDFLAG)
+				addObjectToRenderbatche(&list[i], forwardbatch);
+			mynum++;
+		}
+	}
+	//todo cull these out
+	worldleaf_t **children = l->children;
+	for(i = 0; i < 4; i++){
+		if(children[i] && testBBoxPInFrustum(v, children[i]->bboxp)){
+			mynum+= loadLeafIntoQueues(children[i], forwardbatch, deferredbatch, v);
+		}
+	}
+	return mynum;
+}
+int loadWorldIntoQueues(renderbatche_t * forwardbatch, renderbatche_t * deferredbatch, viewport_t *v){
+	if(!worldroot ||  !worldNumObjects) return FALSE;
+	return loadLeafIntoQueues(worldroot, forwardbatch, deferredbatch, v);
+}
 int loadLeafIntoQueue(worldleaf_t * l, renderbatche_t * batch, viewport_t *v){
 	int num = l->numobjects;
 	int mynum=0;
@@ -226,9 +253,9 @@ int loadEntitiesIntoQueues(renderbatche_t * forwardbatch, renderbatche_t * defer
 		//best way to cull atm
 		if(testBBoxPInFrustum(v, e->bboxp)){
 			count++;
-			if(!(e->flags & 2)) //test if its "forward" flag is set
+			if(!(e->flags & FORWARDFLAG))
 				addEntityToRenderbatche(e, forwardbatch);
-			if(!(e->flags & 1)) //test if its "deferred" flag is set
+			if(!(e->flags & DEFERREDFLAG))
 				addEntityToRenderbatche(e, deferredbatch);
 		} else {
 			cullcount++;
@@ -243,7 +270,7 @@ int loadEntitiesIntoQueueForward(renderbatche_t * batch, viewport_t * v){
 	for(i =0; i <= entityArrayLastTaken; i++){
 		entity_t *e = &entitylist[i];
 		if(e->type < 2)continue;
-		if(!(e->flags & 2))continue; //test if its "forward" flag is set
+		if(!(e->flags & FORWARDFLAG))continue;
 		if(!e->modelid)continue;
 
 		//entity worldspace bboxp method
@@ -264,7 +291,7 @@ int loadEntitiesIntoQueueDeferred(renderbatche_t * batch, viewport_t * v){
 	for(i =0; i <= entityArrayLastTaken; i++){
 		entity_t *e = &entitylist[i];
 		if(e->type < 2)continue;
-		if(!(e->flags & 1))continue; //test if its "deferred" flag is set
+		if(!(e->flags & DEFERREDFLAG))continue; //test if its "deferred" flag is set
 		if(!e->modelid)continue;
 
 		//entity worldspace bboxp method
