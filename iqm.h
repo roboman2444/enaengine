@@ -4,7 +4,8 @@
 #define IQM_MAGIC "INTERQUAKEMODEL"
 #define IQM_VERSION 2
 
-struct iqmheader{
+struct iqmheader
+{
     char magic[16];
     unsigned int version;
     unsigned int filesize;
@@ -21,14 +22,16 @@ struct iqmheader{
     unsigned int num_extensions, ofs_extensions;
 };
 
-struct iqmmesh{
+struct iqmmesh
+{
     unsigned int name;
     unsigned int material;
     unsigned int first_vertex, num_vertexes;
     unsigned int first_triangle, num_triangles;
 };
 
-enum{
+enum
+{
     IQM_POSITION     = 0,
     IQM_TEXCOORD     = 1,
     IQM_NORMAL       = 2,
@@ -39,7 +42,8 @@ enum{
     IQM_CUSTOM       = 0x10
 };
 
-enum{
+enum
+{
     IQM_BYTE   = 0,
     IQM_UBYTE  = 1,
     IQM_SHORT  = 2,
@@ -48,42 +52,64 @@ enum{
     IQM_UINT   = 5,
     IQM_HALF   = 6,
     IQM_FLOAT  = 7,
-    IQM_DOUBLE = 8,
+    IQM_DOUBLE = 8
 };
 
-struct iqmtriangle{
+struct iqmtriangle
+{
     unsigned int vertex[3];
 };
 
-struct iqmadjacency{
+struct iqmadjacency
+{
     unsigned int triangle[3];
 };
 
-struct iqmjoint{
+struct iqmjointv1
+{
+    unsigned int name;
+    int parent;
+    float translate[3], rotate[3], scale[3];
+};
+
+struct iqmjoint
+{
     unsigned int name;
     int parent;
     float translate[3], rotate[4], scale[3];
 };
 
-struct iqmpose{
+struct iqmposev1
+{
+    int parent;
+    unsigned int mask;
+    float channeloffset[9];
+    float channelscale[9];
+};
+
+struct iqmpose
+{
     int parent;
     unsigned int mask;
     float channeloffset[10];
     float channelscale[10];
 };
 
-struct iqmanim{
+struct iqmanim
+{
     unsigned int name;
     unsigned int first_frame, num_frames;
     float framerate;
     unsigned int flags;
 };
 
-enum{
+enum
+{
     IQM_LOOP = 1<<0
 };
 
-struct iqmvertexarray{
+struct iqmvertexarray
+{
     unsigned int type;
     unsigned int flags;
     unsigned int format;
@@ -91,9 +117,17 @@ struct iqmvertexarray{
     unsigned int offset;
 };
 
-struct iqmbounds{
+struct iqmbounds
+{
     float bbmin[3], bbmax[3];
     float xyradius, radius;
+};
+
+struct iqmextension
+{
+    unsigned int name;
+    unsigned int num_data, ofs_data;
+    unsigned int ofs_extensions; // pointer to next extension
 };
 
 #endif
