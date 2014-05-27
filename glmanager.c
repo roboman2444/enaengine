@@ -326,11 +326,14 @@ int drawEntitiesM(modelbatche_t * batch){
 
 	glBindBuffer(GL_ARRAY_BUFFER, instancevbo);
 		size_t instancedatasize = 16 * count * sizeof(GLfloat);
+/*
 		for(i = 0; i < 4; i++){
 			glEnableVertexAttribArray(INSTANCEATTRIBLOC+i); //tell the location
 			glVertexAttribPointer(INSTANCEATTRIBLOC+i, 4, GL_FLOAT, GL_FALSE, 16 * sizeof(GLfloat), (char *)(i*4*sizeof(GLfloat)) ); //tell other data
 			glVertexAttribDivisor(INSTANCEATTRIBLOC+i, 1); //is it instanced?
 		}
+*/
+		unsigned int iPerUBOBlock = maxUBOSize / (16*sizeof(GLfloat));
 		GLfloat * instancedata = malloc(instancedatasize);
 
 
@@ -350,7 +353,19 @@ int drawEntitiesM(modelbatche_t * batch){
 		glBufferData(GL_ARRAY_BUFFER, instancedatasize, instancedata, GL_DYNAMIC_DRAW); // change to stream?
 		free(instancedata);
 
-		glDrawElementsInstanced(GL_TRIANGLES, tvbo->numfaces * 3, GL_UNSIGNED_INT, 0, count);
+//		glDrawElementsInstanced(GL_TRIANGLES, tvbo->numfaces * 3, GL_UNSIGNED_INT, 0, count);
+
+                if(TRUE){
+			unsigned int rendered = 0;
+			unsigned int torender = iPerUBOBlock;
+			unsigned int vertdrawcount = tvbo->numfaces*3;
+                        while(rendered < count){
+				if((rendered+torender)>count) torender = count - rendered;
+				glBindBufferRange(GL_UNIFORM_BUFFER, 0 , instancevbo, (rendered * 16*sizeof(GLfloat)),(torender*16*sizeof(GLfloat)));
+				glDrawElementsInstanced(GL_TRIANGLES, vertdrawcount, GL_UNSIGNED_INT, 0, torender);
+				rendered+=torender;
+			}
+		}
 		totalface += tvbo->numfaces * count;
 		totalvert += tvbo->numverts * count;
 		totalcount+= count;
@@ -509,12 +524,10 @@ int glDrawLights(viewport_t *v){
 			unsigned int rendered = 0;
 			unsigned int torender = iPerUBOBlock;
 			while(rendered < out.lin.count){
-				if((rendered+torender)>out.lin.count){
-					torender = out.lin.count - rendered;
-					glBindBufferRange(GL_UNIFORM_BUFFER, 0 , instancevbo, (rendered * 4*sizeof(GLfloat)),(torender*4*sizeof(GLfloat)));
-					glDrawElementsInstanced(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0, torender);
-					rendered+=torender;
-				}
+				if((rendered+torender)>out.lin.count) torender = out.lin.count - rendered;
+				glBindBufferRange(GL_UNIFORM_BUFFER, 0 , instancevbo, (rendered * 4*sizeof(GLfloat)),(torender*4*sizeof(GLfloat)));
+				glDrawElementsInstanced(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0, torender);
+				rendered+=torender;
 			}
 		}
 	}
@@ -552,12 +565,10 @@ int glDrawLights(viewport_t *v){
 			unsigned int rendered = 0;
 			unsigned int torender = iPerUBOBlock;
 			while(rendered < out.lout.count){
-				if((rendered+torender)>out.lout.count){
-					torender = out.lout.count - rendered;
-					glBindBufferRange(GL_UNIFORM_BUFFER, 0 , instancevbo, (rendered * 4*sizeof(GLfloat)),(torender*4*sizeof(GLfloat)));
-					glDrawElementsInstanced(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0, torender);
-					rendered+=torender;
-				}
+				if((rendered+torender)>out.lout.count) torender = out.lout.count - rendered;
+				glBindBufferRange(GL_UNIFORM_BUFFER, 0 , instancevbo, (rendered * 4*sizeof(GLfloat)),(torender*4*sizeof(GLfloat)));
+				glDrawElementsInstanced(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0, torender);
+				rendered+=torender;
 			}
 		}
 
