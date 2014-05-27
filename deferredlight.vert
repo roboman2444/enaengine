@@ -9,12 +9,17 @@ in vec3 posattrib;
 //in vec3 normattrib;
 //in vec2 tcattrib;
 //out vec3 fragnormal;
-in vec4 instanceattrib;
+//in vec4 instanceattrib;
+#define N 4096
+layout (std140) uniform uniblock0 {
+	vec4 ldata[N];
+} uniblock0_t;
 out vec3 fragposition;
 out vec2 fragtexcoord;
 
 
 void main(){
+	vec4 instanceattrib = uniblock0_t.ldata[gl_InstanceID];
 //	fragnormal = normattrib;
 //	fragtexcoord = tcattrib;
 //	fragposition = posattrib;

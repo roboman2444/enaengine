@@ -434,7 +434,7 @@ GLuint tris[36] = {
 			3, 6, 7
 	};
 int glDrawLights(viewport_t *v){
-	lightrenderout_t out = readyLightsForRender(v, 20, 0);
+	lightrenderout_t out = readyLightsForRender(v, 50, 0);
 	if(!out.lin.count && !out.lout.count) return FALSE;
 
 	framebuffer_t *df = returnFramebufferById(v->dfbid);
@@ -466,13 +466,23 @@ int glDrawLights(viewport_t *v){
 	//todo can i do this more efficiently
 
 	glBindBuffer(GL_ARRAY_BUFFER, instancevbo);
+
+
+
+/*
 	glEnableVertexAttribArray(INSTANCEATTRIBLOC); //tell the location
 	glVertexAttribPointer( INSTANCEATTRIBLOC, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), 0 ); //tell other data
 	glVertexAttribDivisor( INSTANCEATTRIBLOC, 1 ); //is it instanced?
-
+*/
 //	consolePrintf("lcount is %i:%i\n", out.lin.count, out.lout.count);
+	unsigned int iPerUBOBlock = maxUBOSize / (4*sizeof(GLfloat));
+
 	if(out.lin.count){
 		size_t instancedatasize = 4 * out.lin.count * sizeof(GLfloat);
+
+
+//		unsigned int numUBOBlock = ceil(instancedatasize/maxUBOSize);
+
 		GLfloat * instancedata = malloc(instancedatasize);
 		int i;
 		for(i = 0; i < out.lin.count; i++){
@@ -492,8 +502,21 @@ int glDrawLights(viewport_t *v){
 		Matrix4x4_ToArrayFloatGL(&v->viewproj, mout);
 		glUniformMatrix4fv(currentsp->unimat40, 1, GL_FALSE, mout);
 		glUniform2f(currentsp->uniscreensizefix, 1.0/of->width, 1.0/of->height);
-		glDrawElementsInstanced(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0, out.lin.count);
 
+
+//		glDrawElementsInstanced(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0, out.lin.count);
+		if(TRUE){
+			unsigned int rendered = 0;
+			unsigned int torender = iPerUBOBlock;
+			while(rendered < out.lin.count){
+				if((rendered+torender)>out.lin.count){
+					torender = out.lin.count - rendered;
+					glBindBufferRange(GL_UNIFORM_BUFFER, 0 , instancevbo, (rendered * 4*sizeof(GLfloat)),(torender*4*sizeof(GLfloat)));
+					glDrawElementsInstanced(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0, torender);
+					rendered+=torender;
+				}
+			}
+		}
 	}
 
 
@@ -522,7 +545,22 @@ int glDrawLights(viewport_t *v){
 		Matrix4x4_ToArrayFloatGL(&v->viewproj, mout);
 		glUniformMatrix4fv(currentsp->unimat40, 1, GL_FALSE, mout);
 		glUniform2f(currentsp->uniscreensizefix, 1.0/of->width, 1.0/of->height);
-		glDrawElementsInstanced(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0, out.lout.count);
+//		glDrawElementsInstanced(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0, out.lout.count);
+
+
+		if(TRUE){
+			unsigned int rendered = 0;
+			unsigned int torender = iPerUBOBlock;
+			while(rendered < out.lout.count){
+				if((rendered+torender)>out.lout.count){
+					torender = out.lout.count - rendered;
+					glBindBufferRange(GL_UNIFORM_BUFFER, 0 , instancevbo, (rendered * 4*sizeof(GLfloat)),(torender*4*sizeof(GLfloat)));
+					glDrawElementsInstanced(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0, torender);
+					rendered+=torender;
+				}
+			}
+		}
+
 
 		glCullFace(GL_BACK);
 		glEnable(GL_DEPTH_TEST);
