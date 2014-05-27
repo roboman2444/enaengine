@@ -247,7 +247,7 @@ typedef struct lightbuckethead_s {
 
 void lightHashSortPrune(lightlistdist_t * list, vec_t lmaxdist, unsigned int max){
 	unsigned int count = list->count;
-	unsigned int bucketcount = count / 10;
+	unsigned int bucketcount = (count / 10) +1;
 //	consolePrintf("bucketcount is %i\n", bucketcount);
 	//todo fix this?
 	vec_t bucketsize = lmaxdist / (vec_t)(bucketcount-1);
@@ -261,7 +261,7 @@ void lightHashSortPrune(lightlistdist_t * list, vec_t lmaxdist, unsigned int max
 	//fill table
 	for(i = 0; i < count; i++){
 		unsigned int lighthash = (int)(dist[i] / bucketsize);
-		if(lighthash > bucketsize) consolePrintf("u dun goofed now! %i\n", lighthash);
+		if(lighthash > bucketcount) consolePrintf("u dun goofed now! %i:%i:%i:%i\n", lighthash, dist, bucketsize, bucketcount);
 //		printf("lighthash is %i\n", lighthash);
 		lightbuckethead_t * h = &table[lighthash];
 		lightbucket_t * j = malloc(sizeof(lightbucket_t));
@@ -372,7 +372,9 @@ lightrenderout_t readyLightsForRender(viewport_t *v, unsigned int max, unsigned 
 		int result = testBBoxPInFrustumNearPlane(v, l->bboxp);
 		if(!result) continue;
 
-		vec_t dist = vec3distvec(v->pos, l->pos) * l->scale;
+		//todo decide weather the ^2 thing is needed
+		//todo also maybe change it to a dist from viewplane
+		vec_t dist = vec3distvec(v->pos, l->pos) / (l->scale*l->scale); // lights that are larger will be perferred
 		//check weather the light can pass the "pre dist test"
 		if(lmaxdist <= dist){
 			if(llist.count < max) lmaxdist = dist;

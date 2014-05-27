@@ -434,7 +434,7 @@ GLuint tris[36] = {
 			3, 6, 7
 	};
 int glDrawLights(viewport_t *v){
-	lightrenderout_t out = readyLightsForRender(v, 50, 0);
+	lightrenderout_t out = readyLightsForRender(v, 20, 0);
 	if(!out.lin.count && !out.lout.count) return FALSE;
 
 	framebuffer_t *df = returnFramebufferById(v->dfbid);

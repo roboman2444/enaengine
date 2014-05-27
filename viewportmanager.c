@@ -187,6 +187,11 @@ void recalcProjectionMatrix(viewport_t * v){
 	v->projection.m[3][3] = 0;
 
 }
+vec_t distPointFromNear(viewport_t *v, vec_t * p){
+	vec_t * n = v->frustum[5].norm;
+	vec_t dist = vec3dot(n, p) + v->frustum[5].d;
+	return dist;
+}
 int testPointInFrustum(viewport_t * v, vec_t * p){
 	int i;
 	vec_t * n;

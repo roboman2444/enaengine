@@ -57,6 +57,8 @@ int createAndAddViewportRINT(char * name, char type);
 
 viewport_t createViewport(char * name, char type);
 
+vec_t distPointFromNear(viewport_t *v, vec_t *p);
+
 int recalcViewport(viewport_t * v, vec3_t pos, vec3_t angle, float fov, float aspect, float near, float far);
 
 int testPointInFrustum(viewport_t *v, vec_t *p);
