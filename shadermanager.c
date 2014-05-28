@@ -97,29 +97,33 @@ shaderprogram_t * addShaderRPOINT(shaderprogram_t shader){
 
 }
 
+
 //shaderpermutation_t compilePermutation(shaderprogram_t * shader, int permutation){
 shaderpermutation_t createPermutation(shaderprogram_t * shader, int permutation){
 //	consolePrintf("readying shader %s with permutation %i", shader->name, permutation);
 	shaderpermutation_t perm;
 	memset(&perm, 0 , sizeof(shaderpermutation_t));
 	perm.permutation = permutation;
-//	perm.sysflags = flags;
 
 	if(!(shader->type & 2)) return perm;
 	GLuint vertid = glCreateShader(GL_VERTEX_SHADER);
 	GLuint fragid = glCreateShader(GL_FRAGMENT_SHADER);
+
+	unsigned char linebounce = 0;
+	unsigned char arraysize = shader->numdefines + 3;
 	//todo errorcheck
 
-	char ** shaderstring = malloc((shader->numdefines+1) * sizeof(char *)); // if it has no defines, it will be 1 so its ok anyway
-	memset(shaderstring, 0, (shader->numdefines +1) * sizeof(char *));
+	char ** shaderstring = malloc((arraysize) * sizeof(char *)); // if it has no defines, it will be 1 so its ok anyway
+	memset(shaderstring, 0, (arraysize) * sizeof(char *));
+	int i = 0;
 	if(shader->type & 1){
-		int i;
 		for(i = 0; i < shader->numdefines; i++){
 			if(permutation & 1<<i){
 				GLuint l = strlen(shader->defines[i]) + 10;
 				shaderstring[i] = malloc(l); // 8 for the extra #define , 1 for the \n, 1 for the \0
 				memset(shaderstring[i], 0, l);
 				snprintf(shaderstring[i], l, "#define %s", shader->defines[i]); //no need for the \n because the defines has it in them
+				linebounce++;
 			} else {
 				shaderstring[i] = malloc(2* sizeof(char));
 				memset(shaderstring[i], 0, 2);
@@ -127,17 +131,39 @@ shaderpermutation_t createPermutation(shaderprogram_t * shader, int permutation)
 			}
 		}
 	}
+		if(permutation & 1<<30){
+			shaderstring[i] = malloc(20); // 8 for the extra #define , 1 for the \n, 1 for the \0
+			memset(shaderstring[i], 0, 20);
+			snprintf(shaderstring[i], 20, "#define INSTANCED\n");
+			linebounce++;
+		} else {
+			shaderstring[i] = malloc(2* sizeof(char));
+			memset(shaderstring[i], 0, 2);
+			strcpy(shaderstring[i], "\0");
+		}
+		i++;
+		if(permutation & 1<<31){
+			shaderstring[i] = malloc(18); // 8 for the extra #define , 1 for the \n, 1 for the \0
+			memset(shaderstring[i], 0, 18);
+			snprintf(shaderstring[i], 18, "#define UNUSED\n");
+			linebounce++;
+		} else {
+			shaderstring[i] = malloc(2* sizeof(char));
+			memset(shaderstring[i], 0, 2);
+			strcpy(shaderstring[i], "\0");
+		}
+		i++;
 
-	shaderstring[shader->numdefines] = shader->vertstring;
-	glShaderSource(vertid, shader->numdefines+1, (const GLchar **) shaderstring, 0);
-	shaderstring[shader->numdefines] = shader->fragstring;
-	glShaderSource(fragid, shader->numdefines+1, (const GLchar **) shaderstring, 0);
+	shaderstring[arraysize-1] = shader->vertstring;
+	glShaderSource(vertid, arraysize, (const GLchar **) shaderstring, 0);
+	shaderstring[arraysize-1] = shader->fragstring;
+	glShaderSource(fragid, arraysize, (const GLchar **) shaderstring, 0);
 	//if i set shadersource length to null, it does it by null char looking
 	//todo geom shader
 
 	if(shader->type & 1){
-		int i;
-		for(i = 0; i < shader->numdefines; i++) if(shaderstring[i]) free(shaderstring[i]); // doesnt free the vertstring or fragstring
+//		int i;
+		for(i = 0; i < shader->numdefines+2; i++) if(shaderstring[i]) free(shaderstring[i]); // doesnt free the vertstring or fragstring
 	}
 	free(shaderstring);
 
@@ -192,16 +218,21 @@ shaderpermutation_t createPermutation(shaderprogram_t * shader, int permutation)
 	if(printProgramLogStatus(programid) || fail){
 		fail = TRUE;
 //		if(shader->type & 1){
-			char * error = malloc((100* shader->numdefines) + 100);
+			char * error = malloc((100*linebounce) + 100);
 			sprintf(error, "Shader %s compile failed. Permutations:\n", shader->name);
-			int i, count = 0;
-				for(i = 0; i < shader->numdefines; i++){
+			int i;
+			for(i = 0; i < shader->numdefines; i++){
 				if(permutation & 1<<i){
 					sprintf(error, "%s%s", error, shader->defines[i]);
-					count++;
 				}
 			}
-			sprintf(error, "%sLine offset in file: %i\n", error, count);
+			if(permutation & 1<<30){
+				sprintf(error, "%s%s", error, "INSTANCED\n");
+			}
+			if(permutation & 1<<31){
+				sprintf(error, "%s%s", error, "UNUSED\n");
+			}
+			sprintf(error, "%sLine offset in file: %i\n", error, linebounce);
 			consoleNPrintf(strlen(error)+1,error);
 			free(error);
 /*		} else {
@@ -216,7 +247,7 @@ shaderpermutation_t createPermutation(shaderprogram_t * shader, int permutation)
 //set up texture uniforms
 
 	char * texstring = malloc(10);
-	int i;
+//	int i;
 	for(i = 0; i < 16; i++){
 		sprintf(texstring, "texture%i", i);
 		perm.texturespos[i] = glGetUniformLocation(programid, texstring);
@@ -234,6 +265,8 @@ shaderpermutation_t createPermutation(shaderprogram_t * shader, int permutation)
 //uniform blocks
 	perm.uniblock0 = glGetUniformBlockIndex(programid, "uniblock0"); //todo maybe i dont need to keep this around
 	if(perm.uniblock0 > -1) glUniformBlockBinding(programid, perm.uniblock0, 0);	//todo make a ubo manager that i can just slap data in and out of, have each shader bind to this
+	perm.uniblock1 = glGetUniformBlockIndex(programid, "uniblock1"); //todo maybe i dont need to keep this around
+	if(perm.uniblock1 > -1) glUniformBlockBinding(programid, perm.uniblock1, 1);	//todo make a ubo manager that i can just slap data in and out of, have each shader bind to this
 	//it will be very useful for some stuff i guess
 
 	perm.compiled = 2;
@@ -299,13 +332,13 @@ shaderprogram_t createAndReadyShader(char * name){
 	char * flagname = malloc(strlen(name)+7);
 	sprintf(flagname, "%s.flags", name);
 	if(!(f = fopen(flagname, "r"))){
-		shader.sysflags = 0;
+		shader.sysflagssupport = 0;
 		consolePrintf("Count not find .flags file for shader %s\n", name);
 		//todo debug?
 	} else {
-		char * dfstring = malloc(32*sizeof(char));
-		fgets(dfstring, 32, f);
-		shader.sysflags = atoi(dfstring);
+		char * dfstring = malloc(30*sizeof(char));
+		fgets(dfstring, 30, f);
+//		shader.sysflags = atoi(dfstring);
 		free(dfstring);
 	}
 	if(f)fclose(f);

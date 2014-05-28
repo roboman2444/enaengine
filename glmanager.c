@@ -36,6 +36,7 @@ int wireshaderid = 0; //todo redo
 int lightshaderid = 0;
 viewport_t * cam = 0;
 GLuint instancevbo = 0;
+GLuint instancevbo2 = 0;
 int textvbo = 0; //temporary
 int textshaderid = 0; // temporary
 int cubeModel = 0; // todo move this as well as the other primitives into modelmanager
@@ -141,6 +142,7 @@ int glInit(void){
 //	wireshaderid = createAndAddShaderRINT("wireframe");
 	lightshaderid = createAndAddShaderRINT("deferredlight");
 	glGenBuffers(1, &instancevbo);
+	glGenBuffers(1, &instancevbo2);
 
 	//temporary
 	vbo_t * tvbo = createAndAddVBORPOINT("text", 2);
@@ -324,8 +326,11 @@ int drawEntitiesM(modelbatche_t * batch){
 	}
 */
 
-	glBindBuffer(GL_ARRAY_BUFFER, instancevbo);
-		size_t instancedatasize = 16 * count * sizeof(GLfloat);
+//	glBindBuffer(GL_ARRAY_BUFFER, instancevbo);
+		size_t sizePerInstance = 16*sizeof(GLfloat);
+		size_t sizePerInstance2 = 12*sizeof(GLfloat);
+		size_t instancedatasize = count * sizePerInstance;
+		size_t instancedatasize2 = count * sizePerInstance2;
 /*
 		for(i = 0; i < 4; i++){
 			glEnableVertexAttribArray(INSTANCEATTRIBLOC+i); //tell the location
@@ -333,25 +338,33 @@ int drawEntitiesM(modelbatche_t * batch){
 			glVertexAttribDivisor(INSTANCEATTRIBLOC+i, 1); //is it instanced?
 		}
 */
-		unsigned int iPerUBOBlock = maxUBOSize / (16*sizeof(GLfloat));
+		unsigned int iPerUBOBlock = maxUBOSize / sizePerInstance;
 		GLfloat * instancedata = malloc(instancedatasize);
-
+		GLfloat * instancedata2 = malloc(instancedatasize2);
 
 
 		for(i = 0; i < count; i++){
 //		glDrawModel(m, &batch->matlist[i], &cam->viewproj);
 
 			unsigned int bump = i * 16;
-			matrix4x4_t outmat;
+			unsigned int bump2 = i * 12;
+			matrix4x4_t outmat, outmatrot;
 		//	Matrix4x4_Concat(&outmat, modworld, viewproj);
 			Matrix4x4_Concat(&outmat, &cam->viewproj, &batch->matlist[i]);
+			Matrix4x4_CopyRotateOnly(&outmatrot, &outmat);
 			Matrix4x4_ToArrayFloatGL(&outmat, &instancedata[bump]);
+			Matrix4x4_ToArray12FloatGL(&outmatrot, &instancedata2[bump2]);
 			//todo
 
 		}
 
+		glBindBuffer(GL_ARRAY_BUFFER, instancevbo);
 		glBufferData(GL_ARRAY_BUFFER, instancedatasize, instancedata, GL_DYNAMIC_DRAW); // change to stream?
 		free(instancedata);
+
+		glBindBuffer(GL_ARRAY_BUFFER, instancevbo2);
+		glBufferData(GL_ARRAY_BUFFER, instancedatasize2, instancedata2, GL_DYNAMIC_DRAW); // change to stream?
+		free(instancedata2);
 
 //		glDrawElementsInstanced(GL_TRIANGLES, tvbo->numfaces * 3, GL_UNSIGNED_INT, 0, count);
 
@@ -361,7 +374,8 @@ int drawEntitiesM(modelbatche_t * batch){
 			unsigned int vertdrawcount = tvbo->numfaces*3;
                         while(rendered < count){
 				if((rendered+torender)>count) torender = count - rendered;
-				glBindBufferRange(GL_UNIFORM_BUFFER, 0 , instancevbo, (rendered * 16*sizeof(GLfloat)),(torender*16*sizeof(GLfloat)));
+				glBindBufferRange(GL_UNIFORM_BUFFER, 0 , instancevbo, (rendered * sizePerInstance),(torender*sizePerInstance));
+				glBindBufferRange(GL_UNIFORM_BUFFER, 0 , instancevbo2, (rendered * sizePerInstance2),(torender*sizePerInstance2));
 				glDrawElementsInstanced(GL_TRIANGLES, vertdrawcount, GL_UNSIGNED_INT, 0, torender);
 				rendered+=torender;
 			}

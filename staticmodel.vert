@@ -8,10 +8,14 @@ in vec3 normattrib;
 in vec2 tcattrib;
 //in mat4 instanceattrib;
 
-#define N 1024
+#define N 1024 //16 floats
+
 layout (std140) uniform uniblock0 {
 	mat4 ldata[N];
 } uniblock0_t;
+layout (std140) uniform uniblock1 {
+	mat4x3 ldata[N];
+} uniblock1_t;
 out vec3 fragnormal;
 out vec3 fragposition;
 out vec2 fragtexCoord;

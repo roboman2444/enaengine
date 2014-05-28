@@ -46,6 +46,8 @@ void main(){
 	#endif
 
 	fragColor = vec4(dcolor,1.0);
+	fragColor.rgb = fragnormal;
+
 	#ifdef NORMTEXTURE
 		fragColor = tvector;
 	#endif
