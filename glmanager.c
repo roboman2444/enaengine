@@ -375,7 +375,7 @@ int drawEntitiesM(modelbatche_t * batch){
                         while(rendered < count){
 				if((rendered+torender)>count) torender = count - rendered;
 				glBindBufferRange(GL_UNIFORM_BUFFER, 0 , instancevbo, (rendered * sizePerInstance),(torender*sizePerInstance));
-				glBindBufferRange(GL_UNIFORM_BUFFER, 0 , instancevbo2, (rendered * sizePerInstance2),(torender*sizePerInstance2));
+				glBindBufferRange(GL_UNIFORM_BUFFER, 1 , instancevbo2, (rendered * sizePerInstance2),(torender*sizePerInstance2));
 				glDrawElementsInstanced(GL_TRIANGLES, vertdrawcount, GL_UNSIGNED_INT, 0, torender);
 				rendered+=torender;
 			}
