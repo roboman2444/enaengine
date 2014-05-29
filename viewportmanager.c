@@ -1,4 +1,4 @@
-//gloabl includes
+//global includes
 #include <GL/glew.h>
 #include <GL/gl.h>
 #include <tgmath.h>
@@ -363,6 +363,31 @@ void recalcFrustum(viewport_t * v){
 	v->frustum[5].d = dot(nearp, forward);
 */
 }
+
+void getDir(viewport_t * v){
+	//code inspired by iquilezles volumetric sort
+	vec_t *forward = v->v_forward;
+	const int   sx = forward[0]<0.0f;
+	const int   sz = forward[2]<0.0f;
+	const float ax = fabsf(forward[0]);
+	const float az = fabsf(forward[2]);
+
+//	ret = 2*sx + 4*sz + (ax > az);
+
+	char * out = v->dir;
+
+	out[0] = sx + 2*sz;
+	if(ax > az){
+		out[1] = sx + 2*(!sz);
+		out[2] = (!sx) + 2*sz;
+		out[3] = (!sx) + 2*(!sz);
+	} else {
+	 	out[1] = (!sx) + 2*sz;
+		out[2] = sx + 2*(!sz);
+		out[3] = (!sx) + 2*(!sz);
+	}
+}
+
 int recalcViewport(viewport_t * v, vec3_t pos, vec3_t angle, float fov, float aspect, float near, float far){
 	if(pos != v->pos || angle != v->angle){
 		v->viewchanged = TRUE;
@@ -385,6 +410,7 @@ int recalcViewport(viewport_t * v, vec3_t pos, vec3_t angle, float fov, float as
 		Matrix4x4_Concat(&v->viewproj, &v->projection, &v->view);
 		recalcFrustum(v);
 	}
+	getDir(v);
 	return v->viewchanged;
 }
 int generateFramebufferForViewport(viewport_t *v){

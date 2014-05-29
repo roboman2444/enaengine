@@ -187,11 +187,21 @@ int loadLeafIntoQueues(worldleaf_t * l, renderbatche_t * forwardbatch, renderbat
 	}
 	//todo cull these out
 	worldleaf_t **children = l->children;
+/*
 	for(i = 0; i < 4; i++){
 		if(children[i] && testBBoxPInFrustum(v, children[i]->bboxp)){
 			mynum+= loadLeafIntoQueues(children[i], forwardbatch, deferredbatch, v);
 		}
 	}
+*/
+	int j;
+	for(j = 0; j < 4; j++){
+		i = v->dir[j];
+		if(children[i] && testBBoxPInFrustum(v, children[i]->bboxp)){
+			mynum+= loadLeafIntoQueues(children[i], forwardbatch, deferredbatch, v);
+		}
+	}
+
 	return mynum;
 }
 int loadWorldIntoQueues(renderbatche_t * forwardbatch, renderbatche_t * deferredbatch, viewport_t *v){
@@ -211,11 +221,21 @@ int loadLeafIntoQueue(worldleaf_t * l, renderbatche_t * batch, viewport_t *v){
 	}
 	//todo cull these out
 	worldleaf_t **children = l->children;
+	/*
 	for(i = 0; i < 4; i++){
 		if(children[i] && testBBoxPInFrustum(v, children[i]->bboxp)){
 			mynum+= loadLeafIntoQueue(children[i], batch, v);
 		}
 	}
+	*/
+	int j;
+	for(j = 0; j < 4; j++){
+		i = v->dir[j];
+		if(children[i] && testBBoxPInFrustum(v, children[i]->bboxp)){
+			mynum+= loadLeafIntoQueue(children[i], batch, v);
+		}
+	}
+
 	return mynum;
 }
 int loadWorldIntoQueue(renderbatche_t * batch, viewport_t *v){

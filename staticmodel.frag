@@ -22,7 +22,6 @@ void main(){
 		fragColor = vec4(fragposition, 1.0);
 	#elif defined TEXTURE
 		fragColor = texture2D(texture0, fragtexCoord);
-
 	#else
 		fragColor = vec4(1.0);
 	#endif

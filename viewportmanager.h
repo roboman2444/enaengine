@@ -22,6 +22,8 @@ typedef struct viewport_s {
 	vec3_t v_forward;
 	vec3_t v_up;
 	vec3_t v_right;
+
+	char dir[4];
 } viewport_t;
 
 typedef struct viewportlistpoint_s {
