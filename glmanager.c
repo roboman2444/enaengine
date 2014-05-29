@@ -19,6 +19,7 @@
 #include "lightmanager.h"
 #include "textmanager.h"
 #include "ubomanager.h"
+#include "glstates.h"
 
 #include <tgmath.h>
 
@@ -27,7 +28,6 @@ float degnumber;
 
 //state rendering stuff
 viewport_t * currentvp;
-shaderpermutation_t * currentsp;
 char currentMatNeeds = 0;
 
 unsigned long totalface, totalcount, totalvert;
@@ -162,7 +162,7 @@ int glDrawModel(model_t * model, matrix4x4_t * modworld, matrix4x4_t * viewproj)
 
 	GLfloat out[16];
 	Matrix4x4_ToArrayFloatGL(&outmat, out);
-	glUniformMatrix4fv(currentsp->unimat40, 1, GL_FALSE, out);
+	glUniformMatrix4fv(shaderCurrentBound->unimat40, 1, GL_FALSE, out);
 //	glBindVertexArray(tvbo->vaoid);
 
 	glDrawElements(GL_TRIANGLES, tvbo->numfaces*3, GL_UNSIGNED_INT, 0);
@@ -393,10 +393,8 @@ int drawEntitiesT(texturebatche_t * batch){
 	int i;
 	//stuff here
 	texturegroup_t * tex = returnTexturegroupById(batch->textureid);
-	if(tex){
-		bindTexturegroup(tex);
+	bindTexturegroup(tex); //todo make it bind error texture
 //		consolePrintf("error:%i\n", glGetError());
-	}
 	for(i = 0; i < count; i++){
 		drawEntitiesM(&batch->modelbatch[i]);
 	}
@@ -415,15 +413,7 @@ int drawEntitiesS(shaderbatche_t * batch){
 //	if(!perm) perm = addPermutationToShader(shader, batch->shaderperm);
 
 	shaderpermutation_t * perm = addPermutationToShader(shader, batch->shaderperm);
-	if(!perm) return FALSE;
-//	consolePrintf("count:%i\n",1);
-
-	if(perm->compiled < 2) return FALSE;
-
-	//
-	currentsp = perm;
-
-	bindShaderPerm(perm);
+	if(!bindShaderPerm(perm)) return FALSE;
 //	glUseProgram(perm->id);
 //	glUniform1i(glGetUniformLocation(perm->id, "texture0"), 0);
 
@@ -474,9 +464,7 @@ int glDrawLights(viewport_t *v){
 
 	shaderprogram_t * shader = returnShaderById(lightshaderid);
 	shaderpermutation_t * perm = addPermutationToShader(shader, 0);
-	if(perm->compiled < 2) return FALSE;
-	currentsp = perm;
-	bindShaderPerm(perm);
+	if(!bindShaderPerm(perm)) return FALSE;
 
 	glBindFramebuffer(GL_FRAMEBUFFER, of->id);
 	glDepthMask(GL_FALSE);
@@ -529,8 +517,8 @@ int glDrawLights(viewport_t *v){
 
 		GLfloat mout[16];
 		Matrix4x4_ToArrayFloatGL(&v->viewproj, mout);
-		glUniformMatrix4fv(currentsp->unimat40, 1, GL_FALSE, mout);
-		glUniform2f(currentsp->uniscreensizefix, 1.0/of->width, 1.0/of->height);
+		glUniformMatrix4fv(shaderCurrentBound->unimat40, 1, GL_FALSE, mout);
+		glUniform2f(shaderCurrentBound->uniscreensizefix, 1.0/of->width, 1.0/of->height);
 
 
 //		glDrawElementsInstanced(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0, out.lin.count);
@@ -570,8 +558,8 @@ int glDrawLights(viewport_t *v){
 
 		GLfloat mout[16];
 		Matrix4x4_ToArrayFloatGL(&v->viewproj, mout);
-		glUniformMatrix4fv(currentsp->unimat40, 1, GL_FALSE, mout);
-		glUniform2f(currentsp->uniscreensizefix, 1.0/of->width, 1.0/of->height);
+		glUniformMatrix4fv(shaderCurrentBound->unimat40, 1, GL_FALSE, mout);
+		glUniform2f(shaderCurrentBound->uniscreensizefix, 1.0/of->width, 1.0/of->height);
 //		glDrawElementsInstanced(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0, out.lout.count);
 
 
@@ -693,9 +681,7 @@ int glDrawConsole(void){
 //	vbo_t * tvbo = returnVBOById(textvbo);
 	shaderprogram_t * shader = returnShaderById(textshaderid);
 	shaderpermutation_t * perm = addPermutationToShader(shader, 0);
-	if(perm->compiled < 2) return FALSE;
-	currentsp = perm;
-	bindShaderPerm(perm);
+	if(!bindShaderPerm(perm)) return FALSE;
 	glBindVertexArray(consoleVBO->vaoid);
 //	printf("consoledraw = %i\n", consoleDrawLines);
 	int i;
@@ -710,7 +696,6 @@ int glDrawConsole(void){
 
 	return TRUE;
 }
-
 int glMainDraw(void){
 	totalface = 0;
 	totalcount = 0;
@@ -736,35 +721,6 @@ int glMainDraw(void){
 	glDisable(GL_DEPTH_TEST);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 //	glViewport(0, 0, 800, 600);
-/*
-	char fg[3] = {128, 255, 255};
-	text_t * t = createAndAddTextFindFontRPOINT("Text Rendering Works!", "FreeMono.ttf", 512, 1, fg);
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, t->textureid);
-	vbo_t * tvbo = returnVBOById(textvbo);
-	shaderprogram_t * shader = returnShaderById(textshaderid);
-	shaderpermutation_t * perm = addPermutationToShader(shader, 0);
-	if(perm->compiled < 2) return FALSE;
-	currentsp = perm;
-	bindShaderPerm(perm);
-//	GLfloat * blah = malloc(16 * sizeof(GLfloat));
-//	memcpy(blah, fsquadpoints, 16 * sizeof(GLfloat));
-//	GLfloat * bleh = malloc(6 * sizeof(GLuint));
-//	memcpy(bleh, rectangleindices, 6 * sizeof(GLuint));
-	glBindVertexArray(tvbo->vaoid);
-	glBindBuffer(GL_ARRAY_BUFFER, tvbo->vboid);
-	glEnableVertexAttribArray(POSATTRIBLOC);
-	glVertexAttribPointer(POSATTRIBLOC, 2, GL_FLOAT, GL_FALSE, 4* sizeof(GLfloat), 0); // may not be needed every time
-	glEnableVertexAttribArray(TCATTRIBLOC);
-	glVertexAttribPointer(TCATTRIBLOC, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (void*)(2*sizeof(GLfloat))); // may not be needed every time
-	glBufferData(GL_ARRAY_BUFFER, 16 * sizeof(GLfloat), fsquadpoints, GL_STATIC_DRAW); // change to stream?
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, tvbo->indicesid);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6 * sizeof(GLuint), rectangleindices, GL_STATIC_DRAW);
-	tvbo->numfaces = 2;
-	tvbo->numverts = 4;
-
-	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-*/
 
 	glDrawConsole();
 

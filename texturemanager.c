@@ -10,6 +10,9 @@
 #include "SDL.h"
 #include "hashtables.h"
 #include "console.h"
+
+texturegroup_t * textureGroupCurrentBound = 0;
+
 int texturesOK = 0;
 int texturegroupcount = 0;
 int texturegroupArrayFirstOpen = 0;
@@ -230,10 +233,12 @@ void unbindTexturegroup(void){
 
 int bindTexturegroup(texturegroup_t * texturegroup){
 	if(!texturegroup) return -1;
+	int total = texturegroup->num;
+	if(texturegroup == textureGroupCurrentBound) return total;
 	int count = 0, i;
 	texture_t * texturespointer = texturegroup->textures;
 	if(!texturespointer) return -2;
-	for(i = 0; i < texturegroup->num; i++){
+	for(i = 0; i < total; i++){
 //		if(!texturespointer[i].id) continue;
 		switch(texturespointer[i].type){
 			//atm only model textures todo

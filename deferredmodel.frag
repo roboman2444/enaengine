@@ -21,10 +21,8 @@ in vec2 fragtexCoord;
 #endif
 
 out vec4 fragColor;
-#ifdef DEFERRED
 out vec4 normColor;
 out vec4 specColor;
-#endif
 
 void main(){
 	#ifdef DIFFTEXTURE
@@ -46,14 +44,9 @@ void main(){
 	#endif
 
 	fragColor = vec4(dcolor,1.0);
-	fragColor.rgb = fragnormal;
+//	fragColor.rgb = fragnormal;
 
-	#ifdef NORMTEXTURE
-		fragColor = tvector;
-	#endif
-	#ifdef DEFERRED
-		normColor.rgb = ncolor;
-		normColor.a = fragposition.z;
-		specColor.rg = scolor;
-	#endif
+	normColor.rgb = ncolor;
+	normColor.a = fragposition.z;
+	specColor.rg = scolor;
 }

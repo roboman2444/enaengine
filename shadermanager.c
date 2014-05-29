@@ -20,6 +20,8 @@ int shadersOK = 0;
 
 shaderprogram_t *shaderlist;
 
+shaderpermutation_t * shaderCurrentBound;
+
 hashbucket_t shaderhashtable[MAXHASHBUCKETS];
 
 int initShaderSystem(void){
@@ -30,6 +32,7 @@ int initShaderSystem(void){
 	shaderlist = 0;
 //	shaderlist = malloc(0 * sizeof(shaderprogram_t));
 //	defaultShader = addProgramToList(none);
+	shaderCurrentBound = 0;
 	shadersOK = TRUE;
 	return TRUE; // todo error check
 }
@@ -520,8 +523,10 @@ GLint findShaderAttribPos(shaderprogram_t * shader, char * name){
 
 int bindShaderPerm(shaderpermutation_t * perm){
 	if(!perm) return FALSE;
-	GLuint id = perm->id;
-	glUseProgram(id);
+	if(perm == shaderCurrentBound) return 2;
+	if(perm->compiled < 2) return FALSE;
+	shaderCurrentBound = perm;
+	glUseProgram(perm->id);
 //set texture spaces
 	int i;
 	GLint *tp = &perm->texturespos[0];

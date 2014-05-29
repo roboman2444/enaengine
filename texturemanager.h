@@ -43,6 +43,8 @@ typedef struct texturegroup_s{
 	int myid;
 }texturegroup_t;
 
+int textureCurrentBound;
+
 int texturesOK;
 int texturegroupnumber;
 

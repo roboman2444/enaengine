@@ -42,6 +42,8 @@ typedef struct shaderprogram_s
 } shaderprogram_t;
 
 
+shaderpermutation_t * shaderCurrentBound;
+
 int shadersOK;
 int programnumber;
 
