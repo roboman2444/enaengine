@@ -413,7 +413,9 @@ int recalcViewport(viewport_t * v, vec3_t pos, vec3_t angle, float fov, float as
 	getDir(v);
 	return v->viewchanged;
 }
-int generateFramebufferForViewport(viewport_t *v){
+int generateFramebuffersForViewport(viewport_t *v){
+	v->dfbid = createAndAddFramebufferRINT(v->name, 3);
+	v->outfbid = createAndAddFramebufferRINT(v->name, 3);
 	//todo
 	return FALSE;
 }

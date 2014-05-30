@@ -30,7 +30,8 @@ int initFramebufferSystem(void){
 	screen->id0 = 0;
 	screen->id1 = 0;
 	screen->id2 = 0;
-	screen->type = 255;
+	screen->type = 1;
+	screen->flags = 0;
 //	screen->texturegroupid = 0;
 	screen->name = malloc(7);
 	sprintf(screen->name, "screen");
@@ -100,7 +101,8 @@ framebuffer_t * returnFramebufferById(int id){
 
 int resizeFramebuffer(framebuffer_t *fb, int width, int height){
 	if(!fb) return FALSE;
-	if(fb->type == 255){
+	if(!fb->type) return FALSE;
+	if(!fb->flags){
 		fb->width = width;
 		fb->height = height;
 		return TRUE;
@@ -119,7 +121,7 @@ int resizeFramebuffer(framebuffer_t *fb, int width, int height){
 //	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 //	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, fb->id0, 0);
 
-	if(fb->type >1){
+	if(fb->flags >1){
 		glBindTexture(GL_TEXTURE_2D, fb->id1);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB/*16F*/, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
 //		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -128,7 +130,7 @@ int resizeFramebuffer(framebuffer_t *fb, int width, int height){
 //		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 //		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, fb->id1, 0);
 	}
-	if(fb->type > 2){
+	if(fb->flags > 2){
 		glBindTexture(GL_TEXTURE_2D, fb->id2);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB/*16F*/, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
 //		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -147,14 +149,14 @@ int resizeFramebuffer(framebuffer_t *fb, int width, int height){
 	fb->height = height;
 	return TRUE;
 }
-
-framebuffer_t createFramebuffer (char * name, char type){
-	if(!type) type = 1;
+framebuffer_t createFramebuffer (char * name, unsigned int flags){
+	if(!flags) flags = 1;
 	framebuffer_t fb;
 	fb.type = 0; //todo make useful
 	fb.id = 0;
 	fb.width = 1;
 	fb.height = 1;
+
 
 	glGenFramebuffers(1, &fb.id);
 	glBindFramebuffer(GL_FRAMEBUFFER, fb.id);
@@ -169,7 +171,7 @@ framebuffer_t createFramebuffer (char * name, char type){
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, fb.id0, 0);
 
-	if(type >1){
+	if(flags >1){
 		glGenTextures(1, &fb.id1);
 		glBindTexture(GL_TEXTURE_2D, fb.id1);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB/*16F*/, 1, 1, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
@@ -179,7 +181,7 @@ framebuffer_t createFramebuffer (char * name, char type){
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, fb.id1, 0);
 	}
-	if(type > 2){
+	if(flags > 2){
 		glGenTextures(1, &fb.id2);
 		glBindTexture(GL_TEXTURE_2D, fb.id2);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB/*16F*/, 1, 1, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
@@ -204,7 +206,8 @@ framebuffer_t createFramebuffer (char * name, char type){
 
 	fb.name = malloc(strlen(name)+1);
 	strcpy(fb.name, name);
-	fb.type = type;
+	fb.type = 1;
+	fb.flags = flags;
 	return fb;
 //todo
 }
@@ -240,9 +243,9 @@ framebuffer_t * addFramebufferRPOINT(framebuffer_t framebuffer){
 	return &framebufferlist[framebufferArrayFirstOpen];
 }
 
-framebuffer_t * createAndAddFramebufferRPOINT(char * name, char type){
+framebuffer_t * createAndAddFramebufferRPOINT(char * name, unsigned int type){
 	return addFramebufferRPOINT(createFramebuffer(name, type));
 }
-int createAndAddFramebufferRINT(char * name, char type){
+int createAndAddFramebufferRINT(char * name, unsigned int type){
 	return addFramebufferRINT(createFramebuffer(name, type));
 }

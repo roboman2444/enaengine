@@ -1,6 +1,7 @@
 #ifndef FRAMEBUFFERMANAGERHEADER
 #define FRAMEBUFFERMANAGERHEADER
 
+
 typedef struct framebuffer_s{
 	char * name;
 	unsigned char type;
@@ -11,7 +12,9 @@ typedef struct framebuffer_s{
 	GLuint id0;
 	GLuint id1;
 	GLuint id2;
+	GLuint id3;
 	GLuint rb;
+	unsigned int flags;
 //	int texturegroupid;
 } framebuffer_t;
 
@@ -43,9 +46,9 @@ framebufferlistint_t findFramebuffersByNameRINT(char * name);
 
 framebuffer_t * returnFramebufferById(int id);
 
-framebuffer_t * createAndAddFramebufferRPOINT(char * name, char type);
-int createAndAddFramebufferRINT(char * name, char type);
+framebuffer_t * createAndAddFramebufferRPOINT(char * name, unsigned int flags);
+int createAndAddFramebufferRINT(char * name, unsigned int flags);
 
-framebuffer_t createFramebuffer(char * name, char type);
+framebuffer_t createFramebuffer(char * name, unsigned int flags);
 int resizeFramebuffer(framebuffer_t *fb, int width, int height);
 #endif
