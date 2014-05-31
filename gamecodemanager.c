@@ -31,13 +31,14 @@ int initGameCodeSystem(void){
 	}
 	setupGameCodeCallbacks();
 
+//#define RESAVEWORLD
+
 #ifdef RESAVEWORLD
 	entity_t * entdragon = addEntityRPOINT("dragon");
 		entdragon->type = 2;
 		entdragon->modelid = createAndAddModelRINT("dragon");
 		entdragon->texturegroupid = 0;
-		entdragon->shaderid = createAndAddShaderRINT("staticmodel");
-		entdragon->shaderperm = 9;
+		entdragon->shaderid = createAndAddShaderRINT("deferredmodel");
 		entdragon->flags = 1;
 
 		calcEntAttachMat(entdragon); // needed because i add it to the world, and the mat needs to be updated beforehand
@@ -50,9 +51,8 @@ int initGameCodeSystem(void){
 		entteapot->pos[0] = 10.0;
 		entteapot->needsmatupdate = TRUE;
 		entteapot->modelid = createAndAddModelRINT("teapot");
-		entteapot->shaderid = createAndAddShaderRINT("staticmodel");
+		entteapot->shaderid = createAndAddShaderRINT("deferredmodel");
 		entteapot->texturegroupid = 0;
-		entteapot->shaderperm = 8;
 		entteapot->flags = 1;
 
 		calcEntAttachMat(entteapot); // needed because i add it to the world, and the mat needs to be updated beforehand
@@ -75,21 +75,21 @@ int initGameCodeSystem(void){
 		enthat->needsmatupdate = TRUE;
 		enthat->modelid = createAndAddModelRINT("teapot");
 //		enthat->modelid = createAndAddModelRINT("coil");
-		enthat->shaderid = createAndAddShaderRINT("staticmodel");
+		enthat->shaderid = createAndAddShaderRINT("deferredmodel");
 		enthat->texturegroupid = 0;
 	entity_t * entcoil = addEntityRPOINT("coil");
 		entcoil->type = 2;
 		entcoil->pos[2] = 10.0;
 		entcoil->anglevel[2] = 360.0;
 		entcoil->needsmatupdate = TRUE;
-		entcoil->shaderid = createAndAddShaderRINT("staticmodel");
+		entcoil->shaderid = createAndAddShaderRINT("deferredmodel");
 		entcoil->modelid = createAndAddModelRINT("bunny");
 //		entcoil->scale = 0.1;
 		entcoil->modelid = createAndAddModelRINT("coil");
 		entcoil->texturegroupid = createAndAddTexturegroupRINT("coil");
 //		entcoil->texturegroupid = createAndAddTexturegroupRINT("bunny");
 		entcoil->attachmentid = findEntityByNameRINT("hat");
-		entcoil->shaderperm = 4;
+		entcoil->shaderperm = 1;
 
 	light_t * light = addLightRPOINT("light");
 		light->type = 1;
@@ -107,7 +107,6 @@ int initGameCodeSystem(void){
 		enttinydragon->shaderid = createAndAddShaderRINT("deferredmodel");
 		enttinydragon->texturegroupid = 0;//findtexturegroupidByName("coil");
 		enttinydragon->attachmentid = findEntityByNameRINT("coil");
-		enttinydragon->shaderperm = 0;
 
 	enttinydragon = addEntityRPOINT("tinydragon");
 		enttinydragon->type = 2;
@@ -121,7 +120,6 @@ int initGameCodeSystem(void){
 		enttinydragon->texturegroupid = 0;//findtexturegroupidByName("coil");
 		enttinydragon->attachmentid = findEntityByNameRINT("coil");
 		enttinydragon->texturegroupid = 1;
-		enttinydragon->shaderperm = 0;
 	enttinydragon = addEntityRPOINT("tinydragon");
 		enttinydragon->type = 2;
 		enttinydragon->pos[2] = 3.0;
@@ -160,9 +158,9 @@ int initGameCodeSystem(void){
 		enttinydragon->modelid = createAndAddModelRINT("cube2");
 //		enttinydragon->modelid = createAndAddModelRINT("bunny2");
 //		enttinydragon->modelid = createAndAddModelRINT("coil");
-		enttinydragon->shaderid = createAndAddShaderRINT("staticmodel");
+		enttinydragon->shaderid = createAndAddShaderRINT("deferredmodel");
 		enttinydragon->texturegroupid = createAndAddTexturegroupRINT("bunny");
-		enttinydragon->shaderperm = 4;
+		enttinydragon->shaderperm = 1;
 		enttinydragon->attachmentid = prevatid;
 		prevatid = enttinydragon->myid;
 
@@ -188,9 +186,9 @@ int initGameCodeSystem(void){
 		enttinydragon->scale = (rand()/(double)RAND_MAX) * 1.0;
 		enttinydragon->needsmatupdate = TRUE;
 		enttinydragon->modelid = createAndAddModelRINT("coil");
-		enttinydragon->shaderid = createAndAddShaderRINT("staticmodel");
+		enttinydragon->shaderid = createAndAddShaderRINT("deferredmodel");
 		enttinydragon->texturegroupid = createAndAddTexturegroupRINT("coil");
-		enttinydragon->shaderperm = 4;
+		enttinydragon->shaderperm = 7;
 		enttinydragon->flags = 1;
 
 
@@ -210,7 +208,7 @@ int initGameCodeSystem(void){
 		enttinydragon->scale = (rand()/(double)RAND_MAX) * 2.0;
 		enttinydragon->needsmatupdate = TRUE;
 		enttinydragon->modelid = createAndAddModelRINT("cube");
-		enttinydragon->shaderid = createAndAddShaderRINT("staticmodel");
+		enttinydragon->shaderid = createAndAddShaderRINT("deferredmodel");
 		enttinydragon->flags = 1;
 
 

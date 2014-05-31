@@ -264,6 +264,7 @@ shaderpermutation_t createPermutation(shaderprogram_t * shader, int permutation)
 	perm.univec30 = glGetUniformLocation(programid, "univec30");
 	perm.univec20 = glGetUniformLocation(programid, "univec20");
 	perm.uniscreensizefix = glGetUniformLocation(programid, "uniscreensizefix");
+	perm.uniscreentodepth = glGetUniformLocation(programid, "uniscreentodepth");
 	perm.unifloat0 =glGetUniformLocation(programid, "unifloat0");
 //uniform blocks
 	perm.uniblock0 = glGetUniformBlockIndex(programid, "uniblock0"); //todo maybe i dont need to keep this around

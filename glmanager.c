@@ -493,11 +493,31 @@ int glDrawLights(viewport_t *v){
 	glViewport(0, 0, of->width, of->height);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, df->id0);
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, df->id1);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_ONE,GL_ONE);
 	model_t * cuber = returnModelById(cubeModel);
 	vbo_t * cvbo = returnVBOById(cuber->vbo);
 	if(!cvbo) return FALSE;
+
+
+
+	GLfloat mout[16];
+	Matrix4x4_ToArrayFloatGL(&v->viewproj, mout);
+	glUniformMatrix4fv(shaderCurrentBound->unimat40, 1, GL_FALSE, mout);
+	Matrix4x4_ToArrayFloatGL(&v->view, mout);
+	glUniformMatrix4fv(shaderCurrentBound->unimat41, 1, GL_FALSE, mout);
+	glUniform2f(shaderCurrentBound->uniscreensizefix, 1.0/of->width, 1.0/of->height);
+
+	float far = v->far;
+	float near = v->near;
+	glUniform2f(shaderCurrentBound->uniscreentodepth, far/(far-near),far*near/(near-far));
+
+
+
+
+
 	glBindVertexArray(cvbo->vaoid);
 
 	//todo can i do this more efficiently
@@ -535,12 +555,6 @@ int glDrawLights(viewport_t *v){
 		free(instancedata);
 
 
-		GLfloat mout[16];
-		Matrix4x4_ToArrayFloatGL(&v->viewproj, mout);
-		glUniformMatrix4fv(shaderCurrentBound->unimat40, 1, GL_FALSE, mout);
-		glUniform2f(shaderCurrentBound->uniscreensizefix, 1.0/of->width, 1.0/of->height);
-
-
 //		glDrawElementsInstanced(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0, out.lin.count);
 		if(TRUE){
 			unsigned int rendered = 0;
@@ -576,10 +590,6 @@ int glDrawLights(viewport_t *v){
 		glCullFace(GL_FRONT);
 
 
-		GLfloat mout[16];
-		Matrix4x4_ToArrayFloatGL(&v->viewproj, mout);
-		glUniformMatrix4fv(shaderCurrentBound->unimat40, 1, GL_FALSE, mout);
-		glUniform2f(shaderCurrentBound->uniscreensizefix, 1.0/of->width, 1.0/of->height);
 //		glDrawElementsInstanced(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0, out.lout.count);
 
 

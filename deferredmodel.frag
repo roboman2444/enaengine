@@ -29,13 +29,14 @@ void main(){
 		vec3 dcolor = texture2D(texture0, fragtexCoord).rgb;
 	#else
 		vec3 dcolor = vec3(1.0);
+//		vec3 dcolor = vec3(sin(fragposition.x), sin(fragposition.y), sin(fragposition.z));
 	#endif
 	#ifdef NORMTEXTURE
-		vec3 texnormal = texture2D(texture1, fragtexCoord).rgb;
-		vec3 ncolor = texnormal;
-		vec3 ncolor = normalize(texnormal.x * vertexsvector + texnormal.y * vertextvector + texnormal.z * vertexnormal);
+		vec3 texnormal = texture2D(texture1, fragtexCoord).rgb - vec3(0.5); //maybe regen a component using a cross
+		//vec3 ncolor = texnormal;
+		vec3 ncolor = normalize(texnormal.x * svector + texnormal.y * tvector + texnormal.z * fragnormal);
 	#else
-		vec3 ncolor = normalize(fragnormal);
+		vec3 ncolor = fragnormal;
 	#endif
 	#ifdef SPECTEXTURE
 		vec2 scolor = texture2D(texture3, fragtexCoord).rg;
@@ -48,5 +49,6 @@ void main(){
 
 	normColor.rgb = ncolor;
 	normColor.a = fragposition.z;
+//	normColor.a = length(fragposition.xyz);
 	specColor.rg = scolor;
 }

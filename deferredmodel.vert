@@ -32,11 +32,13 @@ void main(){
 
 	fragnormal = (rotmat * normattrib).xyz;
 	fragtexCoord = tcattrib;
-	fragposition = posattrib;
 	#ifdef NORMTEXTURE
-		vec4 tvecpre = rotmat * tangentattrib;
+//		vec4 tvecpre = rotmat * tangentattrib;
+		vec3 tvecpre = (rotmat * tangentattrib.xyz).xyz;
 		svector = tvecpre.xyz;
-		tvector = cross(tvecpre.xyz, fragnormal) * tvecpre.w
+		tvector = cross(tvecpre.xyz, fragnormal) * tangentattrib.w;
 	#endif
 	gl_Position = instanceattrib * vec4(posattrib, 1.0);
+	fragposition = gl_Position.xyz;
+
 }
