@@ -123,7 +123,7 @@ int resizeFramebuffer(framebuffer_t *fb, int width, int height){
 
 	if(fb->flags >1){
 		glBindTexture(GL_TEXTURE_2D, fb->id1);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_FLOAT, NULL);
 //		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 //		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 //		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -139,6 +139,7 @@ int resizeFramebuffer(framebuffer_t *fb, int width, int height){
 //		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 //		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, fb->id2, 0);
 	}
+
 	glBindRenderbuffer(GL_RENDERBUFFER, fb->rb);
 //	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height);
 	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, width, height);
@@ -149,6 +150,8 @@ int resizeFramebuffer(framebuffer_t *fb, int width, int height){
 	fb->height = height;
 	return TRUE;
 }
+
+GLenum buffers[] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2};
 framebuffer_t createFramebuffer (char * name, unsigned int flags){
 	if(!flags) flags = 1;
 	framebuffer_t fb;
@@ -160,7 +163,7 @@ framebuffer_t createFramebuffer (char * name, unsigned int flags){
 
 	glGenFramebuffers(1, &fb.id);
 	glBindFramebuffer(GL_FRAMEBUFFER, fb.id);
-
+	glDrawBuffers(flags, buffers); //todo make this actually a count
 	glGenTextures(1, &fb.id0);
 	glBindTexture(GL_TEXTURE_2D, fb.id0);
 	//todo flags for hdr or not
@@ -191,6 +194,7 @@ framebuffer_t createFramebuffer (char * name, unsigned int flags){
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, fb.id2, 0);
 	}
+
 	glGenRenderbuffers(1, &fb.rb);
 	glBindRenderbuffer(GL_RENDERBUFFER, fb.rb);
 //	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, 1, 1);

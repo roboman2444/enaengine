@@ -486,6 +486,7 @@ int glDrawLights(viewport_t *v){
 	shaderpermutation_t * perm = addPermutationToShader(shader, 0);
 	if(!bindShaderPerm(perm)) return FALSE;
 
+
 	glBindFramebuffer(GL_FRAMEBUFFER, of->id);
 	glDepthMask(GL_FALSE);
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT| GL_STENCIL_BUFFER_BIT);//todo set OF to use the same renderbuffer for depth as DF
@@ -500,7 +501,6 @@ int glDrawLights(viewport_t *v){
 	model_t * cuber = returnModelById(cubeModel);
 	vbo_t * cvbo = returnVBOById(cuber->vbo);
 	if(!cvbo) return FALSE;
-
 
 
 	GLfloat mout[16];
@@ -618,13 +618,18 @@ int glDrawLights(viewport_t *v){
 
 	glDepthMask(GL_TRUE);
 	glDisable(GL_BLEND);
+
 	return TRUE;
 }
 int glDrawViewport(viewport_t *v){
+
 	framebuffer_t *df = returnFramebufferById(v->dfbid);
 	framebuffer_t *of = returnFramebufferById(v->outfbid);
 	if(!df || !of) return FALSE;
 	glBindFramebuffer(GL_FRAMEBUFFER, df->id);
+
+//	GLenum buffers[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2};
+//	glDrawBuffers(3, buffers);
 //	glBindFramebuffer(GL_FRAMEBUFFER, of->id);
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT| GL_STENCIL_BUFFER_BIT);//todo set OF to use the same renderbuffer for depth as DF
 	glViewport(0, 0, df->width, df->height);

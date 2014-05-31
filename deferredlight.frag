@@ -20,8 +20,8 @@ void main(){
 		vec2 tc = gl_FragCoord.xy * uniscreensizefix;
 		vec3 pos;
 		vec4 normaldist = texture2D(texture0, tc);
-//		pos.z = normaldist.a;
-		pos.z = uniscreentodepth.y / normaldist.a + uniscreentodepth.x;
+		pos.z = normaldist.a;
+//		pos.z = uniscreentodepth.y / normaldist.a + uniscreentodepth.x;
 		pos.xy = mvpos.xy * (pos.z / mvpos.z);
 
 		vec3 eyenormal = -normalize(pos);
@@ -29,8 +29,8 @@ void main(){
 		vec3 surfnormal = normaldist.rgb;
 
 		float diffuse = clamp(dot(surfnormal, lightnormal * 2.0), 0.0, 1.0);
-//		fragColor = vec4(0.01)+diffuse*texture2D(texture0, tc);
-		fragColor = texture2D(texture1, tc);
+		fragColor = vec4(0.01)+diffuse*texture2D(texture0, tc);
+//		fragColor = texture2D(texture1, tc);
 //		fragColor = vec4(0.1);
 //		fragColor += texture2D(texture0, tc);
 
