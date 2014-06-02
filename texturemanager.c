@@ -72,7 +72,7 @@ texturegroup_t * returnTexturegroupById(int id){
 	return FALSE;
 }
 
-texturegroup_t createTextureGroup(char * name, int num){
+texturegroup_t createTexturegroup(char * name, int num){
 	texturegroup_t texgroup;
 	texgroup.textures = malloc(num*sizeof(texture_t));
 	texgroup.num = num;
