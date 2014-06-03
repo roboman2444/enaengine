@@ -20,7 +20,7 @@
 #include "textmanager.h"
 #include "ubomanager.h"
 #include "glstates.h"
-
+#include "animmanager.h"
 #include <tgmath.h>
 
 
@@ -83,6 +83,11 @@ int glInit(void){
 	if(!uboOK){
 		return FALSE;
 		//todo call some sort of shutdown of everything
+	}
+	initAnimSystem();
+	if(!animsOK){
+		//todo call some sort of shutdown of everything
+		return FALSE;
 	}
 	initModelSystem();
 	if(!modelsOK){

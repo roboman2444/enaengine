@@ -2,7 +2,10 @@
 
 #include "hashtables.h"
 #include "console.h"
+#include "mathlib.h"
+#include "matrixlib.h"
 #include "animmanager.h"
+#include "iqm.h"
 
 
 int animsOK = 0;
@@ -115,4 +118,57 @@ anim_t * createAndAddAnimRPOINT(char * name){
 	if(m) return m;
 	return addAnimRPOINT(createAndLoadAnim(name));
 //	return &animlist[addanimToList(createAndLoadanim(name))];
+}
+
+
+int loadiqmanims(anim_t a, const struct iqmheader hdr, unsigned char *buf){
+/*
+	unsigned char *animdata;
+	struct iqmjoint *joints;
+	struct iqmpos *poses;
+	struct iqmanim *anims;
+	animdata = buf;
+	unsigned int numanims = hdr.num_anims;
+	unsigned int numframes = hdr.num_frames;
+//	const char *str = hdr.ofs_test ? (char *)&buf[hdr.ofs_text] : "";
+
+	anims = (iqmanim *)&buf[hdr.ofs_anims];
+	poses = (iqmpose *)&buf[hdr.ofs_poses];
+	joints = (iqmjoint*)&buf[hdr.ofs_joints];
+	struct iqmjoint myjoints = malloc(hdr.num_joints * sizeof(iqmjoint));
+
+	float * baseboneposeinverse = malloc(12*sizeof(float) * hdr.num_noints);
+	int i;
+	for(i = 0; i < hdr.num_joints; i++){
+		matrix4x4_t relbase, relinvbase, pinvbase, invbase;
+		myjoints[i].name = joints[i].name;
+		myjoints[i].parent = joints[i].parent;
+		int j;
+		for(j = 0; j < 3; j++){
+			myjoints[i].origin[j] = joints[i].origin[j];
+			myjoints[i].rotate[j] = joints[i].rotate[j];
+			myjoints[i].scale[j] = joints[i].scale[j];
+		}
+		myjoints[i].rotate[3] = joints[i].rotate[3];
+
+		//todo copy parent data and name
+
+		if(myjoints[i].rotate[3] > 0) vec4mult(myjoints[i].rotate, myjoints[i].rotate, -1.0);
+		vec4norm2(myjoints[i].rotate, myjoints[i].rotate);
+		Matrix4x4_FromDoom3Joint(&relbase, myjoints[i].origin[0], myjoints[i].origin[1], myjoints[i].origin[2], myjoints.rotate[0], myjoints.rotate[1], myjoints.rotate[2]);
+		Matrix4x4_Invert_Simple(&relinvbase, &relbase);
+		if(myjoints[i].parent >=0){
+			Matrix4x4_FromArray12FloatD3D(&pinvbase, baseboneposeinverse + myjoints[i].parent * 12);
+			Matrix4x4_Concat(&invbase, &relinvbase, &pinvbase);
+			Matrix4x4_ToArray12FloatD3D(&invbase, baseboneposeinverse + 12*i);
+		} else {
+			Matrix4x4_ToArray12FloatD3D(&relinvbase, baseboneposeinverse +12*i);
+		}
+
+	}
+//	if(myjoints)free(myjoints);
+	free(myjoints);
+	//todo
+*/
+	return TRUE;
 }

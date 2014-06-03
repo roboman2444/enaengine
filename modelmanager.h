@@ -2,36 +2,19 @@
 #define MODELMANAGERHEADER
 
 
-typedef struct framegroup_s {
-	GLuint offset;
-	GLuint count;
-} framegroup_t;
-
-typedef struct anim_s {
-	char * name;
-	GLuint totalframes;
-	GLuint totalframegroups;
-	framegroup_t * frames;
-	//GLuint uboid;
-} anim_t;
-
 typedef struct model_s {
 	char * name;
 	int myid;
-//	texturegroup_t * texture;
 	int vbo;
 	vec_t bboxp[24];
 	vec_t bbox[6];
 	float spheresize;
 	char type; // maybe not
-//	int animid;
 	GLfloat * interleaveddata;
-//	GLuint * numfaces;
-//	GLuint numlod;
+//	iqmjoint * joints;
 	GLuint * tris;
 	GLuint numverts;
 	GLuint numfaces;
-//	GLuint stride;
 }model_t;
 
 /* types of models ... i should do enums for these

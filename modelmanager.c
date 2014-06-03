@@ -627,35 +627,13 @@ int loadiqmmeshes(model_t * m, const struct iqmheader hdr, unsigned char *buf){
 
 
 
-/*	meshes = (iqmmesh *)&buf[hdr.ofs_meshes];
-	joints = (iqmjoint *)&buf[hdr.ofs_joints];
-	if(hdr.ofs_adjacency) adjacency = (iqmtriangle *)&buf[hdr.ofs_adjacency];
-
-	baseframe = new Matrix3x4[hdr.num_joints];
-	inversebaseframe = new Matrix3x4[hdr.num_joints];
-	for(int i = 0; i < (int)hdr.num_joints; i++){
-		iqmjoint &j = joints[i];
-		baseframe[i] = Matrix3x4(Quat(j.rotate).normalize(), Vec3(j.translate), Vec3(j.scale));
-		inversebaseframe[i].invert(baseframe[i]);
-		if(j.parent >= 0){
-			baseframe[i] = baseframe[j.parent] * baseframe[i];
-			inversebaseframe[i] *= inversebaseframe[j.parent];
-		}
-	}
-*/
 
 /*
 	for(int i = 0; i < (int)hdr.num_meshes; i++){
 		struct iqmmesh &m = meshes[i];
 		consolePrintf("%s: loaded mesh: %s\n", filename, &str[m.name]);
-//        textures[i] = loadtexture(&str[m.material], 0);
-  //      if(textures[i]) printf("%s: loaded material: %s\n", filename, &str[m.material]);
 	}
 */
-	return TRUE;
-}
-
-int loadiqmanims(model_t *m, const struct iqmheader hdr, unsigned char *buf){
 	return TRUE;
 }
 
@@ -678,7 +656,7 @@ int loadModelIQM(model_t *m, char * filename){
 		goto error;
 
 	if(hdr.num_meshes > 0 && !loadiqmmeshes(m, hdr, buf)) goto error;
-	if(hdr.num_anims > 0 && !loadiqmanims(m, hdr, buf)) goto error;
+//	if(hdr.num_anims > 0 && !loadiqmanims(m, hdr, buf)) goto error;
 	fclose(f);
 	free(buf);
 	return TRUE;

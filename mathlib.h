@@ -79,4 +79,11 @@ vec_t vec4distvec(vec4_t b, vec4_t c);
 // non sqrt-d distance from one vector to another (good for comparisons)
 vec_t vec3distfastvec(vec3_t b, vec3_t c);
 vec_t vec4distfastvec(vec4_t b, vec4_t c);
+
+//todo optimize?
+//vec_t * vec3norm(vec3_t b);
+//vec_t * vec4norm(vec4_t b);
+
+void vec3norm2(vec3_t a, vec3_t b);
+void vec4norm2(vec4_t a, vec4_t b);
 #endif
