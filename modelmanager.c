@@ -11,6 +11,7 @@
 #include "shadermanager.h"
 #include "console.h"
 #include "mathlib.h"
+#include "matrixlib.h"
 #include "iqm.h"
 
 int modelcount = 0;
@@ -516,18 +517,15 @@ int loadiqmmeshes(model_t * m, const struct iqmheader hdr, unsigned char *buf){
 //    if(hdr.ofs_adjacency) lilswap((uint *)&buf[hdr.ofs_adjacency], hdr.num_triangles*sizeof(iqmtriangle)/sizeof(uint));
 
 //    meshdata = buf;
-	int nummeshes = hdr.num_meshes; //todo have multiple meshes support, including bboxes
+	int nummeshes = hdr.num_meshes; //todo have multiple meshes support
 	int numtris = hdr.num_triangles;
 	int numverts = hdr.num_vertexes;
-	//int numjoints = hdr.num_joints;
-	float *pos = 0;// = malloc(sizeof(float)*3*numverts);
-	float *norm = 0;// = malloc(sizeof(float)*3*numverts);
-	float *texcoord = 0;// = malloc(sizeof(float)*2*numverts);
-	float *tangent = 0;// = malloc(sizeof(float)*3*numverts);
-	unsigned int *blendindex = 0;// = malloc
+	float *pos = 0;
+	float *norm = 0;
+	float *texcoord = 0;
+	float *tangent = 0;
+	unsigned int *blendindex = 0;
 	unsigned int *blendweight = 0;
-//    textures = new GLuint[nummeshes];
-  //  memset(textures, 0, nummeshes*sizeof(GLuint));
 	int i;
 //	const char *str = hdr.ofs_text ? (char *)&buf[hdr.ofs_text] : "";
 	struct iqmvertexarray *vas = (struct iqmvertexarray *)&buf[hdr.ofs_vertexarrays];
@@ -639,7 +637,38 @@ int loadiqmmeshes(model_t * m, const struct iqmheader hdr, unsigned char *buf){
 
 
 
+int loadiqmjoints(model_t * m, const struct iqmheader hdr, unsigned char *buf){
+	if(!hdr.num_joints) return FALSE;
+	struct iqmjoint *joints = (struct iqmjoint*) &buf[hdr.ofs_joints];
+	if(!joints) return FALSE;
+	joint_t * myjoints = malloc(hdr.num_joints * sizeof(joint_t));
 
+	float * baseboneposeinverse = malloc(12*sizeof(float) * hdr.num_joints);
+	int i;
+	for(i = 0; i < hdr.num_joints; i++){
+		matrix4x4_t relbase, relinvbase, pinvbase, invbase;
+
+		memcpy(&myjoints[i], &joints[i], sizeof(joint_t));
+
+		//todo copy parent data and name?
+		if(myjoints[i].rotate[3] > 0) vec4mult(myjoints[i].rotate, myjoints[i].rotate, -1.0);
+		vec4norm2(myjoints[i].rotate, myjoints[i].rotate);
+		Matrix4x4_FromDoom3Joint(&relbase, myjoints[i].translate[0], myjoints[i].translate[1], myjoints[i].translate[2], myjoints[i].rotate[0], myjoints[i].rotate[1], myjoints[i].rotate[2]);
+		Matrix4x4_Invert_Simple(&relinvbase, &relbase);
+		if(myjoints[i].parent >=0){
+			Matrix4x4_FromArray12FloatD3D(&pinvbase, baseboneposeinverse + myjoints[i].parent * 12);
+			Matrix4x4_Concat(&invbase, &relinvbase, &pinvbase);
+			Matrix4x4_ToArray12FloatD3D(&invbase, baseboneposeinverse + 12*i);
+		} else {
+			Matrix4x4_ToArray12FloatD3D(&relinvbase, baseboneposeinverse+12*i);
+		}
+	}
+
+	m->bbpinverse = baseboneposeinverse;
+	m->numjoints = hdr.num_joints;
+	m->joints = myjoints;
+	return hdr.num_joints;
+}
 int loadModelIQM(model_t *m, char * filename){
 	//mostly copied from the sdk
 	FILE *f = fopen(filename, "rb");
@@ -656,6 +685,7 @@ int loadModelIQM(model_t *m, char * filename){
 		goto error;
 
 	if(hdr.num_meshes > 0 && !loadiqmmeshes(m, hdr, buf)) goto error;
+	if(hdr.num_meshes > 0 && !loadiqmjoints(m, hdr, buf)) goto error;
 //	if(hdr.num_anims > 0 && !loadiqmanims(m, hdr, buf)) goto error;
 	fclose(f);
 	free(buf);

@@ -1,6 +1,12 @@
 #ifndef MODELMANAGERHEADER
 #define MODELMANAGERHEADER
 
+typedef struct joint_s { //pretty much a copy of IQMv2 joints
+	unsigned int name;
+	int parent;
+	float translate[3], rotate[4], scale[3];
+} joint_t;
+
 
 typedef struct model_s {
 	char * name;
@@ -15,6 +21,10 @@ typedef struct model_s {
 	GLuint * tris;
 	GLuint numverts;
 	GLuint numfaces;
+
+	unsigned int numjoints;
+	joint_t *joints;
+	float * bbpinverse;
 }model_t;
 
 /* types of models ... i should do enums for these
