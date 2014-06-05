@@ -1,7 +1,20 @@
 #ifndef ANIMMANAGERHEADER
 #define ANIMMANAGERHEADER
 
+typedef struct animscene_s {
+	char * name;
+	unsigned int firstframe;
+	unsigned int framecount;
+	float framerate;
+	char loop; // also flags
+}animscene_t;
+
+
 typedef struct anim_s{
+	unsigned int numscenes;
+	animscene_t * scenelist;
+	unsigned int numposes;
+	float * posedata; // float because i dont think i need that much res... heck, even a 16bitf would work
 	char type;
 	char * name;
 	int myid;

@@ -1,4 +1,5 @@
 #include "globaldefs.h"
+#include <string.h>
 
 #include "hashtables.h"
 #include "console.h"
@@ -120,8 +121,67 @@ anim_t * createAndAddAnimRPOINT(char * name){
 //	return &animlist[addanimToList(createAndLoadanim(name))];
 }
 
+int loadiqmposes(anim_t *a, const struct iqmheader hdr, unsigned char *buf){
+	int i, k, j;
 
-int loadiqmanims(anim_t a, const struct iqmheader hdr, unsigned char *buf){
+
+
+	
+	a->numposes = hdr.num_poses;
+	a->posedata = malloc(7*hdr.num_poses*sizeof(float));
+	float *posedata = a->posedata;
+	struct iqmpose *poses = (struct iqmpose *)&buf[hdr.ofs_poses];
+	unsigned short * framedata = (unsigned short *)&buf[hdr.ofs_frames];
+	for(i = 0, k = 0; i < hdr.num_frames; i++){
+		for( j =0; j < hdr.num_poses; j++, k++){
+			struct iqmpose *p = &poses[j];
+			float rot[4];
+			posedata[k*7+0] = p->channeloffset[0]; if(p->mask&1) posedata[k*7+0] +=*framedata++ * p->channelscale[0];
+			posedata[k*7+1] = p->channeloffset[1]; if(p->mask&2) posedata[k*7+1] +=*framedata++ * p->channelscale[1];
+			posedata[k*7+2] = p->channeloffset[2]; if(p->mask&4) posedata[k*7+2] +=*framedata++ * p->channelscale[2];
+			rot[0] = p->channeloffset[3]; if(p->mask&8)  rot[0] +=*framedata++ * p->channelscale[3];
+			rot[1] = p->channeloffset[4]; if(p->mask&16) rot[1] +=*framedata++ * p->channelscale[4];
+			rot[2] = p->channeloffset[5]; if(p->mask&32) rot[2] +=*framedata++ * p->channelscale[5];
+			rot[3] = p->channeloffset[6]; if(p->mask&64) rot[3] +=*framedata++ * p->channelscale[6];
+			if(rot[3] > 0) vec4mult(rot, rot, -1.0);
+			vec4norm2(rot, rot);
+			posedata[k*7+3] = 32767.0f * rot[0];
+			posedata[k*7+4] = 32767.0f * rot[1];
+			posedata[k*7+5] = 32767.0f * rot[2];
+			posedata[k*7+6] = 32767.0f * rot[3];
+
+			//skip scale data
+			if(p->mask&128)framedata++;
+			if(p->mask&256)framedata++;
+			if(p->mask&512)framedata++;
+		}
+	}
+	//no default for 0 poses
+
+
+
+	return hdr.num_poses;
+}
+
+
+int loadiqmanimscenes(anim_t * a, const struct iqmheader hdr, unsigned char *buf){
+
+	int i;
+	a->numscenes = hdr.num_anims;
+	a->scenelist = malloc(hdr.num_anims * sizeof(animscene_t));
+	struct iqmanim * anims = (struct iqmanim *)(buf+hdr.ofs_anims);
+	const char * text = hdr.num_text && hdr.ofs_text ? (const char *)(buf + hdr.ofs_text) : "";
+	for(i = 0; i < hdr.num_anims; i++){
+		animscene_t *ascene = &a->scenelist[i];
+		struct iqmanim * anim = &anims[i];
+		ascene->name = malloc(strlen(&text[anim->name])+1); //todo maybe redo this
+		strcpy(ascene->name, &text[anim->name]);
+		ascene->firstframe = anim->first_frame;
+		ascene->framecount = anim->num_frames;
+		ascene->loop = ((anim->flags & IQM_LOOP)!= 0);
+		ascene->framerate = anim->framerate;
+	}
+	//todo default?
 /*
 	unsigned char *animdata;
 	struct iqmjoint *joints;
