@@ -5,6 +5,9 @@ typedef struct joint_s { //pretty much a copy of IQMv2 joints
 	unsigned int name;
 	int parent;
 	float translate[3], rotate[4], scale[3];
+	char setbbox;
+	vec_t bbox[6];
+	vec_t bboxp[24];
 } joint_t;
 
 
@@ -16,11 +19,11 @@ typedef struct model_s {
 	vec_t bbox[6];
 	float spheresize;
 	char type; // maybe not
-	GLfloat * interleaveddata;
+	GLfloat * interleaveddata; //only needed for the joint bboxp
 //	iqmjoint * joints;
-	GLuint * tris;
-	GLuint numverts;
-	GLuint numfaces;
+	GLuint * tris;	 //not totally needed
+	GLuint numverts; //not totally needed
+	GLuint numfaces; //not totally needed
 
 	unsigned int numjoints;
 	joint_t *joints;

@@ -596,8 +596,8 @@ int loadiqmmeshes(model_t * m, const struct iqmheader hdr, unsigned char *buf){
 	glBindBuffer(GL_ARRAY_BUFFER, myvbo->vboid);
 	glBufferData(GL_ARRAY_BUFFER, numverts * stride * sizeof(GLfloat), interleavedbuffer, GL_STATIC_DRAW);
 	myvbo->numverts = numverts;
-//	m->interleaveddata = interleavedbuffer;
-	free(interleavedbuffer);
+	m->interleaveddata = interleavedbuffer;
+//	free(interleavedbuffer);
 
 
 	setUpVBOStride(myvbo, poss, norms, tcs, tangents, blendi, blendw);
@@ -615,10 +615,9 @@ int loadiqmmeshes(model_t * m, const struct iqmheader hdr, unsigned char *buf){
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,myvbo->indicesid);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER,numtris * 3 *sizeof(GLuint), tris, GL_STATIC_DRAW);
 	myvbo->numfaces = numtris;
-	m->tris = tris;
+//	m->tris = tris;
 	m->numfaces = numtris;
-	//m->stride = 8; //todo
-//	free(tris);
+	free(tris);
 
 	consolePrintf("Model %s.iqm has %i faces and %i verts with a stride of %i\n", m->name, numtris, numverts, stride);
 
@@ -669,6 +668,76 @@ int loadiqmjoints(model_t * m, const struct iqmheader hdr, unsigned char *buf){
 	m->joints = myjoints;
 	return hdr.num_joints;
 }
+void setJointBBox(joint_t *j, float * vert){
+	vec_t *bbox = j->bbox;
+	if(!j->setbbox){
+		j->setbbox = TRUE;
+		bbox[0] = vert[0];
+		bbox[1] = vert[0];
+		bbox[2] = vert[1];
+		bbox[3] = vert[1];
+		bbox[4] = vert[2];
+		bbox[5] = vert[2];
+	} else {
+		if(vert[0] > bbox[0]) bbox[0] = vert[0];
+		else if(vert[0] < bbox[1]) bbox[1] = vert[0];
+		if(vert[1] > bbox[2]) bbox[2] = vert[1];
+		else if(vert[1] < bbox[3]) bbox[3] = vert[1];
+		if(vert[2] > bbox[4]) bbox[4] = vert[2];
+		else if(vert[2] < bbox[5]) bbox[5] = vert[2];
+	}
+}
+int loadiqmbboxes(model_t *m){
+
+	//flesh this error checking out more
+	if(!m) return FALSE;
+	if(!m->interleaveddata) return FALSE;
+	unsigned int numjoints = m->numjoints;
+	if(!numjoints) return FALSE;
+
+	if(numjoints == 1){
+		m->joints->setbbox = TRUE;
+		memcpy(m->joints->bbox, m->bbox, 6*sizeof(vec_t));
+		memcpy(m->joints->bboxp, m->bboxp, 24*sizeof(vec_t));
+		return TRUE;
+	}
+
+	vbo_t *v =returnVBOById(m->vbo);
+	if(!v) return FALSE;
+	if(v->totalstride != 14){
+		consolePrintf("model has the wrong stride for joints!\n");
+		return FALSE;
+	}
+
+	unsigned int vertcount = v->numverts;
+	GLfloat * data = m->interleaveddata;
+
+	unsigned int i;
+	unsigned char *ji;
+	unsigned char *jw;
+	for(i = 0; i < vertcount; i++){
+		unsigned int stridem = i*14;
+		ji = (unsigned char *)(&data[stridem+12]);
+		jw = (unsigned char *)(&data[stridem+13]);
+		int k;
+		for(k = 0; k < 4; k++){
+			//if the weight is over 0
+			if(jw[k]){
+				if(ji[k] > numjoints){ //todo
+				} else {
+					setJointBBox(&m->joints[ji[k]], &data[stridem]);
+				}
+			}
+		}
+	}
+	for(i = 0; i < numjoints; i++){
+		getBBoxpFromBBox(m->joints[i].bbox, m->joints[i].bboxp);
+	}
+
+
+
+	return numjoints;
+}
 int loadModelIQM(model_t *m, char * filename){
 	//mostly copied from the sdk
 	FILE *f = fopen(filename, "rb");
@@ -685,7 +754,11 @@ int loadModelIQM(model_t *m, char * filename){
 		goto error;
 
 	if(hdr.num_meshes > 0 && !loadiqmmeshes(m, hdr, buf)) goto error;
-	if(hdr.num_meshes > 0 && !loadiqmjoints(m, hdr, buf)) goto error;
+	if(hdr.num_joints > 0 && !loadiqmjoints(m, hdr, buf)) goto error;
+	if(!loadiqmbboxes(m)) goto error;
+	if(m->interleaveddata) free(m->interleaveddata);
+	m->interleaveddata = 0;
+
 //	if(hdr.num_anims > 0 && !loadiqmanims(m, hdr, buf)) goto error;
 	fclose(f);
 	free(buf);
@@ -693,6 +766,8 @@ int loadModelIQM(model_t *m, char * filename){
 	//todo
 
 	error:
+	if(m->interleaveddata) free(m->interleaveddata);
+	m->interleaveddata = 0;
 	consolePrintf("%s: error while loading\n", filename);
 //	if(buf != meshdata && buf != animdata) free(buf);
 	fclose(f);
