@@ -591,8 +591,9 @@ int walkAndAddObject(worldobject_t * o, worldleaf_t * l){
 int addObjectToWorld(worldobject_t * o){
 	model_t * m = returnModelById(o->modelid);
 	if(!m) return FALSE;
-	int vertcount = m->numverts;
-	if(!vertcount)return FALSE;
+	if(!m->vbo) return FALSE;
+//	int vertcount = m->numverts;
+//	if(!vertcount)return FALSE;
 	//walk tree and add
 	return walkAndAddObject(o, worldroot);
 }
@@ -602,8 +603,9 @@ int addEntityToWorld(int entityid){
 
 	model_t *m = returnModelById(e->modelid);
 	if(!m) return FALSE;
+	if(!m->vbo) return FALSE;
 //	if(!m->interleaveddata) return FALSE;
-	if(!m->numverts) return FALSE;
+//	if(!m->numverts) return FALSE;
 
 	worldobject_t * obj = malloc(sizeof(worldobject_t));
 	memset(obj, 0 , sizeof(worldobject_t));

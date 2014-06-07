@@ -3,6 +3,7 @@
 
 #include "globaldefs.h"
 #include "glmanager.h"
+#include "matrixlib.h"
 #include "shadermanager.h"
 #include "texturemanager.h"
 #include "framebuffermanager.h"
@@ -11,7 +12,6 @@
 #include "sdlmanager.h"
 #include "particlemanager.h"
 #include "console.h"
-#include "matrixlib.h"
 #include "viewportmanager.h"
 #include "entitymanager.h"
 #include "worldmanager.h"

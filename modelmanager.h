@@ -7,7 +7,8 @@ typedef struct joint_s { //pretty much a copy of IQMv2 joints
 	float translate[3], rotate[4], scale[3];
 	char setbbox;
 	vec_t bbox[6];
-	vec_t bboxp[24];
+	vec_t bboxp[24]; // aligned to bone
+	matrix4x4_t bbpinverse; //todo might make this a pointer in which i can free later
 } joint_t;
 
 
@@ -19,11 +20,7 @@ typedef struct model_s {
 	vec_t bbox[6];
 	float spheresize;
 	char type; // maybe not
-	GLfloat * interleaveddata; //only needed for the joint bboxp
-//	iqmjoint * joints;
-	GLuint * tris;	 //not totally needed
-	GLuint numverts; //not totally needed
-	GLuint numfaces; //not totally needed
+	GLfloat * interleaveddata; //only needed for the joint bboxp, after that its freed
 
 	unsigned int numjoints;
 	joint_t *joints;

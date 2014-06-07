@@ -7,11 +7,11 @@
 #include "hashtables.h"
 #include "texturemanager.h"
 #include "vbomanager.h"
+#include "matrixlib.h"
 #include "modelmanager.h"
 #include "shadermanager.h"
 #include "console.h"
 #include "mathlib.h"
-#include "matrixlib.h"
 #include "iqm.h"
 #include "animmanager.h"
 
@@ -91,7 +91,6 @@ int makeCubeModel(void){
 	glBufferData(GL_ARRAY_BUFFER, 8 * 8 * sizeof(GLfloat), points, GL_STATIC_DRAW);
 	myvbo->numverts = 8;
 //	m.interleaveddata = points;
-	free(points);
 
 	glEnableVertexAttribArray(POSATTRIBLOC);
 	glVertexAttribPointer(POSATTRIBLOC, 3, GL_FLOAT, GL_FALSE, 8*sizeof(GLfloat), 0);
@@ -109,9 +108,9 @@ int makeCubeModel(void){
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,myvbo->indicesid);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, 12 * 3 *sizeof(GLuint), tris, GL_STATIC_DRAW);
 	myvbo->numfaces = 12;
-	m.tris = tris;
-	m.numfaces = 12;
-	m.numverts = 8;
+//	m.tris = tris;
+//	m.numfaces = 12;
+//	m.numverts = 8;
 
 	return addModelRINT(m);
 	return TRUE;
@@ -211,8 +210,7 @@ int makeCubeModel2(void){
 	glBindBuffer(GL_ARRAY_BUFFER, myvbo->vboid);
 	glBufferData(GL_ARRAY_BUFFER, 192 * sizeof(GLfloat), points, GL_STATIC_DRAW);
 	myvbo->numverts = 24;
-	m.interleaveddata = points;
-//	free(interleavedbuffer);
+//	m.interleaveddata = points;
 
 	glEnableVertexAttribArray(POSATTRIBLOC);
 	glVertexAttribPointer(POSATTRIBLOC, 3, GL_FLOAT, GL_FALSE, 8*sizeof(GLfloat), 0);
@@ -230,9 +228,9 @@ int makeCubeModel2(void){
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,myvbo->indicesid);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, 12 * 3 *sizeof(GLuint), tris, GL_STATIC_DRAW);
 	myvbo->numfaces = 12;
-	m.tris = tris;
-	m.numfaces = 12;
-	m.numverts = 24;
+//	m.tris = tris;
+//	m.numfaces = 12;
+//	m.numverts = 24;
 	//m.stride = 8; //todo
 
 	return addModelRINT(m);
@@ -586,7 +584,7 @@ int loadiqmmeshes(model_t * m, const struct iqmheader hdr, unsigned char *buf){
 	}
 
 	m->spheresize = getSphereFromInterleavedMesh(interleavedbuffer, numverts, stride);
-	m->numverts = numverts;
+//	m->numverts = numverts;
 	getBBoxFromInterleavedMesh(interleavedbuffer, numverts, stride, m->bbox);
 	getBBoxpFromBBox(m->bbox, m->bboxp);
 
@@ -617,7 +615,7 @@ int loadiqmmeshes(model_t * m, const struct iqmheader hdr, unsigned char *buf){
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER,numtris * 3 *sizeof(GLuint), tris, GL_STATIC_DRAW);
 	myvbo->numfaces = numtris;
 //	m->tris = tris;
-	m->numfaces = numtris;
+//	m->numfaces = numtris;
 	free(tris);
 
 	consolePrintf("Model %s.iqm has %i faces and %i verts with a stride of %i\n", m->name, numtris, numverts, stride);
@@ -659,8 +657,10 @@ int loadiqmjoints(model_t * m, const struct iqmheader hdr, unsigned char *buf){
 			Matrix4x4_FromArray12FloatD3D(&pinvbase, baseboneposeinverse + myjoints[i].parent * 12);
 			Matrix4x4_Concat(&invbase, &relinvbase, &pinvbase);
 			Matrix4x4_ToArray12FloatD3D(&invbase, baseboneposeinverse + 12*i);
+			Matrix4x4_Copy(&myjoints[i].bbpinverse, &invbase);
 		} else {
 			Matrix4x4_ToArray12FloatD3D(&relinvbase, baseboneposeinverse+12*i);
+			Matrix4x4_Copy(&myjoints[i].bbpinverse, &invbase);
 		}
 	}
 
@@ -670,22 +670,24 @@ int loadiqmjoints(model_t * m, const struct iqmheader hdr, unsigned char *buf){
 	return hdr.num_joints;
 }
 void setJointBBox(joint_t *j, float * vert){
+	vec3_t outvert;
+	Matrix4x4_Transform(&j->bbpinverse, vert, outvert);
 	vec_t *bbox = j->bbox;
 	if(!j->setbbox){
 		j->setbbox = TRUE;
-		bbox[0] = vert[0];
-		bbox[1] = vert[0];
-		bbox[2] = vert[1];
-		bbox[3] = vert[1];
-		bbox[4] = vert[2];
-		bbox[5] = vert[2];
+		bbox[0] = outvert[0];
+		bbox[1] = outvert[0];
+		bbox[2] = outvert[1];
+		bbox[3] = outvert[1];
+		bbox[4] = outvert[2];
+		bbox[5] = outvert[2];
 	} else {
-		if(vert[0] > bbox[0]) bbox[0] = vert[0];
-		else if(vert[0] < bbox[1]) bbox[1] = vert[0];
-		if(vert[1] > bbox[2]) bbox[2] = vert[1];
-		else if(vert[1] < bbox[3]) bbox[3] = vert[1];
-		if(vert[2] > bbox[4]) bbox[4] = vert[2];
-		else if(vert[2] < bbox[5]) bbox[5] = vert[2];
+		if(outvert[0] > bbox[0]) bbox[0] = outvert[0];
+		else if(outvert[0] < bbox[1]) bbox[1] = outvert[0];
+		if(outvert[1] > bbox[2]) bbox[2] = outvert[1];
+		else if(outvert[1] < bbox[3]) bbox[3] = outvert[1];
+		if(outvert[2] > bbox[4]) bbox[4] = outvert[2];
+		else if(outvert[2] < bbox[5]) bbox[5] = outvert[2];
 	}
 }
 int loadiqmbboxes(model_t *m){
@@ -1031,7 +1033,7 @@ int loadModelOBJ(model_t * m, char * filename){//todo flags
 	glBindBuffer(GL_ARRAY_BUFFER,myvbo->vboid);
 	glBufferData(GL_ARRAY_BUFFER, vertcount * 8 * sizeof(GLfloat), interleavedbuffer, GL_STATIC_DRAW);
 	myvbo->numverts = vertcount;
-	m->numverts = vertcount;
+//	m->numverts = vertcount;
 //	m->interleaveddata = interleavedbuffer;
 	free(interleavedbuffer);
 
@@ -1063,12 +1065,11 @@ int loadModelOBJ(model_t * m, char * filename){//todo flags
 //	glBufferData(GL_ELEMENT_ARRAY_BUFFER,totalface * 3 *sizeof(GLuint), indicebuffer, GL_STATIC_DRAW);
 //	glBufferData(GL_ELEMENT_ARRAY_BUFFER,6 * sizeof(GLint), muhindices, GL_STATIC_DRAW);
 	myvbo->numfaces = facecount;
-	m->tris = indicebuffer;
-	m->numfaces = facecount;
+	free(indicebuffer);
+//	m->tris = indicebuffer;
+//	m->numfaces = facecount;
 //	m->stride = 8;
-//	free(indicebuffer);
 
-	//maybe use material based shading
 
 	//todo set flags in the model
 	//todo curse more at obj for being stupid
