@@ -13,6 +13,7 @@
 #include "mathlib.h"
 #include "matrixlib.h"
 #include "iqm.h"
+#include "animmanager.h"
 
 int modelcount = 0;
 int modelArrayFirstOpen = 0;
@@ -738,6 +739,9 @@ int loadiqmbboxes(model_t *m){
 
 	return numjoints;
 }
+
+extern int loadiqmposes(anim_t *a, const struct iqmheader hdr, unsigned char *buf);
+extern int loadiqmanimscenes(anim_t *a, const struct iqmheader hdr, unsigned char *buf);
 int loadModelIQM(model_t *m, char * filename){
 	//mostly copied from the sdk
 	FILE *f = fopen(filename, "rb");
@@ -755,11 +759,16 @@ int loadModelIQM(model_t *m, char * filename){
 
 	if(hdr.num_meshes > 0 && !loadiqmmeshes(m, hdr, buf)) goto error;
 	if(hdr.num_joints > 0 && !loadiqmjoints(m, hdr, buf)) goto error;
+	if(hdr.num_poses){
+		anim_t *a = createAndAddAnimRPOINT(m->name);
+		//todo actually have these have an error return
+		if(!loadiqmanimscenes(a, hdr, buf)) goto error;
+		if(!loadiqmposes(a, hdr, buf)) goto error;
+	}
 	if(!loadiqmbboxes(m)) goto error;
 	if(m->interleaveddata) free(m->interleaveddata);
 	m->interleaveddata = 0;
 
-//	if(hdr.num_anims > 0 && !loadiqmanims(m, hdr, buf)) goto error;
 	fclose(f);
 	free(buf);
 	return TRUE;
@@ -769,6 +778,7 @@ int loadModelIQM(model_t *m, char * filename){
 	if(m->interleaveddata) free(m->interleaveddata);
 	m->interleaveddata = 0;
 	consolePrintf("%s: error while loading\n", filename);
+	free(buf);
 //	if(buf != meshdata && buf != animdata) free(buf);
 	fclose(f);
 	return FALSE;

@@ -112,7 +112,7 @@ int setUpVBOStride(vbo_t * vbo, unsigned char posstride, unsigned char normstrid
 	if(!vbo) return FALSE;
 	glBindVertexArray(vbo->vaoid);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo->vboid);
-	GLuint curstride = 0;
+	size_t curstride = 0;
 	GLuint totalstridesize = totalstride * sizeof(GLfloat);
 	//todo make this more general?
 	if(posstride){

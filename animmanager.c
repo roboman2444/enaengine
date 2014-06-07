@@ -62,7 +62,7 @@ anim_t createAnim(char * name){
 	strcpy(a.name, name);
 	return a;
 }
-
+/*
 anim_t createAndLoadAnim(char * name){
 	anim_t a;
 	memset(&a, 0, sizeof(anim_t));
@@ -72,7 +72,7 @@ anim_t createAndLoadAnim(char * name){
 	a.type = 1;
 	return a;
 }
-
+*/
 int addAnimRINT(anim_t a){
 	animcount++;
 	for(; animArrayFirstOpen < animArraySize && animlist[animArrayFirstOpen].type; animArrayFirstOpen++);
@@ -111,22 +111,20 @@ anim_t * addAnimRPOINT(anim_t a){
 int createAndAddAnimRINT(char * name){
 	int m = findAnimByNameRINT(name);
 	if(m) return m;
-	return addAnimRINT(createAndLoadAnim(name));
+	return addAnimRINT(createAnim(name));
 //	return &animlist[addanimToList(createAndLoadanim(name))];
 }
 anim_t * createAndAddAnimRPOINT(char * name){
 	anim_t * m = findAnimByNameRPOINT(name);
 	if(m) return m;
-	return addAnimRPOINT(createAndLoadAnim(name));
+	return addAnimRPOINT(createAnim(name));
 //	return &animlist[addanimToList(createAndLoadanim(name))];
 }
 
 int loadiqmposes(anim_t *a, const struct iqmheader hdr, unsigned char *buf){
 	int i, k, j;
 
-
-
-	
+	//todo have a error return
 	a->numposes = hdr.num_poses;
 	a->posedata = malloc(7*hdr.num_poses*sizeof(float));
 	float *posedata = a->posedata;
@@ -166,6 +164,7 @@ int loadiqmposes(anim_t *a, const struct iqmheader hdr, unsigned char *buf){
 
 int loadiqmanimscenes(anim_t * a, const struct iqmheader hdr, unsigned char *buf){
 
+	//todo have an error return
 	int i;
 	a->numscenes = hdr.num_anims;
 	a->scenelist = malloc(hdr.num_anims * sizeof(animscene_t));

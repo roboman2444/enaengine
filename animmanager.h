@@ -42,7 +42,12 @@ int findAnimByNameRINT(char * name);
 
 int deleteAnim(int id);
 
-anim_t createAndLoadAnim(char *name);
+
+//int loadiqmposes(anim_t *a, const struct iqmheader hdr, unsigned char *buf);
+//int loadiqmanimscenes(anim_t *a, const struct iqmheader hdr, unsigned char *buf);
+
+//anim_t createAndLoadAnim(char *name);
+anim_t createAnim(char *name);
 
 
 anim_t * createAndAddAnimRPOINT(char * name);
