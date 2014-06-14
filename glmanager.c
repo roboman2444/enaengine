@@ -130,11 +130,6 @@ int glInit(void){
 //	glDepthFunc(GL_LESS);
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK);
-//	glEnable(GL_BLEND);
-//	glBlendFunc(GL_SRC_ALPHA,GL_ONE);
-//	glViewport(0, 0, 800, 600);
-//	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-//	glEnable(GL_TEXTURE_2D);
 
 	cam = createAndAddViewportRPOINT("cam", 1);
 	camid = cam->myid;
@@ -144,7 +139,6 @@ int glInit(void){
 	screenWidth = 800;
 	screenHeight = 600;
 
-//	wireshaderid = createAndAddShaderRINT("wireframe");
 	lightshaderid = createAndAddShaderRINT("deferredlight");
 	glGenBuffers(1, &instancevbo);
 	glGenBuffers(1, &instancevbo2);

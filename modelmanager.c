@@ -616,7 +616,7 @@ int loadiqmmeshes(model_t * m, const struct iqmheader hdr, unsigned char *buf){
 	myvbo->numfaces = numtris;
 //	m->tris = tris;
 //	m->numfaces = numtris;
-	free(tris);
+	//free(tris); // its the buffer
 
 	consolePrintf("Model %s.iqm has %i faces and %i verts with a stride of %i\n", m->name, numtris, numverts, stride);
 
@@ -638,6 +638,7 @@ int loadiqmmeshes(model_t * m, const struct iqmheader hdr, unsigned char *buf){
 int loadiqmjoints(model_t * m, const struct iqmheader hdr, unsigned char *buf){
 	if(!hdr.num_joints) return FALSE;
 	struct iqmjoint *joints = (struct iqmjoint*) &buf[hdr.ofs_joints];
+//	struct iqmjoint *joints = (struct iqmjoint*) (buf+hdr.ofs_joints);
 	if(!joints) return FALSE;
 	joint_t * myjoints = malloc(hdr.num_joints * sizeof(joint_t));
 
@@ -736,9 +737,6 @@ int loadiqmbboxes(model_t *m){
 	for(i = 0; i < numjoints; i++){
 		getBBoxpFromBBox(m->joints[i].bbox, m->joints[i].bboxp);
 	}
-
-
-
 	return numjoints;
 }
 
