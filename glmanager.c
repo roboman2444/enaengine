@@ -503,6 +503,7 @@ int glDrawLights(viewport_t *v){
 
 
 	GLfloat mout[16];
+
 	Matrix4x4_ToArrayFloatGL(&v->viewproj, mout);
 	glUniformMatrix4fv(shaderCurrentBound->unimat40, 1, GL_FALSE, mout);
 	Matrix4x4_ToArrayFloatGL(&v->view, mout);

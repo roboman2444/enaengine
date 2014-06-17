@@ -5,6 +5,8 @@
 uniform mat4 unimat40; //mvp
 uniform mat4 unimat41; // mv
 
+uniform vec2 uniscreentodepth;
+
 
 in vec3 posattrib;
 //in vec3 normattrib;
@@ -18,6 +20,7 @@ layout (std140) uniform uniblock0 {
 out vec3 lpos;
 out vec2 fragtexcoord;
 out vec3 mvpos;
+out float lsize;
 
 
 void main(){
@@ -27,8 +30,10 @@ void main(){
 //	fragposition = posattrib;
 //	vec3 translated = (posattrib * block0.d[gl_InstanceID].a) + block0.d[gl_InstanceID].rgb;
 	vec3 translated = (posattrib * instanceattrib.a) + instanceattrib.rgb;
-	lpos = posattrib;
+	lsize = instanceattrib.a;
+	lpos = posattrib; // worldspace of light
 	mvpos = (unimat41 * vec4(translated, 1.0)).xyz;
+//	mvpos.z = uniscreentodepth.x/ mvpos.z +uniscreentodepth.x;
 	gl_Position = unimat40 * vec4(translated, 1.0);
 //	fragtexcoord = (gl_Position.xy /gl_Position.w );
 //	fragtexcoord = vec2(gl_Position);

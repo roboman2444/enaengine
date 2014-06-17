@@ -95,7 +95,7 @@ int initGameCodeSystem(void){
 		light->type = 1;
 		light->attachmentid = entcoil->myid;
 		light->needsupdate = 1;
-		light->scale = 10.0;
+		light->scale = 20.0;
 
 	entity_t * enttinydragon = addEntityRPOINT("tinydragon");
 		enttinydragon->type = 2;
@@ -170,6 +170,8 @@ int initGameCodeSystem(void){
 		light->attachmentid = enttinydragon->myid;
 		light->needsupdate = 1;
 		light->scale = 5.0;
+		enttinydragon->pos[0] = 3.0;
+		enttinydragon->pos[2] = -3.0;
 
 	}
 
