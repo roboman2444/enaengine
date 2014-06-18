@@ -618,7 +618,6 @@ int glDrawLights(viewport_t *v){
 
 	glDepthMask(GL_TRUE);
 	glDisable(GL_BLEND);
-
 	return TRUE;
 }
 int glDrawViewport(viewport_t *v){
