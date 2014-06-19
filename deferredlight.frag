@@ -23,8 +23,8 @@ void main(){
 		vec3 pos;
 		//get the geometry information (depth, normal)
 		vec4 normaldist = texture(texture1, tc);
-//		pos.z = normaldist.a;
-		pos.z = uniscreentodepth.y / normaldist.a + uniscreentodepth.x;
+		pos.z = normaldist.a;
+		//pos.z = uniscreentodepth.y / normaldist.a + uniscreentodepth.x;
 		pos.xy = mvpos.xy * (pos.z / mvpos.z);
 
 		vec3 eyenormal = -normalize(pos);
@@ -43,7 +43,7 @@ void main(){
 
 	fragColor.rgb = clamp(dot(surfnormal, lightnormal), 0.0, 1.0) * diffuse *attenuation;
 	fragColor.a = 1.0;
-	/*if(length(mvpos.xy) < 1)*/  //fragColor.rgb += vec3(0.1);
+//	if(length(pos.xy) < 1)  fragColor.rgb += vec3(0.1);
 
 
 }

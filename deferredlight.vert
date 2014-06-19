@@ -23,8 +23,8 @@ void main(){
 	vec4 instanceattrib = uniblock0_t.ldata[gl_InstanceID];
 	vec3 translated = (posattrib * instanceattrib.a) + instanceattrib.rgb;
 	lsize = instanceattrib.a;
-	//lpos = (unimat41 * vec4(instanceattrib.xyz, 1.0)).xyz; // viewspace of light
-	lpos = instanceattrib.xyz; //(unimat41 * vec4(instanceattrib.xyz, 1.0)).xyz; // viewspace of light
+	lpos = (unimat41 * vec4(instanceattrib.xyz, 1.0)).xyz; // viewspace of light
+	//lpos = instanceattrib.xyz;
 	mvpos = (unimat41 * vec4(translated, 1.0)).xyz; //viewspace of the mvpos
 	gl_Position = unimat40 * vec4(translated, 1.0);
 }
