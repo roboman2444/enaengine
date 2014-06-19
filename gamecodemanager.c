@@ -61,9 +61,32 @@ int initGameCodeSystem(void){
 		addEntityToWorld(entteapot->myid);
 		deleteEntity(entteapot->myid);
 
+
+	entity_t * entfloor = addEntityRPOINT("floor");
+		entfloor->type = 2;
+		entfloor->modelid = createAndAddModelRINT("cube2");
+		entteapot->needsmatupdate = TRUE;
+		entfloor->texturegroupid = 0;
+		entfloor->shaderid = createAndAddShaderRINT("deferredmodel");
+		entfloor->flags = 1;
+
+		entfloor->pos[1] = -100.0;
+		entfloor->scale = 100.0;
+
+		calcEntAttachMat(entfloor); // needed because i add it to the world, and the mat needs to be updated beforehand
+		recalcEntBBox(entfloor); // needed because this is added to the world before the gamecode runs
+
+		addEntityToWorld(entfloor->myid);
+		deleteEntity(entfloor->myid);
+
+
+
 	saveWorld("world");
 	deleteWorld();
 #endif
+
+
+
 
 	entity_t * enthat = addEntityRPOINT("hat");
 		enthat->type = 2;

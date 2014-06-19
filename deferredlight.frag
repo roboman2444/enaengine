@@ -4,7 +4,7 @@
 //vec2(Far / (Far - Near), Far * Near / (Near - Far));
 uniform vec2 uniscreentodepth;
 
-in vec3 lpos; // worldspace of light
+in vec3 lpos; //viewspace of light
 in vec3 mvpos;
 in float lsize;
 //in vec2 fragtexcoord;
@@ -23,9 +23,16 @@ void main(){
 		vec3 pos;
 		//get the geometry information (depth, normal)
 		vec4 normaldist = texture(texture1, tc);
-		pos.z = normaldist.a;
-		//pos.z = uniscreentodepth.y / normaldist.a + uniscreentodepth.x;
+		pos.z = -normaldist.a;
+//		pos.z = uniscreentodepth.y / normaldist.a + uniscreentodepth.x;
 		pos.xy = mvpos.xy * (pos.z / mvpos.z);
+
+//		pos = -1.0 * pos;
+
+//		pos.z = -pos.z;
+
+//		pos.z = -pos.z;
+//		pos.xy = mvpos.xy * (pos.z / uniscreentodepth.y / mvpos.z + uniscreentodepth.x );
 
 		vec3 eyenormal = -normalize(pos);
 		vec3 lightdelta = lpos-pos;
@@ -39,11 +46,14 @@ void main(){
 //	float attenuation = 1.0/(1.0 + lsize * 2 *pow(lightdist, 2));
 //	float attenuation = clamp(1.0 - lightdist/lsize, 0.0, 1.0); attenuation *= attenuation;
 	float attenuation = clamp(1.0 - lightdist*lightdist/(lsize*lsize), 0.0, 1.0); attenuation *= attenuation;
-//	attenuation *= 50.0;
+	//float attenuation = 1.0; //attenuation *= 50.0;
 
 	fragColor.rgb = clamp(dot(surfnormal, lightnormal), 0.0, 1.0) * diffuse *attenuation;
 	fragColor.a = 1.0;
 //	if(length(pos.xy) < 1)  fragColor.rgb += vec3(0.1);
+//	fragColor.rgb += vec3(0.1);
+
+//	fragColor.rgb = lightdelta/15.0;
 
 
 }
