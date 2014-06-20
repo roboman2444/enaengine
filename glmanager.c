@@ -347,9 +347,9 @@ int drawEntitiesM(modelbatche_t * batch){
 
 //	glBindBuffer(GL_ARRAY_BUFFER, instancevbo);
 		size_t sizePerInstance = 16*sizeof(GLfloat);
-		size_t sizePerInstance2 = 12*sizeof(GLfloat);
+//		size_t sizePerInstance2 = 12*sizeof(GLfloat);
 		size_t instancedatasize = count * sizePerInstance;
-		size_t instancedatasize2 = count * sizePerInstance2;
+//		size_t instancedatasize2 = count * sizePerInstance2;
 /*
 		for(i = 0; i < 4; i++){
 			glEnableVertexAttribArray(INSTANCEATTRIBLOC+i); //tell the location
@@ -359,7 +359,8 @@ int drawEntitiesM(modelbatche_t * batch){
 */
 		unsigned int iPerUBOBlock = maxUBOSize / sizePerInstance;
 		GLfloat * instancedata = malloc(instancedatasize);
-		GLfloat * instancedata2 = malloc(instancedatasize2);
+//		GLfloat * instancedata2 = malloc(instancedatasize2);
+		GLfloat * instancedata2 = malloc(instancedatasize);
 
 
 		for(i = 0; i < count; i++){
@@ -370,9 +371,12 @@ int drawEntitiesM(modelbatche_t * batch){
 			matrix4x4_t outmat, outmatrot;
 		//	Matrix4x4_Concat(&outmat, modworld, viewproj);
 			Matrix4x4_Concat(&outmat, &cam->viewproj, &batch->matlist[i]);
-			Matrix4x4_CopyRotateOnly(&outmatrot, &outmat);
 			Matrix4x4_ToArrayFloatGL(&outmat, &instancedata[bump]);
-			Matrix4x4_ToArray12FloatGL(&outmatrot, &instancedata2[bump2]);
+
+			Matrix4x4_Concat(&outmat, &cam->view, &batch->matlist[i]);
+//			Matrix4x4_CopyRotateOnly(&outmatrot, &outmat);
+//			Matrix4x4_ToArray12FloatGL(&outmatrot, &instancedata2[bump2]);
+			Matrix4x4_ToArrayFloatGL(&outmat, &instancedata2[bump]);
 			//todo
 
 		}
@@ -382,7 +386,8 @@ int drawEntitiesM(modelbatche_t * batch){
 		free(instancedata);
 
 		glBindBuffer(GL_ARRAY_BUFFER, instancevbo2);
-		glBufferData(GL_ARRAY_BUFFER, instancedatasize2, instancedata2, GL_DYNAMIC_DRAW); // change to stream?
+//		glBufferData(GL_ARRAY_BUFFER, instancedatasize2, instancedata2, GL_DYNAMIC_DRAW); // change to stream?
+		glBufferData(GL_ARRAY_BUFFER, instancedatasize, instancedata2, GL_DYNAMIC_DRAW); // change to stream?
 		free(instancedata2);
 
 //		glDrawElementsInstanced(GL_TRIANGLES, tvbo->numfaces * 3, GL_UNSIGNED_INT, 0, count);
@@ -394,7 +399,8 @@ int drawEntitiesM(modelbatche_t * batch){
                         while(rendered < count){
 				if((rendered+torender)>count) torender = count - rendered;
 				glBindBufferRange(GL_UNIFORM_BUFFER, 0 , instancevbo, (rendered * sizePerInstance),(torender*sizePerInstance));
-				glBindBufferRange(GL_UNIFORM_BUFFER, 1 , instancevbo2, (rendered * sizePerInstance2),(torender*sizePerInstance2));
+//				glBindBufferRange(GL_UNIFORM_BUFFER, 1 , instancevbo2, (rendered * sizePerInstance2),(torender*sizePerInstance2));
+				glBindBufferRange(GL_UNIFORM_BUFFER, 1 , instancevbo2, (rendered * sizePerInstance),(torender*sizePerInstance));
 				glDrawElementsInstanced(GL_TRIANGLES, vertdrawcount, GL_UNSIGNED_INT, 0, torender);
 				rendered+=torender;
 			}
@@ -495,6 +501,8 @@ int glDrawLights(viewport_t *v){
 	glBindTexture(GL_TEXTURE_2D, df->id0);
 	glActiveTexture(GL_TEXTURE1);
 	glBindTexture(GL_TEXTURE_2D, df->id1);
+	glActiveTexture(GL_TEXTURE2);
+	glBindTexture(GL_TEXTURE_2D, df->id2);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_ONE,GL_ONE);
 	model_t * cuber = returnModelById(cubeModel);

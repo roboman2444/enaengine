@@ -6,7 +6,7 @@ uniform mat4 unimat41;
 in vec3 fragnormal;
 in vec3 fragposition;
 in vec2 fragtexCoord;
-
+in float depth;
 #ifdef DIFFTEXTURE
 	uniform sampler2D texture0;
 #endif
@@ -40,15 +40,17 @@ void main(){
 	#endif
 	#ifdef SPECTEXTURE
 		vec2 scolor = texture(texture3, fragtexCoord).rg;
+			scolor.g *= 256;
 	#else
-		vec2 scolor = vec2(0.5);
+		vec2 scolor = vec2(0.5, 20.0);
 	#endif
 
 	fragColor = vec4(dcolor,1.0);
 //	fragColor.rgb = fragnormal;
 
 	normColor.rgb = ncolor;
-	normColor.a = fragposition.z;
+//	normColor.a = fragposition.z;
+	normColor.a = depth;
 //	normColor.a = length(fragposition.xyz);
 	specColor.rg = scolor;
 }

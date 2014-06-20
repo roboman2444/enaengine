@@ -39,6 +39,7 @@ int initGameCodeSystem(void){
 		entdragon->modelid = createAndAddModelRINT("dragon");
 		entdragon->texturegroupid = 0;
 		entdragon->shaderid = createAndAddShaderRINT("deferredmodel");
+		entdragon->shaderperm = 0;
 		entdragon->flags = 1;
 
 		calcEntAttachMat(entdragon); // needed because i add it to the world, and the mat needs to be updated beforehand
@@ -114,9 +115,16 @@ int initGameCodeSystem(void){
 		entcoil->attachmentid = findEntityByNameRINT("hat");
 		entcoil->shaderperm = 1;
 
+		entity_t * entlightoffset = addEntityRPOINT("lightoffset");
+		entlightoffset->pos[2] = 3.0;
+		entlightoffset->pos[1] = 3.0;
+		entlightoffset->needsmatupdate = TRUE;
+		entlightoffset->type = 1.0;
+		entlightoffset->attachmentid = entcoil->myid;
+
 	light_t * light = addLightRPOINT("light");
 		light->type = 1;
-		light->attachmentid = entcoil->myid;
+		light->attachmentid = entlightoffset->myid;
 		light->needsupdate = 1;
 		light->scale = 20.0;
 
@@ -193,8 +201,6 @@ int initGameCodeSystem(void){
 		light->attachmentid = enttinydragon->myid;
 		light->needsupdate = 1;
 		light->scale = 5.0;
-		enttinydragon->pos[0] = 3.0;
-		enttinydragon->pos[2] = -3.0;
 
 	}
 

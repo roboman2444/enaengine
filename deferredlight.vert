@@ -14,17 +14,29 @@ in vec3 posattrib;
 layout (std140) uniform uniblock0 {
 	vec4 ldata[N];
 } uniblock0_t;
-out vec3 lpos; // light position in viewspace
+
 out vec3 mvpos; // vertex position in viewspace
-out float lsize; // size of light
+
+#ifdef DIRECTIONAL
+	out vec3 lightdirection;
+#else
+	out vec3 lpos; // light position in viewspace
+	out float lsize; // size of light
+#endif
+
 
 
 void main(){
 	vec4 instanceattrib = uniblock0_t.ldata[gl_InstanceID];
-	vec3 translated = (posattrib * instanceattrib.a) + instanceattrib.rgb;
-	lsize = instanceattrib.a;
-	lpos = (unimat41 * vec4(instanceattrib.xyz, 1.0)).xyz; // viewspace of light
-	//lpos = instanceattrib.xyz;
-	mvpos = (unimat41 * vec4(translated, 1.0)).xyz; //viewspace of the mvpos
-	gl_Position = unimat40 * vec4(translated, 1.0);
+	#ifdef DIRECTIONAL
+		lightdirection = (unimat41 * vec4(instanceattrib.xyz, 0.0)).xyz;
+		//todo figure out a method to get a FSQUAD that also works with the mvpos angle setup
+	#else
+		vec3 translated = (posattrib * instanceattrib.a) + instanceattrib.rgb;
+		lsize = instanceattrib.a;
+		lpos = (unimat41 * vec4(instanceattrib.xyz, 1.0)).xyz; // viewspace of light
+		//lpos = instanceattrib.xyz;
+		mvpos = (unimat41 * vec4(translated, 1.0)).xyz; //viewspace of the mvpos
+		gl_Position = unimat40 * vec4(translated, 1.0);
+	#endif
 }

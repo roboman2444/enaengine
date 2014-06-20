@@ -215,6 +215,8 @@ texturegroup_t createAndLoadTexturegroup(char * name){
 	return texgroup;
 }
 
+
+//SLOW, DONT USE
 void unbindTexturegroup(void){
 
 		glActiveTexture(GL_TEXTURE1);
@@ -248,6 +250,7 @@ int bindTexturegroup(texturegroup_t * texturegroup){
 			case 3: glActiveTexture(GL_TEXTURE2);break;
 			case 4: glActiveTexture(GL_TEXTURE3);break;
 			case 5: glActiveTexture(GL_TEXTURE4);break;
+			case 6: glActiveTexture(GL_TEXTURE5);break;
 			case 10: continue; break;
 			default: continue; break;
 		}
