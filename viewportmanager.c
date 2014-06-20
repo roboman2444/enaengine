@@ -8,6 +8,7 @@
 #include "matrixlib.h"
 #include "hashtables.h"
 #include "viewportmanager.h"
+#include "texturemanager.h"
 #include "framebuffermanager.h"
 #include "mathlib.h"
 int viewportsOK = 0;
@@ -414,8 +415,14 @@ int recalcViewport(viewport_t * v, vec3_t pos, vec3_t angle, float fov, float as
 	return v->viewchanged;
 }
 int generateFramebuffersForViewport(viewport_t *v){
-	v->dfbid = createAndAddFramebufferRINT(v->name, 3);
-	v->outfbid = createAndAddFramebufferRINT(v->name, 3);
+	unsigned char deferredflags[] = {2, 7, 1};
+	unsigned char deferredrb = 0;//todo
+	unsigned char deferredcount = 3;
+	unsigned char outflags[] = {6};
+	unsigned char outrb = 0;
+	unsigned char outcount = 1; //todo
+	v->dfbid = createAndAddFramebufferRINT(v->name, deferredcount, deferredrb, deferredflags);
+	v->outfbid = createAndAddFramebufferRINT(v->name, outcount, outrb, outflags);
 	//todo
 	return FALSE;
 }
@@ -444,5 +451,4 @@ int resizeViewport(viewport_t *v, int width, int height){
 	if(dfb) resizeFramebuffer(dfb, width, height);
 
 	return resizeFramebuffer(outfb, width, height);
-
 }

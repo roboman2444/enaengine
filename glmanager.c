@@ -134,7 +134,11 @@ int glInit(void){
 	cam = createAndAddViewportRPOINT("cam", 1);
 	camid = cam->myid;
 	cam->outfbid = findFramebufferByNameRINT("screen");
-	cam->dfbid = createAndAddFramebufferRINT("screend", 3);
+
+	unsigned char dflags[] = {2, 7, 1};
+	unsigned char drb = 0;
+	unsigned char dcount = 3;
+	cam->dfbid = createAndAddFramebufferRINT("screend", dcount, drb, dflags);
 	resizeViewport(cam, 800, 600);
 	screenWidth = 800;
 	screenHeight = 600;
@@ -498,11 +502,11 @@ int glDrawLights(viewport_t *v){
 //	glClearBufferfi(of->rb​, GLint drawBuffer​, GLfloat depth​, GLint stencil​);
 	glViewport(0, 0, of->width, of->height);
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, df->id0);
+	glBindTexture(GL_TEXTURE_2D, df->textures[0].id);
 	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, df->id1);
+	glBindTexture(GL_TEXTURE_2D, df->textures[1].id);
 	glActiveTexture(GL_TEXTURE2);
-	glBindTexture(GL_TEXTURE_2D, df->id2);
+	glBindTexture(GL_TEXTURE_2D, df->textures[2].id);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_ONE,GL_ONE);
 	model_t * cuber = returnModelById(cubeModel);

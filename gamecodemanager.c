@@ -115,11 +115,11 @@ int initGameCodeSystem(void){
 		entcoil->attachmentid = findEntityByNameRINT("hat");
 		entcoil->shaderperm = 1;
 
-		entity_t * entlightoffset = addEntityRPOINT("lightoffset");
+	entity_t * entlightoffset = addEntityRPOINT("lightoffset");
 		entlightoffset->pos[2] = 3.0;
 		entlightoffset->pos[1] = 3.0;
 		entlightoffset->needsmatupdate = TRUE;
-		entlightoffset->type = 1.0;
+		entlightoffset->type = 1;
 		entlightoffset->attachmentid = entcoil->myid;
 
 	light_t * light = addLightRPOINT("light");

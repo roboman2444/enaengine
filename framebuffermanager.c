@@ -5,6 +5,7 @@
 //local includes
 #include "globaldefs.h"
 #include "hashtables.h"
+#include "texturemanager.h"
 #include "framebuffermanager.h"
 
 int framebuffersOK = 0;
@@ -27,11 +28,12 @@ int initFramebufferSystem(void){
 	screen->width = 800; //todo cvar?
 	screen->height = 600;
 	screen->id = 0;
-	screen->id0 = 0;
-	screen->id1 = 0;
-	screen->id2 = 0;
+	screen->textures = malloc(sizeof(texture_t));
+	screen->textures->width = 800;
+	screen->textures->width = 600;
+	screen->textures->id = 0;
 	screen->type = 1;
-	screen->flags = 0;
+	screen->count = 1;
 //	screen->texturegroupid = 0;
 	screen->name = malloc(7);
 	sprintf(screen->name, "screen");
@@ -102,7 +104,7 @@ framebuffer_t * returnFramebufferById(int id){
 int resizeFramebuffer(framebuffer_t *fb, int width, int height){
 	if(!fb) return FALSE;
 	if(!fb->type) return FALSE;
-	if(!fb->flags){
+	if(fb->type == 1){
 		fb->width = width;
 		fb->height = height;
 		return TRUE;
@@ -111,90 +113,49 @@ int resizeFramebuffer(framebuffer_t *fb, int width, int height){
 	if(width  == fb->width)  return TRUE;
 	if(height < 1) height = 1;
 	if(width < 1) width = 1;
-	glBindFramebuffer(GL_FRAMEBUFFER, fb->id);
-	glBindTexture(GL_TEXTURE_2D, fb->id0);
-	//todo flags for hdr or not
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB/*16F*/, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
-//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-//	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, fb->id0, 0);
 
-	if(fb->flags >1){
-		glBindTexture(GL_TEXTURE_2D, fb->id1);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, width, height, 0, GL_RGBA, GL_FLOAT, NULL);
-//		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-//		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-//		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-//		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-//		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, fb->id1, 0);
-	}
-	if(fb->flags > 2){
-		glBindTexture(GL_TEXTURE_2D, fb->id2);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB/*16F*/, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
-//		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-//		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-//		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-//		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-//		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, fb->id2, 0);
+	glBindFramebuffer(GL_FRAMEBUFFER, fb->id); //do i need this?
+	int i;
+	for(i = 0; i < fb->count; i++){
+		if(!resizeTexture(&fb->textures[i], width, height)){
+			printf("Framebuffer %s resize failed at texture %i\n", fb->name, i);
+			return FALSE;
+		}
 	}
 
 	glBindRenderbuffer(GL_RENDERBUFFER, fb->rb);
 //	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height);
 	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, width, height);
 //	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, fb->rb);
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0); // do i need this?
 
 	fb->width = width;
 	fb->height = height;
 	return TRUE;
 }
 
-GLenum buffers[] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2};
-framebuffer_t createFramebuffer (char * name, unsigned int flags){
-	if(!flags) flags = 1;
+
+
+GLenum buffers[] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3, GL_COLOR_ATTACHMENT4, GL_COLOR_ATTACHMENT5, GL_COLOR_ATTACHMENT6, GL_COLOR_ATTACHMENT7};
+framebuffer_t createFramebuffer (char * name, unsigned char count, unsigned char rbflags, unsigned char * perflags){
 	framebuffer_t fb;
 	fb.type = 0; //todo make useful
 	fb.id = 0;
 	fb.width = 1;
 	fb.height = 1;
-
-
+	if(count >8) count = 8;
+	fb.count = count;
 	glGenFramebuffers(1, &fb.id);
 	glBindFramebuffer(GL_FRAMEBUFFER, fb.id);
-	glDrawBuffers(flags, buffers); //todo make this actually a count
-	glGenTextures(1, &fb.id0);
-	glBindTexture(GL_TEXTURE_2D, fb.id0);
-	//todo flags for hdr or not
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB/*16F*/, 1, 1, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, fb.id0, 0);
-
-	if(flags >1){
-		glGenTextures(1, &fb.id1);
-		glBindTexture(GL_TEXTURE_2D, fb.id1);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, 1, 1, 0, GL_RGBA, GL_FLOAT, NULL);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, fb.id1, 0);
-	}
-	if(flags > 2){
-		glGenTextures(1, &fb.id2);
-		glBindTexture(GL_TEXTURE_2D, fb.id2);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB/*16F*/, 1, 1, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, fb.id2, 0);
+	glDrawBuffers(count, buffers); //todo make this actually a count
+	fb.textures = malloc(count * sizeof(texture_t));
+	int i;
+	for(i = 0; i < count; i++){
+		fb.textures[i] = createTextureFlagsSize(perflags[i], 1, 1);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, buffers[i], GL_TEXTURE_2D, fb.textures[i].id, 0);
 	}
 
+	//todo flags
 	glGenRenderbuffers(1, &fb.rb);
 	glBindRenderbuffer(GL_RENDERBUFFER, fb.rb);
 //	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, 1, 1);
@@ -208,8 +169,8 @@ framebuffer_t createFramebuffer (char * name, unsigned int flags){
 
 	fb.name = malloc(strlen(name)+1);
 	strcpy(fb.name, name);
-	fb.type = 1;
-	fb.flags = flags;
+	fb.type = 2;
+//	fb.flags = flags;
 	return fb;
 //todo
 }
@@ -245,9 +206,9 @@ framebuffer_t * addFramebufferRPOINT(framebuffer_t framebuffer){
 	return &framebufferlist[framebufferArrayFirstOpen];
 }
 
-framebuffer_t * createAndAddFramebufferRPOINT(char * name, unsigned int type){
-	return addFramebufferRPOINT(createFramebuffer(name, type));
+framebuffer_t * createAndAddFramebufferRPOINT(char * name, unsigned char count, unsigned char rbflags, unsigned char * perflags){
+	return addFramebufferRPOINT(createFramebuffer(name, count, rbflags, perflags));
 }
-int createAndAddFramebufferRINT(char * name, unsigned int type){
-	return addFramebufferRINT(createFramebuffer(name, type));
+int createAndAddFramebufferRINT(char * name, unsigned char count, unsigned char rbflags, unsigned char * perflags){
+	return addFramebufferRINT(createFramebuffer(name, count, rbflags, perflags));
 }

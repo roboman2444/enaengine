@@ -81,6 +81,62 @@ texturegroup_t createTexturegroup(char * name, int num){
 	return texgroup;
 }
 
+char resizeTexture(texture_t *t, unsigned int width, unsigned int height){
+	if(!t->id) return FALSE;
+	if(!width || !height) return FALSE;
+	if(t->width == width && t->height == height) return FALSE;
+
+	//todo make use of a state manager for texture binds
+	glBindTexture(GL_TEXTURE_2D, t->id);
+
+	char componentflags = t->flags & 3;
+	GLint texfmt0 = GL_RGB, texfmt1 = GL_RGB;
+	switch(componentflags){
+		case 0: texfmt0 = GL_RED; break;
+		case 1: texfmt0 = GL_RG; break;
+		case 2: texfmt0 = GL_RGB; break;
+		case 3: texfmt0 = GL_RGBA; break;
+		default: break;
+	}
+
+	if(t->flags & TEXTUREFLAGFLOAT){
+		switch(componentflags){
+			case 0: texfmt1 = GL_R32F; break;
+			case 1: texfmt1 = GL_RG32F; break;
+			case 2: texfmt1 = GL_RGB32F; break;
+			case 3: texfmt1 = GL_RGBA32F; break;
+			default: break; // never hit this
+		}
+		glTexImage2D(GL_TEXTURE_2D, 0, texfmt1, width, height, 0, texfmt0, GL_FLOAT, NULL);
+	} else {
+		glTexImage2D(GL_TEXTURE_2D, 0, texfmt0, width, height, 0, texfmt0, GL_UNSIGNED_BYTE, NULL);
+	}
+	t->width = width;
+	t->height = height;
+	return TRUE;
+}
+
+
+texture_t createTextureFlagsSize(char flags, unsigned int width, unsigned int height){
+	texture_t t;
+	glGenTextures(1, &t.id);
+	t.width = 0;
+	t.height = 0;
+	t.flags = flags;
+	t.type = 0;
+	resizeTexture(&t, width, height);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+
+	//todo flags for mipmapping and stuff
+	return t;
+
+}
+
 //todo something to load all textures for group *name
 texture_t loadTexture(char * filepath, char type){
 	texture_t tex;

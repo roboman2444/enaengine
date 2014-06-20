@@ -6,9 +6,12 @@ typedef struct texture_s {
 	char type;
 	GLuint width; // could do shorts...
 	GLuint height; // could do shorts...
-	char components; //todo bitfield
+	unsigned char flags;
 }texture_t;
 
+//first two are components
+#define TEXTUREFLAGFLOAT 4
+//todo flags for mipmapping and stuff
 
 /* types of textures ... i should do enums for these
 
@@ -82,6 +85,11 @@ int deleteAllTexturegroups(void);
 int deleteTexture(texture_t tex);
 
 void unbindTexturegroup(void);
+
+
+texture_t createTextureFlagsSize(char flags, unsigned int width, unsigned int height);
+
+char resizeTexture(texture_t *t, unsigned int width, unsigned int height);
 
 #endif
 
