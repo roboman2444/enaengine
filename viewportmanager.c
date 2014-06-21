@@ -416,13 +416,24 @@ int recalcViewport(viewport_t * v, vec3_t pos, vec3_t angle, float fov, float as
 }
 int generateFramebuffersForViewport(viewport_t *v){
 	unsigned char deferredflags[] = {2, 7, 1};
-	unsigned char deferredrb = 0;//todo
+	unsigned char deferredrb = FRAMEBUFFERRBFLAGSDEPTH;//todo
 	unsigned char deferredcount = 3;
 	unsigned char outflags[] = {6};
 	unsigned char outrb = 0;
 	unsigned char outcount = 1; //todo
-	v->dfbid = createAndAddFramebufferRINT(v->name, deferredcount, deferredrb, deferredflags);
-	v->outfbid = createAndAddFramebufferRINT(v->name, outcount, outrb, outflags);
+
+	framebuffer_t * dfb;
+	framebuffer_t * outfb;
+	dfb  = createAndAddFramebufferRPOINT(v->name, deferredcount, deferredrb, deferredflags);
+	outfb = createAndAddFramebufferRPOINT(v->name, outcount, outrb, outflags);
+
+	//assuming the framebuffer is still bound
+	outfb->rb = dfb->rb;
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, outfb->rb);
+
+	v->dfbid = dfb->myid;
+	v->outfbid = outfb->myid;
+//	v->outfbid->rb = v->dfbid.rb;
 	//todo
 	return FALSE;
 }

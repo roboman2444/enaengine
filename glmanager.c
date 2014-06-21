@@ -136,7 +136,7 @@ int glInit(void){
 	cam->outfbid = findFramebufferByNameRINT("screen");
 
 	unsigned char dflags[] = {2, 7, 1};
-	unsigned char drb = 0;
+	unsigned char drb = FRAMEBUFFERRBFLAGSDEPTH;
 	unsigned char dcount = 3;
 	cam->dfbid = createAndAddFramebufferRINT("screend", dcount, drb, dflags);
 	resizeViewport(cam, 800, 600);
@@ -501,6 +501,7 @@ int glDrawLights(viewport_t *v){
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT| GL_STENCIL_BUFFER_BIT);//todo set OF to use the same renderbuffer for depth as DF
 //	glClearBufferfi(of->rb​, GLint drawBuffer​, GLfloat depth​, GLint stencil​);
 	glViewport(0, 0, of->width, of->height);
+
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, df->textures[0].id);
 	glActiveTexture(GL_TEXTURE1);

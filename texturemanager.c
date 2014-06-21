@@ -136,6 +136,61 @@ texture_t createTextureFlagsSize(char flags, unsigned int width, unsigned int he
 	return t;
 
 }
+char resizeTextureMultisample(texture_t *t, unsigned int width, unsigned int height, unsigned char samples){
+	if(!t->id) return FALSE;
+	if(!width || !height) return FALSE;
+	if(t->width == width && t->height == height) return FALSE;
+
+	//todo make use of a state manager for texture binds
+	glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, t->id);
+
+	char componentflags = t->flags & 3;
+	GLint texfmt0 = GL_RGB, texfmt1 = GL_RGB;
+	switch(componentflags){
+		case 0: texfmt0 = GL_RED; break;
+		case 1: texfmt0 = GL_RG; break;
+		case 2: texfmt0 = GL_RGB; break;
+		case 3: texfmt0 = GL_RGBA; break;
+		default: break;
+	}
+
+	if(t->flags & TEXTUREFLAGFLOAT){
+		switch(componentflags){
+			case 0: texfmt1 = GL_R32F; break;
+			case 1: texfmt1 = GL_RG32F; break;
+			case 2: texfmt1 = GL_RGB32F; break;
+			case 3: texfmt1 = GL_RGBA32F; break;
+			default: break; // never hit this
+		}
+		glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, samples, texfmt1, width, height, FALSE);
+	} else {
+		glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, samples, texfmt0, width, height, FALSE);
+	}
+	t->width = width;
+	t->height = height;
+	return TRUE;
+}
+
+
+texture_t createTextureFlagsSizeMultisample(char flags, unsigned int width, unsigned int height, unsigned char samples){
+	texture_t t;
+	glGenTextures(1, &t.id);
+	t.width = 0;
+	t.height = 0;
+	t.flags = flags;
+	t.type = 0;
+	resizeTextureMultisample(&t, width, height, samples);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+
+	//todo flags for mipmapping and stuff
+	return t;
+
+}
 
 //todo something to load all textures for group *name
 texture_t loadTexture(char * filepath, char type){
@@ -199,6 +254,8 @@ texture_t loadTexture(char * filepath, char type){
 	for(level = 0; level < 255; level++){
 		if(1<<level > tex.width && 1<<level > tex.height) break;
 	}
+
+	//todo convert this into non "legacy" mipmapping code
 	glTexImage2D(GL_TEXTURE_2D, 0, texformat, tex.width, tex.height, 0, texformat, GL_UNSIGNED_BYTE, teximage->pixels); //todo different formats
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);

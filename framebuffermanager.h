@@ -13,8 +13,18 @@ typedef struct framebuffer_s{
 	GLuint id;
 	unsigned char count;
 	unsigned char rbflags;
+	//rbflags
+	//first 3 bits are multisample count (128xmsaa ftw)
+	//7th bit is weather or not to have a depth component
+	//8th bit is weather or not to have a stencil component
+	//if neither 8th or 7th bit is set, assume not renderbuffer, or renderbuffer is handled by a seperate framebuffer
 //	int texturegroupid;
 } framebuffer_t;
+
+	#define FRAMEBUFFERRBFLAGSMSCOUNT 0b00000111
+	//three free spots for flags
+	#define FRAMEBUFFERRBFLAGSSTENCIL 0b10000000
+	#define FRAMEBUFFERRBFLAGSDEPTH 0b01000000
 
 
 typedef struct framebufferlistpoint_s {

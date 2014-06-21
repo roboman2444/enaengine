@@ -88,8 +88,10 @@ void unbindTexturegroup(void);
 
 
 texture_t createTextureFlagsSize(char flags, unsigned int width, unsigned int height);
-
 char resizeTexture(texture_t *t, unsigned int width, unsigned int height);
+
+texture_t createTextureFlagsSizeMultisample(char flags, unsigned int width, unsigned int height, unsigned char samples);
+char resizeTextureMultisample(texture_t *t, unsigned int width, unsigned int height, unsigned char samples);
 
 #endif
 

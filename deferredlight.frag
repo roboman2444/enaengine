@@ -55,4 +55,5 @@ void main(){
 	fragColor.a = 1.0;
 
 	fragColor.rgb += vec3(clamp(pow(dot(surfnormal,vhalf), gloss.y), 0.0, 1.0) * attenuation * gloss.x);
+
 }

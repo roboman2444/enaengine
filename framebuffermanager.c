@@ -87,6 +87,7 @@ int deleteFramebuffer(int id){
 
 //todo free framebuffer
 	//todo
+	free(fb->textures);
 	memset(fb, 0, sizeof(framebuffer_t));
 	if(framebufferindex < framebufferArrayFirstOpen) framebufferArrayFirstOpen = framebufferindex;
 	for(; framebufferArrayLastTaken > 0 && !framebufferlist[framebufferArrayLastTaken].type; framebufferArrayLastTaken--);
@@ -113,22 +114,45 @@ int resizeFramebuffer(framebuffer_t *fb, int width, int height){
 	if(width  == fb->width)  return TRUE;
 	if(height < 1) height = 1;
 	if(width < 1) width = 1;
+	unsigned char rbflags = fb->rbflags;
+	GLsizei samples = 0;
+	if(rbflags & FRAMEBUFFERRBFLAGSMSCOUNT){
+		samples = 1<<(rbflags & FRAMEBUFFERRBFLAGSMSCOUNT);
+	}
+
 
 	glBindFramebuffer(GL_FRAMEBUFFER, fb->id); //do i need this?
 	int i;
-	for(i = 0; i < fb->count; i++){
-		if(!resizeTexture(&fb->textures[i], width, height)){
-			printf("Framebuffer %s resize failed at texture %i\n", fb->name, i);
-			return FALSE;
+	if(samples){
+		for(i = 0; i < fb->count; i++){
+			if(!resizeTextureMultisample(&fb->textures[i], width, height, samples)){
+				printf("Framebuffer %s resize failed at texture %i\n", fb->name, i);
+				return FALSE;
+			}
+		}
+	} else {
+		for(i = 0; i < fb->count; i++){
+			if(!resizeTexture(&fb->textures[i], width, height)){
+				printf("Framebuffer %s resize failed at texture %i\n", fb->name, i);
+				return FALSE;
+			}
 		}
 	}
-
-	glBindRenderbuffer(GL_RENDERBUFFER, fb->rb);
-//	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height);
-	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, width, height);
-//	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, fb->rb);
-	glBindFramebuffer(GL_FRAMEBUFFER, 0); // do i need this?
-
+	if(rbflags & (FRAMEBUFFERRBFLAGSSTENCIL | FRAMEBUFFERRBFLAGSDEPTH)){
+		//it has a renderbuffer!
+		glBindRenderbuffer(GL_RENDERBUFFER, fb->rb);
+		GLenum fmt = GL_DEPTH_COMPONENT;
+		//only change if it has a stencil, because it has to be depth otherwise
+		if(rbflags & FRAMEBUFFERRBFLAGSSTENCIL){
+			if(rbflags & FRAMEBUFFERRBFLAGSDEPTH){
+				fmt = GL_DEPTH24_STENCIL8;
+			} else {
+				fmt = GL_STENCIL_INDEX8;
+			}
+		}
+		glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, fmt, width, height);
+	}
+//	glBindFramebuffer(GL_FRAMEBUFFER, 0); // do i need this?
 	fb->width = width;
 	fb->height = height;
 	return TRUE;
@@ -139,7 +163,7 @@ int resizeFramebuffer(framebuffer_t *fb, int width, int height){
 GLenum buffers[] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3, GL_COLOR_ATTACHMENT4, GL_COLOR_ATTACHMENT5, GL_COLOR_ATTACHMENT6, GL_COLOR_ATTACHMENT7};
 framebuffer_t createFramebuffer (char * name, unsigned char count, unsigned char rbflags, unsigned char * perflags){
 	framebuffer_t fb;
-	fb.type = 0; //todo make useful
+	fb.type = 0;
 	fb.id = 0;
 	fb.width = 1;
 	fb.height = 1;
@@ -147,32 +171,53 @@ framebuffer_t createFramebuffer (char * name, unsigned char count, unsigned char
 	fb.count = count;
 	glGenFramebuffers(1, &fb.id);
 	glBindFramebuffer(GL_FRAMEBUFFER, fb.id);
-	glDrawBuffers(count, buffers); //todo make this actually a count
+	glDrawBuffers(count, buffers);
 	fb.textures = malloc(count * sizeof(texture_t));
+	GLsizei samples = 0;
+	if(rbflags & FRAMEBUFFERRBFLAGSMSCOUNT){
+		samples = 1<<(rbflags & FRAMEBUFFERRBFLAGSMSCOUNT);
+	}
 	int i;
-	for(i = 0; i < count; i++){
-		fb.textures[i] = createTextureFlagsSize(perflags[i], 1, 1);
-		glFramebufferTexture2D(GL_FRAMEBUFFER, buffers[i], GL_TEXTURE_2D, fb.textures[i].id, 0);
+	if(samples){
+		for(i = 0; i < count; i++){
+			fb.textures[i] = createTextureFlagsSizeMultisample(perflags[i], 1, 1, samples);
+			glFramebufferTexture2D(GL_FRAMEBUFFER, buffers[i], GL_TEXTURE_2D_MULTISAMPLE, fb.textures[i].id, 0);
+		}
+	} else {
+		for(i = 0; i < count; i++){
+			fb.textures[i] = createTextureFlagsSize(perflags[i], 1, 1);
+			glFramebufferTexture2D(GL_FRAMEBUFFER, buffers[i], GL_TEXTURE_2D, fb.textures[i].id, 0);
+		}
 	}
 
-	//todo flags
-	glGenRenderbuffers(1, &fb.rb);
-	glBindRenderbuffer(GL_RENDERBUFFER, fb.rb);
-//	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, 1, 1);
-	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, 1, 1);
-//	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, fb.rb);
-	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, fb.rb);
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	fb.rb = 0;
+	if(rbflags & (FRAMEBUFFERRBFLAGSSTENCIL | FRAMEBUFFERRBFLAGSDEPTH)){
+		//it has a renderbuffer!
+		glGenRenderbuffers(1, &fb.rb);
+		glBindRenderbuffer(GL_RENDERBUFFER, fb.rb);
 
-	//todododo
-
-
+		GLenum fmt = GL_DEPTH_COMPONENT;
+		GLenum attachment = GL_DEPTH_ATTACHMENT;
+//		printf("depth ahoy\n\n\n\n\n");
+		//only change if it has a stencil, because it has to be depth otherwise
+		if(rbflags & FRAMEBUFFERRBFLAGSSTENCIL){
+			if(rbflags & FRAMEBUFFERRBFLAGSDEPTH){
+				fmt = GL_DEPTH24_STENCIL8;
+				attachment = GL_DEPTH_STENCIL_ATTACHMENT;
+			} else {
+				fmt = GL_STENCIL_INDEX8;
+				attachment = GL_STENCIL_ATTACHMENT;
+			}
+		}
+		glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, fmt, 1, 1);
+		glFramebufferRenderbuffer(GL_FRAMEBUFFER, attachment, GL_RENDERBUFFER, fb.rb);
+	}
+//	glBindFramebuffer(GL_FRAMEBUFFER, 0); // do i need this?
+	fb.rbflags = rbflags;
 	fb.name = malloc(strlen(name)+1);
 	strcpy(fb.name, name);
 	fb.type = 2;
-//	fb.flags = flags;
 	return fb;
-//todo
 }
 
 int addFramebufferRINT(framebuffer_t framebuffer){
