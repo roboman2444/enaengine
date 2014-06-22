@@ -9,6 +9,8 @@ typedef struct framebuffer_s{
 	GLuint width;
 	GLuint height;
 	texture_t *textures;
+	texture_t *multisampletextures;
+	GLuint multisampleresolveid;
 	GLuint rb;
 	GLuint id;
 	unsigned char count;
@@ -60,4 +62,6 @@ int createAndAddFramebufferRINT(char * name, unsigned char count, unsigned char 
 
 framebuffer_t createFramebuffer(char * name, unsigned char count, unsigned char rbflags, unsigned char *perflags);
 int resizeFramebuffer(framebuffer_t *fb, int width, int height);
+
+char resolveMultisampleFramebuffer(framebuffer_t *fb);
 #endif

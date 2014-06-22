@@ -11,11 +11,10 @@ in vec3 lightnormal;
 	in vec3 lpos; //viewspace of light
 #endif
 //in vec2 fragtexcoord;
-uniform sampler2D texture0;
-uniform sampler2D texture1;
-uniform sampler2D texture2;
-uniform sampler2D texture3;
-
+	uniform sampler2D texture0;
+	uniform sampler2D texture1;
+	uniform sampler2D texture2;
+	uniform sampler2D texture3;
 uniform vec2 uniscreensizefix;
 
 out vec4 fragColor;
@@ -55,5 +54,6 @@ void main(){
 	fragColor.a = 1.0;
 
 	fragColor.rgb += vec3(clamp(pow(dot(surfnormal,vhalf), gloss.y), 0.0, 1.0) * attenuation * gloss.x);
+//	fragColor.rgb = diffuse;
 
 }

@@ -118,10 +118,10 @@ int glInit(void){
 	}
 
 	glEnable(GL_MULTISAMPLE);
-	glHint(GL_LINE_SMOOTH_HINT, GL_NICEST );
-	glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST );
-	glEnable(GL_LINE_SMOOTH);
-	glEnable(GL_POLYGON_SMOOTH);
+//	glHint(GL_LINE_SMOOTH_HINT, GL_NICEST );
+//	glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST );
+//	glEnable(GL_LINE_SMOOTH);
+//	glEnable(GL_POLYGON_SMOOTH);
 	glClearDepth(1.0);
 	glClearColor(0.0, 0.0, 0.0, 0.0);
 	glDisable(GL_FOG);
@@ -136,7 +136,7 @@ int glInit(void){
 	cam->outfbid = findFramebufferByNameRINT("screen");
 
 	unsigned char dflags[] = {2, 7, 1};
-	unsigned char drb = FRAMEBUFFERRBFLAGSDEPTH;
+	unsigned char drb = FRAMEBUFFERRBFLAGSDEPTH | 2;
 	unsigned char dcount = 3;
 	cam->dfbid = createAndAddFramebufferRINT("screend", dcount, drb, dflags);
 	resizeViewport(cam, 800, 600);
@@ -152,6 +152,8 @@ int glInit(void){
 	textvbo = tvbo->myid;
 	textshaderid = createAndAddShaderRINT("text");
 	cubeModel = findModelByNameRINT("cube");
+
+//	setMSAA(16);
 
 	return TRUE; // so far so good
 }
@@ -490,7 +492,7 @@ int glDrawLights(viewport_t *v){
 //	vbo_t * lvbo = returnVBOById(lightvbo); //todo
 	if(!df || !of) return FALSE;
 
-
+	resolveMultisampleFramebuffer(df); //only resolves if multisampled
 	shaderprogram_t * shader = returnShaderById(lightshaderid);
 	shaderpermutation_t * perm = addPermutationToShader(shader, 0);
 	if(!bindShaderPerm(perm)) return FALSE;

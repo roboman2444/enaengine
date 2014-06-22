@@ -13,3 +13,8 @@ Console
 	get it rendering text better
 World
 	Disable depth testing to see weather or not my little ordering method helps
+
+
+Deferred
+	Add another posible gbuffer for "addative". This would essentially allow for objects to get their stuff like reflection, cubemap, and static lighting done without taking two passes.
+	finish directional light shading

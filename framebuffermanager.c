@@ -102,6 +102,27 @@ framebuffer_t * returnFramebufferById(int id){
 	return FALSE;
 }
 
+GLenum buffers[] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3, GL_COLOR_ATTACHMENT4, GL_COLOR_ATTACHMENT5, GL_COLOR_ATTACHMENT6, GL_COLOR_ATTACHMENT7};
+char resolveMultisampleFramebuffer(framebuffer_t *fb){
+	if(!(fb->rbflags & FRAMEBUFFERRBFLAGSMSCOUNT)) return FALSE;
+//	if(!fb->multisampletextures) return FALSE;
+	int count = fb->count;
+	if(!count) return FALSE;
+
+	unsigned int width = fb->width;
+	unsigned int height = fb->height;
+
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, fb->id);
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fb->multisampleresolveid);
+	int i;
+	for(i = 0; i < count; i++){
+		glReadBuffer(buffers[i]);
+		glDrawBuffer(buffers[i]);
+		glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+	}
+	return i;
+}
+
 int resizeFramebuffer(framebuffer_t *fb, int width, int height){
 	if(!fb) return FALSE;
 	if(!fb->type) return FALSE;
@@ -120,24 +141,8 @@ int resizeFramebuffer(framebuffer_t *fb, int width, int height){
 		samples = 1<<(rbflags & FRAMEBUFFERRBFLAGSMSCOUNT);
 	}
 
-
 	glBindFramebuffer(GL_FRAMEBUFFER, fb->id); //do i need this?
-	int i;
-	if(samples){
-		for(i = 0; i < fb->count; i++){
-			if(!resizeTextureMultisample(&fb->textures[i], width, height, samples)){
-				printf("Framebuffer %s resize failed at texture %i\n", fb->name, i);
-				return FALSE;
-			}
-		}
-	} else {
-		for(i = 0; i < fb->count; i++){
-			if(!resizeTexture(&fb->textures[i], width, height)){
-				printf("Framebuffer %s resize failed at texture %i\n", fb->name, i);
-				return FALSE;
-			}
-		}
-	}
+
 	if(rbflags & (FRAMEBUFFERRBFLAGSSTENCIL | FRAMEBUFFERRBFLAGSDEPTH)){
 		//it has a renderbuffer!
 		glBindRenderbuffer(GL_RENDERBUFFER, fb->rb);
@@ -152,7 +157,24 @@ int resizeFramebuffer(framebuffer_t *fb, int width, int height){
 		}
 		glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, fmt, width, height);
 	}
-//	glBindFramebuffer(GL_FRAMEBUFFER, 0); // do i need this?
+
+
+	int i;
+	if(samples){
+		for(i = 0; i < fb->count; i++){
+			if(!resizeTextureMultisample(&fb->multisampletextures[i], width, height, samples)){
+				printf("Framebuffer %s resolve resize failed at texture %i\n", fb->name, i);
+				return FALSE;
+			}
+		}
+		glBindFramebuffer(GL_FRAMEBUFFER, fb->multisampleresolveid); // do i need this?
+	}
+	for(i = 0; i < fb->count; i++){
+		if(!resizeTexture(&fb->textures[i], width, height)){
+			printf("Framebuffer %s resize failed at texture %i\n", fb->name, i);
+			return FALSE;
+		}
+	}
 	fb->width = width;
 	fb->height = height;
 	return TRUE;
@@ -160,7 +182,6 @@ int resizeFramebuffer(framebuffer_t *fb, int width, int height){
 
 
 
-GLenum buffers[] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3, GL_COLOR_ATTACHMENT4, GL_COLOR_ATTACHMENT5, GL_COLOR_ATTACHMENT6, GL_COLOR_ATTACHMENT7};
 framebuffer_t createFramebuffer (char * name, unsigned char count, unsigned char rbflags, unsigned char * perflags){
 	framebuffer_t fb;
 	fb.type = 0;
@@ -169,26 +190,13 @@ framebuffer_t createFramebuffer (char * name, unsigned char count, unsigned char
 	fb.height = 1;
 	if(count >8) count = 8;
 	fb.count = count;
-	glGenFramebuffers(1, &fb.id);
-	glBindFramebuffer(GL_FRAMEBUFFER, fb.id);
-	glDrawBuffers(count, buffers);
-	fb.textures = malloc(count * sizeof(texture_t));
+	if(count)fb.textures = malloc(count * sizeof(texture_t));
 	GLsizei samples = 0;
 	if(rbflags & FRAMEBUFFERRBFLAGSMSCOUNT){
 		samples = 1<<(rbflags & FRAMEBUFFERRBFLAGSMSCOUNT);
 	}
-	int i;
-	if(samples){
-		for(i = 0; i < count; i++){
-			fb.textures[i] = createTextureFlagsSizeMultisample(perflags[i], 1, 1, samples);
-			glFramebufferTexture2D(GL_FRAMEBUFFER, buffers[i], GL_TEXTURE_2D_MULTISAMPLE, fb.textures[i].id, 0);
-		}
-	} else {
-		for(i = 0; i < count; i++){
-			fb.textures[i] = createTextureFlagsSize(perflags[i], 1, 1);
-			glFramebufferTexture2D(GL_FRAMEBUFFER, buffers[i], GL_TEXTURE_2D, fb.textures[i].id, 0);
-		}
-	}
+	glGenFramebuffers(1, &fb.id);
+	glBindFramebuffer(GL_FRAMEBUFFER, fb.id);
 
 	fb.rb = 0;
 	if(rbflags & (FRAMEBUFFERRBFLAGSSTENCIL | FRAMEBUFFERRBFLAGSDEPTH)){
@@ -212,7 +220,27 @@ framebuffer_t createFramebuffer (char * name, unsigned char count, unsigned char
 		glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, fmt, 1, 1);
 		glFramebufferRenderbuffer(GL_FRAMEBUFFER, attachment, GL_RENDERBUFFER, fb.rb);
 	}
-//	glBindFramebuffer(GL_FRAMEBUFFER, 0); // do i need this?
+
+	int i;
+	if(samples && count){
+//		glFramebufferParameteri(GL_DRAW_FRAMEBUFFER, GL_FRAMEBUFFER_DEFAULT_SAMPLES, samples);
+		glDrawBuffers(count, buffers);
+		fb.multisampletextures = malloc(count * sizeof(texture_t));
+		for(i = 0; i < count; i++){
+			fb.multisampletextures[i] = createTextureFlagsSizeMultisample(perflags[i], 1, 1, samples);
+			glFramebufferTexture2D(GL_FRAMEBUFFER, buffers[i], GL_TEXTURE_2D_MULTISAMPLE, fb.multisampletextures[i].id, 0);
+		}
+		glGenFramebuffers(1, &fb.multisampleresolveid);
+		glBindFramebuffer(GL_FRAMEBUFFER, fb.multisampleresolveid); // switch over to the resolve buffer
+	}
+
+	glDrawBuffers(count, buffers);
+	for(i = 0; i < count; i++){
+		fb.textures[i] = createTextureFlagsSize(perflags[i], 1, 1);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, buffers[i], GL_TEXTURE_2D, fb.textures[i].id, 0);
+	}
+
+
 	fb.rbflags = rbflags;
 	fb.name = malloc(strlen(name)+1);
 	strcpy(fb.name, name);
