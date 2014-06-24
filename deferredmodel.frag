@@ -42,7 +42,7 @@ void main(){
 		vec2 scolor = texture(texture3, fragtexCoord).rg;
 			scolor.g *= 256;
 	#else
-		vec2 scolor = vec2(0.5, 20.0);
+		vec2 scolor = vec2(1.0, 2000.0);
 	#endif
 
 	fragColor = vec4(dcolor, scolor.r);
