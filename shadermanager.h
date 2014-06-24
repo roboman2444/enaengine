@@ -18,6 +18,7 @@ typedef struct shaderpermutation_s {
 	int univec20;
 	int uniscreensizefix;
 	int uniscreentodepth;
+	int uniint0;
 	int unifloat0;
 	int uniblock0;
 	int uniblock1;

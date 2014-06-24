@@ -8,5 +8,6 @@ int glResizeViewports(int width, int height);
 
 unsigned int screenHeight;
 unsigned int screenWidth;
+unsigned int maxMSAASamples;
 
 #endif

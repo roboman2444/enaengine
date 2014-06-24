@@ -23,7 +23,7 @@ typedef struct framebuffer_s{
 //	int texturegroupid;
 } framebuffer_t;
 
-	#define FRAMEBUFFERRBFLAGSMSCOUNT 0b00000111
+	#define FRAMEBUFFERRBFLAGSMSCOUNT 0b00001111
 	//three free spots for flags
 	#define FRAMEBUFFERRBFLAGSSTENCIL 0b10000000
 	#define FRAMEBUFFERRBFLAGSDEPTH 0b01000000

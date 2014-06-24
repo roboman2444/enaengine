@@ -32,11 +32,12 @@ void main(){
 	mat4 instanceattrib = uniblock0_t.ldata[gl_InstanceID];
 	mat4 mvmat = uniblock1_t.ldata[gl_InstanceID];
 
-	fragnormal = (mvmat * vec4(normattrib,0.0)).xyz;
+	fragnormal = normalize((mvmat * vec4(normattrib, 0.0)).xyz);
 	fragtexCoord = tcattrib;
 	#ifdef NORMTEXTURE
 		//the 0.0 cancles out the move and crap... its odd
-		vec3 tvecpre = (mvmat * vec4(tangentattrib.xyz, 0.0)).xyz;
+	//	vec3 tvecpre = (mvmat * vec4(tangentattrib.xyz, 0.0)).xyz;
+		vec3 tvecpre = normalize((mvmat * vec4(tangentattrib.xyz, 0.0)).xyz);
 		svector = tvecpre.xyz;
 		tvector = cross(tvecpre.xyz, fragnormal) * tangentattrib.w;
 	#endif

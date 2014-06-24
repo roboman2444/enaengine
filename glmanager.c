@@ -118,18 +118,26 @@ int glInit(void){
 	}
 
 	glEnable(GL_MULTISAMPLE);
-//	glHint(GL_LINE_SMOOTH_HINT, GL_NICEST );
-//	glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST );
-//	glEnable(GL_LINE_SMOOTH);
-//	glEnable(GL_POLYGON_SMOOTH);
 	glClearDepth(1.0);
 	glClearColor(0.0, 0.0, 0.0, 0.0);
 	glDisable(GL_FOG);
 	glEnable(GL_DEPTH_TEST);
-	glDepthFunc(GL_LEQUAL);
-//	glDepthFunc(GL_LESS);
+//	glDepthFunc(GL_LEQUAL);
+	glDepthFunc(GL_LESS);
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK);
+
+	int maxSamples, maxIntSamples, maxColorTextureSamples, maxDepthTextureSamples;
+	glGetIntegerv(GL_MAX_SAMPLES, &maxSamples);
+	glGetIntegerv(GL_MAX_INTEGER_SAMPLES, &maxIntSamples);
+	glGetIntegerv(GL_MAX_COLOR_TEXTURE_SAMPLES, &maxColorTextureSamples);
+	glGetIntegerv(GL_MAX_DEPTH_TEXTURE_SAMPLES, &maxDepthTextureSamples);
+	maxMSAASamples = maxSamples;
+	if(maxIntSamples < maxMSAASamples) maxMSAASamples = maxIntSamples;
+	if(maxColorTextureSamples < maxMSAASamples) maxMSAASamples = maxColorTextureSamples;
+	if(maxDepthTextureSamples < maxMSAASamples) maxMSAASamples = maxDepthTextureSamples;
+	consolePrintf("Max multisample samples: %i\n", maxMSAASamples);
+
 
 	cam = createAndAddViewportRPOINT("cam", 1);
 	camid = cam->myid;
@@ -491,10 +499,16 @@ int glDrawLights(viewport_t *v){
 	framebuffer_t *of = returnFramebufferById(v->outfbid);
 //	vbo_t * lvbo = returnVBOById(lightvbo); //todo
 	if(!df || !of) return FALSE;
-
-	resolveMultisampleFramebuffer(df); //only resolves if multisampled
 	shaderprogram_t * shader = returnShaderById(lightshaderid);
-	shaderpermutation_t * perm = addPermutationToShader(shader, 0);
+	shaderpermutation_t * perm;
+	unsigned int numsamples = df->rbflags & FRAMEBUFFERRBFLAGSMSCOUNT;
+	if(numsamples){
+		numsamples = 1<<numsamples;
+		resolveMultisampleFramebuffer(df); //only resolves if multisampled
+		perm = addPermutationToShader(shader, 2);
+	} else {
+		perm = addPermutationToShader(shader, 0);
+	}
 	if(!bindShaderPerm(perm)) return FALSE;
 
 
@@ -504,12 +518,26 @@ int glDrawLights(viewport_t *v){
 //	glClearBufferfi(of->rb​, GLint drawBuffer​, GLfloat depth​, GLint stencil​);
 	glViewport(0, 0, of->width, of->height);
 
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, df->textures[0].id);
-	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, df->textures[1].id);
-	glActiveTexture(GL_TEXTURE2);
-	glBindTexture(GL_TEXTURE_2D, df->textures[2].id);
+
+	if(numsamples){
+		glUniform1i(shaderCurrentBound->uniint0, numsamples);
+
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, df->multisampletextures[0].id);
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, df->multisampletextures[1].id);
+		glActiveTexture(GL_TEXTURE2);
+		glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, df->multisampletextures[2].id);
+	} else {
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, df->textures[0].id);
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, df->textures[1].id);
+		glActiveTexture(GL_TEXTURE2);
+		glBindTexture(GL_TEXTURE_2D, df->textures[2].id);
+	}
+
+
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_ONE,GL_ONE);
 	model_t * cuber = returnModelById(cubeModel);

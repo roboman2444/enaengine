@@ -45,12 +45,13 @@ void main(){
 		vec2 scolor = vec2(0.5, 20.0);
 	#endif
 
-	fragColor = vec4(dcolor,1.0);
+	fragColor = vec4(dcolor, scolor.r);
 //	fragColor.rgb = fragnormal;
 
-	normColor.rgb = ncolor;
+	normColor.rg = ncolor.rg;
 //	normColor.a = fragposition.z;
-	normColor.a = depth;
+	normColor.b = depth;
+	normColor.a = scolor.g;
 //	normColor.a = length(fragposition.xyz);
-	specColor.rg = scolor;
+//	specColor.rg = scolor;
 }
