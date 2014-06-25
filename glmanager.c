@@ -681,6 +681,10 @@ int glDrawViewport(viewport_t *v){
 //	glBindFramebuffer(GL_FRAMEBUFFER, of->id);
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT| GL_STENCIL_BUFFER_BIT);//todo set OF to use the same renderbuffer for depth as DF
 	glViewport(0, 0, df->width, df->height);
+
+//	glStencilFunc(GL_ALWAYS, 1, 0xFF);
+//	glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+//	glStencilMask(0xFF);
 //	glViewport(0, 0, of->width, of->height);
 
 	renderbatche_t b;
@@ -690,10 +694,15 @@ int glDrawViewport(viewport_t *v){
 	loadWorldIntoQueue(&b, v);
 	drawEntitiesR(&b);
 
+//	glStencilFunc(GL_EQUAL, 1, 0xFF);
+//	glStencilMask(0x00);
+
 	cleanupRenderbatche(&b);
 
 	glDrawLights(v);
 
+
+	//todo actually redo this sorta stuffs
 	shaderprogram_t * shader = returnShaderById(textshaderid);
 	shaderpermutation_t * perm = addPermutationToShader(shader, 0);
 	if(!bindShaderPerm(perm)) return FALSE;
