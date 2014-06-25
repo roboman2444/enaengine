@@ -177,6 +177,7 @@ int initGameCodeSystem(void){
 		enttinydragon->shaderperm = 0;
 	int i;
 
+
 	int prevatid = 0;
 	for(i = 0; i < 100; i++){
 		enttinydragon = addEntityRPOINT("bunny");
@@ -214,7 +215,9 @@ int initGameCodeSystem(void){
 		enttinydragon->pos[2] = (rand()/(double)RAND_MAX -0.5) * 16384.0;
 		enttinydragon->angle[1] = 90.0;
 
-		enttinydragon->scale = (rand()/(double)RAND_MAX) * 1.0;
+		enttinydragon->scale = (rand()/(double)RAND_MAX) * 2.0;
+//		enttinydragon->scale = 20.0;
+//		enttinydragon->scale = (rand()/(double)RAND_MAX) * vec4length(enttinydragon->pos);
 		enttinydragon->needsmatupdate = TRUE;
 		enttinydragon->modelid = createAndAddModelRINT("coil");
 		enttinydragon->shaderid = createAndAddShaderRINT("deferredmodel");
@@ -231,12 +234,13 @@ int initGameCodeSystem(void){
 
 	}
 	for(i = 0; i < 200000; i++){
-		enttinydragon = addEntityRPOINT("cube");
+		enttinydragon = addEntityRPOINT("cube2");
 		enttinydragon->type = 2;
 		enttinydragon->pos[0] = (rand()/(double)RAND_MAX -0.5) * 16384.0;
 		enttinydragon->pos[2] = (rand()/(double)RAND_MAX -0.5) * 16384.0;
 
-		enttinydragon->scale = (rand()/(double)RAND_MAX) * 2.0;
+		enttinydragon->scale = (rand()/(double)RAND_MAX) * 4.0;
+//		enttinydragon->scale =  20.0;
 		enttinydragon->needsmatupdate = TRUE;
 		enttinydragon->modelid = createAndAddModelRINT("cube");
 		enttinydragon->shaderid = createAndAddShaderRINT("deferredmodel");

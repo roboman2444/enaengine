@@ -76,6 +76,9 @@ void main(){
 		fragColor.rgb += clamp(dot(surfnormal, lightnormal), 0.0, 1.0) * diffuse * attenuation;
 		fragColor.rgb += vec3(clamp(pow(dot(surfnormal,vhalf), gloss.y), 0.0, 1.0) * attenuation * gloss.x);
 
+
+
+
 	#ifdef MULTISAMPLE
 		}
 		fragColor.rgb /= numsamples;

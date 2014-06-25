@@ -113,7 +113,41 @@ int makeCubeModel(void){
 //	m.numverts = 8;
 
 	return addModelRINT(m);
-	return TRUE;
+}
+int makeFSQuadModel(void){
+	model_t m;// = malloc(sizeof(model_T));
+//	memset(m, 0, sizeof(model_t));
+//	consolePrintf("generating cube\n");
+	m.type = 1;
+	m.name = malloc(strlen("fsquad")+1);
+	strcpy(m.name, "fsquad");
+
+	GLfloat points[16] = { -1.0, -1.0, 0.0, 0.0, 	1.0, -1.0, 1.0, 0.0,	1.0, 1.0, 1.0, 1.0, -1.0, 1.0, 0.0, 1.0 };
+	GLuint tris[6] = {0, 1, 2, 0, 2, 3};
+	vbo_t * myvbo = createAndAddVBORPOINT(m.name, 1);
+	if(!myvbo) return FALSE; // todo free and error handle
+	m.vbo = myvbo->myid;
+
+
+	glBindBuffer(GL_ARRAY_BUFFER, myvbo->vboid);
+	glBufferData(GL_ARRAY_BUFFER, 16 * sizeof(GLfloat), points, GL_STATIC_DRAW);
+	myvbo->numverts = 4;
+//	m.interleaveddata = points;
+
+	glEnableVertexAttribArray(POSATTRIBLOC);
+	glVertexAttribPointer(POSATTRIBLOC, 2, GL_FLOAT, GL_FALSE, 4*sizeof(GLfloat), 0);
+
+	glEnableVertexAttribArray(TCATTRIBLOC);
+	glVertexAttribPointer(TCATTRIBLOC, 2, GL_FLOAT, GL_FALSE, 4*sizeof(GLfloat), (void*)(2*sizeof(GLfloat)));
+
+//	setUpVBOStride(myvbo, 3, 3, 2, 0);
+
+
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,myvbo->indicesid);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6 *sizeof(GLuint), tris, GL_STATIC_DRAW);
+	myvbo->numfaces = 2;
+	return addModelRINT(m);
 }
 int makeCubeModel2(void){
 	model_t m;// = malloc(sizeof(model_T));
@@ -233,7 +267,6 @@ int makeCubeModel2(void){
 	//m.stride = 8; //todo
 
 	return addModelRINT(m);
-	return TRUE;
 }
 
 int initModelSystem(void){
@@ -247,8 +280,9 @@ int initModelSystem(void){
 //	addModelRINT("default");
 //	defaultModel = addModelToList(none);
 
-	makeCubeModel();
+	makeCubeModel(); //todo check these
 	makeCubeModel2();
+	makeFSQuadModel();
 	modelsOK = TRUE;
 	return TRUE;
 }

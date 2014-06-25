@@ -46,6 +46,8 @@ unsigned int currentflags = 0;
 GLfloat fsquadpoints[16] = {-1.0, -1.0, 0.0, 0.0,   1.0, -1.0, 1.0, 0.0,   1.0, 1.0, 1.0, 1.0,   -1.0, 1.0, 0.0, 1.0};
 GLuint rectangleindices[6] = { 0, 1, 2, 0, 2, 3};
 
+int fsquadmodel = 0;
+
 vbo_t * consoleVBO = 0; //temp
 int glShutdown(void){
 	return FALSE;
@@ -143,8 +145,9 @@ int glInit(void){
 	camid = cam->myid;
 	cam->outfbid = findFramebufferByNameRINT("screen");
 
-	unsigned char dflags[] = {2, 7, 1};
+	unsigned char dflags[] = {3, 7, 3};
 	unsigned char drb = FRAMEBUFFERRBFLAGSDEPTH | 2;
+//	unsigned char drb = 2;
 	unsigned char dcount = 3;
 	cam->dfbid = createAndAddFramebufferRINT("screend", dcount, drb, dflags);
 	resizeViewport(cam, 800, 600);
@@ -160,6 +163,7 @@ int glInit(void){
 	textvbo = tvbo->myid;
 	textshaderid = createAndAddShaderRINT("text");
 	cubeModel = findModelByNameRINT("cube");
+	fsquadmodel = findModelByNameRINT("fsquad");
 
 //	setMSAA(16);
 
@@ -474,8 +478,10 @@ int drawEntitiesR(renderbatche_t * batch){
 	return count;
 }
 void glDrawFSQuad(void){
-	glVertexPointer(2, GL_FLOAT, 0, fsquadpoints);
-	glDrawArrays(GL_TRIANGLES, 0, 2);
+	model_t * m = returnModelById(fsquadmodel);
+	vbo_t * tvbo = returnVBOById(m->vbo);
+	glBindVertexArray(tvbo->vaoid);
+	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 }
 GLuint tris[36] = {
 			0, 2, 3,
@@ -687,6 +693,18 @@ int glDrawViewport(viewport_t *v){
 	cleanupRenderbatche(&b);
 
 	glDrawLights(v);
+
+	shaderprogram_t * shader = returnShaderById(textshaderid);
+	shaderpermutation_t * perm = addPermutationToShader(shader, 0);
+	if(!bindShaderPerm(perm)) return FALSE;
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+//	glBlendFunc(GL_ONE, GL_ONE);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, df->textures[2].id);
+	glDrawFSQuad();
+	glDisable(GL_BLEND);
+
 //	glBindFramebuffer(GL_FRAMEBUFFER, of->id);
 //	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 //	glDrawFSQuad();

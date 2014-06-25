@@ -40,18 +40,27 @@ void main(){
 	#endif
 	#ifdef SPECTEXTURE
 		vec2 scolor = texture(texture3, fragtexCoord).rg;
-			scolor.g *= 256;
+		scolor.g *= 256;
 	#else
-		vec2 scolor = vec2(1.0, 2000.0);
+		vec2 scolor = vec2(0.5, 2000.0);
 	#endif
 
 	fragColor = vec4(dcolor, scolor.r);
-//	fragColor.rgb = fragnormal;
+	normColor = vec4(ncolor.rg, depth, scolor.g);
 
-	normColor.rg = ncolor.rg;
-//	normColor.a = fragposition.z;
-	normColor.b = depth;
-	normColor.a = scolor.g;
-//	normColor.a = length(fragposition.xyz);
-//	specColor.rg = scolor;
+
+
+
+	//do per material shading here
+	//rgb is addative premultiplied
+	//a is alpha
+	//example for ambient with a distance darkening
+	//usually a fog/distance darkening would be done in another pass, so you dont have any problems against stuff that isnt drawn, but this is an example to what can be done
+	//another good use for this might be a cubemap reflection shader, subsurface scattering, etc
+	vec3 add = vec3(0.1); // ambient
+	float alpha = 1.0-clamp((500.0+depth)/(500.0-10.0),0.0, 1.0);
+//	float alpha = 0.0;
+	add *=(1.0-alpha); //needs the premult here, since i dont do it later
+//	add += alpha;
+	specColor = vec4(add, alpha);
 }

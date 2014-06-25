@@ -415,7 +415,7 @@ int recalcViewport(viewport_t * v, vec3_t pos, vec3_t angle, float fov, float as
 	return v->viewchanged;
 }
 int generateFramebuffersForViewport(viewport_t *v){
-	unsigned char deferredflags[] = {2, 7, 1};
+	unsigned char deferredflags[] = {3, 7, 3};
 	unsigned char deferredrb = FRAMEBUFFERRBFLAGSDEPTH;//todo
 	unsigned char deferredcount = 3;
 	unsigned char outflags[] = {6};
