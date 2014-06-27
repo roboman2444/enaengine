@@ -510,7 +510,8 @@ int glDrawLights(viewport_t *v){
 	unsigned int numsamples = df->rbflags & FRAMEBUFFERRBFLAGSMSCOUNT;
 	if(numsamples){
 		numsamples = 1<<numsamples;
-		resolveMultisampleFramebuffer(df); //only resolves if multisampled
+//		resolveMultisampleFramebuffer(df); //only resolves if multisampled
+		resolveMultisampleFramebufferSpecify(df, 4);
 		perm = addPermutationToShader(shader, 2);
 	} else {
 		perm = addPermutationToShader(shader, 0);

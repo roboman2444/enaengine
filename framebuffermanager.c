@@ -122,6 +122,28 @@ char resolveMultisampleFramebuffer(framebuffer_t *fb){
 	}
 	return i;
 }
+char resolveMultisampleFramebufferSpecify(framebuffer_t *fb, unsigned int buffer){
+	if(!(fb->rbflags & FRAMEBUFFERRBFLAGSMSCOUNT)) return FALSE;
+//	if(!fb->multisampletextures) return FALSE;
+	int count = fb->count;
+	if(!count) return FALSE;
+	if(!buffer) return FALSE;
+
+	unsigned int width = fb->width;
+	unsigned int height = fb->height;
+
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, fb->id);
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fb->multisampleresolveid);
+	int i;
+	for(i = 0; i < count; i++){
+		if(buffer & 1<<i){
+			glReadBuffer(buffers[i]);
+			glDrawBuffer(buffers[i]);
+			glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+		}
+	}
+	return i;
+}
 
 int resizeFramebuffer(framebuffer_t *fb, int width, int height){
 	if(!fb) return FALSE;

@@ -64,4 +64,5 @@ framebuffer_t createFramebuffer(char * name, unsigned char count, unsigned char 
 int resizeFramebuffer(framebuffer_t *fb, int width, int height);
 
 char resolveMultisampleFramebuffer(framebuffer_t *fb);
+char resolveMultisampleFramebufferSpecify(framebuffer_t *fb, unsigned int buffer);
 #endif

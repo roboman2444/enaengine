@@ -57,7 +57,7 @@ void main(){
 	//example for ambient with a distance darkening
 	//usually a fog/distance darkening would be done in another pass, so you dont have any problems against stuff that isnt drawn, but this is an example to what can be done
 	//another good use for this might be a cubemap reflection shader, subsurface scattering, etc
-	vec3 add = vec3(0.1); // ambient
+	vec3 add = 0.1*dcolor.rgb; // ambient
 	float alpha = 1.0-clamp((500.0+depth)/(500.0-10.0),0.0, 1.0);
 //	float alpha = 0.0;
 	add *=(1.0-alpha); //needs the premult here, since i dont do it later
