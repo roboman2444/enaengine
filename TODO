@@ -18,3 +18,7 @@ World
 Deferred
 	Add another posible gbuffer for "addative". This would essentially allow for objects to get their stuff like reflection, cubemap, and static lighting done without taking two passes.
 	finish directional light shading
+Entities
+	Add into a SEPERATE quadtree
+	walk all quadtrees together, only diviate when paths diverge
+	change quadtree check algorithm to add all entities if the entire quadtree bbox checks out, dont bother checking ent bboxes

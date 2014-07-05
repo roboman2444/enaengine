@@ -188,6 +188,29 @@ int glDrawModel(model_t * model, matrix4x4_t * modworld, matrix4x4_t * viewproj)
 	totalcount++;
 	return tvbo->numfaces;
 }
+int addAllChildrenLeafIntoQueues(worldleaf_t *l, renderbatche_t * forwardbatch, renderbatche_t * deferredbatch){
+	int num = l->numobjects;
+	worldobject_t * list = l->list;
+	int mynum = 0;
+	int i;
+	for(i = 0; i < num; i++){
+		if(list[i].flags & DEFERREDFLAG)
+			addObjectToRenderbatche(&list[i], deferredbatch);
+		if(list[i].flags & FORWARDFLAG)
+			addObjectToRenderbatche(&list[i], forwardbatch);
+		mynum++;
+	}
+
+	worldleaf_t **children = l->children;
+
+	int j;
+	for(j = 0; j < 4; j++){
+		if(children[j]){
+			mynum+= addAllChildrenLeafIntoQueues(children[j], forwardbatch, deferredbatch);
+		}
+	}
+	return mynum;
+}
 int loadLeafIntoQueues(worldleaf_t * l, renderbatche_t * forwardbatch, renderbatche_t * deferredbatch, viewport_t *v){
 	int num = l->numobjects;
 	int mynum=0;
@@ -214,9 +237,22 @@ int loadLeafIntoQueues(worldleaf_t * l, renderbatche_t * forwardbatch, renderbat
 	int j;
 	for(j = 0; j < 4; j++){
 		i = v->dir[j];
+
+/*
+		if(children[i]){
+			int result = testBBoxPInFrustumCheckWhole(v, children[i]->bboxp);
+			if(result == 1){
+				mynum+= loadLeafIntoQueues(children[i], forwardbatch, deferredbatch, v);
+			} else if(result ==2){
+				addAllChildrenLeafIntoQueues(children[i], forwardbatch, deferredbatch);
+			}
+		}
+*/
+
 		if(children[i] && testBBoxPInFrustum(v, children[i]->bboxp)){
 			mynum+= loadLeafIntoQueues(children[i], forwardbatch, deferredbatch, v);
 		}
+
 	}
 
 	return mynum;
@@ -703,6 +739,8 @@ int glDrawViewport(viewport_t *v){
 	glDrawLights(v);
 
 
+
+
 	//todo actually redo this sorta stuffs
 	shaderprogram_t * shader = returnShaderById(textshaderid);
 	shaderpermutation_t * perm = addPermutationToShader(shader, 0);
@@ -714,6 +752,9 @@ int glDrawViewport(viewport_t *v){
 	glBindTexture(GL_TEXTURE_2D, df->textures[2].id);
 	glDrawFSQuad();
 	glDisable(GL_BLEND);
+
+
+
 
 //	glBindFramebuffer(GL_FRAMEBUFFER, of->id);
 //	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
@@ -830,8 +871,6 @@ int glMainDraw(void){
 	glDrawConsole();
 
 
-//	free(bleh);
-//	free(blah);
 	glDisable(GL_BLEND);
 	glEnable(GL_DEPTH_TEST);
 

@@ -237,6 +237,38 @@ int testBBoxPInFrustum(viewport_t * v, vec_t * points){
 
 	return TRUE;
 }
+int testBBoxPInFrustumCheckWhole(viewport_t * v, vec_t * points){
+	int i;
+	vec_t * n;
+	float d;
+	int mode = 0;
+	for(i = 0; i < 6; i++){
+		n = v->frustum[i].norm;
+		d = v->frustum[i].d;
+		int j;
+		if(mode){
+			for(j = 0; j < 8; j++){
+				vec_t * p = &points[j*3];
+				float dist = vec3dot(n, p) + d;
+				if(dist > 0.0) break; // point infront of the plane
+			}
+			if(j==8) return FALSE; //all the points failed the frustum
+
+		} else {
+			int correct = 0;
+			for(j = 0; j < 8; j++){
+				vec_t * p = &points[j*3];
+				float dist = vec3dot(n, p) + d;
+				if(dist > 0.0) correct++;
+			}
+			if(!correct) return FALSE; // all points failed plane
+			if(correct !=8 ) mode = 1; //one point didnt make plane, switch to normal mode
+		}
+	}
+	if(mode) return TRUE;
+
+	return 2;
+}
 int testSphereInFrustumNearPlane(viewport_t * v, vec_t * p, float size){
 	int i;
 	vec_t * n;

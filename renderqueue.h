@@ -24,6 +24,20 @@ typedef struct renderbatche_s {
 	shaderbatche_t * shaderbatch;
 	//int something;
 }renderbatche_t; // the e stands for entity
+
+
+
+
+
+typedef enum renderlisttype_s {
+	RENDERENT,
+	RENDERTRI
+} renderlisttype_t;
+
+typedef struct renderlist_s {
+	renderlisttype_t * types;
+	void ** renderlist;
+} renderlist_t;
 /*
 typedef struct lightbatche_s {
 	int count;
