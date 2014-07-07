@@ -8,7 +8,7 @@ typedef struct shaderpermutation_s {
 	struct shaderpermutation_s * next;
 	GLuint id;
 	char compiled;
-	int permutation;
+	unsigned int permutation;
 	int unimat40;
 	int unimat41;
 	//int unimat42;
@@ -64,15 +64,17 @@ shaderprogram_t * returnShaderById(int id);
 shaderprogram_t * addShaderRPOINT(shaderprogram_t shader);
 int addShaderRINT(shaderprogram_t shader);
 
-int deleteShader(int id);
+int deleteShaderPermutation(shaderprogram_t * shader, unsigned int permutation);
+int deleteShaderProgram(int id);
+int deleteAllShaderPrograms(void);
 
 shaderprogram_t * createAndAddShaderRPOINT(char * name);
 int createAndAddShaderRINT(char * name);
 
 int printProgramLogStatus(int id);
 int getProgramLogStatus(int id, char ** output);
-shaderpermutation_t * findShaderPermutation(shaderprogram_t * shader, int permutation);
-shaderpermutation_t * addPermutationToShader(shaderprogram_t * shader, int permutation);
+shaderpermutation_t * findShaderPermutation(shaderprogram_t * shader, unsigned int permutation);
+shaderpermutation_t * addPermutationToShader(shaderprogram_t * shader, unsigned int permutation);
 
 
 int bindShaderPerm(shaderpermutation_t * perm);

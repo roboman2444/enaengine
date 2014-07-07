@@ -43,7 +43,31 @@ shaderprogram_t * findShaderByNameRPOINT(char * name){
 int findShaderByNameRINT(char * name){
 	return findByNameRINT(name, shaderhashtable);
 }
-int deleteShader(int id){
+
+int deleteShaderPermutation(shaderprogram_t * s, unsigned int permutation){
+	if(!s) return FALSE;
+	unsigned int hashindex = (permutation * 0x1021) & (PERMHASHSIZE - 1);
+	shaderpermutation_t *p, *j = 0;
+	for (p = &s->permhashtable[hashindex]; p; j = p, p = p->next){
+		if(p->permutation == permutation){
+			if(p->id) glDeleteProgram(p->id);
+			if(!j){//we are at the first one... have to copy, not move
+				j = p->next;
+				memcpy(p, j, sizeof(shaderpermutation_t));
+				memset(j, 0, sizeof(shaderpermutation_t));
+				free(j);
+			} else {
+				j->next = p->next;
+				memset(p, 0, sizeof(shaderpermutation_t));
+				free(p);
+			}
+			return TRUE;
+		}
+	}
+	return FALSE;
+}
+
+int deleteShaderProgram(int id){
 	int shaderindex = (id & 0xFFFF);
 	shaderprogram_t * shader = &shaderlist[shaderindex];
 	if(shader->myid != id) return FALSE;
@@ -51,13 +75,48 @@ int deleteShader(int id){
 	deleteFromHashTable(shader->name, id, shaderhashtable);
 	free(shader->name);
 
-	//todo
-	//much todo
+	int i;
+	shaderpermutation_t *p, *j;
+	for(i = 0; i < PERMHASHSIZE; i++){
+		int del = 0;
+		for (p = &shader->permhashtable[i]; p; p = j){
+			j = p->next;
+			//delete the program
+			if(p->id) glDeleteProgram(p->id);
+			//dont try to free the hashtable part, only the Linked list off of it
+			if(del)free(p);
+			del = 1;
+		}
+	}
+	if(shader->defines){
+		for(i = 0; i < shader->numdefines; i++){
+			if(shader->defines[i]) free(shader->defines[i]);
+		}
+		free(shader->defines);
+	}
+	if(shader->fragstring) free(shader->fragstring);
+	if(shader->vertstring) free(shader->vertstring);
+	if(shader->geomstring) free(shader->geomstring);
+
+
+
 
 	memset(shader, 0, sizeof(shaderprogram_t));
 	if(shaderindex < shaderArrayFirstOpen) shaderArrayFirstOpen = shaderindex;
 	for(; shaderArrayLastTaken > 0 && !shaderlist[shaderArrayLastTaken].type; shaderArrayLastTaken--);
 	return TRUE;
+}
+
+int deleteAllShaderPrograms(void){
+	int count = 0;
+	int i;
+	for(i = 0; i < shaderArrayLastTaken; i++){
+		if(shaderlist[i].type){
+			deleteShaderProgram(shaderlist[i].myid);
+			count++;
+		}
+	}
+	return count;
 }
 
 shaderprogram_t * returnShaderById(int id){
@@ -102,7 +161,7 @@ shaderprogram_t * addShaderRPOINT(shaderprogram_t shader){
 
 
 //shaderpermutation_t compilePermutation(shaderprogram_t * shader, int permutation){
-shaderpermutation_t createPermutation(shaderprogram_t * shader, int permutation){
+shaderpermutation_t createPermutation(shaderprogram_t * shader, unsigned int permutation){
 //	consolePrintf("readying shader %s with permutation %i", shader->name, permutation);
 	shaderpermutation_t perm;
 	memset(&perm, 0 , sizeof(shaderpermutation_t));
@@ -211,6 +270,12 @@ shaderpermutation_t createPermutation(shaderprogram_t * shader, int permutation)
 	glLinkProgram(programid);
 	perm.id = programid;
 
+
+
+
+	glDeleteShader(vertid);
+	glDeleteShader(fragid); //get rid of unused shader stuffs
+
 	//TODO errorcheck
 	glGetProgramiv(programid, GL_LINK_STATUS, &status);
 	if(status == GL_FALSE){
@@ -254,6 +319,8 @@ shaderpermutation_t createPermutation(shaderprogram_t * shader, int permutation)
 	for(i = 0; i < 16; i++){
 		sprintf(texstring, "texture%i", i);
 		perm.texturespos[i] = glGetUniformLocation(programid, texstring);
+		glUniform1i(perm.texturespos[i], i);
+//		consolePrintf("texture space %i at uniform loc %i\n", i, perm->texturespos[i]);
 	}
 	free(texstring);
 
@@ -485,7 +552,7 @@ shaderprogram_t * createAndAddShaderRPOINT(char * name){
 	if(s) return s;
 	return addShaderRPOINT(createAndReadyShader(name));
 }
-shaderpermutation_t * addPermutationToShader(shaderprogram_t * shader, int permutation){
+shaderpermutation_t * addPermutationToShader(shaderprogram_t * shader, unsigned int permutation){
 	if(!shader) return FALSE;
 	unsigned int hashindex = (permutation * 0x1021) & (PERMHASHSIZE - 1);
 	if(!shader->permhashtable[hashindex].compiled){
@@ -506,7 +573,7 @@ shaderpermutation_t * addPermutationToShader(shaderprogram_t * shader, int permu
 	return newp;
 }
 
-shaderpermutation_t * findShaderPermutation(shaderprogram_t * shader, int permutation){
+shaderpermutation_t * findShaderPermutation(shaderprogram_t * shader, unsigned int permutation){
 	if(!shader) return FALSE;
 	unsigned int hashindex = (permutation * 0x1021) & (PERMHASHSIZE - 1);
 	shaderpermutation_t *p;
@@ -529,13 +596,6 @@ int bindShaderPerm(shaderpermutation_t * perm){
 	if(perm->compiled < 2) return FALSE;
 	shaderCurrentBound = perm;
 	glUseProgram(perm->id);
-//set texture spaces
-	int i;
-	GLint *tp = &perm->texturespos[0];
-	for(i = 0; i < 16; i++){
-		if(tp[i] > -1) glUniform1i(tp[i], i);
-//		consolePrintf("texture space %i at uniform loc %i\n", i, perm->texturespos[i]);
-	}
 	//todo error check
 	return TRUE;
 }
