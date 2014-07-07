@@ -486,10 +486,7 @@ int drawEntitiesS(shaderbatche_t * batch){
 	int i;
 	//stuff here
 	shaderprogram_t * shader = returnShaderById(batch->shaderid);
-//	if(!shader) return FALSE; it does this anyway when i ask for perm
-//	shaderpermutation_t * perm = findShaderPermutation(shader, batch->shaderperm);
-//	if(!perm) return FALSE;
-//	if(!perm) perm = addPermutationToShader(shader, batch->shaderperm);
+	//todo have something to load the shader if that check fails
 
 	shaderpermutation_t * perm = addPermutationToShader(shader, batch->shaderperm);
 	if(!bindShaderPerm(perm)) return FALSE;

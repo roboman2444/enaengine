@@ -4,6 +4,10 @@
 #include "sdlmanager.h"
 #include "console.h"
 
+
+//temporary
+extern int deleteAllShaderPrograms(void);
+
 //local vars
 SDL_Surface *surface;
 const SDL_VideoInfo *videoInfo;
@@ -109,6 +113,9 @@ int sdlCheckEvent(void){
 						if(consoleoffset <0) consoleoffset = 0;
 						consoleDisplayNeedsUpdate = 1;
 		                	break;
+					case SDLK_s:
+						deleteAllShaderPrograms();
+					break;
 					default:
 					break;
 				}
