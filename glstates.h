@@ -1,26 +1,17 @@
 #ifndef GLSTATESHEADER
 #define GLSTATESHEADER
 
+#define STATESENABLEDEPTH 1
+#define STATESENABLEBLEND 2
+#define STATESENABLECULLFACE 4
+#define STATESENABLEMULTISAMPLE 8
+#define STATESENABLEALPHATEST 16
 
-#define FLAG_BLEND	1
-#define FLAG_DEPTHTEST 	2
-#define FLAG_DEPTHMASK 	4
-#define FLAG_CULLFACE	8
-#define FLAG_CULLSIDE	16
+void statesBlendFunc(const GLenum source, const GLenum dest);
+void statesDepthFunc(const GLenum dfunc);
+void statesCullFace(const GLenum face);
 
-
-char glcurrentstate;
-char glcurrentactivetexture; //todo
-
-void glStatesSetFlag(char flag); //best way to do it... all at once
-
-//todo all of these
-void glStatesBlend(GLboolean flag);
-void glStatesDepthTest(GLboolean flag);
-void glStatesDepthMask(GLboolean flag);
-void glStatesCullFace(GLboolean flag);
-void glStatesCullFaceSide(GLboolean flag);
-
-
+void statesEnable(GLenum en);
+void statesDisable(GLenum en);
 
 #endif

@@ -2,7 +2,7 @@ Text-
 	Manage old text and remove it
 Renderbatch
 	Renderbatch with flags (transparency, blending, depth test, depth mask, etc)
-		- state flags in glmanager for less switching around
+		- state flags for less switching around
 	Generic "shove vertex and indice data here" renderbatch
 	Generic "shove VAO here" renderbatch
 Lights
@@ -13,11 +13,10 @@ Console
 	get it rendering text better
 World
 	Disable depth testing to see weather or not my little ordering method helps
-
-
 Deferred
-	Add another posible gbuffer for "addative". This would essentially allow for objects to get their stuff like reflection, cubemap, and static lighting done without taking two passes.
 	finish directional light shading
+Forward
+	add forward pipeline
 Entities
 	Add into a SEPERATE quadtree
 	walk all quadtrees together, only diviate when paths diverge
