@@ -15,6 +15,11 @@ int framebufferArrayLastTaken = -1;
 int framebufferArraySize = 0;
 framebuffer_t *framebufferlist;
 
+
+
+GLuint currentfbwidth=0, currentfbheight =0;
+GLuint currentfb=0;
+
 hashbucket_t framebufferhashtable[MAXHASHBUCKETS];
 
 extern framebuffer_t * addFramebufferRPOINT(framebuffer_t fb);
@@ -306,4 +311,19 @@ framebuffer_t * createAndAddFramebufferRPOINT(char * name, unsigned char count, 
 }
 int createAndAddFramebufferRINT(char * name, unsigned char count, unsigned char rbflags, unsigned char * perflags){
 	return addFramebufferRINT(createFramebuffer(name, count, rbflags, perflags));
+}
+
+void bindFramebuffer(framebuffer_t *fb){
+	GLuint id = fb->id;
+	if(id != currentfb){
+		currentfb = id;
+		glBindFramebuffer(GL_FRAMEBUFFER, id);
+	}
+	GLuint w = fb->width;
+	GLuint h = fb->height;
+	if(w != currentfbwidth || h != currentfbheight){
+		glViewport(0, 0, w, h);
+		currentfbwidth = w;
+		currentfbheight = h;
+	}
 }

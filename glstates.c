@@ -5,7 +5,9 @@
 
 GLenum blendsource;
 GLenum blenddest;
+
 GLenum depthfunc;
+
 GLenum cullface;
 
 char enabledstates = 0;
@@ -27,46 +29,122 @@ void statesCullFace(const GLenum face){
 	cullface = face;
 }
 
-
+void statesEnableForce(GLenum en){
+	switch(en){
+		case GL_DEPTH_TEST:
+			enabledstates = enabledstates | STATESENABLEDEPTH;
+		break;
+		case GL_BLEND:
+			enabledstates = enabledstates | STATESENABLEBLEND;
+		break;
+		case GL_CULL_FACE:
+			enabledstates = enabledstates | STATESENABLECULLFACE;
+		break;
+		case GL_MULTISAMPLE:
+			enabledstates = enabledstates | STATESENABLEMULTISAMPLE;
+		break;
+		case GL_ALPHA_TEST:
+			enabledstates = enabledstates | STATESENABLEALPHATEST;
+		break;
+		default:
+		break;
+	}
+	glEnable(en);
+}
 
 void statesEnable(GLenum en){
 	switch(en){
 		case GL_DEPTH_TEST:
-			if(!(enabledstates & STATESENABLEDEPTH)) glEnable(en);
+			if(!(enabledstates & STATESENABLEDEPTH)){
+				enabledstates = enabledstates | STATESENABLEDEPTH;
+				glEnable(en);
+			}
 		break;
 		case GL_BLEND:
-			if(!(enabledstates & STATESENABLEBLEND)) glEnable(en);
+			if(!(enabledstates & STATESENABLEBLEND)){
+				enabledstates = enabledstates | STATESENABLEBLEND;
+				glEnable(en);
+			}
 		break;
 		case GL_CULL_FACE:
-			if(!(enabledstates & STATESENABLECULLFACE)) glEnable(en);
+			if(!(enabledstates & STATESENABLECULLFACE)){
+				enabledstates = enabledstates | STATESENABLECULLFACE;
+				glEnable(en);
+			}
 		break;
 		case GL_MULTISAMPLE:
-			if(!(enabledstates & STATESENABLEMULTISAMPLE)) glEnable(en);
+			if(!(enabledstates & STATESENABLEMULTISAMPLE)){
+				enabledstates = enabledstates | STATESENABLEMULTISAMPLE;
+				glEnable(en);
+			}
 		break;
 		case GL_ALPHA_TEST:
-			if(!(enabledstates & STATESENABLEALPHATEST)) glEnable(en);
+			if(!(enabledstates & STATESENABLEALPHATEST)){
+				enabledstates = enabledstates | STATESENABLEALPHATEST;
+				glEnable(en);
+			}
 		break;
 		default:
 			glEnable(en);
 		break;
 	}
 }
+
+
+void statesDisableForce(GLenum en){
+	switch(en){
+		case GL_DEPTH_TEST:
+			enabledstates = enabledstates & (~STATESENABLEDEPTH);
+		break;
+		case GL_BLEND:
+			enabledstates = enabledstates & (~STATESENABLEBLEND);
+		break;
+		case GL_CULL_FACE:
+			enabledstates = enabledstates & (~STATESENABLECULLFACE);
+		break;
+		case GL_MULTISAMPLE:
+			enabledstates = enabledstates & (~STATESENABLEMULTISAMPLE);
+		break;
+		case GL_ALPHA_TEST:
+			enabledstates = enabledstates & (~STATESENABLEALPHATEST);
+		break;
+		default:
+		break;
+	}
+	glDisable(en);
+}
+
 void statesDisable(GLenum en){
 	switch(en){
 		case GL_DEPTH_TEST:
-			if(enabledstates & STATESENABLEDEPTH) glDisable(en);
+			if(enabledstates & STATESENABLEDEPTH){
+				enabledstates = enabledstates & (~STATESENABLEDEPTH); // better way of doing this?
+				glDisable(en);
+			}
 		break;
 		case GL_BLEND:
-			if(enabledstates & STATESENABLEBLEND) glDisable(en);
+			if(enabledstates & STATESENABLEBLEND){
+				enabledstates = enabledstates & (~STATESENABLEBLEND); // better way of doing this?
+				glDisable(en);
+			}
 		break;
 		case GL_CULL_FACE:
-			if(enabledstates & STATESENABLECULLFACE) glDisable(en);
+			if(enabledstates & STATESENABLECULLFACE){
+				enabledstates = enabledstates & (~STATESENABLECULLFACE); // better way of doing this?
+				glDisable(en);
+			}
 		break;
 		case GL_MULTISAMPLE:
-			if(enabledstates & STATESENABLEMULTISAMPLE) glDisable(en);
+			if(enabledstates & STATESENABLEMULTISAMPLE){
+				enabledstates = enabledstates & (~STATESENABLEMULTISAMPLE); // better way of doing this?
+				glDisable(en);
+			}
 		break;
 		case GL_ALPHA_TEST:
-			if(enabledstates & STATESENABLEALPHATEST) glDisable(en);
+			if(enabledstates & STATESENABLEALPHATEST){
+				enabledstates = enabledstates & (~STATESENABLEALPHATEST); // better way of doing this?
+				glDisable(en);
+			}
 		break;
 		default:
 			glDisable(en);

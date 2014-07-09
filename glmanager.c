@@ -119,15 +119,15 @@ int glInit(void){
 		return FALSE;
 	}
 
-	glEnable(GL_MULTISAMPLE);
+	statesEnableForce(GL_MULTISAMPLE);
 	glClearDepth(1.0);
 	glClearColor(0.0, 0.0, 0.0, 0.0);
-	glDisable(GL_FOG);
-	glEnable(GL_DEPTH_TEST);
-//	glDepthFunc(GL_LEQUAL);
-	glDepthFunc(GL_LESS);
-	glEnable(GL_CULL_FACE);
-	glCullFace(GL_BACK);
+	statesDisableForce(GL_FOG);
+	statesEnableForce(GL_DEPTH_TEST);
+//	glDepthFunc(GL_LESS);
+	statesDepthFunc(GL_LESS);
+	statesEnableForce(GL_CULL_FACE);
+	statesCullFace(GL_BACK);
 
 	int maxSamples, maxIntSamples, maxColorTextureSamples, maxDepthTextureSamples;
 	glGetIntegerv(GL_MAX_SAMPLES, &maxSamples);
@@ -552,7 +552,8 @@ int glDrawLights(viewport_t *v){
 	if(!bindShaderPerm(perm)) return FALSE;
 
 
-	glBindFramebuffer(GL_FRAMEBUFFER, of->id);
+	//glBindFramebuffer(GL_FRAMEBUFFER, of->id);
+	bindFramebuffer(of);
 	glDepthMask(GL_FALSE);
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT| GL_STENCIL_BUFFER_BIT);//todo set OF to use the same renderbuffer for depth as DF
 //	glClearBufferfi(of->rb​, GLint drawBuffer​, GLfloat depth​, GLint stencil​);
@@ -578,8 +579,8 @@ int glDrawLights(viewport_t *v){
 	}
 
 
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_ONE,GL_ONE);
+	statesEnable(GL_BLEND);
+	statesBlendFunc(GL_ONE,GL_ONE);
 	model_t * cuber = returnModelById(cubeModel);
 	vbo_t * cvbo = returnVBOById(cuber->vbo);
 	if(!cvbo) return FALSE;
@@ -669,8 +670,8 @@ int glDrawLights(viewport_t *v){
 		free(instancedata);
 
 
-		glDisable(GL_DEPTH_TEST);
-		glCullFace(GL_FRONT);
+		statesDisable(GL_DEPTH_TEST);
+		statesCullFace(GL_FRONT);
 
 
 //		glDrawElementsInstanced(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0, out.lout.count);
@@ -688,8 +689,8 @@ int glDrawLights(viewport_t *v){
 		}
 
 
-		glCullFace(GL_BACK);
-		glEnable(GL_DEPTH_TEST);
+		statesCullFace(GL_BACK);
+		statesEnable(GL_DEPTH_TEST);
 
 
 	}
@@ -700,7 +701,7 @@ int glDrawLights(viewport_t *v){
 
 
 	glDepthMask(GL_TRUE);
-	glDisable(GL_BLEND);
+	statesDisable(GL_BLEND);
 	return TRUE;
 }
 int glDrawViewport(viewport_t *v){
@@ -708,13 +709,14 @@ int glDrawViewport(viewport_t *v){
 	framebuffer_t *df = returnFramebufferById(v->dfbid);
 	framebuffer_t *of = returnFramebufferById(v->outfbid);
 	if(!df || !of) return FALSE;
-	glBindFramebuffer(GL_FRAMEBUFFER, df->id);
+	//glBindFramebuffer(GL_FRAMEBUFFER, df->id);
+	bindFramebuffer(df);
 
 //	GLenum buffers[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2};
 //	glDrawBuffers(3, buffers);
 //	glBindFramebuffer(GL_FRAMEBUFFER, of->id);
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT| GL_STENCIL_BUFFER_BIT);//todo set OF to use the same renderbuffer for depth as DF
-	glViewport(0, 0, df->width, df->height);
+//	glViewport(0, 0, df->width, df->height);
 
 //	glStencilFunc(GL_ALWAYS, 1, 0xFF);
 //	glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
@@ -742,13 +744,12 @@ int glDrawViewport(viewport_t *v){
 	shaderprogram_t * shader = returnShaderById(textshaderid);
 	shaderpermutation_t * perm = addPermutationToShader(shader, 0);
 	if(!bindShaderPerm(perm)) return FALSE;
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-//	glBlendFunc(GL_ONE, GL_ONE);
+	statesEnable(GL_BLEND);
+	statesBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, df->textures[2].id);
 	glDrawFSQuad();
-	glDisable(GL_BLEND);
+	statesDisable(GL_BLEND);
 
 
 
@@ -858,18 +859,21 @@ int glMainDraw(void){
 	glDrawViewport(cam);
 
 //temporary
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-//	glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA); //premult wont work for text because SDL_TTF only renders text with the alpha channel, solid color for RGB
-	glDisable(GL_DEPTH_TEST);
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	statesEnable(GL_BLEND);
+	statesBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	statesDisable(GL_DEPTH_TEST);
+
+	//very temp
+	framebuffer_t * outfb = returnFramebufferById(cam->outfbid);
+//	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	bindFramebuffer(outfb);
 //	glViewport(0, 0, 800, 600);
 
 	glDrawConsole();
 
 
-	glDisable(GL_BLEND);
-	glEnable(GL_DEPTH_TEST);
+	statesDisable(GL_BLEND);
+	statesEnable(GL_DEPTH_TEST);
 
 
 
