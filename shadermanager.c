@@ -67,6 +67,7 @@ int deleteShaderPermutation(shaderprogram_t * s, unsigned int permutation){
 	return FALSE;
 }
 
+
 int deleteShaderProgram(int id){
 	int shaderindex = (id & 0xFFFF);
 	shaderprogram_t * shader = &shaderlist[shaderindex];
@@ -84,19 +85,23 @@ int deleteShaderProgram(int id){
 			//delete the program
 			if(p->id) glDeleteProgram(p->id);
 			//dont try to free the hashtable part, only the Linked list off of it
-			if(del)free(p);
+			if(del){
+				memset(p, 0, sizeof(shaderpermutation_t));
+				free(p);
+			}
 			del = 1;
 		}
 	}
+	memset(shader->permhashtable, 0, PERMHASHSIZE * sizeof(shaderpermutation_t));
 	if(shader->defines){
 		for(i = 0; i < shader->numdefines; i++){
 			if(shader->defines[i]) free(shader->defines[i]);
 		}
-		free(shader->defines);
+		free(shader->defines); shader->defines = 0;
 	}
-	if(shader->fragstring) free(shader->fragstring);
-	if(shader->vertstring) free(shader->vertstring);
-	if(shader->geomstring) free(shader->geomstring);
+	if(shader->fragstring) free(shader->fragstring); shader->fragstring = 0;
+	if(shader->vertstring) free(shader->vertstring); shader->vertstring = 0;
+	if(shader->geomstring) free(shader->geomstring); shader->geomstring = 0;
 
 
 
@@ -110,7 +115,7 @@ int deleteShaderProgram(int id){
 int deleteAllShaderPrograms(void){
 	int count = 0;
 	int i;
-	for(i = 0; i < shaderArrayLastTaken; i++){
+	for(i = 0; i < shaderArrayLastTaken+1; i++){
 		if(shaderlist[i].type){
 			deleteShaderProgram(shaderlist[i].myid);
 			count++;
@@ -359,12 +364,8 @@ shaderpermutation_t createPermutation(shaderprogram_t * shader, unsigned int per
 }
 
 
-shaderprogram_t createAndReadyShader(char * name){
-	shaderprogram_t shader;
-	memset(&shader, 0 , sizeof(shaderprogram_t));
-
-
-// populate define list
+int readyShader(shaderprogram_t * shader){
+	char * name = shader->name;
 	char * definename = malloc(strlen(name)+8);
 	sprintf(definename, "%s.define", name);
 //	strcpy(definename, name);strcat(definename, ".define");
@@ -374,28 +375,28 @@ shaderprogram_t createAndReadyShader(char * name){
 		consolePrintf("Count not find .define file for shader %s\n", name);
 		//todo debug?
 	} else {
-		shader.defines = malloc(32 * sizeof(char *));
+		shader->defines = malloc(32 * sizeof(char *));
 		int i;
 		for(i = 0; i < 32; i++){
-			shader.defines[i] = malloc(100);
-			if(fgets(shader.defines[i], 100, f)){
-				shader.defines[i] = realloc(shader.defines[i], strlen(shader.defines[i])+1);
-				consolePrintf("%s\n",shader.defines[i]);
+			shader->defines[i] = malloc(100);
+			if(fgets(shader->defines[i], 100, f)){
+				shader->defines[i] = realloc(shader->defines[i], strlen(shader->defines[i])+1);
+				consolePrintf("%s\n",shader->defines[i]);
 			} else {
 //				consolePrintf("%s\n",shader.defines[i]);
 
-				free(shader.defines[i]);
-				shader.defines[i] = 0;
+				free(shader->defines[i]);
+				shader->defines[i] = 0;
 				break;
 			}
 		}
 		if(i){
-			shader.type = shader.type | 1; //shader has a definelist
-			shader.defines = realloc(shader.defines, i * sizeof(char *)); // might need a +1
-			shader.numdefines = i;
+			shader->type = shader->type | 1; //shader has a definelist
+			shader->defines = realloc(shader->defines, i * sizeof(char *)); // might need a +1
+			shader->numdefines = i;
 		} else {
-			free(shader.defines);
-			shader.defines = 0;
+			free(shader->defines);
+			shader->defines = 0;
 		}
 	}
 	if(f)fclose(f);
@@ -404,7 +405,7 @@ shaderprogram_t createAndReadyShader(char * name){
 	char * flagname = malloc(strlen(name)+7);
 	sprintf(flagname, "%s.flags", name);
 	if(!(f = fopen(flagname, "r"))){
-		shader.sysflagssupport = 0;
+		shader->sysflagssupport = 0;
 		consolePrintf("Count not find .flags file for shader %s\n", name);
 		//todo debug?
 	} else {
@@ -419,106 +420,58 @@ shaderprogram_t createAndReadyShader(char * name){
 
 	char * vertname = malloc(strlen(name)+6);
 	sprintf(vertname, "%s.vert", name);
-	loadFileString(vertname, &shader.vertstring, &shader.vertlength, 1);
+	loadFileString(vertname, &shader->vertstring, &shader->vertlength, 1);
 	free(vertname);
-	if(shader.vertlength == 0){
+	if(shader->vertlength == 0){
 		//todo
-		if(shader.vertstring)free(shader.vertstring);
-		shader.type = 0;
-		return shader;
+		if(shader->vertstring)free(shader->vertstring);
+		shader->type = 0;
+		return FALSE;
 	}
 	char * fragname = malloc(strlen(name)+6);
 	sprintf(fragname, "%s.frag", name);
 //	strcpy(vertname, name);strcat(vertname, ".frag");
-	loadFileString(fragname, &shader.fragstring, &shader.fraglength, 1);
+	loadFileString(fragname, &shader->fragstring, &shader->fraglength, 1);
 	free(fragname);
-	if(shader.fraglength == 0){
+	if(shader->fraglength == 0){
 		//todo
-		if(shader.vertstring)free(shader.vertstring);
-		shader.vertlength =0;
-		if(shader.fragstring)free(shader.fragstring);
-		shader.type = 0;
-		return shader;
+		if(shader->vertstring)free(shader->vertstring);
+		shader->vertlength =0;
+		if(shader->fragstring)free(shader->fragstring);
+		shader->type = 0;
+		return FALSE;
 	}
-	shader.type = shader.type | 2;
+	shader->type = shader->type | 2;
 
 	char * geomname = malloc(strlen(name)+6);
 	sprintf(geomname, "%s.geom", name);
-	loadFileString(geomname, &shader.geomstring, &shader.geomlength, 0);
+	loadFileString(geomname, &shader->geomstring, &shader->geomlength, 0);
 	free(geomname);
-	if(shader.geomlength < 1){
-		if(shader.geomstring)free(shader.geomstring);
+	if(shader->geomlength < 1){
+		if(shader->geomstring){
+			free(shader->geomstring);
+			shader->geomstring = 0;
+		}
 	} else {
-		shader.type = shader.type | 4;
+		shader->type = shader->type | 4;
 	}
+	//todo debugmodes
+	return TRUE;
+}
+
+
+shaderprogram_t createAndReadyShader(char * name){
+	shaderprogram_t shader;
+	memset(&shader, 0, sizeof(shaderprogram_t));
 	//todo debugmodes
 	shader.name = malloc(strlen(name)+1);
 	strcpy(shader.name, name);
+	readyShader(&shader);
+
 
 	return shader;
 }
-/*
-shaderprogram_t createAndLoadShader(char * name){
-	shaderprogram_t shader;
-	shader.id = 0;
-	shader.vertexid = 0;
-	shader.fragmentid = 0;
-	char * vertname = malloc(strlen(name) + 6);
 
-	strcpy(vertname, name);strcat(vertname, ".vert");
-
-	char * vertstring;
-	int vertlength;
-
-	loadFileString(vertname, &vertstring, &vertlength, 2);
-
-	free(vertname);
-	if(vertlength == 0){	//error
-		free(vertstring);
-		return shader;
-	}
-	char * fragname = malloc(strlen(name) + 6); //add on 5 extra characters for .frag
-	strcpy(fragname,name); strcat(fragname, ".frag");
-	char * fragstring;
-	int fraglength;
-	loadFileString(fragname, &fragstring, &fraglength, 2);
-	free(fragname);
-	if(fraglength == 0){	//error
-		free(fragstring);
-		return shader;
-	}
-	GLuint vertid = glCreateShader(GL_VERTEX_SHADER);
-	GLuint fragid = glCreateShader(GL_FRAGMENT_SHADER);
-	shader.vertexid = vertid;
-	shader.fragmentid = fragid;
-	glShaderSource(vertid, 1, (const GLchar**) &vertstring, &vertlength);
-	glShaderSource(fragid, 1, (const GLchar**) &fragstring, &fraglength);
-	free(vertstring); free(fragstring);
-	//TODO errorcheck
-	glCompileShader(vertid);
-	glCompileShader(fragid);
-	//TODO errorcheck
-	//TODO errorcheck for compilation
-
-	GLuint programid = glCreateProgram();
-	//TODO errorcheck
-	glAttachShader(programid, vertid);
-	glAttachShader(programid, fragid);
-	glBindFragDataLocation(programid, 0, "fragColor"); //todo move this
-	glLinkProgram(programid);
-	//TODO errorcheck
-	printProgramLogStatus(programid);
-//	shaderprogram_t prog = {name, programid, vertid, fragid};
-//	int id = addProgramToList(prog);
-	consolePrintf("shader %s has id %d\n", name, programid);
-
-	shader.id = programid;
-	shader.name = malloc(strlen(name)+1);
-	strcpy(shader.name, name);
-//	return id; //so far i am assuming that it works
-	return shader;
-}
-*/
 int printProgramLogStatus(int id){
 	GLint blen = 0;
 	glGetProgramiv(id, GL_INFO_LOG_LENGTH, &blen);
@@ -599,3 +552,62 @@ int bindShaderPerm(shaderpermutation_t * perm){
 	//todo error check
 	return TRUE;
 }
+
+int reloadShaderProgram(int id){
+	int shaderindex = (id & 0xFFFF);
+	shaderprogram_t * shader = &shaderlist[shaderindex];
+	if(shader->myid != id) return FALSE;
+	if(!shader->name) return FALSE;
+
+	int i;
+	shaderpermutation_t *p, *j;
+	for(i = 0; i < PERMHASHSIZE; i++){
+		int del = 0;
+		for (p = &shader->permhashtable[i]; p; p = j){
+			j = p->next;
+			//delete the program
+			if(p->id) glDeleteProgram(p->id);
+			//dont try to free the hashtable part, only the Linked list off of it
+			if(del){
+				memset(p, 0, sizeof(shaderpermutation_t));
+				free(p);
+			}
+			del = 1;
+		}
+	}
+	memset(shader->permhashtable, 0, PERMHASHSIZE * sizeof(shaderpermutation_t));
+
+	if(shader->defines){
+		for(i = 0; i < shader->numdefines; i++){
+			if(shader->defines[i]) free(shader->defines[i]);
+		}
+		free(shader->defines); shader->defines = 0;
+	}
+	if(shader->fragstring) free(shader->fragstring); shader->fragstring = 0;
+	if(shader->vertstring) free(shader->vertstring); shader->vertstring = 0;
+	if(shader->geomstring) free(shader->geomstring); shader->geomstring = 0;
+
+	shader->type = 0;
+	shader->sysflagssupport = 0;
+	shader->numdefines = 0;
+	shader->fraglength = 0;
+	shader->vertlength = 0;
+	shader->geomlength = 0;
+	//all deleted
+
+	readyShader(shader);
+	return TRUE;
+
+}
+int reloadAllShaderPrograms(void){
+	int count = 0;
+	int i;
+	for(i = 0; i < shaderArrayLastTaken+1; i++){
+		if(shaderlist[i].type){
+			reloadShaderProgram(shaderlist[i].myid);
+			count++;
+		}
+	}
+	return count;
+}
+

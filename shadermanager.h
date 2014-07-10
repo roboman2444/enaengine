@@ -68,6 +68,10 @@ int deleteShaderPermutation(shaderprogram_t * shader, unsigned int permutation);
 int deleteShaderProgram(int id);
 int deleteAllShaderPrograms(void);
 
+
+int reloadShaderProgram(int id);
+int reloadAllShaderPrograms(void);
+
 shaderprogram_t * createAndAddShaderRPOINT(char * name);
 int createAndAddShaderRINT(char * name);
 
