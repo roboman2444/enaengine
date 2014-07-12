@@ -115,7 +115,7 @@ int deleteShaderProgram(int id){
 int deleteAllShaderPrograms(void){
 	int count = 0;
 	int i;
-	for(i = 0; i < shaderArrayLastTaken+1; i++){
+	for(i = 0; i <= shaderArrayLastTaken; i++){
 		if(shaderlist[i].type){
 			deleteShaderProgram(shaderlist[i].myid);
 			count++;
@@ -347,18 +347,22 @@ shaderpermutation_t createPermutation(shaderprogram_t * shader, unsigned int per
 	//it will be very useful for some stuff i guess
 
 	perm.compiled = 2;
-//	consolePrintf("Shader %s compile successful\n", shader->name);
+	consolePrintf("Shader %s compile successful\n", shader->name);
+
+
+/*
 	char * error = malloc((100* shader->numdefines) + 100);
 	sprintf(error, "Shader %s compile success. Permutations:\n", shader->name);
-	int count = 0;
-	for(i = 0; i < shader->numdefines; i++){
-		if(permutation & 1<<i){
-			sprintf(error, "%s%s", error, shader->defines[i]);
-			count++;
+	if(shader->defines){
+		for(i = 0; i < shader->numdefines; i++){
+			if(permutation & 1<<i){
+				sprintf(error, "%s%s", error, shader->defines[i]);
+			}
 		}
 	}
 	consoleNPrintf(strlen(error)+1,error);
 	free(error);
+*/
 
 	return perm;
 }
@@ -373,6 +377,7 @@ int readyShader(shaderprogram_t * shader){
 	FILE *f;
 	if(!(f = fopen(definename, "r"))){
 		consolePrintf("Count not find .define file for shader %s\n", name);
+		shader->defines = 0;
 		//todo debug?
 	} else {
 		shader->defines = malloc(32 * sizeof(char *));
@@ -381,7 +386,7 @@ int readyShader(shaderprogram_t * shader){
 			shader->defines[i] = malloc(100);
 			if(fgets(shader->defines[i], 100, f)){
 				shader->defines[i] = realloc(shader->defines[i], strlen(shader->defines[i])+1);
-				consolePrintf("%s\n",shader->defines[i]);
+//				consolePrintf("%s\n",shader->defines[i]);
 			} else {
 //				consolePrintf("%s\n",shader.defines[i]);
 
@@ -602,7 +607,7 @@ int reloadShaderProgram(int id){
 int reloadAllShaderPrograms(void){
 	int count = 0;
 	int i;
-	for(i = 0; i < shaderArrayLastTaken+1; i++){
+	for(i = 0; i <= shaderArrayLastTaken; i++){
 		if(shaderlist[i].type){
 			reloadShaderProgram(shaderlist[i].myid);
 			count++;
