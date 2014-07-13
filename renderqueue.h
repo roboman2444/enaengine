@@ -29,13 +29,44 @@ typedef struct renderbatche_s {
 
 
 
-typedef enum renderlisttype_s {
+typedef struct rendervertdata_s {
+	GLfloat * posvertdata;
+	GLfloat * normvertdata;
+	GLfloat * tcvertdata;
+	GLfloat * tangentvertdata;
+	GLfloat * blendivertdata;
+	GLfloat * blendwvertdata;
+	GLuint * facedata;
+	GLuint numfaces;
+	GLuint numverts;
+	GLuint numtimes;
+//	renderuniformdata_t * udata; //todo maybe change to id system?
+	int textureid;
+	int shaderid;
+	int shaderperm;
+} renddervertdata_t;
+
+typedef struct rendervbodata_s {
+	int vboid;
+	GLuint start;
+	GLuint numfaces;
+	GLuint numtimes;
+//	renderuniformdata_t * udata; //todo maybe change to id system?
+	int textureid;
+	int shaderid;
+	int shaderperm;
+} rendervbodata_t;
+
+typedef enum renderlisttype_e {
 	RENDERENT,
-	RENDERTRI
-} renderlisttype_t;
+	RENDERVERTDATA,
+	RENDERVBO
+//	SORT
+} renderlisttype;
 
 typedef struct renderlist_s {
-	renderlisttype_t * types;
+	unsigned int count;
+	renderlisttype * types;
 	void ** renderlist;
 } renderlist_t;
 /*
