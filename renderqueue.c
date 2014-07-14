@@ -249,17 +249,34 @@ int cleanupRenderbatche(renderbatche_t * batch){
 	batch->shaderbatch = 0;
 	return TRUE;
 }
-/*
-//deprecated?
-void addLightToLightbatche(int lightid, lightbatche_t * batch){
-	batch->count++;
-	batch->lightlist = realloc(batch->lightlist, batch->count * sizeof(int));
-	batch->lightlist[batch->count] = lightid;
+
+
+
+
+
+
+
+//todo look into having seperate "lists" for each type, with a pointer pointing to that list location, no id system
+// will make it so i can have a no-malloc system, and so the rendervertdata can easily be found and uploaded to one buffer
+void addVertDataToList(renderlist_t * list, rendervertdata_t data){
+	int pos = list->count;
+	list->count++;
+	list->types = realloc(list->types, list->count * sizeof(renderlisttype));
+	list->types[pos] = RENDERVERTDATA;
+	list->renderlist = realloc(list->renderlist, list->count * sizeof(void *));
+	rendervertdata_t * out = malloc(sizeof(rendervertdata_t));
+	*out = data;
+	list->renderlist[pos] = (void *)out;
 }
-//deprecated?
-void cleanupLightbatche(lightbatche_t * batch){
-	if(!batch) return;
-	if(batch->lightlist) free(batch->lightlist);
-	batch->count = 0;
+void cleanUpRenderlist(renderlist_t *list){
+	int i;
+	int count = list->count;
+	void ** renderlist = list->renderlist;
+	for(i = 0; i< count; i++){
+		if(renderlist[i]) free(renderlist[i]);
+	}
+	free(renderlist);
+	free(list->types);
+	memset(list, 0, sizeof(renderlist_t));
+//	free(list);
 }
-*/

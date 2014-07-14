@@ -44,7 +44,7 @@ typedef struct rendervertdata_s {
 	int textureid;
 	int shaderid;
 	int shaderperm;
-} renddervertdata_t;
+} rendervertdata_t;
 
 typedef struct rendervbodata_s {
 	int vboid;
@@ -64,11 +64,24 @@ typedef enum renderlisttype_e {
 //	SORT
 } renderlisttype;
 
+typedef struct renderlistnode_s {
+	void * data;
+	struct renderlistnode_s *next;
+	struct renderlistnode_s *previous;
+	renderlisttype type;
+} renderlistnode_t;
+
 typedef struct renderlist_s {
 	unsigned int count;
 	renderlisttype * types;
 	void ** renderlist;
+//	renderlistnode_t * start;
+//	renderlistnode_t * end;
 } renderlist_t;
+typedef struct rendervboupqueue_s {
+	unsigned int count;
+	rendervbodata_t * list;
+} rendervboupqueue_s;
 /*
 typedef struct lightbatche_s {
 	int count;
