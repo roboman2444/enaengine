@@ -67,6 +67,9 @@ int testPointInFrustum(viewport_t *v, vec_t *p);
 int testSphereInFrustum(viewport_t *v, vec_t *p, float size);
 int testBBoxPInFrustum(viewport_t *v, vec_t *points);
 
+void pruneViewportList(void);
+
+
 
 
 int testBBoxPInFrustumCheckWhole(viewport_t *v, vec_t *points);

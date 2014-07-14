@@ -49,6 +49,8 @@ int deleteAnim(int id);
 //anim_t createAndLoadAnim(char *name);
 anim_t createAnim(char *name);
 
+void pruneAnimList(void);
+
 
 anim_t * createAndAddAnimRPOINT(char * name);
 int createAndAddAnimRINT(char * name);

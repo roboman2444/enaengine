@@ -60,6 +60,8 @@ framebuffer_t * returnFramebufferById(int id);
 framebuffer_t * createAndAddFramebufferRPOINT(char * name, unsigned char count, unsigned char rbflags, unsigned char * perflags);
 int createAndAddFramebufferRINT(char * name, unsigned char count, unsigned char rbflags, unsigned char *perflags);
 
+void pruneFramebufferList(void);
+
 framebuffer_t createFramebuffer(char * name, unsigned char count, unsigned char rbflags, unsigned char *perflags);
 int resizeFramebuffer(framebuffer_t *fb, int width, int height);
 

@@ -86,6 +86,9 @@ int deleteTexture(texture_t tex);
 
 void unbindTexturegroup(void);
 
+void pruneTexturegroupList(void);
+
+
 
 texture_t createTextureFlagsSize(char flags, unsigned int width, unsigned int height);
 char resizeTexture(texture_t *t, unsigned int width, unsigned int height);

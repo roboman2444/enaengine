@@ -161,8 +161,14 @@ shaderprogram_t * addShaderRPOINT(shaderprogram_t shader){
 	addToHashTable(shaderlist[shaderArrayFirstOpen].name, returnid, shaderhashtable);
 	if(shaderArrayLastTaken < shaderArrayFirstOpen) shaderArrayLastTaken = shaderArrayFirstOpen;
 	return &shaderlist[shaderArrayFirstOpen];
-
 }
+
+void pruneShaderList(void){
+	if(shaderArraySize == shaderArrayLastTaken+1) return;
+	shaderArraySize = shaderArrayLastTaken+1;
+	shaderlist = realloc(shaderlist, shaderArraySize * sizeof(shaderprogram_t));
+}
+
 
 
 //shaderpermutation_t compilePermutation(shaderprogram_t * shader, int permutation){

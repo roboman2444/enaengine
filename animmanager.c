@@ -120,6 +120,11 @@ anim_t * createAndAddAnimRPOINT(char * name){
 	return addAnimRPOINT(createAnim(name));
 //	return &animlist[addanimToList(createAndLoadanim(name))];
 }
+void pruneAnimList(void){
+	if(animArraySize == animArrayLastTaken+1) return;
+	animArraySize = animArrayLastTaken+1;
+	animlist = realloc(animlist, animArraySize * sizeof(anim_t));
+}
 
 int loadiqmposes(anim_t *a, const struct iqmheader hdr, unsigned char *buf){
 	int i, k, j;

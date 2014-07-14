@@ -65,6 +65,8 @@ entity_t * returnEntityById(int id);
 //creates and adds entity to listwith name
 entity_t * addEntityRPOINT(char * name);
 int addEntityRINT(char * name);
+void pruneEntityList(void);
+
 //deletes entity, only id is accepted
 int deleteEntity(int id);
 #endif

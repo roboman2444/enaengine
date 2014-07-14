@@ -94,6 +94,8 @@ light_t * addLightRPOINT(char * name);
 int addLightRINT(char * name);
 //deletes light, only id is accepted
 int deleteLight(int id);
+void pruneLightList(void);
+
 
 int lightLoop(void);
 

@@ -1227,6 +1227,12 @@ model_t * addModelRPOINT(model_t mod){
 	return &modellist[modelArrayFirstOpen];
 
 }
+void pruneModelList(void){
+	if(modelArraySize == modelArrayLastTaken+1) return;
+	modelArraySize = modelArrayLastTaken+1;
+	modellist = realloc(modellist, modelArraySize * sizeof(model_t));
+}
+
 int createAndAddModelRINT(char * name){
 	int m = findModelByNameRINT(name);
 	if(m) return m;

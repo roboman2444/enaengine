@@ -156,3 +156,8 @@ entity_t * addEntityRPOINT(char * name){
 	return &entitylist[entityArrayFirstOpen];
 
 }
+void pruneEntityList(void){
+	if(entityArraySize == entityArrayLastTaken+1) return;
+	entityArraySize = entityArrayLastTaken+1;
+	entitylist = realloc(entitylist, entityArraySize * sizeof(entity_t));
+}

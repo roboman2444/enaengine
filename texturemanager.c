@@ -412,6 +412,12 @@ texturegroup_t * addTexturegroupRPOINT(texturegroup_t tex){
 	return &texturegrouplist[texturegroupArrayFirstOpen];
 
 }
+void pruneTexturegroupList(void){
+	if(texturegroupArraySize == texturegroupArrayLastTaken+1) return;
+	texturegroupArraySize = texturegroupArrayLastTaken+1;
+	texturegrouplist = realloc(texturegrouplist, texturegroupArraySize * sizeof(texturegroup_t));
+}
+
 int createAndAddTexturegroupRINT(char * name){
 	int m = findTexturegroupByNameRINT(name);
 	if(m) return m;

@@ -75,6 +75,9 @@ int reloadAllShaderPrograms(void);
 shaderprogram_t * createAndAddShaderRPOINT(char * name);
 int createAndAddShaderRINT(char * name);
 
+void pruneShaderList(void);
+
+
 int printProgramLogStatus(int id);
 int getProgramLogStatus(int id, char ** output);
 shaderpermutation_t * findShaderPermutation(shaderprogram_t * shader, unsigned int permutation);

@@ -306,6 +306,14 @@ framebuffer_t * addFramebufferRPOINT(framebuffer_t framebuffer){
 	return &framebufferlist[framebufferArrayFirstOpen];
 }
 
+
+void pruneFramebufferList(void){
+	if(framebufferArraySize == framebufferArrayLastTaken+1) return;
+	framebufferArraySize = framebufferArrayLastTaken+1;
+	framebufferlist = realloc(framebufferlist, framebufferArraySize * sizeof(framebuffer_t));
+}
+
+
 framebuffer_t * createAndAddFramebufferRPOINT(char * name, unsigned char count, unsigned char rbflags, unsigned char * perflags){
 	return addFramebufferRPOINT(createFramebuffer(name, count, rbflags, perflags));
 }

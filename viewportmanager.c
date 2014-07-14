@@ -146,6 +146,12 @@ viewport_t * addViewportRPOINT(viewport_t viewport){
 	if(viewportArrayLastTaken < viewportArrayFirstOpen) viewportArrayLastTaken = viewportArrayFirstOpen; //todo redo
 	return &viewportlist[viewportArrayFirstOpen];
 }
+void pruneViewportList(void){
+	if(viewportArraySize == viewportArrayLastTaken+1) return;
+	viewportArraySize = viewportArrayLastTaken+1;
+	viewportlist = realloc(viewportlist, viewportArraySize * sizeof(viewport_t));
+}
+
 
 viewport_t * createAndAddViewportRPOINT(char * name, char type){
 	return addViewportRPOINT(createViewport(name, type));

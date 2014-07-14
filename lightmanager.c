@@ -191,6 +191,14 @@ light_t * addLightRPOINT(char * name){
 
 }
 
+
+void pruneLightList(void){
+	if(lightArraySize == lightArrayLastTaken+1) return;
+	lightArraySize = lightArrayLastTaken+1;
+	lightlist = realloc(lightlist, lightArraySize * sizeof(light_t));
+}
+
+
 typedef struct lightlistdist_s {
 	light_t **list;
 	unsigned int count;

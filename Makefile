@@ -11,6 +11,10 @@ enaengine: $(OBJECTS)
 debug:	CFLAGS= -Wall -O0 -g `sdl-config --cflags`
 debug: 	$(OBJECTS)
 	$(CC) $(CFLAGS) $(OBJECTS) -o enaengine-$@ $(LDFLAGS)
+
+valgrind:	CFLAGS= -Wall -O0 -g `sdl-config --cflags` -D DEBUGTIMESTEP
+valgrind: 	$(OBJECTS)
+	$(CC) $(CFLAGS) $(OBJECTS) -o enaengine-$@ $(LDFLAGS)
 clean:
 	@echo cleaning oop
 	@rm -f $(OBJECTS)

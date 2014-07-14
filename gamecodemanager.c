@@ -115,16 +115,19 @@ int initGameCodeSystem(void){
 		entcoil->attachmentid = findEntityByNameRINT("hat");
 		entcoil->shaderperm = 1;
 
+	int tempid = entcoil->myid;
+
 	entity_t * entlightoffset = addEntityRPOINT("lightoffset");
 		entlightoffset->pos[2] = 3.0;
 		entlightoffset->pos[1] = 3.0;
 		entlightoffset->needsmatupdate = TRUE;
 		entlightoffset->type = 1;
-		entlightoffset->attachmentid = entcoil->myid;
+		entlightoffset->attachmentid = tempid;
+	tempid = entlightoffset->myid;
 
 	light_t * light = addLightRPOINT("light");
 		light->type = 1;
-		light->attachmentid = entlightoffset->myid;
+		light->attachmentid = tempid;
 		light->needsupdate = 1;
 		light->scale = 20.0;
 
@@ -178,7 +181,7 @@ int initGameCodeSystem(void){
 	int i;
 
 
-	int prevatid = 0;
+	tempid = 0;
 	for(i = 0; i < 100; i++){
 		enttinydragon = addEntityRPOINT("bunny");
 		enttinydragon->type = 2;
@@ -193,8 +196,8 @@ int initGameCodeSystem(void){
 		enttinydragon->shaderid = createAndAddShaderRINT("deferredmodel");
 		enttinydragon->texturegroupid = createAndAddTexturegroupRINT("bunny");
 		enttinydragon->shaderperm = 1;
-		enttinydragon->attachmentid = prevatid;
-		prevatid = enttinydragon->myid;
+		enttinydragon->attachmentid = tempid;
+		tempid = enttinydragon->myid;
 
 
 	light_t * light = addLightRPOINT("light");
@@ -260,6 +263,9 @@ int initGameCodeSystem(void){
 #endif
 	loadWorld("world");
 	loadWorld("world2");
+
+
+	pruneEntityList();
 
 
 	gamecodeOK = TRUE;

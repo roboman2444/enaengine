@@ -33,6 +33,7 @@ int main(int argc, char *argv[]){
 //	printConsoleBackwards();
 	to = SDL_GetTicks();
 
+
 	unsigned int timesincelastfpsupdate = 0;
 	unsigned int accum = 0;
 	while(TRUE){//glorious for loop master race
@@ -55,10 +56,15 @@ int main(int argc, char *argv[]){
 
 		accum+= delta;
 		sdlCheckEvent();
+#ifdef DEBUGTIMESTEP
+		gameCodeTick();
+		accum = 0;
+#else
 		while(accum>GCTIMESTEP){
 			gameCodeTick();
 			accum-=GCTIMESTEP;
 		}
+#endif
 		glMainDraw();
 		framecount++;
 	}

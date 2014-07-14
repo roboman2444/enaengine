@@ -99,6 +99,12 @@ vbo_t * addVBORPOINT(vbo_t vbo){
 	if(vboArrayLastTaken < vboArrayFirstOpen) vboArrayLastTaken = vboArrayFirstOpen; //todo redo
 	return &vbolist[vboArrayFirstOpen];
 }
+void pruneVBOList(void){
+	if(vboArraySize == vboArrayLastTaken+1) return;
+	vboArraySize = vboArrayLastTaken+1;
+	vbolist = realloc(vbolist, vboArraySize * sizeof(vbo_t));
+}
+
 
 vbo_t * createAndAddVBORPOINT(char * name, char type){
 	return addVBORPOINT(createVBO(name, type));

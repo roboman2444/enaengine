@@ -56,6 +56,8 @@ model_t * addModelRPOINT(model_t mod);
 int addModelRINT(model_t mod);
 int deleteModel(int id);
 int deleteAllModels(void);
+void pruneModelList(void);
+
 
 model_t * createAndAddModelRPOINT(char * name);
 int createAndAddModelRINT(char * name);
