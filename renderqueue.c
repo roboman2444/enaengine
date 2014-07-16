@@ -9,6 +9,14 @@
 #include "renderqueue.h"
 #include "glmanager.h"
 
+unsigned int rendervertdatacount;
+unsigned int rendervertdatasize;
+rendervertdata_t * rendervertdatalist;
+
+unsigned int rendervbodatacount;
+unsigned int rendervbodatasize;
+rendervbodata_t * rendervbodatalist;
+
 int addEntityToModelbatche(entity_t * ent, modelbatche_t * batch){
 	if(!batch) return FALSE;
 	int count = batch->count;
@@ -258,25 +266,50 @@ int cleanupRenderbatche(renderbatche_t * batch){
 
 //todo look into having seperate "lists" for each type, with a pointer pointing to that list location, no id system
 // will make it so i can have a no-malloc system, and so the rendervertdata can easily be found and uploaded to one buffer
-void addVertDataToList(renderlist_t * list, rendervertdata_t data){
-	int pos = list->count;
+rendervertdata_t * addVertDataToList(renderlist_t * list, rendervertdata_t data){
+	unsigned int pos = list->count;
 	list->count++;
 	list->types = realloc(list->types, list->count * sizeof(renderlisttype));
 	list->types[pos] = RENDERVERTDATA;
-	list->renderlist = realloc(list->renderlist, list->count * sizeof(void *));
-	rendervertdata_t * out = malloc(sizeof(rendervertdata_t));
-	*out = data;
-	list->renderlist[pos] = (void *)out;
+	list->renderlist = realloc(list->renderlist, list->count * sizeof(int));
+
+	unsigned int vpos = rendervertdatacount;
+	rendervertdatacount++;
+	if(rendervertdatasize <= rendervertdatacount){
+		rendervertdatasize +=1; // todo may change
+		rendervertdatalist = realloc(rendervertdatalist, rendervertdatasize * sizeof(rendervertdata_t));
+	}
+	rendervertdatalist[vpos] = data;
+	return &rendervertdatalist[vpos];
+}
+rendervbodata_t * addVBODataToList(renderlist_t * list, rendervbodata_t data){
+	unsigned int pos = list->count;
+	list->count++;
+	list->types = realloc(list->types, list->count * sizeof(renderlisttype));
+	list->types[pos] = RENDERVBO;
+	list->renderlist = realloc(list->renderlist, list->count * sizeof(int));
+
+	unsigned int vpos = rendervbodatacount;
+	rendervbodatacount++;
+	if(rendervbodatasize <= rendervbodatacount){
+		rendervbodatasize +=1; // todo may change
+		rendervbodatalist = realloc(rendervbodatalist, rendervbodatasize * sizeof(rendervbodata_t));
+	}
+	rendervbodatalist[vpos] = data;
+	return &rendervbodatalist[vpos];
 }
 void cleanUpRenderlist(renderlist_t *list){
-	int i;
-	int count = list->count;
-	void ** renderlist = list->renderlist;
-	for(i = 0; i< count; i++){
-		if(renderlist[i]) free(renderlist[i]);
-	}
-	free(renderlist);
+	free(list->renderlist);
 	free(list->types);
 	memset(list, 0, sizeof(renderlist_t));
 //	free(list);
+}
+
+
+//todo might not use
+void halfRenderListData(void){
+	rendervertdatasize = rendervertdatasize/2;
+	rendervertdatalist = realloc(rendervertdatalist, rendervertdatasize * sizeof(rendervertdata_t));
+	rendervbodatasize = rendervbodatasize/2;
+	rendervbodatalist = realloc(rendervbodatalist, rendervbodatasize * sizeof(rendervbodata_t));
 }

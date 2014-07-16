@@ -29,6 +29,8 @@ typedef struct renderbatche_s {
 
 
 
+//WARNING
+//any GL* pointer data passed to a renderqueue by this system WILL BE FREED BY THE RENDERQUEUE SYSTEM
 typedef struct rendervertdata_s {
 	GLfloat * posvertdata;
 	GLfloat * normvertdata;
@@ -74,14 +76,10 @@ typedef struct renderlistnode_s {
 typedef struct renderlist_s {
 	unsigned int count;
 	renderlisttype * types;
-	void ** renderlist;
+	unsigned int * renderlist;
 //	renderlistnode_t * start;
 //	renderlistnode_t * end;
 } renderlist_t;
-typedef struct rendervboupqueue_s {
-	unsigned int count;
-	rendervbodata_t * list;
-} rendervboupqueue_s;
 /*
 typedef struct lightbatche_s {
 	int count;
