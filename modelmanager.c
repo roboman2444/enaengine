@@ -586,6 +586,7 @@ int loadiqmmeshes(model_t * m, const struct iqmheader hdr, unsigned char *buf){
 	if(norm) stride += (norms = 3);
 	if(texcoord) stride += (tcs = 2);
 	if(tangent) stride += (tangents = 4);
+	//todo are these really only 1?
 	if(blendindex && blendweight){ stride += 2; blendi = 1; blendw = 1;}
 
 	GLfloat * interleavedbuffer = malloc(stride*numverts*sizeof(GLfloat));

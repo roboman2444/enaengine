@@ -6,6 +6,7 @@
 #include "entitymanager.h"
 #include "worldmanager.h"
 //#include "lightmanager.h"
+#include "vbomanager.h"
 #include "renderqueue.h"
 #include "glmanager.h"
 
@@ -16,6 +17,12 @@ rendervertdata_t * rendervertdatalist;
 unsigned int rendervbodatacount;
 unsigned int rendervbodatasize;
 rendervbodata_t * rendervbodatalist;
+
+
+
+//unsigned int renderqueuevboid = 0;
+//vboseperate_t * renderqueuevbo;
+vboseperate_t renderqueuevbo;
 
 int addEntityToModelbatche(entity_t * ent, modelbatche_t * batch){
 	if(!batch) return FALSE;
@@ -264,7 +271,6 @@ int cleanupRenderbatche(renderbatche_t * batch){
 
 
 
-//todo look into having seperate "lists" for each type, with a pointer pointing to that list location, no id system
 // will make it so i can have a no-malloc system, and so the rendervertdata can easily be found and uploaded to one buffer
 rendervertdata_t * addVertDataToList(renderlist_t * list, rendervertdata_t data){
 	unsigned int pos = list->count;
@@ -312,4 +318,42 @@ void halfRenderListData(void){
 	rendervertdatalist = realloc(rendervertdatalist, rendervertdatasize * sizeof(rendervertdata_t));
 	rendervbodatasize = rendervbodatasize/2;
 	rendervbodatalist = realloc(rendervbodatalist, rendervbodatasize * sizeof(rendervbodata_t));
+}
+
+
+
+int readyRenderQueueVBO(void){
+//	vbo_t * vbo =  createAndAddVBORPOINT("renderqueue", 1);
+//	renderqueuevboid = vbo->myid;
+	renderqueuevbo.type = 0;
+	glGenVertexArrays(1, &renderqueuevbo.vaoid); if(!renderqueuevbo.vaoid) return FALSE;
+	glBindVertexArray(renderqueuevbo.vaoid);
+	glGenBuffers(7, &renderqueuevbo.vboposid);
+	char name[] = "renderqueue";
+	renderqueuevbo.name = malloc(strlen(name)+1);
+	renderqueuevbo.setup = 0;
+	strcpy(renderqueuevbo.name, name);
+	//todo add more checks
+
+	glBindBuffer(GL_ARRAY_BUFFER, renderqueuevbo.vboposid);
+		glEnableVertexAttribArray(POSATTRIBLOC);
+		glVertexAttribPointer(POSATTRIBLOC, 3, GL_FLOAT, GL_FALSE, 3, 0);
+	glBindBuffer(GL_ARRAY_BUFFER, renderqueuevbo.vbonormid);
+		glEnableVertexAttribArray(NORMATTRIBLOC);
+		glVertexAttribPointer(NORMATTRIBLOC, 3, GL_FLOAT, GL_FALSE, 3, 0);
+	glBindBuffer(GL_ARRAY_BUFFER, renderqueuevbo.vbotcid);
+		glEnableVertexAttribArray(TCATTRIBLOC);
+		glVertexAttribPointer(TCATTRIBLOC, 2, GL_FLOAT, GL_FALSE, 2, 0);
+	glBindBuffer(GL_ARRAY_BUFFER, renderqueuevbo.vbotangentid);
+		glEnableVertexAttribArray(TANGENTATTRIBLOC);
+		glVertexAttribPointer(TANGENTATTRIBLOC, 3, GL_FLOAT, GL_FALSE, 3, 0);
+		//todo are these really 1?
+	glBindBuffer(GL_ARRAY_BUFFER, renderqueuevbo.vboblendiid);
+		glEnableVertexAttribArray(BLENDIATTRIBLOC);
+		glVertexAttribPointer(BLENDIATTRIBLOC, 1, GL_UNSIGNED_BYTE, GL_FALSE, 1, 0);
+	glBindBuffer(GL_ARRAY_BUFFER, renderqueuevbo.vboblendwid);
+		glEnableVertexAttribArray(BLENDWATTRIBLOC);
+		glVertexAttribPointer(BLENDWATTRIBLOC, 1, GL_UNSIGNED_BYTE, GL_TRUE, 1, 0);
+
+	return TRUE;
 }

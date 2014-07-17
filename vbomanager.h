@@ -31,6 +31,26 @@ typedef struct vbo_s {
 	unsigned char totalstride;
 }vbo_t;
 
+typedef struct vboseperate_s {
+	char * name;
+
+	GLuint vaoid;
+	 // must be in this order or else i have to rewrite deletion functions.
+	GLuint vboposid;
+	GLuint vbonormid;
+	GLuint vbotcid;
+	GLuint vbotangentid;
+	GLuint vboblendiid;
+	GLuint vboblendwid;
+	GLuint indicesid;
+
+	GLuint numverts;
+	GLuint numfaces;
+	int myid;
+	char type; // maybe not
+	char setup;
+}vboseperate_t;
+
 int vboOK;
 int vbonumber;
 vbo_t * vbolist;

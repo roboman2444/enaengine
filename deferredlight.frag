@@ -76,7 +76,21 @@ void main(){
 		fragColor.rgb += clamp(dot(surfnormal, lightnormal), 0.0, 1.0) * diffuse * attenuation;
 		fragColor.rgb += vec3(clamp(pow(dot(surfnormal,vhalf), gloss.y), 0.0, 1.0) * attenuation * gloss.x);
 
+		//if(lightdist > lsize) 
+//		0 0 0
+//		> t b
+		if(lpos.z + lsize > pos.z || pos.z ==0.0)
+			pos.z = lpos.z - lsize;
 
+		float delta = (lpos.z+lsize - pos.z) /10.0;
+		for(int i = 0; i < 10; i++){
+			pos.z = pos.z + delta;
+			pos.xy = mvpos.xy * (pos.z / mvpos.z);
+			vec3 lightdelta = lpos-pos;
+			float lightdist = length(lightdelta);
+			float attenuation = clamp(1.0 - lightdist*lightdist/(lsize*lsize), 0.0, 1.0); attenuation *= attenuation;
+			fragColor.rgb += attenuation * 0.02;
+		}
 
 
 	#ifdef MULTISAMPLE
