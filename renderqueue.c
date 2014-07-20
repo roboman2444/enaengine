@@ -321,6 +321,108 @@ void halfRenderListData(void){
 }
 
 
+int runThroughVertList(void){
+	//todo move these to "pool" style mem allocs
+
+	unsigned int i;
+	unsigned int vertdatasize = 0;
+	GLfloat * posvertdata = 0;
+	GLfloat * normvertdata = 0;
+	GLfloat * tcvertdata = 0;
+	GLfloat * tangentvertdata = 0;
+	GLfloat * blendivertdata = 0;
+	GLfloat * blendwvertdata = 0;
+	GLuint * facedata =0;
+	unsigned int facedatasize = 0;
+	for(i = 0; i < rendervertdatacount; i++){
+		rendervertdata_t * data = &rendervertdatalist[i];
+
+		if(!data->facedata) continue;
+		unsigned int oldsize = vertdatasize;
+		unsigned int numverts = data->numverts;
+		unsigned int numfaces = data->numfaces;
+		if(!numverts || !numfaces) continue;
+		vertdatasize += numverts;
+		posvertdata = 	realloc(posvertdata,	vertdatasize * 3 * sizeof(GLfloat));
+		normvertdata = 	realloc(normvertdata,	vertdatasize * 3 * sizeof(GLfloat));
+		tcvertdata = 	realloc(tcvertdata,	vertdatasize * 2 * sizeof(GLfloat));
+		tangentvertdata=realloc(tangentvertdata,vertdatasize * 3 * sizeof(GLfloat));
+		blendivertdata =realloc(blendivertdata,	vertdatasize * 1 * sizeof(GLfloat));
+		blendwvertdata =realloc(blendwvertdata,	vertdatasize * 1 * sizeof(GLfloat));
+
+
+		unsigned int oldfacesize = facedatasize;
+		facedatasize += numfaces;
+		facedata = realloc(facedata, facedatasize * 3 * sizeof(GLuint));
+
+		if(data->posvertdata){
+			memcpy(&posvertdata[oldsize * 3], data->posvertdata, 3 * numverts * sizeof(GLfloat));
+		} else {
+			memset(&posvertdata[oldsize * 3], 0, 3 * numverts * sizeof(GLfloat));
+		}
+		if(data->normvertdata){
+			memcpy(&normvertdata[oldsize * 3], data->normvertdata, 3 * numverts * sizeof(GLfloat));
+		} else {
+			memset(&normvertdata[oldsize * 3], 0, 3 * numverts * sizeof(GLfloat));
+		}
+		if(data->tcvertdata){
+			memcpy(&tcvertdata[oldsize * 2], data->tcvertdata, 2 * numverts * sizeof(GLfloat));
+		} else {
+			memset(&tcvertdata[oldsize * 2], 0, 2 * numverts * sizeof(GLfloat));
+		}
+		if(data->tangentvertdata){
+			memcpy(&tangentvertdata[oldsize * 3], data->tangentvertdata, 3 * numverts * sizeof(GLfloat));
+		} else {
+			memset(&tangentvertdata[oldsize * 3], 0, 3 * numverts * sizeof(GLfloat));
+		}
+		if(data->blendivertdata){
+			memcpy(&blendivertdata[oldsize], data->blendivertdata, numverts * sizeof(GLfloat));
+		} else {
+			memset(&blendivertdata[oldsize], 0, numverts * sizeof(GLfloat));
+		}
+		if(data->blendwvertdata){
+			memcpy(&blendwvertdata[oldsize], data->blendwvertdata, numverts * sizeof(GLfloat));
+		} else {
+			memset(&blendwvertdata[oldsize], 0, numverts * sizeof(GLfloat));
+		}
+
+
+		unsigned int j;
+		unsigned int dataput = oldfacesize*3;
+		unsigned int dataread = 0;
+		GLuint * indata = data->facedata;
+		for(j = 0; j < numfaces; j++){
+			facedata[dataput++] = indata[dataread++] + oldsize;
+			facedata[dataput++] = indata[dataread++] + oldsize;
+			facedata[dataput++] = indata[dataread++] + oldsize;
+		}
+
+
+
+	}
+
+	glBindBuffer(GL_ARRAY_BUFFER, renderqueuevbo.vboposid);
+	glBufferData(GL_ARRAY_BUFFER, 3 * vertdatasize * sizeof(GLfloat), posvertdata, GL_DYNAMIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, renderqueuevbo.vbonormid);
+	glBufferData(GL_ARRAY_BUFFER, 3 * vertdatasize * sizeof(GLfloat), normvertdata, GL_DYNAMIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, renderqueuevbo.vbotcid);
+	glBufferData(GL_ARRAY_BUFFER, 2 * vertdatasize * sizeof(GLfloat), tcvertdata, GL_DYNAMIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, renderqueuevbo.vbotangentid);
+	glBufferData(GL_ARRAY_BUFFER, 3 * vertdatasize * sizeof(GLfloat), posvertdata, GL_DYNAMIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, renderqueuevbo.vboblendiid);
+	glBufferData(GL_ARRAY_BUFFER, vertdatasize * sizeof(GLfloat), blendivertdata, GL_DYNAMIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, renderqueuevbo.vboblendwid);
+	glBufferData(GL_ARRAY_BUFFER, vertdatasize * sizeof(GLfloat), blendwvertdata, GL_DYNAMIC_DRAW);
+
+
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, renderqueuevbo.indicesid);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, facedatasize * 3 * sizeof(GLuint), facedata, GL_DYNAMIC_DRAW);
+
+	return TRUE;
+}
+
+
 
 int readyRenderQueueVBO(void){
 //	vbo_t * vbo =  createAndAddVBORPOINT("renderqueue", 1);

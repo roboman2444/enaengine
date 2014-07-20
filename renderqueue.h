@@ -92,6 +92,9 @@ int addObjectToRenderbatche(worldobject_t * obj, renderbatche_t * batch);
 int cleanupRenderbatche(renderbatche_t * batch);
 
 
+int readyRenderQueueVBO(void);
+
+
 //void addLightToLightbatche(light_t * l, lightbatche_t * batch);
 //void cleanupLightbatche(lightbatche_t * batch);
 
