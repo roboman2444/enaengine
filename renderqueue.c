@@ -321,6 +321,15 @@ void halfRenderListData(void){
 }
 
 
+void drawVertData(rendervertdata_t * d){
+	//bind vbo
+	//bind texture
+	//bind shader
+	//do UBO data or whatever, idk
+	glDrawElements(GL_TRIANGLES, d->numfaces * 3, GL_UNSIGNED_INT, (void *)(d->facestart * 3 * sizeof(GLuint)));
+}
+
+
 int runThroughVertList(void){
 	//todo move these to "pool" style mem allocs
 
@@ -396,6 +405,7 @@ int runThroughVertList(void){
 			facedata[dataput++] = indata[dataread++] + oldsize;
 			facedata[dataput++] = indata[dataread++] + oldsize;
 		}
+		data->facestart = oldfacesize;
 
 
 

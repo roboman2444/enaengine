@@ -46,6 +46,9 @@ typedef struct rendervertdata_s {
 	int textureid;
 	int shaderid;
 	int shaderperm;
+
+	//modified by renderqueue after data is pushed to VBOs
+	GLuint facestart;
 } rendervertdata_t;
 
 typedef struct rendervbodata_s {

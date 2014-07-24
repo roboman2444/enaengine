@@ -1,5 +1,7 @@
 #version 150
 
+#define VOLUMETRIC
+
 //uniform mat4 unimat40;
 //vec2(Far / (Far - Near), Far * Near / (Near - Far));
 uniform vec2 uniscreentodepth;
@@ -30,6 +32,10 @@ out vec4 fragColor;
 void main(){
 	fragColor.rgba = vec4(0.0, 0.0, 0.0, 1.0);
 	#ifdef MULTISAMPLE
+	#ifdef VOLUMETRIC
+		float avgz = 0.0;
+		vec3 avgeye = vec3(0.0);
+	#endif
 		ivec2 tc = ivec2(gl_FragCoord.xy);
 		int i;
 		for(i = 0; i < numsamples; i++){
@@ -76,26 +82,57 @@ void main(){
 		fragColor.rgb += clamp(dot(surfnormal, lightnormal), 0.0, 1.0) * diffuse * attenuation;
 		fragColor.rgb += vec3(clamp(pow(dot(surfnormal,vhalf), gloss.y), 0.0, 1.0) * attenuation * gloss.x);
 
-		//if(lightdist > lsize) 
+
+	#ifdef MULTISAMPLE
+		#ifdef VOLUMETRIC
+			avgz += pos.z;
+			avgeye +=eyenormal;
+		#endif
+		}
+		#ifdef VOLUMETRIC
+			avgz /=numsamples;
+			avgeye /= numsamples;
+		#endif
+		fragColor.rgb /= numsamples;
+	#endif
+
+
+
+
+
+#ifdef VOLUMETRIC
+
+		//if(lightdist > lsize)
 //		0 0 0
 //		> t b
-		if(lpos.z + lsize > pos.z || pos.z ==0.0)
+//		pos.z -= i /numsamples;
+		#ifdef MULTISAMPLE
+			vec3 eyenormal = avgeye;
+			vec3 pos;
+			pos.z = avgz;
+		#endif
+		if(lpos.z - lsize > pos.z || pos.z ==0.0)
 			pos.z = lpos.z - lsize;
 
-		float delta = (lpos.z+lsize - pos.z) /10.0;
-		for(int i = 0; i < 10; i++){
+		float delta = (lpos.z + lsize - pos.z) /10.0;
+//		float delta = 1.0;
+		for(int j = 0; j < 10; j++){
 			pos.z = pos.z + delta;
 			pos.xy = mvpos.xy * (pos.z / mvpos.z);
 			vec3 lightdelta = lpos-pos;
 			float lightdist = length(lightdelta);
 			float attenuation = clamp(1.0 - lightdist*lightdist/(lsize*lsize), 0.0, 1.0); attenuation *= attenuation;
-			fragColor.rgb += attenuation * 0.02;
-		}
 
 
-	#ifdef MULTISAMPLE
+			vec3 lightnormal = lightdelta/lightdist;
+			vec3 halfdir = normalize(lightnormal + eyenormal);
+			float h_dot_l = float(dot(halfdir,lightnormal));
+			float base = 1.0f - h_dot_l;
+			float exponent = pow(base, 5.0);
+			fragColor.rgb += attenuation * exponent * 0.2;
 		}
-		fragColor.rgb /= numsamples;
-	#endif
+
+#endif
+
 
 }

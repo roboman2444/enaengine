@@ -146,7 +146,7 @@ int glInit(void){
 	cam->outfbid = findFramebufferByNameRINT("screen");
 
 	unsigned char dflags[] = {3, 7, 3};
-	unsigned char drb = FRAMEBUFFERRBFLAGSDEPTH | 2;
+	unsigned char drb = FRAMEBUFFERRBFLAGSDEPTH| 2;
 //	unsigned char drb = 2;
 	unsigned char dcount = 3;
 	cam->dfbid = createAndAddFramebufferRINT("screend", dcount, drb, dflags);
