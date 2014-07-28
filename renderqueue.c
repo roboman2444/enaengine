@@ -10,29 +10,141 @@
 #include "renderqueue.h"
 #include "glmanager.h"
 
+vboseperate_t renderqueuevbo;
+
 unsigned int vertdatasize = 0; // number of verts
 unsigned int vertdataplace = 0;// this one is in number of verts, all others are in number of floats/ints
 unsigned int vertposdataplace = 0;
+unsigned int vertposdatasize = 0;
 GLfloat * vertposdata = 0;
 
 unsigned int vertnormdataplace = 0;
+unsigned int vertnormdatasize = 0;
 GLfloat * vertnormdata = 0;
 
 unsigned int verttcdataplace = 0;
+unsigned int verttcdatasize = 0;
 GLfloat * verttcdata = 0;
 
 unsigned int verttangentdataplace = 0;
+unsigned int verttangentdatasize = 0;
 GLfloat * verttangentdata = 0;
 
 unsigned int vertblendidataplace = 0;
+unsigned int vertblendidatasize = 0;
 GLuint * vertblendidata = 0;
 
 unsigned int vertblendwdataplace = 0;
+unsigned int vertblendwdatasize = 0;
 GLuint * vertblendwdata = 0;
 
 unsigned int facedatasize = 0;
 unsigned int facedataplace = 0;
 GLuint * facedata = 0;
+
+int flushVertCacheToBuffers(void){
+	if(!facedataplace) return FALSE;
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, renderqueuevbo.indicesid);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, facedatasize * 3 * sizeof(GLuint), facedata, GL_DYNAMIC_DRAW);
+
+	//check if its actually used
+	if(vertposdataplace){
+		//check if needs resize
+		unsigned int newvertposdatasize = (vertdatasize * 3);
+		if(newvertposdatasize > vertposdatasize){
+			vertposdata = realloc(vertposdata, newvertposdatasize * sizeof(GLfloat));
+			vertposdatasize = newvertposdatasize;
+		}
+		//check if i gotta fill up with 0s
+		unsigned int vertdataplacemul = vertdataplace*3;
+		if(vertdataplacemul > vertposdataplace) memset(&vertposdata[vertposdataplace], 0, (newvertposdatasize - vertposdataplace) * sizeof(GLfloat));
+		//upload
+		glBindBuffer(GL_ARRAY_BUFFER, renderqueuevbo.vboposid);
+		glBufferData(GL_ARRAY_BUFFER, newvertposdatasize * sizeof(GLfloat), vertposdata, GL_DYNAMIC_DRAW);
+	}
+	if(vertnormdataplace){
+		//check if needs resize
+		unsigned int newvertnormdatasize = (vertdatasize * 3);
+		if(newvertnormdatasize > vertnormdatasize){
+			vertnormdata = realloc(vertnormdata, newvertnormdatasize * sizeof(GLfloat));
+			vertnormdatasize = newvertnormdatasize;
+		}
+		//check if i gotta fill up with 0s
+		unsigned int vertdataplacemul = vertdataplace*3;
+		if(vertdataplacemul > vertnormdataplace) memset(&vertnormdata[vertnormdataplace], 0, (newvertnormdatasize - vertnormdataplace) * sizeof(GLfloat));
+		//upload
+		glBindBuffer(GL_ARRAY_BUFFER, renderqueuevbo.vbonormid);
+		glBufferData(GL_ARRAY_BUFFER, newvertnormdatasize * sizeof(GLfloat), vertnormdata, GL_DYNAMIC_DRAW);
+	}
+	if(verttcdataplace){
+		//check if needs resize
+		unsigned int newverttcdatasize = (vertdatasize * 2);
+		if(newverttcdatasize > verttcdatasize){
+			verttcdata = realloc(verttcdata, newverttcdatasize * sizeof(GLfloat));
+			verttcdatasize = newverttcdatasize;
+		}
+		//check if i gotta fill up with 0s
+		unsigned int vertdataplacemul = vertdataplace*2;
+		if(vertdataplacemul > verttcdataplace) memset(&verttcdata[verttcdataplace], 0, (newverttcdatasize - verttcdataplace) * sizeof(GLfloat));
+		//upload
+		glBindBuffer(GL_ARRAY_BUFFER, renderqueuevbo.vbotcid);
+		glBufferData(GL_ARRAY_BUFFER, newverttcdatasize * sizeof(GLfloat), verttcdata, GL_DYNAMIC_DRAW);
+	}
+	if(verttangentdataplace){
+		//check if needs resize
+		unsigned int newverttangentdatasize = (vertdatasize * 3);
+		if(newverttangentdatasize > verttangentdatasize){
+			verttangentdata = realloc(verttangentdata, newverttangentdatasize * sizeof(GLfloat));
+			verttangentdatasize = newverttangentdatasize;
+		}
+		//check if i gotta fill up with 0s
+		unsigned int vertdataplacemul = vertdataplace*3;
+		if(vertdataplacemul > verttangentdataplace) memset(&verttangentdata[verttangentdataplace], 0, (newverttangentdatasize - verttangentdataplace) * sizeof(GLfloat));
+		//upload
+		glBindBuffer(GL_ARRAY_BUFFER, renderqueuevbo.vbotangentid);
+		glBufferData(GL_ARRAY_BUFFER, newverttangentdatasize * sizeof(GLfloat), verttangentdata, GL_DYNAMIC_DRAW);
+	}
+	if(vertblendidataplace){
+		//check if needs resize
+		unsigned int newvertblendidatasize = (vertdatasize);
+		if(newvertblendidatasize > vertblendidatasize){
+			vertblendidata = realloc(vertblendidata, newvertblendidatasize * sizeof(GLuint));
+			vertblendidatasize = newvertblendidatasize;
+		}
+		//check if i gotta fill up with 0s
+		unsigned int vertdataplacemul = vertdataplace;
+		if(vertdataplacemul > vertblendidataplace) memset(&vertblendidata[vertblendidataplace], 0, (newvertblendidatasize - vertblendidataplace) * sizeof(GLuint));
+		//upload
+		glBindBuffer(GL_ARRAY_BUFFER, renderqueuevbo.vboblendiid);
+		glBufferData(GL_ARRAY_BUFFER, newvertblendidatasize * sizeof(GLuint), vertblendidata, GL_DYNAMIC_DRAW);
+	}
+	if(vertblendwdataplace){
+		//check if needs resize
+		unsigned int newvertblendwdatasize = (vertdatasize);
+		if(newvertblendwdatasize > vertblendwdatasize){
+			vertblendwdata = realloc(vertblendwdata, newvertblendwdatasize * sizeof(GLuint));
+			vertblendwdatasize = newvertblendwdatasize;
+		}
+		//check if i gotta fill up with 0s
+		unsigned int vertdataplacemul = vertdataplace;
+		if(vertdataplacemul > vertblendwdataplace) memset(&vertblendwdata[vertblendwdataplace], 0, (newvertblendwdatasize - vertblendwdataplace) * sizeof(GLuint));
+		//upload
+		glBindBuffer(GL_ARRAY_BUFFER, renderqueuevbo.vboblendwid);
+		glBufferData(GL_ARRAY_BUFFER, newvertblendwdatasize * sizeof(GLuint), vertblendwdata, GL_DYNAMIC_DRAW);
+	}
+	//reset places
+	facedataplace = 0;
+	vertdataplace = 0;
+	vertposdataplace = 0;
+	vertnormdataplace = 0;
+	verttcdataplace = 0;
+	verttangentdataplace = 0;
+	vertblendidataplace = 0;
+	vertblendwdataplace = 0;
+
+
+	return TRUE;
+}
 
 
 //returns the offset into the indices array, in number of floats
@@ -42,6 +154,7 @@ int pushDataToVertCache(const unsigned int vertcount, const unsigned int facecou
 
 	//push vert stuff
 	unsigned int faceinsize = facecount*3;
+	//todo do i need this +1? (change all others if not as well)
 	unsigned int facedatanewsize = facedataplace + faceinsize + 1;
 	if(facedatanewsize > facedatasize){
 		facedata = realloc(facedata, facedatanewsize * sizeof(GLuint));
@@ -56,16 +169,95 @@ int pushDataToVertCache(const unsigned int vertcount, const unsigned int facecou
 	//push pos stuff
 	//todo copy and paste this for every input
 	if(posdata){
-		//TODO check if i need resize (needs per buffer size variables to be able to do it here)
+		//check if needs resize
+		unsigned int newvertposdatasize = (vertdataplace + vertcount + 1) * 3;
+		if(newvertposdatasize > vertposdatasize){
+			vertposdata = realloc(vertposdata, newvertposdatasize * sizeof(GLfloat));
+			vertposdatasize = newvertposdatasize;
+		}
 		//check if i gotta fill up with 0s
 		unsigned int vertdataplacemul = vertdataplace*3;
-		if(vertdataplacemul > vertposdataplace){
-			memset(&vertposdata[vertposdataplace], 0, (vertdataplacemul - vertposdataplace) * sizeof(GLfloat));
-		}
+		if(vertdataplacemul > vertposdataplace) memset(&vertposdata[vertposdataplace], 0, (vertdataplacemul - vertposdataplace) * sizeof(GLfloat));
 		unsigned int vertcountmul = vertcount*3;
 		//data should be at vertdataplacemul now, commence copy
 		memcpy(&vertposdata[vertdataplacemul], posdata, vertcountmul * sizeof(GLfloat));
-		vertposdataplace += vertcountmul;
+		vertposdataplace = vertdataplacemul + vertcountmul;
+	}
+	if(normdata){
+		//check if needs resize
+		unsigned int newvertnormdatasize = (vertdataplace + vertcount + 1) * 3;
+		if(newvertnormdatasize > vertnormdatasize){
+			vertnormdata = realloc(vertnormdata, newvertnormdatasize * sizeof(GLfloat));
+			vertnormdatasize = newvertnormdatasize;
+		}
+
+		//check if i gotta fill up with 0s
+		unsigned int vertdataplacemul = vertdataplace*3;
+		if(vertdataplacemul > vertnormdataplace) memset(&vertnormdata[vertnormdataplace], 0, (vertdataplacemul - vertnormdataplace) * sizeof(GLfloat));
+		unsigned int vertcountmul = vertcount*3;
+		//data should be at vertdataplacemul now, commence copy
+		memcpy(&vertnormdata[vertdataplacemul], normdata, vertcountmul * sizeof(GLfloat));
+		vertnormdataplace = vertdataplacemul + vertcountmul;
+	}
+	if(tcdata){
+		//check if needs resize
+		unsigned int newverttcdatasize = (vertdataplace + vertcount + 1) * 2;
+		if(newverttcdatasize > verttcdatasize){
+			verttcdata = realloc(verttcdata, newverttcdatasize * sizeof(GLfloat));
+			verttcdatasize = newverttcdatasize;
+		}
+		//check if i gotta fill up with 0s
+		unsigned int vertdataplacemul = vertdataplace*2;
+		if(vertdataplacemul > verttcdataplace) memset(&verttcdata[verttcdataplace], 0, (vertdataplacemul - verttcdataplace) * sizeof(GLfloat));
+		unsigned int vertcountmul = vertcount*2;
+		//data should be at vertdataplacemul now, commence copy
+		memcpy(&verttcdata[vertdataplacemul], tcdata, vertcountmul * sizeof(GLfloat));
+		verttcdataplace = vertdataplacemul + vertcountmul;
+	}
+	if(tangentdata){
+		//check if needs resize
+		unsigned int newverttangentdatasize = (vertdataplace + vertcount + 1) * 3;
+		if(newverttangentdatasize > verttangentdatasize){
+			verttangentdata = realloc(verttangentdata, newverttangentdatasize * sizeof(GLfloat));
+			verttangentdatasize = newverttangentdatasize;
+		}
+		//check if i gotta fill up with 0s
+		unsigned int vertdataplacemul = vertdataplace*3;
+		if(vertdataplacemul > verttangentdataplace) memset(&verttangentdata[verttangentdataplace], 0, (vertdataplacemul - verttangentdataplace) * sizeof(GLfloat));
+		unsigned int vertcountmul = vertcount*3;
+		//data should be at vertdataplacemul now, commence copy
+		memcpy(&verttangentdata[vertdataplacemul], tangentdata, vertcountmul * sizeof(GLfloat));
+		verttangentdataplace = vertdataplacemul + vertcountmul;
+	}
+	if(blendidata){
+		//check if needs resize
+		unsigned int newvertblendidatasize = (vertdataplace + vertcount + 1);
+		if(newvertblendidatasize > vertblendidatasize){
+			vertblendidata = realloc(vertblendidata, newvertblendidatasize * sizeof(GLfloat));
+			vertblendidatasize = newvertblendidatasize;
+		}
+		//check if i gotta fill up with 0s
+		unsigned int vertdataplacemul = vertdataplace;
+		if(vertdataplacemul > vertblendidataplace) memset(&vertblendidata[vertblendidataplace], 0, (vertdataplacemul - vertblendidataplace) * sizeof(GLuint));
+		unsigned int vertcountmul = vertcount;
+		//data should be at vertdataplacemul now, commence copy
+		memcpy(&vertblendidata[vertdataplacemul], blendidata, vertcountmul * sizeof(GLuint));
+		vertblendidataplace = vertdataplacemul + vertcountmul;
+	}
+	if(blendwdata){
+		//check if needs resize
+		unsigned int newvertblendwdatasize = (vertdataplace + vertcount + 1);
+		if(newvertblendwdatasize > vertblendwdatasize){
+			vertblendwdata = realloc(vertblendwdata, newvertblendwdatasize * sizeof(GLfloat));
+			vertblendwdatasize = newvertblendwdatasize;
+		}
+		//check if i gotta fill up with 0s
+		unsigned int vertdataplacemul = vertdataplace;
+		if(vertdataplacemul > vertblendwdataplace) memset(&vertblendwdata[vertblendwdataplace], 0, (vertdataplacemul - vertblendwdataplace) * sizeof(GLuint));
+		unsigned int vertcountmul = vertcount;
+		//data should be at vertdataplacemul now, commence copy
+		memcpy(&vertblendwdata[vertdataplacemul], blendwdata, vertcountmul * sizeof(GLuint));
+		vertblendwdataplace = vertdataplacemul + vertcountmul;
 	}
 
 
@@ -73,10 +265,6 @@ int pushDataToVertCache(const unsigned int vertcount, const unsigned int facecou
 	return oldfacepos;
 }
 
-
-//unsigned int renderqueuevboid = 0;
-//vboseperate_t * renderqueuevbo;
-vboseperate_t renderqueuevbo;
 
 int addEntityToModelbatche(entity_t * ent, modelbatche_t * batch){
 	if(!batch) return FALSE;
