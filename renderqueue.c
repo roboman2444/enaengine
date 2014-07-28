@@ -10,14 +10,68 @@
 #include "renderqueue.h"
 #include "glmanager.h"
 
-unsigned int rendervertdatacount;
-unsigned int rendervertdatasize;
-rendervertdata_t * rendervertdatalist;
+unsigned int vertdatasize = 0; // number of verts
+unsigned int vertdataplace = 0;// this one is in number of verts, all others are in number of floats/ints
+unsigned int vertposdataplace = 0;
+GLfloat * vertposdata = 0;
 
-unsigned int rendervbodatacount;
-unsigned int rendervbodatasize;
-rendervbodata_t * rendervbodatalist;
+unsigned int vertnormdataplace = 0;
+GLfloat * vertnormdata = 0;
 
+unsigned int verttcdataplace = 0;
+GLfloat * verttcdata = 0;
+
+unsigned int verttangentdataplace = 0;
+GLfloat * verttangentdata = 0;
+
+unsigned int vertblendidataplace = 0;
+GLuint * vertblendidata = 0;
+
+unsigned int vertblendwdataplace = 0;
+GLuint * vertblendwdata = 0;
+
+unsigned int facedatasize = 0;
+unsigned int facedataplace = 0;
+GLuint * facedata = 0;
+
+
+//returns the offset into the indices array, in number of floats
+//TODO before i upload to VBO i have to double check that "0s are filled up" on the trailing end of them
+int pushDataToVertCache(const unsigned int vertcount, const unsigned int facecount, const unsigned int * face, const float * posdata, const float * normdata, const float * tcdata, const float * tangentdata, const unsigned int * blendidata, const unsigned int *blendwdata){
+	if(!vertcount || !facecount || !face) return -1;
+
+	//push vert stuff
+	unsigned int faceinsize = facecount*3;
+	unsigned int facedatanewsize = facedataplace + faceinsize + 1;
+	if(facedatanewsize > facedatasize){
+		facedata = realloc(facedata, facedatanewsize * sizeof(GLuint));
+		facedatasize = facedatanewsize;
+	}
+	unsigned int i;
+	for(i = 0; i < faceinsize; i++){
+		facedata[i+facedataplace] = face[i] + vertdataplace;
+	}
+	int oldfacepos = facedataplace;
+	facedataplace += faceinsize;
+	//push pos stuff
+	//todo copy and paste this for every input
+	if(posdata){
+		//TODO check if i need resize (needs per buffer size variables to be able to do it here)
+		//check if i gotta fill up with 0s
+		unsigned int vertdataplacemul = vertdataplace*3;
+		if(vertdataplacemul > vertposdataplace){
+			memset(&vertposdata[vertposdataplace], 0, (vertdataplacemul - vertposdataplace) * sizeof(GLfloat));
+		}
+		unsigned int vertcountmul = vertcount*3;
+		//data should be at vertdataplacemul now, commence copy
+		memcpy(&vertposdata[vertdataplacemul], posdata, vertcountmul * sizeof(GLfloat));
+		vertposdataplace += vertcountmul;
+	}
+
+
+	vertdataplace += vertcount;
+	return oldfacepos;
+}
 
 
 //unsigned int renderqueuevboid = 0;
@@ -264,175 +318,6 @@ int cleanupRenderbatche(renderbatche_t * batch){
 	batch->shaderbatch = 0;
 	return TRUE;
 }
-
-
-
-
-
-
-
-// will make it so i can have a no-malloc system, and so the rendervertdata can easily be found and uploaded to one buffer
-rendervertdata_t * addVertDataToList(renderlist_t * list, rendervertdata_t data){
-	unsigned int pos = list->count;
-	list->count++;
-	list->types = realloc(list->types, list->count * sizeof(renderlisttype));
-	list->types[pos] = RENDERVERTDATA;
-	list->renderlist = realloc(list->renderlist, list->count * sizeof(int));
-
-	unsigned int vpos = rendervertdatacount;
-	rendervertdatacount++;
-	if(rendervertdatasize <= rendervertdatacount){
-		rendervertdatasize +=1; // todo may change
-		rendervertdatalist = realloc(rendervertdatalist, rendervertdatasize * sizeof(rendervertdata_t));
-	}
-	rendervertdatalist[vpos] = data;
-	return &rendervertdatalist[vpos];
-}
-rendervbodata_t * addVBODataToList(renderlist_t * list, rendervbodata_t data){
-	unsigned int pos = list->count;
-	list->count++;
-	list->types = realloc(list->types, list->count * sizeof(renderlisttype));
-	list->types[pos] = RENDERVBO;
-	list->renderlist = realloc(list->renderlist, list->count * sizeof(int));
-
-	unsigned int vpos = rendervbodatacount;
-	rendervbodatacount++;
-	if(rendervbodatasize <= rendervbodatacount){
-		rendervbodatasize +=1; // todo may change
-		rendervbodatalist = realloc(rendervbodatalist, rendervbodatasize * sizeof(rendervbodata_t));
-	}
-	rendervbodatalist[vpos] = data;
-	return &rendervbodatalist[vpos];
-}
-void cleanUpRenderlist(renderlist_t *list){
-	free(list->renderlist);
-	free(list->types);
-	memset(list, 0, sizeof(renderlist_t));
-//	free(list);
-}
-
-
-//todo might not use
-void halfRenderListData(void){
-	rendervertdatasize = rendervertdatasize/2;
-	rendervertdatalist = realloc(rendervertdatalist, rendervertdatasize * sizeof(rendervertdata_t));
-	rendervbodatasize = rendervbodatasize/2;
-	rendervbodatalist = realloc(rendervbodatalist, rendervbodatasize * sizeof(rendervbodata_t));
-}
-
-
-void drawVertData(rendervertdata_t * d){
-	//bind vbo
-	//bind texture
-	//bind shader
-	//do UBO data or whatever, idk
-	glDrawElements(GL_TRIANGLES, d->numfaces * 3, GL_UNSIGNED_INT, (void *)(d->facestart * 3 * sizeof(GLuint)));
-}
-
-
-int runThroughVertList(void){
-	//todo move these to "pool" style mem allocs
-
-	unsigned int i;
-	unsigned int vertdatasize = 0;
-	GLfloat * posvertdata = 0;
-	GLfloat * normvertdata = 0;
-	GLfloat * tcvertdata = 0;
-	GLfloat * tangentvertdata = 0;
-	GLfloat * blendivertdata = 0;
-	GLfloat * blendwvertdata = 0;
-	GLuint * facedata =0;
-	unsigned int facedatasize = 0;
-	for(i = 0; i < rendervertdatacount; i++){
-		rendervertdata_t * data = &rendervertdatalist[i];
-
-		if(!data->facedata) continue;
-		unsigned int oldsize = vertdatasize;
-		unsigned int numverts = data->numverts;
-		unsigned int numfaces = data->numfaces;
-		if(!numverts || !numfaces) continue;
-		vertdatasize += numverts;
-		posvertdata = 	realloc(posvertdata,	vertdatasize * 3 * sizeof(GLfloat));
-		normvertdata = 	realloc(normvertdata,	vertdatasize * 3 * sizeof(GLfloat));
-		tcvertdata = 	realloc(tcvertdata,	vertdatasize * 2 * sizeof(GLfloat));
-		tangentvertdata=realloc(tangentvertdata,vertdatasize * 3 * sizeof(GLfloat));
-		blendivertdata =realloc(blendivertdata,	vertdatasize * 1 * sizeof(GLfloat));
-		blendwvertdata =realloc(blendwvertdata,	vertdatasize * 1 * sizeof(GLfloat));
-
-
-		unsigned int oldfacesize = facedatasize;
-		facedatasize += numfaces;
-		facedata = realloc(facedata, facedatasize * 3 * sizeof(GLuint));
-
-		if(data->posvertdata){
-			memcpy(&posvertdata[oldsize * 3], data->posvertdata, 3 * numverts * sizeof(GLfloat));
-		} else {
-			memset(&posvertdata[oldsize * 3], 0, 3 * numverts * sizeof(GLfloat));
-		}
-		if(data->normvertdata){
-			memcpy(&normvertdata[oldsize * 3], data->normvertdata, 3 * numverts * sizeof(GLfloat));
-		} else {
-			memset(&normvertdata[oldsize * 3], 0, 3 * numverts * sizeof(GLfloat));
-		}
-		if(data->tcvertdata){
-			memcpy(&tcvertdata[oldsize * 2], data->tcvertdata, 2 * numverts * sizeof(GLfloat));
-		} else {
-			memset(&tcvertdata[oldsize * 2], 0, 2 * numverts * sizeof(GLfloat));
-		}
-		if(data->tangentvertdata){
-			memcpy(&tangentvertdata[oldsize * 3], data->tangentvertdata, 3 * numverts * sizeof(GLfloat));
-		} else {
-			memset(&tangentvertdata[oldsize * 3], 0, 3 * numverts * sizeof(GLfloat));
-		}
-		if(data->blendivertdata){
-			memcpy(&blendivertdata[oldsize], data->blendivertdata, numverts * sizeof(GLfloat));
-		} else {
-			memset(&blendivertdata[oldsize], 0, numverts * sizeof(GLfloat));
-		}
-		if(data->blendwvertdata){
-			memcpy(&blendwvertdata[oldsize], data->blendwvertdata, numverts * sizeof(GLfloat));
-		} else {
-			memset(&blendwvertdata[oldsize], 0, numverts * sizeof(GLfloat));
-		}
-
-
-		unsigned int j;
-		unsigned int dataput = oldfacesize*3;
-		unsigned int dataread = 0;
-		GLuint * indata = data->facedata;
-		for(j = 0; j < numfaces; j++){
-			facedata[dataput++] = indata[dataread++] + oldsize;
-			facedata[dataput++] = indata[dataread++] + oldsize;
-			facedata[dataput++] = indata[dataread++] + oldsize;
-		}
-		data->facestart = oldfacesize;
-
-
-
-	}
-
-	glBindBuffer(GL_ARRAY_BUFFER, renderqueuevbo.vboposid);
-	glBufferData(GL_ARRAY_BUFFER, 3 * vertdatasize * sizeof(GLfloat), posvertdata, GL_DYNAMIC_DRAW);
-	glBindBuffer(GL_ARRAY_BUFFER, renderqueuevbo.vbonormid);
-	glBufferData(GL_ARRAY_BUFFER, 3 * vertdatasize * sizeof(GLfloat), normvertdata, GL_DYNAMIC_DRAW);
-	glBindBuffer(GL_ARRAY_BUFFER, renderqueuevbo.vbotcid);
-	glBufferData(GL_ARRAY_BUFFER, 2 * vertdatasize * sizeof(GLfloat), tcvertdata, GL_DYNAMIC_DRAW);
-	glBindBuffer(GL_ARRAY_BUFFER, renderqueuevbo.vbotangentid);
-	glBufferData(GL_ARRAY_BUFFER, 3 * vertdatasize * sizeof(GLfloat), posvertdata, GL_DYNAMIC_DRAW);
-	glBindBuffer(GL_ARRAY_BUFFER, renderqueuevbo.vboblendiid);
-	glBufferData(GL_ARRAY_BUFFER, vertdatasize * sizeof(GLfloat), blendivertdata, GL_DYNAMIC_DRAW);
-	glBindBuffer(GL_ARRAY_BUFFER, renderqueuevbo.vboblendwid);
-	glBufferData(GL_ARRAY_BUFFER, vertdatasize * sizeof(GLfloat), blendwvertdata, GL_DYNAMIC_DRAW);
-
-
-
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, renderqueuevbo.indicesid);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, facedatasize * 3 * sizeof(GLuint), facedata, GL_DYNAMIC_DRAW);
-
-	return TRUE;
-}
-
-
 
 int readyRenderQueueVBO(void){
 //	vbo_t * vbo =  createAndAddVBORPOINT("renderqueue", 1);

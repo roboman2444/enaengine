@@ -549,7 +549,7 @@ int loadiqmmeshes(model_t * m, const struct iqmheader hdr, unsigned char *buf){
 //    if(hdr.ofs_adjacency) lilswap((uint *)&buf[hdr.ofs_adjacency], hdr.num_triangles*sizeof(iqmtriangle)/sizeof(uint));
 
 //    meshdata = buf;
-	int nummeshes = hdr.num_meshes; //todo have multiple meshes support
+//	int nummeshes = hdr.num_meshes; //todo have multiple meshes support
 	int numtris = hdr.num_triangles;
 	int numverts = hdr.num_vertexes;
 	float *pos = 0;

@@ -1,6 +1,6 @@
 #version 150
 
-#define VOLUMETRIC
+//#define VOLUMETRIC
 
 //uniform mat4 unimat40;
 //vec2(Far / (Far - Near), Far * Near / (Near - Far));
@@ -30,11 +30,11 @@ uniform vec2 uniscreensizefix;
 out vec4 fragColor;
 
 void main(){
-	fragColor.rgba = vec4(0.0, 0.0, 0.0, 1.0);
+	fragColor.rgba = vec4(0.0f, 0.0f, 0.0f, 1.0f);
 	#ifdef MULTISAMPLE
 	#ifdef VOLUMETRIC
-		float avgz = 0.0;
-		vec3 avgeye = vec3(0.0);
+		float avgz = 0.0f;
+		vec3 avgeye = vec3(0.0f);
 	#endif
 		ivec2 tc = ivec2(gl_FragCoord.xy);
 		int i;
@@ -65,7 +65,7 @@ void main(){
 			vec3 lightnormal = lightdelta/lightdist;
 		#endif
 		//vec3 surfnormal = normalize(normaldist.rgb);
-		vec3 surfnormal = vec3(normaldist.rg, sqrt(1.0-dot(normaldist.rg, normaldist.rg)));
+		vec3 surfnormal = vec3(normaldist.rg, sqrt(1.0f-dot(normaldist.rg, normaldist.rg)));
 		vec3 vhalf = normalize(lightnormal+eyenormal);
 
 
@@ -74,13 +74,14 @@ void main(){
 	//	float attenuation = clamp(1.0 - lightdist/lsize, 0.0, 1.0); attenuation *= attenuation;
 
 		#ifdef DIRECTIONAL
-			float attenuation = 1.0;
+			float attenuation = 1.0f;
 		#else
-			float attenuation = clamp(1.0 - lightdist*lightdist/(lsize*lsize), 0.0, 1.0); attenuation *= attenuation;
+			float attenuation = clamp(1.0f - lightdist*lightdist/(lsize*lsize), 0.0f, 1.0f); attenuation *= attenuation;
 		#endif
 
-		fragColor.rgb += clamp(dot(surfnormal, lightnormal), 0.0, 1.0) * diffuse * attenuation;
-		fragColor.rgb += vec3(clamp(pow(dot(surfnormal,vhalf), gloss.y), 0.0, 1.0) * attenuation * gloss.x);
+
+		fragColor.rgb += ((clamp(dot(surfnormal, lightnormal), 0.0f, 1.0f) * diffuse)
+		 + vec3(clamp(pow(dot(surfnormal,vhalf), gloss.y), 0.0f, 1.0f) * gloss.x) )* attenuation;
 
 
 	#ifdef MULTISAMPLE

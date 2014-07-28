@@ -29,71 +29,20 @@ typedef struct renderbatche_s {
 
 
 
-//WARNING
-//any GL* pointer data passed to a renderqueue by this system WILL BE FREED BY THE RENDERQUEUE SYSTEM
-typedef struct rendervertdata_s {
-	GLfloat * posvertdata;
-	GLfloat * normvertdata;
-	GLfloat * tcvertdata;
-	GLfloat * tangentvertdata;
-	GLfloat * blendivertdata;
-	GLfloat * blendwvertdata;
-	GLuint * facedata;
-	GLuint numfaces;
-	GLuint numverts;
-	GLuint numtimes;
-//	renderuniformdata_t * udata; //todo maybe change to id system?
-	int textureid;
-	int shaderid;
-	int shaderperm;
+//start fresh, no idiota this time
+#define RADIXSORTSIZE 12 // currently 2 for shader id, 4 for permutation, 2 for modelid (if any, ones with 0 probably use the vert data method), 2 for texture id, 1 for depth, 1 for misc flags (such as alpha blending or not)
 
-	//modified by renderqueue after data is pushed to VBOs
-	GLuint facestart;
-} rendervertdata_t;
+typedef void * (* renderqueueCallback_t)(void * data);
+typedef struct renderlistitem_s {
+	renderqueueCallback_t setup;
+	renderqueueCallback_t draw;
+	unsigned char sort[RADIXSORTSIZE];
+} renderlistitem_t;
 
-typedef struct rendervbodata_s {
-	int vboid;
-	GLuint start;
-	GLuint numfaces;
-	GLuint numtimes;
-//	renderuniformdata_t * udata; //todo maybe change to id system?
-	int textureid;
-	int shaderid;
-	int shaderperm;
-} rendervbodata_t;
-
-typedef enum renderlisttype_e {
-	RENDERENT,
-	RENDERVERTDATA,
-	RENDERVBO
-//	SORT
-} renderlisttype;
-
-typedef struct renderlistnode_s {
-	void * data;
-	struct renderlistnode_s *next;
-	struct renderlistnode_s *previous;
-	renderlisttype type;
-} renderlistnode_t;
-
-typedef struct renderlist_s {
-	unsigned int count;
-	renderlisttype * types;
-	unsigned int * renderlist;
-//	renderlistnode_t * start;
-//	renderlistnode_t * end;
-} renderlist_t;
-/*
-typedef struct lightbatche_s {
-	int count;
-	light_t * lightlist;
-} lightbatche_t;
-*/
 int addEntityToRenderbatche(entity_t * ent, renderbatche_t * batch);
 int addObjectToRenderbatche(worldobject_t * obj, renderbatche_t * batch);
 
 int cleanupRenderbatche(renderbatche_t * batch);
-
 
 int readyRenderQueueVBO(void);
 

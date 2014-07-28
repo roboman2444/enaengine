@@ -49,7 +49,7 @@ int initGameCodeSystem(void){
 		deleteEntity(entdragon->myid);
 	entity_t *entteapot = addEntityRPOINT("teapot");
 		entteapot->type = 2;
-		entteapot->pos[0] = 10.0;
+		entteapot->pos[0] = 10.0f;
 		entteapot->needsmatupdate = TRUE;
 		entteapot->modelid = createAndAddModelRINT("teapot");
 		entteapot->shaderid = createAndAddShaderRINT("deferredmodel");
@@ -71,8 +71,8 @@ int initGameCodeSystem(void){
 		entfloor->shaderid = createAndAddShaderRINT("deferredmodel");
 		entfloor->flags = 1;
 
-		entfloor->pos[1] = -100.0;
-		entfloor->scale = 100.0;
+		entfloor->pos[1] = -100.0f;
+		entfloor->scale = 100.0f;
 
 		calcEntAttachMat(entfloor); // needed because i add it to the world, and the mat needs to be updated beforehand
 		recalcEntBBox(entfloor); // needed because this is added to the world before the gamecode runs
@@ -118,8 +118,8 @@ int initGameCodeSystem(void){
 	int tempid = entcoil->myid;
 
 	entity_t * entlightoffset = addEntityRPOINT("lightoffset");
-		entlightoffset->pos[2] = 3.0;
-		entlightoffset->pos[1] = 3.0;
+		entlightoffset->pos[2] = 3.0f;
+		entlightoffset->pos[1] = 3.0f;
 		entlightoffset->needsmatupdate = TRUE;
 		entlightoffset->type = 1;
 		entlightoffset->attachmentid = tempid;
@@ -129,12 +129,12 @@ int initGameCodeSystem(void){
 		light->type = 1;
 		light->attachmentid = tempid;
 		light->needsupdate = 1;
-		light->scale = 20.0;
+		light->scale = 20.0f;
 
 	entity_t * enttinydragon = addEntityRPOINT("tinydragon");
 		enttinydragon->type = 2;
-		enttinydragon->pos[1] = 3.0;
-		enttinydragon->scale = 0.2;
+		enttinydragon->pos[1] = 3.0f;
+		enttinydragon->scale = 0.2f;
 		enttinydragon->needsmatupdate = TRUE;
 		enttinydragon->modelid = createAndAddModelRINT("dragon");
 //		enttinydragon->modelid = createAndAddModelRINT("coil");
@@ -144,9 +144,9 @@ int initGameCodeSystem(void){
 
 	enttinydragon = addEntityRPOINT("tinydragon");
 		enttinydragon->type = 2;
-		enttinydragon->pos[1] = -3.0;
-		enttinydragon->angle[2] = 180.0;
-		enttinydragon->scale = 0.2;
+		enttinydragon->pos[1] = -3.0f;
+		enttinydragon->angle[2] = 180.0f;
+		enttinydragon->scale = 0.2f;
 		enttinydragon->needsmatupdate = TRUE;
 		enttinydragon->shaderid = createAndAddShaderRINT("deferredmodel");
 		enttinydragon->modelid = createAndAddModelRINT("dragon");
@@ -156,9 +156,9 @@ int initGameCodeSystem(void){
 		enttinydragon->texturegroupid = 1;
 	enttinydragon = addEntityRPOINT("tinydragon");
 		enttinydragon->type = 2;
-		enttinydragon->pos[2] = 3.0;
-		enttinydragon->angle[2] = 90.0;
-		enttinydragon->scale = 0.2;
+		enttinydragon->pos[2] = 3.0f;
+		enttinydragon->angle[2] = 90.0f;
+		enttinydragon->scale = 0.2f;
 		enttinydragon->needsmatupdate = TRUE;
 		enttinydragon->shaderid = createAndAddShaderRINT("deferredmodel");
 //		enttinydragon->modelid = createAndAddModelRINT("coil");
@@ -168,9 +168,9 @@ int initGameCodeSystem(void){
 		enttinydragon->shaderperm = 0;
 	enttinydragon = addEntityRPOINT("tinydragon");
 		enttinydragon->type = 2;
-		enttinydragon->pos[2] = -3.0;
-		enttinydragon->angle[2] = -90.0;
-		enttinydragon->scale = 0.2;
+		enttinydragon->pos[2] = -3.0f;
+		enttinydragon->angle[2] = -90.0f;
+		enttinydragon->scale = 0.2f;
 		enttinydragon->needsmatupdate = TRUE;
 		enttinydragon->modelid = createAndAddModelRINT("dragon");
 //		enttinydragon->modelid = createAndAddModelRINT("coil");
@@ -185,10 +185,10 @@ int initGameCodeSystem(void){
 	for(i = 0; i < 100; i++){
 		enttinydragon = addEntityRPOINT("bunny");
 		enttinydragon->type = 2;
-		enttinydragon->pos[0] = 5.0;
-		enttinydragon->pos[2] = -2.0;
-		enttinydragon->anglevel[1] = 20.0;
-		enttinydragon->scale = 1.0;
+		enttinydragon->pos[0] = 5.0f;
+		enttinydragon->pos[2] = -2.0f;
+		enttinydragon->anglevel[1] = 20.0f;
+		enttinydragon->scale = 1.0f;
 		enttinydragon->needsmatupdate = TRUE;
 		enttinydragon->modelid = createAndAddModelRINT("cube2");
 //		enttinydragon->modelid = createAndAddModelRINT("bunny2");
@@ -204,7 +204,7 @@ int initGameCodeSystem(void){
 		light->type = 1;
 		light->attachmentid = enttinydragon->myid;
 		light->needsupdate = 1;
-		light->scale = 5.0;
+		light->scale = 5.0f;
 
 	}
 
@@ -216,10 +216,10 @@ int initGameCodeSystem(void){
 		enttinydragon->type = 2;
 		enttinydragon->pos[0] = (rand()/(double)RAND_MAX -0.5) * 16384.0;
 		enttinydragon->pos[2] = (rand()/(double)RAND_MAX -0.5) * 16384.0;
-		enttinydragon->angle[1] = 90.0;
+		enttinydragon->angle[1] = 90.0f;
 
 		enttinydragon->scale = (rand()/(double)RAND_MAX) * 2.0;
-//		enttinydragon->scale = 20.0;
+//		enttinydragon->scale = 20.0f;
 //		enttinydragon->scale = (rand()/(double)RAND_MAX) * vec4length(enttinydragon->pos);
 		enttinydragon->needsmatupdate = TRUE;
 		enttinydragon->modelid = createAndAddModelRINT("coil");
@@ -243,7 +243,7 @@ int initGameCodeSystem(void){
 		enttinydragon->pos[2] = (rand()/(double)RAND_MAX -0.5) * 16384.0;
 
 		enttinydragon->scale = (rand()/(double)RAND_MAX) * 4.0;
-//		enttinydragon->scale =  20.0;
+//		enttinydragon->scale =  20.0f;
 		enttinydragon->needsmatupdate = TRUE;
 		enttinydragon->modelid = createAndAddModelRINT("cube");
 		enttinydragon->shaderid = createAndAddShaderRINT("deferredmodel");

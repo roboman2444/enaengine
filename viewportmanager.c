@@ -94,17 +94,17 @@ viewport_t * returnViewportById(int id){
 viewport_t createViewport (char * name, char type){
 	viewport_t v;
 	v.type = 0; //todo make useful
-	v.aspect = 1.0;
-	v.fov = 90.0;
-	v.near = 1.0;
-	v.far = 1000.0;
+	v.aspect = 1.0f;
+	v.fov = 90.0f;
+	v.near = 1.0f;
+	v.far = 1000.0f;
 	v.viewchanged = TRUE;
 	v.outfbid = 0;
 	v.dfbid = 0;
 	int i;
 	for(i = 0; i < 3; i++){
-		v.pos[i] = 0.0;
-		v.angle[i] = 0.0;
+		v.pos[i] = 0.0f;
+		v.angle[i] = 0.0f;
 	}
  	v.name = malloc(strlen(name)+1);
 	strcpy(v.name, name);
@@ -166,9 +166,9 @@ vec3_t stockv_up = { 0.0, 1.0, 1.0 };
 vec3_t stockv_right = { 1.0, 0.0, 0.0 };
 
 void recalcViewMatrix(viewport_t * v){
-	Matrix4x4_CreateRotate(&v->view, v->angle[2], 0.0, 0.0, 1.0);
-	Matrix4x4_ConcatRotate(&v->view, v->angle[0], 1.0, 0.0, 0.0);
-	Matrix4x4_ConcatRotate(&v->view, v->angle[1], 0.0, 1.0, 0.0);
+	Matrix4x4_CreateRotate(&v->view, v->angle[2], 0.0f, 0.0f, 1.0f);
+	Matrix4x4_ConcatRotate(&v->view, v->angle[0], 1.0f, 0.0f, 0.0f);
+	Matrix4x4_ConcatRotate(&v->view, v->angle[1], 0.0f, 1.0f, 0.0f);
 	//putting in vectors stuff here, because why not?
 	Matrix4x4_Transform(&v->view, stockv_forward, v->v_forward);
 	Matrix4x4_Transform(&v->view, stockv_up, v->v_up);
