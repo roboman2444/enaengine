@@ -10,6 +10,8 @@
 #include "renderqueue.h"
 #include "glmanager.h"
 
+//VERTEX BUFFER STUFF
+
 vboseperate_t renderqueuevbo;
 
 unsigned int vertdatasize = 0; // number of verts
@@ -42,7 +44,65 @@ unsigned int facedatasize = 0;
 unsigned int facedataplace = 0;
 GLuint * facedata = 0;
 
-int flushVertCacheToBuffers(void){
+
+//UNIFORM BUFFER STUFF
+
+unsigned int ubodatasize = 0; //in bytes
+unsigned int ubodataplace = 0; // in bytes
+GLubyte * ubodata = 0;
+GLuint uboid;
+
+// RENDERQUEUE STUFF
+unsigned int renderqueuesize = 0;
+unsigned int renderqueueplace = 0;
+renderlistitem_t * renderqueue = 0;
+char addRenderlistitem(const renderlistitem_t r){
+	if((r.setup || r.draw)) return FALSE;
+	//check if it needs a resize
+	unsigned int renderqueuenewsize = renderqueueplace + 1 + 1; //todo need 1?
+	if(renderqueuenewsize > renderqueuesize){
+		renderqueue = realloc(renderqueue, renderqueuenewsize * sizeof(renderlistitem_t));
+		renderqueuesize = renderqueuenewsize;
+	}
+	memcpy(&renderqueue[renderqueueplace], &r, sizeof(renderlistitem_t));
+	renderqueueplace ++;
+	return TRUE;
+}
+char createAndAddRenderlistitem(const void * data, const unsigned int datasize, const renderqueueCallback_t setup, const renderqueueCallback_t draw, const unsigned char flags, const unsigned char sort[RADIXSORTSIZE]){
+	renderlistitem_t r;
+	r.data = (void*)data;
+	r.datasize = datasize;
+	r.setup = setup;
+	r.draw = draw;
+	r.flags = flags;
+	memcpy(r.sort, sort, RADIXSORTSIZE);
+	return addRenderlistitem(r);
+}
+
+char flushUBOCacheToBuffers(void){
+	if(!ubodataplace) return FALSE;
+	glBindBuffer(GL_ARRAY_BUFFER, uboid);
+	glBufferData(GL_ARRAY_BUFFER, ubodataplace, ubodata, GL_DYNAMIC_DRAW);
+	ubodataplace = 0;
+	return TRUE;
+}
+
+//returns the offset, in bytes
+int pushDataToUBOCache(const unsigned int size, const void * data){
+	if(!size || !data) return -1;
+	//check if it needs a resize
+	unsigned int ubodatanewsize = ubodataplace + size +1; //todo need 1?
+	if(ubodatanewsize > ubodatasize){
+		ubodata = realloc(ubodata, ubodatanewsize);
+		ubodatasize = ubodatanewsize;
+	}
+	memcpy(ubodata + ubodataplace, data, size);
+	unsigned int ubodataoldplace = ubodataplace;
+	ubodataplace += size;
+	return ubodataoldplace;
+}
+
+char flushVertCacheToBuffers(void){
 	if(!facedataplace) return FALSE;
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, renderqueuevbo.indicesid);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, facedatasize * 3 * sizeof(GLuint), facedata, GL_DYNAMIC_DRAW);
@@ -148,7 +208,6 @@ int flushVertCacheToBuffers(void){
 
 
 //returns the offset into the indices array, in number of floats
-//TODO before i upload to VBO i have to double check that "0s are filled up" on the trailing end of them
 int pushDataToVertCache(const unsigned int vertcount, const unsigned int facecount, const unsigned int * face, const float * posdata, const float * normdata, const float * tcdata, const float * tangentdata, const unsigned int * blendidata, const unsigned int *blendwdata){
 	if(!vertcount || !facecount || !face) return -1;
 
@@ -164,7 +223,7 @@ int pushDataToVertCache(const unsigned int vertcount, const unsigned int facecou
 	for(i = 0; i < faceinsize; i++){
 		facedata[i+facedataplace] = face[i] + vertdataplace;
 	}
-	int oldfacepos = facedataplace;
+	unsigned int oldfacepos = facedataplace;
 	facedataplace += faceinsize;
 	//push pos stuff
 	//todo copy and paste this for every input
@@ -264,6 +323,53 @@ int pushDataToVertCache(const unsigned int vertcount, const unsigned int facecou
 	vertdataplace += vertcount;
 	return oldfacepos;
 }
+
+int readyRenderQueueBuffers(void){
+//	vbo_t * vbo =  createAndAddVBORPOINT("renderqueue", 1);
+//	renderqueuevboid = vbo->myid;
+	renderqueuevbo.type = 0;
+	glGenVertexArrays(1, &renderqueuevbo.vaoid); if(!renderqueuevbo.vaoid) return FALSE;
+	glBindVertexArray(renderqueuevbo.vaoid);
+	glGenBuffers(7, &renderqueuevbo.vboposid);
+	char name[] = "renderqueue";
+	renderqueuevbo.name = malloc(strlen(name)+1);
+	renderqueuevbo.setup = 0;
+	strcpy(renderqueuevbo.name, name);
+	//todo add more checks
+
+	glBindBuffer(GL_ARRAY_BUFFER, renderqueuevbo.vboposid);
+		glEnableVertexAttribArray(POSATTRIBLOC);
+		glVertexAttribPointer(POSATTRIBLOC, 3, GL_FLOAT, GL_FALSE, 3, 0);
+	glBindBuffer(GL_ARRAY_BUFFER, renderqueuevbo.vbonormid);
+		glEnableVertexAttribArray(NORMATTRIBLOC);
+		glVertexAttribPointer(NORMATTRIBLOC, 3, GL_FLOAT, GL_FALSE, 3, 0);
+	glBindBuffer(GL_ARRAY_BUFFER, renderqueuevbo.vbotcid);
+		glEnableVertexAttribArray(TCATTRIBLOC);
+		glVertexAttribPointer(TCATTRIBLOC, 2, GL_FLOAT, GL_FALSE, 2, 0);
+	glBindBuffer(GL_ARRAY_BUFFER, renderqueuevbo.vbotangentid);
+		glEnableVertexAttribArray(TANGENTATTRIBLOC);
+		glVertexAttribPointer(TANGENTATTRIBLOC, 3, GL_FLOAT, GL_FALSE, 3, 0);
+		//todo are these really 1?
+	glBindBuffer(GL_ARRAY_BUFFER, renderqueuevbo.vboblendiid);
+		glEnableVertexAttribArray(BLENDIATTRIBLOC);
+		glVertexAttribPointer(BLENDIATTRIBLOC, 1, GL_UNSIGNED_BYTE, GL_FALSE, 1, 0);
+	glBindBuffer(GL_ARRAY_BUFFER, renderqueuevbo.vboblendwid);
+		glEnableVertexAttribArray(BLENDWATTRIBLOC);
+		glVertexAttribPointer(BLENDWATTRIBLOC, 1, GL_UNSIGNED_BYTE, GL_TRUE, 1, 0);
+
+	glGenBuffers(1, &uboid);
+
+	return TRUE;
+}
+
+
+
+
+
+
+
+
+//start of old
 
 
 int addEntityToModelbatche(entity_t * ent, modelbatche_t * batch){
@@ -507,38 +613,5 @@ int cleanupRenderbatche(renderbatche_t * batch){
 	return TRUE;
 }
 
-int readyRenderQueueVBO(void){
-//	vbo_t * vbo =  createAndAddVBORPOINT("renderqueue", 1);
-//	renderqueuevboid = vbo->myid;
-	renderqueuevbo.type = 0;
-	glGenVertexArrays(1, &renderqueuevbo.vaoid); if(!renderqueuevbo.vaoid) return FALSE;
-	glBindVertexArray(renderqueuevbo.vaoid);
-	glGenBuffers(7, &renderqueuevbo.vboposid);
-	char name[] = "renderqueue";
-	renderqueuevbo.name = malloc(strlen(name)+1);
-	renderqueuevbo.setup = 0;
-	strcpy(renderqueuevbo.name, name);
-	//todo add more checks
+//end of old
 
-	glBindBuffer(GL_ARRAY_BUFFER, renderqueuevbo.vboposid);
-		glEnableVertexAttribArray(POSATTRIBLOC);
-		glVertexAttribPointer(POSATTRIBLOC, 3, GL_FLOAT, GL_FALSE, 3, 0);
-	glBindBuffer(GL_ARRAY_BUFFER, renderqueuevbo.vbonormid);
-		glEnableVertexAttribArray(NORMATTRIBLOC);
-		glVertexAttribPointer(NORMATTRIBLOC, 3, GL_FLOAT, GL_FALSE, 3, 0);
-	glBindBuffer(GL_ARRAY_BUFFER, renderqueuevbo.vbotcid);
-		glEnableVertexAttribArray(TCATTRIBLOC);
-		glVertexAttribPointer(TCATTRIBLOC, 2, GL_FLOAT, GL_FALSE, 2, 0);
-	glBindBuffer(GL_ARRAY_BUFFER, renderqueuevbo.vbotangentid);
-		glEnableVertexAttribArray(TANGENTATTRIBLOC);
-		glVertexAttribPointer(TANGENTATTRIBLOC, 3, GL_FLOAT, GL_FALSE, 3, 0);
-		//todo are these really 1?
-	glBindBuffer(GL_ARRAY_BUFFER, renderqueuevbo.vboblendiid);
-		glEnableVertexAttribArray(BLENDIATTRIBLOC);
-		glVertexAttribPointer(BLENDIATTRIBLOC, 1, GL_UNSIGNED_BYTE, GL_FALSE, 1, 0);
-	glBindBuffer(GL_ARRAY_BUFFER, renderqueuevbo.vboblendwid);
-		glEnableVertexAttribArray(BLENDWATTRIBLOC);
-		glVertexAttribPointer(BLENDWATTRIBLOC, 1, GL_UNSIGNED_BYTE, GL_TRUE, 1, 0);
-
-	return TRUE;
-}

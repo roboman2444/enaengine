@@ -30,12 +30,15 @@ typedef struct renderbatche_s {
 
 
 //start fresh, no idiota this time
-#define RADIXSORTSIZE 12 // currently 2 for shader id, 4 for permutation, 2 for modelid (if any, ones with 0 probably use the vert data method), 2 for texture id, 1 for depth, 1 for misc flags (such as alpha blending or not)
+#define RADIXSORTSIZE 12 // currently 2 for shader id, 4 for permutation, 2 for modelid/vboid (if any, ones with 0 probably use the vert data method, have to check), 2 for texture id, 1 for depth, 1 for misc flags (such as alpha blending or not)
 
 typedef void * (* renderqueueCallback_t)(void * data);
 typedef struct renderlistitem_s {
+	void * data;
+	unsigned int datasize;
 	renderqueueCallback_t setup;
 	renderqueueCallback_t draw;
+	unsigned char flags; //1 is nonfreeable
 	unsigned char sort[RADIXSORTSIZE];
 } renderlistitem_t;
 
@@ -44,8 +47,20 @@ int addObjectToRenderbatche(worldobject_t * obj, renderbatche_t * batch);
 
 int cleanupRenderbatche(renderbatche_t * batch);
 
-int readyRenderQueueVBO(void);
+int readyRenderQueueBuffers(void);
 
+//returns -1 on failure, returns offset into facebuffer (per int, not per face)
+int pushDataToVertCache(const unsigned int vertcount, const unsigned int facecount, const unsigned int * face, const float * posdata, const float * normdata, const float * tcdata, const float * tangentdata, const unsigned int * blendidata, const unsigned int * blendwdata);
+char flushVertCacheToBuffers(void);
+
+
+//returns -1 on failure, returns offset into ubo buffer in bytes
+int pushDataToUBOCache(const unsigned int size, const void * data);
+char flushUBOCacheToBuffers(void);
+
+
+char createAndAddRenderlistitem(const void * data, const unsigned int datasize, const renderqueueCallback_t setup, const renderqueueCallback_t draw, const unsigned char flags, const unsigned char sort[RADIXSORTSIZE]);
+char addRenderlistitem(renderlistitem_t r);
 
 //void addLightToLightbatche(light_t * l, lightbatche_t * batch);
 //void cleanupLightbatche(lightbatche_t * batch);
