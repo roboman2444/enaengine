@@ -56,6 +56,62 @@ GLuint uboid;
 unsigned int renderqueuesize = 0;
 unsigned int renderqueueplace = 0;
 renderlistitem_t * renderqueue = 0;
+unsigned int renderscratchsize = 0;
+renderlistitem_t * renderscratch = 0;
+
+
+
+
+
+//modified ioquake3 code
+static inline void renderqueue_radix(int byte, int size, renderlistitem_t *source, renderlistitem_t *dest){
+	int           count[ 256 ] = {0};
+	int           index[ 256 ];
+	int           i;
+	unsigned char *sortKey = NULL;
+	unsigned char *end = NULL;
+
+	sortKey = ( (unsigned char *)&source[0].sort ) + byte;
+	end = sortKey + ( size * sizeof( renderlistitem_t ) );
+	for( ; sortKey < end; sortKey += sizeof( renderlistitem_t ) )
+		++count[*sortKey];
+
+	index[ 0 ] = 0;
+
+	for( i = 1; i < 256; ++i )
+		index[i] = index[i - 1] + count[i - 1];
+
+	sortKey = ( (unsigned char *)&source[ 0 ].sort ) + byte;
+	for( i = 0; i < size; ++i, sortKey += sizeof( renderlistitem_t ) )
+		dest[ index[*sortKey]++ ] = source[i];
+}
+
+//modified ioquake3 code
+void renderqueueRadixSort(void){
+	if(renderscratchsize != renderqueuesize){
+		renderscratch = realloc(renderscratch, renderqueuesize * sizeof(renderlistitem_t));
+		renderscratchsize = renderqueuesize;
+	}
+	//todo use some preprocesor magics here
+	renderqueue_radix(0, renderqueueplace, renderqueue, renderscratch);
+	renderqueue_radix(1, renderqueueplace, renderscratch, renderqueue);
+	renderqueue_radix(2, renderqueueplace, renderqueue, renderscratch);
+	renderqueue_radix(3, renderqueueplace, renderscratch, renderqueue);
+	renderqueue_radix(4, renderqueueplace, renderqueue, renderscratch);
+	renderqueue_radix(5, renderqueueplace, renderscratch, renderqueue);
+	renderqueue_radix(6, renderqueueplace, renderqueue, renderscratch);
+	renderqueue_radix(7, renderqueueplace, renderscratch, renderqueue);
+	renderqueue_radix(8, renderqueueplace, renderqueue, renderscratch);
+	renderqueue_radix(9, renderqueueplace, renderscratch, renderqueue);
+	renderqueue_radix(10,renderqueueplace, renderqueue, renderscratch);
+	renderqueue_radix(11,renderqueueplace, renderscratch, renderqueue);
+	//todo SHOULD BE RADIXSORTSIZE-1
+}
+
+
+
+
+
 char addRenderlistitem(const renderlistitem_t r){
 	if((r.setup || r.draw)) return FALSE;
 	//check if it needs a resize
