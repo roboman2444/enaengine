@@ -59,6 +59,23 @@ renderlistitem_t * renderqueue = 0;
 unsigned int renderscratchsize = 0;
 renderlistitem_t * renderscratch = 0;
 
+void renderqueueDraw(void){
+	//todo instancing support
+	unsigned int i;
+	for(i = 0; i < renderqueueplace; i++){
+		renderqueue[i].draw(&renderqueue->data, 1);
+	}
+}
+void renderqueueSetup(void){
+	//todo instancing support?
+	unsigned int i;
+	for(i = 0; i < renderqueueplace; i++){
+		renderqueue[i].setup(&renderqueue->data, 1);
+	}
+	flushVertCacheToBuffers();
+	flushUBOCacheToBuffers();
+}
+
 
 
 

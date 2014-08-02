@@ -62,6 +62,9 @@ char flushUBOCacheToBuffers(void);
 char createAndAddRenderlistitem(const void * data, const unsigned int datasize, const renderqueueCallback_t setup, const renderqueueCallback_t draw, const unsigned char flags, const unsigned char sort[RADIXSORTSIZE]);
 char addRenderlistitem(renderlistitem_t r);
 
+void renderqueueDraw(void);
+void renderqueueSetup(void);
+
 //void addLightToLightbatche(light_t * l, lightbatche_t * batch);
 //void cleanupLightbatche(lightbatche_t * batch);
 
