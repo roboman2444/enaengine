@@ -20,3 +20,4 @@ clean:
 	@rm -f $(OBJECTS)
 	@rm -f enaengine
 	@rm -f enaengine-debug
+	@rm -f enaengine-valgrind

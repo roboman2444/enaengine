@@ -1,8 +1,5 @@
 #version 150
 
-uniform mat4 unimat40;
-uniform mat4 unimat41;
-
 in vec3 fragnormal;
 in vec3 fragposition;
 in vec2 fragtexCoord;

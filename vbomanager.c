@@ -12,6 +12,10 @@ int vboArrayLastTaken = -1;
 int vboArraySize = 0;
 vbo_t *vbolist;
 
+GLuint vaoCurrentId = 0;
+GLuint vboCurrentId = 0;
+GLenum vboCurrentType = GL_ARRAY_BUFFER;
+
 hashbucket_t vbohashtable[MAXHASHBUCKETS];
 
 int initVBOSystem(void){
@@ -160,3 +164,20 @@ int setUpVBOStride(vbo_t * vbo, unsigned char posstride, unsigned char normstrid
 
 	return totalstride;
 }
+
+//states stuff
+
+void statesBindVertexArray(const GLuint id){
+	if(id != vaoCurrentId){
+		vaoCurrentId = id;
+		glBindVertexArray(id);
+	}
+}
+void statesBindBuffer(const GLenum type, const GLuint id){
+	if(type != vboCurrentType || id != vboCurrentId){
+		glBindBuffer(type, id);
+		vboCurrentType = type;
+		vboCurrentId = id;
+	}
+}
+

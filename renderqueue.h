@@ -26,21 +26,31 @@ typedef struct renderbatche_s {
 }renderbatche_t; // the e stands for entity
 
 
+GLuint renderqueueuboid;//need this
+
+
 
 
 
 //start fresh, no idiota this time
 #define RADIXSORTSIZE 12 // currently 2 for shader id, 4 for permutation, 2 for modelid/vboid (if any, ones with 0 probably use the vert data method, have to check), 2 for texture id, 1 for depth, 1 for misc flags (such as alpha blending or not)
 
-typedef void * (* renderqueueCallback_t)(void ** data, unsigned int count);
+typedef void (* renderqueueCallback_t)(void ** data, unsigned int count);
 typedef struct renderlistitem_s {
 	void * data;
 	unsigned int datasize;
 	renderqueueCallback_t setup;
 	renderqueueCallback_t draw;
-	unsigned char flags; //1 is nonfreeable
+	unsigned char flags; //1 is freeable
 	unsigned char sort[RADIXSORTSIZE];
 } renderlistitem_t;
+
+typedef struct renderqueue_s {
+	unsigned int size;
+	unsigned int place;
+	renderlistitem_t * list;
+	//todo maybe have scratch in here for sorting, so multithreading doesnt have issues
+} renderqueue_t;
 
 int addEntityToRenderbatche(entity_t * ent, renderbatche_t * batch);
 int addObjectToRenderbatche(worldobject_t * obj, renderbatche_t * batch);
@@ -59,11 +69,22 @@ int pushDataToUBOCache(const unsigned int size, const void * data);
 char flushUBOCacheToBuffers(void);
 
 
-char createAndAddRenderlistitem(const void * data, const unsigned int datasize, const renderqueueCallback_t setup, const renderqueueCallback_t draw, const unsigned char flags, const unsigned char sort[RADIXSORTSIZE]);
-char addRenderlistitem(renderlistitem_t r);
+char createAndAddRenderlistitem(renderqueue_t * queue, const void * data, const unsigned int datasize, const renderqueueCallback_t setup, const renderqueueCallback_t draw, const unsigned char flags, const unsigned char sort[RADIXSORTSIZE]);
+char addRenderlistitem(renderqueue_t * queue, const renderlistitem_t r);
 
-void renderqueueDraw(void);
-void renderqueueSetup(void);
+void renderqueueDraw(renderqueue_t * queue);
+void renderqueueSetup(const renderqueue_t * queue);
+
+unsigned int renderqueueHalfQueue(renderqueue_t * queue);
+unsigned int renderqueuePruneQueue(renderqueue_t * queue);
+unsigned int renderqueuePruneUBO(void);
+unsigned int renderqueueHalfUBO(void);
+void renderqueueHalfVBO(void);
+
+unsigned int renderqueueCleanup(renderqueue_t * queue);
+
+void renderqueueRadixSort(const renderqueue_t * queue);
+
 
 //void addLightToLightbatche(light_t * l, lightbatche_t * batch);
 //void cleanupLightbatche(lightbatche_t * batch);

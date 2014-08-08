@@ -7,16 +7,17 @@ in vec3 posattrib;
 in vec3 normattrib;
 in vec2 tcattrib;
 
-//in mat4 instanceattrib;
 
-#define N 1024 // 16 floats
+struct modeldata {
+	mat4 modelviewprojection;
+	mat4 modelview;
+};
+
+#define N 512 // 32 floats
 layout (std140) uniform uniblock0 {
-	mat4 ldata[N];
+	modeldata data[N];
 } uniblock0_t;
-layout (std140) uniform uniblock1 {
-//	mat3x4 ldata[N];
-	mat4 ldata[N];
-} uniblock1_t;
+
 out vec3 fragnormal;
 out vec3 fragposition;
 out vec2 fragtexCoord;
@@ -29,8 +30,9 @@ out float depth;
 
 
 void main(){
-	mat4 instanceattrib = uniblock0_t.ldata[gl_InstanceID];
-	mat4 mvmat = uniblock1_t.ldata[gl_InstanceID];
+	modeldata mydata = uniblock0_t.data[gl_InstanceID];
+	mat4 mvpmat = mydata.modelviewprojection;
+	mat4 mvmat = mydata.modelview;
 
 	fragnormal = normalize((mvmat * vec4(normattrib, 0.0)).xyz);
 	fragtexCoord = tcattrib;
@@ -41,7 +43,7 @@ void main(){
 		svector = tvecpre.xyz;
 		tvector = cross(tvecpre.xyz, fragnormal) * tangentattrib.w;
 	#endif
-	gl_Position = instanceattrib * vec4(posattrib, 1.0);
+	gl_Position = mvpmat * vec4(posattrib, 1.0);
 	fragposition = gl_Position.xyz;
 	depth = (mvmat * vec4(posattrib, 1.0)).z;
 }

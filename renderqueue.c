@@ -45,32 +45,107 @@ unsigned int facedataplace = 0;
 GLuint * facedata = 0;
 
 
+
 //UNIFORM BUFFER STUFF
 
 unsigned int ubodatasize = 0; //in bytes
 unsigned int ubodataplace = 0; // in bytes
 GLubyte * ubodata = 0;
-GLuint uboid;
+//GLbyte * ubodata = 0;
+//unsigned char * ubodata = 0;
+GLuint renderqueueuboid = 0;
 
 // RENDERQUEUE STUFF
-unsigned int renderqueuesize = 0;
-unsigned int renderqueueplace = 0;
-renderlistitem_t * renderqueue = 0;
-unsigned int renderscratchsize = 0;
+//unsigned int renderqueuesize = 0;
+//unsigned int renderqueueplace = 0;
+//renderlistitem_t * renderqueue = 0;
+unsigned int renderscratchsize =0 ;
 renderlistitem_t * renderscratch = 0;
 
-void renderqueueDraw(void){
+unsigned int renderqueueCleanup(renderqueue_t *queue){
+	if(!queue) return FALSE;
+	renderlistitem_t * list = queue->list;
+	if(!list) return FALSE;
+	unsigned int i, counter = 0;
+	unsigned int place = queue->place;
+	for(i = 0; i < place; i++){
+		if(list[i].flags & 1){
+			free(list[i].data);
+			counter++;
+		}
+	}
+	free(list);
+	memset(queue, 0, sizeof(renderqueue_t));
+	return counter;
+}
+
+
+
+unsigned int renderqueueHalfQueue(renderqueue_t *queue){
+	queue->size /= 2;
+	queue->list = realloc(queue->list, queue->size * sizeof(renderlistitem_t));
+	return queue->size;
+}
+unsigned int renderqueuePruneQueue(renderqueue_t *queue){
+	queue->size = queue->place;
+	queue->list = realloc(queue->list, queue->size * sizeof(renderlistitem_t));
+	return queue->size;
+}
+unsigned int renderqueueHalfUBO(void){
+	ubodatasize = ubodatasize/2;
+	ubodata = realloc(ubodata, ubodatasize);
+	return ubodatasize;
+}
+unsigned int renderqueuePruneUBO(void){
+	ubodatasize = ubodataplace;
+	ubodata = realloc(ubodata, ubodatasize);
+	return ubodatasize;
+}
+void renderqueueHalfVBO(void){
+	facedatasize = facedatasize/2;
+	facedata = realloc(facedata, facedatasize * 3 * sizeof(GLuint));
+
+	vertposdatasize = vertposdatasize/2;
+	vertposdata = realloc(vertposdata, vertposdatasize * 3 * sizeof(GLfloat));
+
+	vertnormdatasize = vertnormdatasize/2;
+	vertnormdata = realloc(vertnormdata, vertnormdatasize * 3 * sizeof(GLfloat));
+
+	verttcdatasize = verttcdatasize/2;
+	verttcdata = realloc(verttcdata, verttcdatasize * 2 * sizeof(GLfloat));
+
+	verttangentdatasize = verttangentdatasize/2;
+	verttangentdata = realloc(verttangentdata, verttangentdatasize * 3 * sizeof(GLfloat));
+
+	vertblendidatasize = vertblendidatasize/2;
+	vertblendidata = realloc(vertblendidata, vertblendidatasize * sizeof(GLfloat));
+
+	vertblendwdatasize = vertblendwdatasize/2;
+	vertblendwdata = realloc(vertblendwdata, vertblendwdatasize * sizeof(GLfloat));
+
+
+	vertdatasize = vertdatasize/2;
+}
+
+void renderqueueDraw(renderqueue_t * queue){
 	//todo instancing support
 	unsigned int i;
-	for(i = 0; i < renderqueueplace; i++){
-		renderqueue[i].draw(&renderqueue->data, 1);
+	unsigned int place = queue->place;
+	renderlistitem_t * list = queue->list;
+	for(i = 0; i < place; i++){
+		list[i].draw(&list[i].data, 1);
+		if(list[i].flags & 1) free(list[i].data);
 	}
+	//reset it
+	queue->place = 0;
 }
-void renderqueueSetup(void){
+void renderqueueSetup(const renderqueue_t * queue){
 	//todo instancing support?
 	unsigned int i;
-	for(i = 0; i < renderqueueplace; i++){
-		renderqueue[i].setup(&renderqueue->data, 1);
+	unsigned int place = queue->place;
+	renderlistitem_t * list = queue->list;
+	for(i = 0; i < place; i++){
+		list[i].setup(&list[i].data, 1);
 	}
 	flushVertCacheToBuffers();
 	flushUBOCacheToBuffers();
@@ -104,24 +179,26 @@ static inline void renderqueue_radix(int byte, int size, renderlistitem_t *sourc
 }
 
 //modified ioquake3 code
-void renderqueueRadixSort(void){
-	if(renderscratchsize != renderqueuesize){
-		renderscratch = realloc(renderscratch, renderqueuesize * sizeof(renderlistitem_t));
-		renderscratchsize = renderqueuesize;
+void renderqueueRadixSort(const renderqueue_t * queue){
+	if(renderscratchsize < queue->place){
+		renderscratch = realloc(renderscratch, queue->place * sizeof(renderlistitem_t));
+		renderscratchsize = queue->place;
 	}
+	renderlistitem_t * list = queue->list;
+	unsigned int place = queue->place;
 	//todo use some preprocesor magics here
-	renderqueue_radix(0, renderqueueplace, renderqueue, renderscratch);
-	renderqueue_radix(1, renderqueueplace, renderscratch, renderqueue);
-	renderqueue_radix(2, renderqueueplace, renderqueue, renderscratch);
-	renderqueue_radix(3, renderqueueplace, renderscratch, renderqueue);
-	renderqueue_radix(4, renderqueueplace, renderqueue, renderscratch);
-	renderqueue_radix(5, renderqueueplace, renderscratch, renderqueue);
-	renderqueue_radix(6, renderqueueplace, renderqueue, renderscratch);
-	renderqueue_radix(7, renderqueueplace, renderscratch, renderqueue);
-	renderqueue_radix(8, renderqueueplace, renderqueue, renderscratch);
-	renderqueue_radix(9, renderqueueplace, renderscratch, renderqueue);
-	renderqueue_radix(10,renderqueueplace, renderqueue, renderscratch);
-	renderqueue_radix(11,renderqueueplace, renderscratch, renderqueue);
+	renderqueue_radix(0, place, list, renderscratch);
+	renderqueue_radix(1, place, renderscratch, list);
+	renderqueue_radix(2, place, list, renderscratch);
+	renderqueue_radix(3, place, renderscratch, list);
+	renderqueue_radix(4, place, list, renderscratch);
+	renderqueue_radix(5, place, renderscratch, list);
+	renderqueue_radix(6, place, list, renderscratch);
+	renderqueue_radix(7, place, renderscratch, list);
+	renderqueue_radix(8, place, list, renderscratch);
+	renderqueue_radix(9, place, renderscratch, list);
+	renderqueue_radix(10,place, list, renderscratch);
+	renderqueue_radix(11,place, renderscratch, list);
 	//todo SHOULD BE RADIXSORTSIZE-1
 }
 
@@ -129,19 +206,19 @@ void renderqueueRadixSort(void){
 
 
 
-char addRenderlistitem(const renderlistitem_t r){
-	if((r.setup || r.draw)) return FALSE;
+char addRenderlistitem(renderqueue_t * queue, const renderlistitem_t r){
+	if((!r.setup || !r.draw)) return FALSE;
 	//check if it needs a resize
-	unsigned int renderqueuenewsize = renderqueueplace + 1 + 1; //todo need 1?
-	if(renderqueuenewsize > renderqueuesize){
-		renderqueue = realloc(renderqueue, renderqueuenewsize * sizeof(renderlistitem_t));
-		renderqueuesize = renderqueuenewsize;
+	unsigned int renderqueuenewsize = queue->place + 1; //todo need TWO +1s?
+	if(renderqueuenewsize > queue->size){
+		queue->list = realloc(queue->list, renderqueuenewsize * sizeof(renderlistitem_t));
+		queue->size = renderqueuenewsize;
 	}
-	memcpy(&renderqueue[renderqueueplace], &r, sizeof(renderlistitem_t));
-	renderqueueplace ++;
+	memcpy(&queue->list[queue->place], &r, sizeof(renderlistitem_t));
+	queue->place++;
 	return TRUE;
 }
-char createAndAddRenderlistitem(const void * data, const unsigned int datasize, const renderqueueCallback_t setup, const renderqueueCallback_t draw, const unsigned char flags, const unsigned char sort[RADIXSORTSIZE]){
+char createAndAddRenderlistitem(renderqueue_t * queue, const void * data, const unsigned int datasize, const renderqueueCallback_t setup, const renderqueueCallback_t draw, const unsigned char flags, const unsigned char sort[RADIXSORTSIZE]){
 	renderlistitem_t r;
 	r.data = (void*)data;
 	r.datasize = datasize;
@@ -149,12 +226,12 @@ char createAndAddRenderlistitem(const void * data, const unsigned int datasize, 
 	r.draw = draw;
 	r.flags = flags;
 	memcpy(r.sort, sort, RADIXSORTSIZE);
-	return addRenderlistitem(r);
+	return addRenderlistitem(queue, r);
 }
 
 char flushUBOCacheToBuffers(void){
 	if(!ubodataplace) return FALSE;
-	glBindBuffer(GL_ARRAY_BUFFER, uboid);
+	glBindBuffer(GL_ARRAY_BUFFER, renderqueueuboid);
 	glBufferData(GL_ARRAY_BUFFER, ubodataplace, ubodata, GL_DYNAMIC_DRAW);
 	ubodataplace = 0;
 	return TRUE;
@@ -164,14 +241,14 @@ char flushUBOCacheToBuffers(void){
 int pushDataToUBOCache(const unsigned int size, const void * data){
 	if(!size || !data) return -1;
 	//check if it needs a resize
-	unsigned int ubodatanewsize = ubodataplace + size +1; //todo need 1?
+	unsigned int ubodatanewsize = ubodataplace + size; //todo need 1?
 	if(ubodatanewsize > ubodatasize){
 		ubodata = realloc(ubodata, ubodatanewsize);
 		ubodatasize = ubodatanewsize;
 	}
 	memcpy(ubodata + ubodataplace, data, size);
-	unsigned int ubodataoldplace = ubodataplace;
-	ubodataplace += size;
+	int ubodataoldplace = ubodataplace;
+	ubodataplace += 2*size; //TODO WHAT THE FUCK WHY DO I HAVE TO DO THIS GOD DAMMIT TODO TODO TODO TODO
 	return ubodataoldplace;
 }
 
@@ -287,7 +364,7 @@ int pushDataToVertCache(const unsigned int vertcount, const unsigned int facecou
 	//push vert stuff
 	unsigned int faceinsize = facecount*3;
 	//todo do i need this +1? (change all others if not as well)
-	unsigned int facedatanewsize = facedataplace + faceinsize + 1;
+	unsigned int facedatanewsize = facedataplace + faceinsize;
 	if(facedatanewsize > facedatasize){
 		facedata = realloc(facedata, facedatanewsize * sizeof(GLuint));
 		facedatasize = facedatanewsize;
@@ -302,7 +379,7 @@ int pushDataToVertCache(const unsigned int vertcount, const unsigned int facecou
 	//todo copy and paste this for every input
 	if(posdata){
 		//check if needs resize
-		unsigned int newvertposdatasize = (vertdataplace + vertcount + 1) * 3;
+		unsigned int newvertposdatasize = (vertdataplace + vertcount) * 3;
 		if(newvertposdatasize > vertposdatasize){
 			vertposdata = realloc(vertposdata, newvertposdatasize * sizeof(GLfloat));
 			vertposdatasize = newvertposdatasize;
@@ -317,7 +394,7 @@ int pushDataToVertCache(const unsigned int vertcount, const unsigned int facecou
 	}
 	if(normdata){
 		//check if needs resize
-		unsigned int newvertnormdatasize = (vertdataplace + vertcount + 1) * 3;
+		unsigned int newvertnormdatasize = (vertdataplace + vertcount) * 3;
 		if(newvertnormdatasize > vertnormdatasize){
 			vertnormdata = realloc(vertnormdata, newvertnormdatasize * sizeof(GLfloat));
 			vertnormdatasize = newvertnormdatasize;
@@ -333,7 +410,7 @@ int pushDataToVertCache(const unsigned int vertcount, const unsigned int facecou
 	}
 	if(tcdata){
 		//check if needs resize
-		unsigned int newverttcdatasize = (vertdataplace + vertcount + 1) * 2;
+		unsigned int newverttcdatasize = (vertdataplace + vertcount) * 2;
 		if(newverttcdatasize > verttcdatasize){
 			verttcdata = realloc(verttcdata, newverttcdatasize * sizeof(GLfloat));
 			verttcdatasize = newverttcdatasize;
@@ -348,7 +425,7 @@ int pushDataToVertCache(const unsigned int vertcount, const unsigned int facecou
 	}
 	if(tangentdata){
 		//check if needs resize
-		unsigned int newverttangentdatasize = (vertdataplace + vertcount + 1) * 3;
+		unsigned int newverttangentdatasize = (vertdataplace + vertcount) * 3;
 		if(newverttangentdatasize > verttangentdatasize){
 			verttangentdata = realloc(verttangentdata, newverttangentdatasize * sizeof(GLfloat));
 			verttangentdatasize = newverttangentdatasize;
@@ -363,7 +440,7 @@ int pushDataToVertCache(const unsigned int vertcount, const unsigned int facecou
 	}
 	if(blendidata){
 		//check if needs resize
-		unsigned int newvertblendidatasize = (vertdataplace + vertcount + 1);
+		unsigned int newvertblendidatasize = (vertdataplace + vertcount);
 		if(newvertblendidatasize > vertblendidatasize){
 			vertblendidata = realloc(vertblendidata, newvertblendidatasize * sizeof(GLfloat));
 			vertblendidatasize = newvertblendidatasize;
@@ -378,7 +455,7 @@ int pushDataToVertCache(const unsigned int vertcount, const unsigned int facecou
 	}
 	if(blendwdata){
 		//check if needs resize
-		unsigned int newvertblendwdatasize = (vertdataplace + vertcount + 1);
+		unsigned int newvertblendwdatasize = (vertdataplace + vertcount);
 		if(newvertblendwdatasize > vertblendwdatasize){
 			vertblendwdata = realloc(vertblendwdata, newvertblendwdatasize * sizeof(GLfloat));
 			vertblendwdatasize = newvertblendwdatasize;
@@ -430,7 +507,7 @@ int readyRenderQueueBuffers(void){
 		glEnableVertexAttribArray(BLENDWATTRIBLOC);
 		glVertexAttribPointer(BLENDWATTRIBLOC, 1, GL_UNSIGNED_BYTE, GL_TRUE, 1, 0);
 
-	glGenBuffers(1, &uboid);
+	glGenBuffers(1, &renderqueueuboid);
 
 	return TRUE;
 }
@@ -595,7 +672,7 @@ int addObjectToTexturebatche(worldobject_t * obj, texturebatche_t * batch){
 int addObjectToShaderbatche(worldobject_t * obj, shaderbatche_t * batch){
 	if(!batch) return FALSE;
 	int count = batch->count;
-	int textureid = obj->textureid;
+	int textureid = obj->texturegroupid;
 	if(!batch->texturebatch) count = 0;
 	int i;
 	for(i = 0; i < count; i++){

@@ -21,7 +21,7 @@
 #include "ubomanager.h"
 #include "glstates.h"
 #include "animmanager.h"
-#include <tgmath.h>
+#include <tgmath.h> //for sin and cos
 
 
 float degnumber;
@@ -49,6 +49,10 @@ GLuint rectangleindices[6] = { 0, 1, 2, 0, 2, 3};
 int fsquadmodel = 0;
 
 vbo_t * consoleVBO = 0; //temp
+
+//temp?
+renderqueue_t forward;
+renderqueue_t deferred;
 int glShutdown(void){
 	return FALSE;
 }
@@ -165,39 +169,116 @@ int glInit(void){
 	cubeModel = findModelByNameRINT("cube");
 	fsquadmodel = findModelByNameRINT("fsquad");
 
+	readyRenderQueueBuffers();
+
 //	setMSAA(16);
 
 	return TRUE; // so far so good
 }
-// deprecated and wont work for most shaders
-int glDrawModel(model_t * model, matrix4x4_t * modworld, matrix4x4_t * viewproj){
-	vbo_t * tvbo = returnVBOById(model->vbo);
-	if(!tvbo) return FALSE;
-	matrix4x4_t outmat;
-//	Matrix4x4_Concat(&outmat, modworld, viewproj);
-	Matrix4x4_Concat(&outmat, viewproj, modworld);
+//todo move this junk
+typedef struct renderModelCallbackData_s {
+	unsigned int modelid;
+	unsigned int shaderid;
+	unsigned int shaderperm;
+	unsigned int texturegroupid;
+	unsigned int ubodataoffset;
+	matrix4x4_t mvp;
+	matrix4x4_t mv;
+} renderModelCallbackData_t;
+void drawModelCallback(void ** data, unsigned int count){
+	renderModelCallbackData_t *d = (renderModelCallbackData_t *)*data;
+	//todo make instancing support
+	model_t *m = returnModelById(d->modelid);
+	vbo_t *v = returnVBOById(m->vbo);
+	statesBindVertexArray(v->vaoid);
+	shaderprogram_t *s = returnShaderById(d->shaderid);
+//	shaderpermutation_t * sp = findShaderPermutation(s, d->shaderperm);
+	shaderpermutation_t * sp = addPermutationToShader(s, d->shaderperm);
 
-	GLfloat out[16];
-	Matrix4x4_ToArrayFloatGL(&outmat, out);
-	glUniformMatrix4fv(shaderCurrentBound->unimat40, 1, GL_FALSE, out);
-//	glBindVertexArray(tvbo->vaoid);
+	bindShaderPerm(sp);
+	texturegroup_t *t = returnTexturegroupById(d->texturegroupid);
+	bindTexturegroup(t);
+	glBindBufferRange(GL_UNIFORM_BUFFER, 0, renderqueueuboid, d->ubodataoffset, 32 * sizeof(GLfloat));
 
-	glDrawElements(GL_TRIANGLES, tvbo->numfaces*3, GL_UNSIGNED_INT, 0);
-	totalface += tvbo->numfaces;
-	totalvert += tvbo->numverts;
-	totalcount++;
-	return tvbo->numfaces;
+	glDrawElements(GL_TRIANGLES, v->numfaces * 3, GL_UNSIGNED_INT, 0);
+//	glDrawElementsInstanced(GL_TRIANGLES, v->numfaces * 3, GL_UNSIGNED_INT, 0, 1);
+//	consolePrintf("Rendered\n");
 }
-int addAllChildrenLeafIntoQueues(worldleaf_t *l, renderbatche_t * forwardbatch, renderbatche_t * deferredbatch){
+void setupModelCallback(void ** data, unsigned int count){
+	renderModelCallbackData_t *d = (renderModelCallbackData_t *)*data;
+	//todo make instancing support?
+//	GLfloat ubodata[32];
+//	Matrix4x4_ToArrayFloatGL(&d->mvp, &ubodata[0]);
+//	Matrix4x4_ToArrayFloatGL(&d->mv,  &ubodata[16]);
+//	int t = pushDataToUBOCache(32 * sizeof(GLfloat), ubodata);
+//	if(t < 0) printf("BAAAD\n");
+//	d->ubodataoffset = t;
+//	consolePrintf("Setup\n");
+}
+
+void addObjectToRenderqueue(const worldobject_t *o, renderqueue_t * q, const viewport_t * v){
+	renderlistitem_t r;
+	unsigned int shaderperm = o->shaderperm;
+	unsigned int shaderid = o->shaderid;
+	unsigned int modelid = o->modelid;
+	unsigned int texturegroupid = o->texturegroupid;
+	renderModelCallbackData_t d;
+	d.shaderperm = shaderperm;
+	d.shaderid = shaderid;
+	d.modelid = modelid;
+	d.texturegroupid = texturegroupid;
+	d.ubodataoffset = 0;
+	Matrix4x4_Concat(&d.mvp, &v->viewproj, &o->mat);
+	Matrix4x4_Concat(&d.mv, &v->view, &o->mat);
+	r.sort[0] = shaderid & 0x00FF;
+	r.sort[1] = shaderid & 0xFF00;
+	r.sort[2] = shaderperm & 0x000000FF;
+	r.sort[3] = shaderperm & 0x0000FF00;
+	r.sort[4] = shaderperm & 0x00FF0000;
+	r.sort[5] = shaderperm & 0xFF000000;
+	r.sort[6] = modelid & 0x00FF;
+	r.sort[7] = modelid & 0xFF00;
+	r.sort[8] = texturegroupid & 0x00FF;
+	r.sort[9] = texturegroupid & 0xFF00;
+	r.sort[10] = 0;
+	r.sort[11] = 0;
+	r.flags = 1; //freeable
+	r.setup = setupModelCallback;
+	r.draw = drawModelCallback;
+
+
+	GLfloat ubodata[32];
+	Matrix4x4_ToArrayFloatGL(&d.mvp, &ubodata[0]);
+	Matrix4x4_ToArrayFloatGL(&d.mv,  &ubodata[16]);
+	int t = pushDataToUBOCache(32 * sizeof(GLfloat), ubodata);
+	if(t < 0) printf("BAAAD\n");
+	d.ubodataoffset = t;
+
+
+
+//todo do this better
+	r.data = malloc(sizeof(renderModelCallbackData_t));
+	memcpy(r.data, &d, sizeof(renderModelCallbackData_t));
+
+
+
+
+
+
+	addRenderlistitem(q, r);
+//	consolePrintf("ADDED\n");
+}
+
+int addAllChildrenLeafIntoQueues(worldleaf_t *l, renderqueue_t * forwardqueue, renderqueue_t * deferredqueue, viewport_t *v){
 	int num = l->numobjects;
 	worldobject_t * list = l->list;
 	int mynum = 0;
 	int i;
 	for(i = 0; i < num; i++){
 		if(list[i].flags & DEFERREDFLAG)
-			addObjectToRenderbatche(&list[i], deferredbatch);
+			addObjectToRenderqueue(&list[i], deferredqueue, v);
 		if(list[i].flags & FORWARDFLAG)
-			addObjectToRenderbatche(&list[i], forwardbatch);
+			addObjectToRenderqueue(&list[i], forwardqueue, v);
 		mynum++;
 	}
 
@@ -206,12 +287,12 @@ int addAllChildrenLeafIntoQueues(worldleaf_t *l, renderbatche_t * forwardbatch, 
 	int j;
 	for(j = 0; j < 4; j++){
 		if(children[j]){
-			mynum+= addAllChildrenLeafIntoQueues(children[j], forwardbatch, deferredbatch);
+			mynum+= addAllChildrenLeafIntoQueues(children[j], forwardqueue, deferredqueue, v);
 		}
 	}
 	return mynum;
 }
-int loadLeafIntoQueues(worldleaf_t * l, renderbatche_t * forwardbatch, renderbatche_t * deferredbatch, viewport_t *v){
+int loadLeafIntoQueues(worldleaf_t * l, renderqueue_t * forwardqueue, renderqueue_t * deferredqueue, viewport_t *v){
 	int num = l->numobjects;
 	int mynum=0;
 	worldobject_t * list = l->list;
@@ -219,9 +300,9 @@ int loadLeafIntoQueues(worldleaf_t * l, renderbatche_t * forwardbatch, renderbat
 	for(i = 0; i < num; i++){
 		if(testBBoxPInFrustum(v, list[i].bboxp)){
 			if(list[i].flags & DEFERREDFLAG)
-				addObjectToRenderbatche(&list[i], deferredbatch);
+				addObjectToRenderqueue(&list[i], deferredqueue, v);
 			if(list[i].flags & FORWARDFLAG)
-				addObjectToRenderbatche(&list[i], forwardbatch);
+				addObjectToRenderqueue(&list[i], forwardqueue, v);
 			mynum++;
 		}
 	}
@@ -250,25 +331,25 @@ int loadLeafIntoQueues(worldleaf_t * l, renderbatche_t * forwardbatch, renderbat
 */
 
 		if(children[i] && testBBoxPInFrustum(v, children[i]->bboxp)){
-			mynum+= loadLeafIntoQueues(children[i], forwardbatch, deferredbatch, v);
+			mynum+= loadLeafIntoQueues(children[i], forwardqueue, deferredqueue, v);
 		}
 
 	}
 
 	return mynum;
 }
-int loadWorldIntoQueues(renderbatche_t * forwardbatch, renderbatche_t * deferredbatch, viewport_t *v){
+int loadWorldIntoQueues(renderqueue_t * forwardqueue, renderqueue_t * deferredqueue, viewport_t *v){
 	if(!worldroot ||  !worldNumObjects) return FALSE;
-	return loadLeafIntoQueues(worldroot, forwardbatch, deferredbatch, v);
+	return loadLeafIntoQueues(worldroot, forwardqueue, deferredqueue, v);
 }
-int loadLeafIntoQueue(worldleaf_t * l, renderbatche_t * batch, viewport_t *v){
+int loadLeafIntoQueue(worldleaf_t * l, renderqueue_t * queue, viewport_t *v){
 	int num = l->numobjects;
 	int mynum=0;
 	worldobject_t * list = l->list;
 	int i;
 	for(i = 0; i < num; i++){
 		if(testBBoxPInFrustum(v, list[i].bboxp)){
-			addObjectToRenderbatche(&list[i], batch);
+			addObjectToRenderqueue(&list[i], queue, v);
 			mynum++;
 		}
 	}
@@ -277,7 +358,7 @@ int loadLeafIntoQueue(worldleaf_t * l, renderbatche_t * batch, viewport_t *v){
 	/*
 	for(i = 0; i < 4; i++){
 		if(children[i] && testBBoxPInFrustum(v, children[i]->bboxp)){
-			mynum+= loadLeafIntoQueue(children[i], batch, v);
+			mynum+= loadLeafIntoQueue(children[i], queue, v);
 		}
 	}
 	*/
@@ -285,17 +366,64 @@ int loadLeafIntoQueue(worldleaf_t * l, renderbatche_t * batch, viewport_t *v){
 	for(j = 0; j < 4; j++){
 		i = v->dir[j];
 		if(children[i] && testBBoxPInFrustum(v, children[i]->bboxp)){
-			mynum+= loadLeafIntoQueue(children[i], batch, v);
+			mynum+= loadLeafIntoQueue(children[i], queue, v);
 		}
 	}
 
 	return mynum;
 }
-int loadWorldIntoQueue(renderbatche_t * batch, viewport_t *v){
+int loadWorldIntoQueue(renderqueue_t * queue, viewport_t *v){
 	if(!worldroot ||  !worldNumObjects) return FALSE;
-	return loadLeafIntoQueue(worldroot, batch, v);
+	return loadLeafIntoQueue(worldroot, queue, v);
 }
-int loadEntitiesIntoQueue(renderbatche_t * batch, viewport_t * v){
+void addEntityToRenderqueue(const entity_t *e, renderqueue_t * q, const viewport_t * v){
+	renderlistitem_t r;
+	unsigned int shaderperm = e->shaderperm;
+	unsigned int shaderid = e->shaderid;
+	unsigned int modelid = e->modelid;
+	unsigned int texturegroupid = e->texturegroupid;
+	renderModelCallbackData_t d;
+	d.shaderperm = shaderperm;
+	d.shaderid = shaderid;
+	d.modelid = modelid;
+	d.texturegroupid = texturegroupid;
+	d.ubodataoffset = 0;
+	Matrix4x4_Concat(&d.mvp, &v->viewproj, &e->mat);
+	Matrix4x4_Concat(&d.mv, &v->view, &e->mat);
+	r.sort[0] = shaderid & 0x00FF;
+	r.sort[1] = shaderid & 0xFF00;
+	r.sort[2] = shaderperm & 0x000000FF;
+	r.sort[3] = shaderperm & 0x0000FF00;
+	r.sort[4] = shaderperm & 0x00FF0000;
+	r.sort[5] = shaderperm & 0xFF000000;
+	r.sort[6] = modelid & 0x00FF;
+	r.sort[7] = modelid & 0xFF00;
+	r.sort[8] = texturegroupid & 0x00FF;
+	r.sort[9] = texturegroupid & 0xFF00;
+	r.sort[10] = 0;
+	r.sort[11] = 0;
+	r.flags = 1; //freeable
+	r.setup = setupModelCallback;
+	r.draw = drawModelCallback;
+
+	GLfloat ubodata[32];
+	Matrix4x4_ToArrayFloatGL(&d.mvp, &ubodata[0]);
+	Matrix4x4_ToArrayFloatGL(&d.mv,  &ubodata[16]);
+	int t = pushDataToUBOCache(32 * sizeof(GLfloat), ubodata);
+	if(t < 0) printf("BAAAD\n");
+	d.ubodataoffset = t;
+
+
+
+
+//todo do this better
+	r.data = malloc(sizeof(renderModelCallbackData_t));
+	memcpy(r.data, &d, sizeof(renderModelCallbackData_t));
+
+	addRenderlistitem(q, r);
+//	consolePrintf("ADDED\n");
+}
+int loadEntitiesIntoQueue(renderqueue_t * queue, viewport_t * v){
 	int i;
 	int count = 0;
 	int cullcount = 0;
@@ -308,14 +436,14 @@ int loadEntitiesIntoQueue(renderbatche_t * batch, viewport_t * v){
 		//best way to cull atm
 		if(testBBoxPInFrustum(v, e->bboxp)){
 			count++;
-			addEntityToRenderbatche(e, batch);
+			addEntityToRenderqueue(e, queue, v);
 		} else {
 			cullcount++;
 		}
 	}
 	return count;
 }
-int loadEntitiesIntoQueues(renderbatche_t * forwardbatch, renderbatche_t * deferredbatch, viewport_t * v){
+int loadEntitiesIntoQueues(renderqueue_t * forwardqueue, renderqueue_t * deferredqueue, viewport_t * v){
 	int i;
 	int count = 0;
 	int cullcount = 0;
@@ -328,17 +456,17 @@ int loadEntitiesIntoQueues(renderbatche_t * forwardbatch, renderbatche_t * defer
 		//best way to cull atm
 		if(testBBoxPInFrustum(v, e->bboxp)){
 			count++;
-			if(!(e->flags & FORWARDFLAG))
-				addEntityToRenderbatche(e, forwardbatch);
+			if(!(e->flags & FORWARDFLAG)) //todo check up on if the ! is supposed to be here..
+				addEntityToRenderqueue(e, forwardqueue, v);
 			if(!(e->flags & DEFERREDFLAG))
-				addEntityToRenderbatche(e, deferredbatch);
+				addEntityToRenderqueue(e, deferredqueue, v);
 		} else {
 			cullcount++;
 		}
 	}
 	return count;
 }
-int loadEntitiesIntoQueueForward(renderbatche_t * batch, viewport_t * v){
+int loadEntitiesIntoQueueForward(renderqueue_t * queue, viewport_t * v){
 	int i;
 	int count = 0;
 	int cullcount = 0;
@@ -352,14 +480,14 @@ int loadEntitiesIntoQueueForward(renderbatche_t * batch, viewport_t * v){
 		//best way to cull atm
 		if(testBBoxPInFrustum(v, e->bboxp)){
 			count++;
-			addEntityToRenderbatche(e, batch);
+			addEntityToRenderqueue(e, queue, v);
 		} else {
 			cullcount++;
 		}
 	}
 	return count;
 }
-int loadEntitiesIntoQueueDeferred(renderbatche_t * batch, viewport_t * v){
+int loadEntitiesIntoQueueDeferred(renderqueue_t * queue, viewport_t * v){
 	int i;
 	int count = 0;
 	int cullcount = 0;
@@ -373,13 +501,14 @@ int loadEntitiesIntoQueueDeferred(renderbatche_t * batch, viewport_t * v){
 		//best way to cull atm
 		if(testBBoxPInFrustum(v, e->bboxp)){
 			count++;
-			addEntityToRenderbatche(e, batch);
+			addEntityToRenderqueue(e, queue, v);
 		} else {
 			cullcount++;
 		}
 	}
 	return count;
 }
+//deprecaaaated
 int drawEntitiesM(modelbatche_t * batch){
 
 	//todo i need something to go through all the model batches and double check that there is more than x ents in there to draw. If not, it repositions it into a new shaderbatch where it does not use instancing
@@ -609,7 +738,6 @@ int glDrawLights(viewport_t *v){
 	glBindBuffer(GL_ARRAY_BUFFER, instancevbo);
 
 
-
 /*
 	glEnableVertexAttribArray(INSTANCEATTRIBLOC); //tell the location
 	glVertexAttribPointer( INSTANCEATTRIBLOC, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), 0 ); //tell other data
@@ -723,17 +851,20 @@ int glDrawViewport(viewport_t *v){
 //	glStencilMask(0xFF);
 //	glViewport(0, 0, of->width, of->height);
 
-	renderbatche_t b;
-	memset(&b, 0, sizeof(renderbatche_t));
+//	renderbatche_t b;
+//	memset(&b, 0, sizeof(renderbatche_t));
 
-	loadEntitiesIntoQueue(&b, v);
-	loadWorldIntoQueue(&b, v);
-	drawEntitiesR(&b);
+//	loadEntitiesIntoQueues(&forward, &deferred, v);
+//	loadWorldIntoQueues(&forward, &deferred, v);
+	loadEntitiesIntoQueue(&deferred, v);
+	loadWorldIntoQueue(&deferred, v);
+	renderqueueRadixSort(&deferred);
+	renderqueueSetup(&deferred);
+	renderqueueDraw(&deferred);
+	//todo queue stuff
 
 //	glStencilFunc(GL_EQUAL, 1, 0xFF);
 //	glStencilMask(0x00);
-
-	cleanupRenderbatche(&b);
 
 	glDrawLights(v);
 

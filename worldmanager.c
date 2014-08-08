@@ -126,10 +126,10 @@ int saveWorld(char * filename){
 		} else {
 			objlist[i].modelindice = 0;
 		}
-		if(testobj->textureid){
+		if(testobj->texturegroupid){
 			int j;
 			for(j = 0; j < texturecount; j++){
-				if(testobj->textureid == texturelist[j]){
+				if(testobj->texturegroupid == texturelist[j]){
 					objlist[i].textureindice = j+1;
 					break;
 				}
@@ -137,7 +137,7 @@ int saveWorld(char * filename){
 			if(j == texturecount){
 				texturecount++;
 				texturelist = realloc(texturelist, texturecount * sizeof(int));
-				texturelist[j] = testobj->textureid;
+				texturelist[j] = testobj->texturegroupid;
 				objlist[i].textureindice = texturecount;
 			}
 		} else {
@@ -357,8 +357,8 @@ int loadWorld(char * filename){
 
 		if(!modelindice) obj->modelid = 0;
 		else obj->modelid = createAndAddModelRINT(modelnamelist[modelindice-1]);
-		if(!textureindice) obj->textureid = 0;
-		else obj->textureid = createAndAddTexturegroupRINT(texturenamelist[textureindice-1]);
+		if(!textureindice) obj->texturegroupid = 0;
+		else obj->texturegroupid = createAndAddTexturegroupRINT(texturenamelist[textureindice-1]);
 		if(!shaderindice) obj->shaderid = 0;
 		else obj->shaderid = createAndAddShaderRINT(shadernamelist[shaderindice-1]);
 		obj->shaderperm = objbuf[i].shaderperm;
@@ -613,7 +613,7 @@ int addEntityToWorld(int entityid){
 //	Matrix4x4_OriginFromMatrix(&obj->mat, obj->pos);
 	Matrix4x4_OriginFromMatrix(&e->mat, obj->pos); // uh... this should fix SOMETHING
 	obj->modelid = e->modelid;
-	obj->textureid = e->texturegroupid;
+	obj->texturegroupid = e->texturegroupid;
 	obj->shaderid = e->shaderid;
 	obj->shaderperm = e->shaderperm;
 	memcpy(obj->bbox, e->bbox, 6 * sizeof(vec_t));

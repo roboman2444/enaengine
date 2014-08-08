@@ -11,7 +11,7 @@ typedef struct worldobject_s{
 //	int myid;
 	matrix4x4_t mat;
 	int modelid;
-	int textureid;
+	int texturegroupid;
 	int shaderid;
 	int shaderperm;
 	vec_t bboxp[24];
@@ -46,7 +46,7 @@ worldleaf_t * worldroot;
 
 int initWorldSystem(void);
 
-int generateWorldObject(int modelid, int textureid, matrix4x4_t mat);
+int generateWorldObject(int modelid, int texturegroupid, matrix4x4_t mat);
 
 int addObjectToWorld(worldobject_t * obj);
 
