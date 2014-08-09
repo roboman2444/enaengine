@@ -6,10 +6,12 @@
 #include "globaldefs.h"
 #include "texturemanager.h"
 
-#include "SDL_image.h"
+//#include "SDL_image.h"
 #include "SDL.h"
 #include "hashtables.h"
 #include "console.h"
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
 
 texturegroup_t * textureGroupCurrentBound = 0;
 
@@ -195,14 +197,13 @@ texture_t createTextureFlagsSizeMultisample(char flags, unsigned int width, unsi
 //todo something to load all textures for group *name
 texture_t loadTexture(char * filepath, char type){
 	texture_t tex;
-	SDL_Surface *teximage;
-	//todo better errorchecking
-//	if(!(teximage = IMG_Load(filepath))) return FALSE; //todo make return a "defualt"
-	teximage = IMG_Load(filepath);
-//	int size = teximage->format->BytesPerPixel * tex.width * tex.height;
+	int x=0, y=0, n=0;
+	unsigned char * imagedata = stbi_load(filepath, &x, &y, &n, 0);
+	if(!imagedata) return tex; //todo error reporting
+
 
 	GLint texformat = GL_RGB;
-	switch(teximage->format->BytesPerPixel){//todo different precisions
+	switch(n){//todo different precisions
 		case(1):
 			texformat = GL_RED;
 		break;
@@ -226,7 +227,7 @@ texture_t loadTexture(char * filepath, char type){
 /*
 	int x,y;
 	unsigned char * i;
-	i = teximage->pixels;
+	i = imagedata;
 	for(y = 0; y < tex.height; y++){
 		for(x = 0; x < tex.width; x++){
 			consolePrintf("%i %i %i %i\t", (int)*i, (int)*i+1, (int)*i+2, (int) *i+3);
@@ -235,19 +236,9 @@ texture_t loadTexture(char * filepath, char type){
 		printf("\n");
 	}
 */
-/*
-	unsigned char * data = malloc(300 * sizeof(GLfloat));
-	int x;
-	for(x = 0; x < 300; x++){
-		data[x] = rand() / (RAND_MAX);
-	}
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 10, 10, 0, GL_RGB, GL_FLOAT, data); //todo different formats
-	free(data);
-*/
-
 	//todo sdl surfaces miiiight have flipped texture data, look into this and maybe todo flip it like textmanager does
-	tex.width = teximage->w;
-	tex.height = teximage->h;
+	tex.width = x;
+	tex.height = y;
 
 	//find mipmap max level
 	unsigned char level;
@@ -256,7 +247,7 @@ texture_t loadTexture(char * filepath, char type){
 	}
 
 	//todo convert this into non "legacy" mipmapping code
-	glTexImage2D(GL_TEXTURE_2D, 0, texformat, tex.width, tex.height, 0, texformat, GL_UNSIGNED_BYTE, teximage->pixels); //todo different formats
+	glTexImage2D(GL_TEXTURE_2D, 0, texformat, tex.width, tex.height, 0, texformat, GL_UNSIGNED_BYTE, imagedata); //todo different formats
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 //	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -268,8 +259,11 @@ texture_t loadTexture(char * filepath, char type){
 	glGenerateMipmap(GL_TEXTURE_2D);
 
 	tex.type = type;
-	consolePrintf("loaded texture %s with dimensions %ix%i format %i and type %i\n", filepath, tex.width, tex.height, teximage->format->BytesPerPixel, tex.type);
-	SDL_FreeSurface(teximage);
+	consolePrintf("loaded texture %s with dimensions %ix%i format %i and type %i\n", filepath, tex.width, tex.height, n, tex.type);
+
+	stbi_image_free(imagedata);
+	imagedata = 0;
+//	SDL_FreeSurface(teximage);
 //	glBindTexture(GL_TEXTURE_2D, 0);
 //	if(glIsTexture(tex.id))consolePrintf("yes, its a texture!\n");
 

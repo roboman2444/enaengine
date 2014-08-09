@@ -74,7 +74,7 @@ char flushUBOCacheToBuffers(void);
 
 
 char createAndAddRenderlistitem(renderqueue_t * queue, const void * data, const unsigned int datasize, const renderqueueCallback_t setup, const renderqueueCallback_t draw, const unsigned char flags, const unsigned char sort[RADIXSORTSIZE]);
-char addRenderlistitem(renderqueue_t * queue, const renderlistitem_t r);
+char addRenderlistitem(renderqueue_t * queue, renderlistitem_t r);
 
 void renderqueueDraw(renderqueue_t * queue);
 void renderqueueSetup(const renderqueue_t * queue);
