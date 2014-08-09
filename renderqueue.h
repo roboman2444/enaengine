@@ -39,9 +39,10 @@ typedef void (* renderqueueCallback_t)(void ** data, unsigned int count);
 typedef struct renderlistitem_s {
 	void * data;
 	unsigned int datasize;
+	unsigned int dataoffset;
 	renderqueueCallback_t setup;
 	renderqueueCallback_t draw;
-	unsigned char flags; //1 is freeable
+	unsigned char flags; //1 is freeable, 2 is copyable
 	unsigned char sort[RADIXSORTSIZE];
 } renderlistitem_t;
 
@@ -49,6 +50,9 @@ typedef struct renderqueue_s {
 	unsigned int size;
 	unsigned int place;
 	renderlistitem_t * list;
+	unsigned int datasize;
+	unsigned int dataplace;
+	unsigned char * data;
 	//todo maybe have scratch in here for sorting, so multithreading doesnt have issues
 } renderqueue_t;
 
@@ -77,6 +81,8 @@ void renderqueueSetup(const renderqueue_t * queue);
 
 unsigned int renderqueueHalfQueue(renderqueue_t * queue);
 unsigned int renderqueuePruneQueue(renderqueue_t * queue);
+unsigned int renderqueueHalfData(renderqueue_t * queue);
+unsigned int renderqueuePruneData(renderqueue_t * queue);
 unsigned int renderqueuePruneUBO(void);
 unsigned int renderqueueHalfUBO(void);
 void renderqueueHalfVBO(void);

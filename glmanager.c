@@ -207,12 +207,12 @@ void drawModelCallback(void ** data, unsigned int count){
 void setupModelCallback(void ** data, unsigned int count){
 	renderModelCallbackData_t *d = (renderModelCallbackData_t *)*data;
 	//todo make instancing support?
-//	GLfloat ubodata[32];
-//	Matrix4x4_ToArrayFloatGL(&d->mvp, &ubodata[0]);
-//	Matrix4x4_ToArrayFloatGL(&d->mv,  &ubodata[16]);
-//	int t = pushDataToUBOCache(32 * sizeof(GLfloat), ubodata);
-//	if(t < 0) printf("BAAAD\n");
-//	d->ubodataoffset = t;
+	GLfloat ubodata[32];
+	Matrix4x4_ToArrayFloatGL(&d->mvp, &ubodata[0]);
+	Matrix4x4_ToArrayFloatGL(&d->mv,  &ubodata[16]);
+	int t = pushDataToUBOCache(32 * sizeof(GLfloat), ubodata);
+	if(t < 0) printf("BAAAD\n");
+	d->ubodataoffset = t;
 //	consolePrintf("Setup\n");
 }
 
@@ -242,26 +242,15 @@ void addObjectToRenderqueue(const worldobject_t *o, renderqueue_t * q, const vie
 	r.sort[9] = texturegroupid & 0xFF00;
 	r.sort[10] = 0;
 	r.sort[11] = 0;
-	r.flags = 1; //freeable
 	r.setup = setupModelCallback;
 	r.draw = drawModelCallback;
 
-
-	GLfloat ubodata[32];
-	Matrix4x4_ToArrayFloatGL(&d.mvp, &ubodata[0]);
-	Matrix4x4_ToArrayFloatGL(&d.mv,  &ubodata[16]);
-	int t = pushDataToUBOCache(32 * sizeof(GLfloat), ubodata);
-	if(t < 0) printf("BAAAD\n");
-	d.ubodataoffset = t;
-
-
-
-//todo do this better
-	r.data = malloc(sizeof(renderModelCallbackData_t));
-	memcpy(r.data, &d, sizeof(renderModelCallbackData_t));
-
-
-
+	r.datasize = sizeof(renderModelCallbackData_t);
+	r.flags = 2; //copyable
+//	r.flags = 1; //freeable
+//	r.data = malloc(r.datasize);
+//	memcpy(r.data, &d, r.datasize);
+	r.data = &d;
 
 
 
@@ -402,23 +391,16 @@ void addEntityToRenderqueue(const entity_t *e, renderqueue_t * q, const viewport
 	r.sort[9] = texturegroupid & 0xFF00;
 	r.sort[10] = 0;
 	r.sort[11] = 0;
-	r.flags = 1; //freeable
 	r.setup = setupModelCallback;
 	r.draw = drawModelCallback;
 
-	GLfloat ubodata[32];
-	Matrix4x4_ToArrayFloatGL(&d.mvp, &ubodata[0]);
-	Matrix4x4_ToArrayFloatGL(&d.mv,  &ubodata[16]);
-	int t = pushDataToUBOCache(32 * sizeof(GLfloat), ubodata);
-	if(t < 0) printf("BAAAD\n");
-	d.ubodataoffset = t;
 
-
-
-
-//todo do this better
-	r.data = malloc(sizeof(renderModelCallbackData_t));
-	memcpy(r.data, &d, sizeof(renderModelCallbackData_t));
+	r.datasize = sizeof(renderModelCallbackData_t);
+	r.flags = 2; //copyable
+//	r.flags = 1; //freeable
+//	r.data = malloc(r.datasize);
+//	memcpy(r.data, &d, r.datasize);
+	r.data = &d;
 
 	addRenderlistitem(q, r);
 //	consolePrintf("ADDED\n");

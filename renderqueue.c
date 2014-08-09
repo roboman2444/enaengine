@@ -59,7 +59,7 @@ GLuint renderqueueuboid = 0;
 //unsigned int renderqueuesize = 0;
 //unsigned int renderqueueplace = 0;
 //renderlistitem_t * renderqueue = 0;
-unsigned int renderscratchsize =0 ;
+unsigned int renderscratchsize = 0;
 renderlistitem_t * renderscratch = 0;
 
 unsigned int renderqueueCleanup(renderqueue_t *queue){
@@ -90,6 +90,16 @@ unsigned int renderqueuePruneQueue(renderqueue_t *queue){
 	queue->size = queue->place;
 	queue->list = realloc(queue->list, queue->size * sizeof(renderlistitem_t));
 	return queue->size;
+}
+unsigned int renderqueueHalfData(renderqueue_t *queue){
+	queue->datasize /= 2;
+	queue->data = realloc(queue->data, queue->datasize);
+	return queue->datasize;
+}
+unsigned int renderqueuePruneData(renderqueue_t *queue){
+	queue->datasize = queue->dataplace;
+	queue->data = realloc(queue->data, queue->datasize);
+	return queue->datasize;
 }
 unsigned int renderqueueHalfUBO(void){
 	ubodatasize = ubodatasize/2;
@@ -138,6 +148,7 @@ void renderqueueDraw(renderqueue_t * queue){
 	}
 	//reset it
 	queue->place = 0;
+	queue->dataplace = 0;
 }
 void renderqueueSetup(const renderqueue_t * queue){
 	//todo instancing support?
@@ -145,6 +156,7 @@ void renderqueueSetup(const renderqueue_t * queue){
 	unsigned int place = queue->place;
 	renderlistitem_t * list = queue->list;
 	for(i = 0; i < place; i++){
+		if(list[i].flags & 2) list[i].data = queue->data + list[i].dataoffset;
 		list[i].setup(&list[i].data, 1);
 	}
 	flushVertCacheToBuffers();
@@ -206,13 +218,28 @@ void renderqueueRadixSort(const renderqueue_t * queue){
 
 
 
-char addRenderlistitem(renderqueue_t * queue, const renderlistitem_t r){
+char addRenderlistitem(renderqueue_t * queue, renderlistitem_t r){
 	if((!r.setup || !r.draw)) return FALSE;
 	//check if it needs a resize
 	unsigned int renderqueuenewsize = queue->place + 1; //todo need TWO +1s?
 	if(renderqueuenewsize > queue->size){
 		queue->list = realloc(queue->list, renderqueuenewsize * sizeof(renderlistitem_t));
 		queue->size = renderqueuenewsize;
+	}
+
+	//copyable data
+	if(r.flags & 2){
+		unsigned int dataplace = queue->dataplace;
+		unsigned int queuedatanewsize = dataplace + r.datasize;
+		if(queuedatanewsize > queue->datasize){
+			queue->data = realloc(queue->data, queuedatanewsize);
+			queue->datasize = queuedatanewsize;
+		}
+		memcpy(queue->data + dataplace, r.data, r.datasize);
+		if(r.flags & 1) free(r.data);//shouldn't be both copyable and freeable, because that is silly, but i gotta check anyway...
+		r.data = 0;
+		r.dataoffset = dataplace;
+		queue->dataplace += r.datasize;
 	}
 	memcpy(&queue->list[queue->place], &r, sizeof(renderlistitem_t));
 	queue->place++;
