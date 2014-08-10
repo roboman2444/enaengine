@@ -28,11 +28,6 @@ typedef struct renderbatche_s {
 
 GLuint renderqueueuboid;//need this
 
-
-
-
-
-//start fresh, no idiota this time
 #define RADIXSORTSIZE 12 // currently 2 for shader id, 4 for permutation, 2 for modelid/vboid (if any, ones with 0 probably use the vert data method, have to check), 2 for texture id, 1 for depth, 1 for misc flags (such as alpha blending or not)
 
 typedef void (* renderqueueCallback_t)(void ** data, unsigned int count);
@@ -56,10 +51,6 @@ typedef struct renderqueue_s {
 	//todo maybe have scratch in here for sorting, so multithreading doesnt have issues
 } renderqueue_t;
 
-int addEntityToRenderbatche(entity_t * ent, renderbatche_t * batch);
-int addObjectToRenderbatche(worldobject_t * obj, renderbatche_t * batch);
-
-int cleanupRenderbatche(renderbatche_t * batch);
 
 int readyRenderQueueBuffers(void);
 
@@ -91,8 +82,5 @@ unsigned int renderqueueCleanup(renderqueue_t * queue);
 
 void renderqueueRadixSort(const renderqueue_t * queue);
 
-
-//void addLightToLightbatche(light_t * l, lightbatche_t * batch);
-//void cleanupLightbatche(lightbatche_t * batch);
 
 #endif
