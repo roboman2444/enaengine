@@ -178,8 +178,9 @@ int glInit(void){
 //todo move this junk
 typedef struct renderModelCallbackData_s {
 	unsigned int modelid;
-	unsigned int shaderid;
-	unsigned int shaderperm;
+	unsigned int shaderid; //do i need this?
+	GLuint shaderprogram;
+	unsigned int shaderperm; //todo do i need these, or can i change to a pointer?
 	unsigned int texturegroupid;
 	unsigned int ubodataoffset;
 	matrix4x4_t mvp;
@@ -191,11 +192,12 @@ void drawModelCallback(void ** data, unsigned int count){
 	model_t *m = returnModelById(d->modelid);
 	vbo_t *v = returnVBOById(m->vbo);
 	statesBindVertexArray(v->vaoid);
-	shaderprogram_t *s = returnShaderById(d->shaderid);
+//	shaderprogram_t *s = returnShaderById(d->shaderid);
 //	shaderpermutation_t * sp = findShaderPermutation(s, d->shaderperm);
-	shaderpermutation_t * sp = addPermutationToShader(s, d->shaderperm);
+//	shaderpermutation_t * sp = addPermutationToShader(s, d->shaderperm);
 
-	bindShaderPerm(sp);
+//	bindShaderPerm(sp);
+	shaderUseProgram(d->shaderprogram);
 	texturegroup_t *t = returnTexturegroupById(d->texturegroupid);
 	bindTexturegroup(t);
 	glBindBufferRange(GL_UNIFORM_BUFFER, 0, renderqueueuboid, d->ubodataoffset, 32 * sizeof(GLfloat));
@@ -225,23 +227,26 @@ void addObjectToRenderqueue(const worldobject_t *o, renderqueue_t * q, const vie
 	renderModelCallbackData_t d;
 	d.shaderperm = shaderperm;
 	d.shaderid = shaderid;
+	shaderprogram_t *s = returnShaderById(shaderid);
+//	shaderpermutation_t * sp = findShaderPermutation(s, d->shaderperm);
+	shaderpermutation_t * sp = addPermutationToShader(s, shaderperm);
+	d.shaderprogram = sp->id;
+
 	d.modelid = modelid;
 	d.texturegroupid = texturegroupid;
 	d.ubodataoffset = 0;
 	Matrix4x4_Concat(&d.mvp, &v->viewproj, &o->mat);
 	Matrix4x4_Concat(&d.mv, &v->view, &o->mat);
-	r.sort[0] = shaderid & 0x00FF;
-	r.sort[1] = shaderid & 0xFF00;
-	r.sort[2] = shaderperm & 0x000000FF;
-	r.sort[3] = shaderperm & 0x0000FF00;
-	r.sort[4] = shaderperm & 0x00FF0000;
-	r.sort[5] = shaderperm & 0xFF000000;
-	r.sort[6] = modelid & 0x00FF;
-	r.sort[7] = modelid & 0xFF00;
-	r.sort[8] = texturegroupid & 0x00FF;
-	r.sort[9] = texturegroupid & 0xFF00;
-	r.sort[10] = 0;
-	r.sort[11] = 0;
+	r.sort[0] = d.shaderprogram & 0x000000FF;
+	r.sort[1] = d.shaderprogram & 0x0000FF00;
+	r.sort[2] = d.shaderprogram & 0x00FF0000;
+	r.sort[3] = d.shaderprogram & 0xFF000000;
+	r.sort[4] = modelid & 0x00FF;
+	r.sort[5] = modelid & 0xFF00;
+	r.sort[6] = texturegroupid & 0x00FF;
+	r.sort[7] = texturegroupid & 0xFF00;
+	r.sort[8] = 0; //could be distance data in here...
+	r.sort[9] = 0;
 	r.setup = setupModelCallback;
 	r.draw = drawModelCallback;
 
@@ -377,20 +382,24 @@ void addEntityToRenderqueue(const entity_t *e, renderqueue_t * q, const viewport
 	d.modelid = modelid;
 	d.texturegroupid = texturegroupid;
 	d.ubodataoffset = 0;
+	shaderprogram_t *s = returnShaderById(shaderid);
+//	shaderpermutation_t * sp = findShaderPermutation(s, d->shaderperm);
+//	printf("%i, %i, %i\n", shaderperm, shaderid, s);
+	shaderpermutation_t * sp = addPermutationToShader(s, shaderperm);
+	d.shaderprogram = sp->id;
+
 	Matrix4x4_Concat(&d.mvp, &v->viewproj, &e->mat);
 	Matrix4x4_Concat(&d.mv, &v->view, &e->mat);
-	r.sort[0] = shaderid & 0x00FF;
-	r.sort[1] = shaderid & 0xFF00;
-	r.sort[2] = shaderperm & 0x000000FF;
-	r.sort[3] = shaderperm & 0x0000FF00;
-	r.sort[4] = shaderperm & 0x00FF0000;
-	r.sort[5] = shaderperm & 0xFF000000;
-	r.sort[6] = modelid & 0x00FF;
-	r.sort[7] = modelid & 0xFF00;
-	r.sort[8] = texturegroupid & 0x00FF;
-	r.sort[9] = texturegroupid & 0xFF00;
-	r.sort[10] = 0;
-	r.sort[11] = 0;
+	r.sort[0] = d.shaderprogram & 0x000000FF;
+	r.sort[1] = d.shaderprogram & 0x0000FF00;
+	r.sort[2] = d.shaderprogram & 0x00FF0000;
+	r.sort[3] = d.shaderprogram & 0xFF000000;
+	r.sort[4] = modelid & 0x00FF;
+	r.sort[5] = modelid & 0xFF00;
+	r.sort[6] = texturegroupid & 0x00FF;
+	r.sort[7] = texturegroupid & 0xFF00;
+	r.sort[8] = 0;
+	r.sort[9] = 0;
 	r.setup = setupModelCallback;
 	r.draw = drawModelCallback;
 
@@ -490,6 +499,7 @@ int loadEntitiesIntoQueueDeferred(renderqueue_t * queue, viewport_t * v){
 	}
 	return count;
 }
+/*
 //deprecaaaated
 int drawEntitiesM(modelbatche_t * batch){
 
@@ -504,24 +514,24 @@ int drawEntitiesM(modelbatche_t * batch){
 	vbo_t * tvbo = returnVBOById(m->vbo);
 	if(!tvbo) return FALSE;
 	glBindVertexArray(tvbo->vaoid);
-/*
-	for(i = 0; i < count; i++){
-		glDrawModel(m, &batch->matlist[i], &cam->viewproj);
-	}
-*/
+
+//	for(i = 0; i < count; i++){
+//		glDrawModel(m, &batch->matlist[i], &cam->viewproj);
+//	}
+
 
 //	glBindBuffer(GL_ARRAY_BUFFER, instancevbo);
 		size_t sizePerInstance = 16*sizeof(GLfloat);
 //		size_t sizePerInstance2 = 12*sizeof(GLfloat);
 		size_t instancedatasize = count * sizePerInstance;
 //		size_t instancedatasize2 = count * sizePerInstance2;
-/*
-		for(i = 0; i < 4; i++){
-			glEnableVertexAttribArray(INSTANCEATTRIBLOC+i); //tell the location
-			glVertexAttribPointer(INSTANCEATTRIBLOC+i, 4, GL_FLOAT, GL_FALSE, 16 * sizeof(GLfloat), (char *)(i*4*sizeof(GLfloat)) ); //tell other data
-			glVertexAttribDivisor(INSTANCEATTRIBLOC+i, 1); //is it instanced?
-		}
-*/
+
+//		for(i = 0; i < 4; i++){
+//			glEnableVertexAttribArray(INSTANCEATTRIBLOC+i); //tell the location
+//			glVertexAttribPointer(INSTANCEATTRIBLOC+i, 4, GL_FLOAT, GL_FALSE, 16 * sizeof(GLfloat), (char *)(i*4*sizeof(GLfloat)) ); //tell other data
+//			glVertexAttribDivisor(INSTANCEATTRIBLOC+i, 1); //is it instanced?
+//		}
+
 		unsigned int iPerUBOBlock = maxUBOSize / sizePerInstance;
 		GLfloat * instancedata = malloc(instancedatasize);
 //		GLfloat * instancedata2 = malloc(instancedatasize2);
@@ -621,6 +631,7 @@ int drawEntitiesR(renderbatche_t * batch){
 	}
 	return count;
 }
+*/
 void glDrawFSQuad(void){
 	model_t * m = returnModelById(fsquadmodel);
 	vbo_t * tvbo = returnVBOById(m->vbo);
@@ -641,6 +652,12 @@ GLuint tris[36] = {
 			3, 2, 6,
 			3, 6, 7
 	};
+
+typedef struct renderLightCallbackData_s {
+	//todo?
+	unsigned int ubodataoffset;
+	unsigned char numsamples;
+} renderLightCallbackData_t;
 int glDrawLights(viewport_t *v){
 	lightrenderout_t out = readyLightsForRender(v, 50, 0);
 	if(!out.lin.count && !out.lout.count) return FALSE;

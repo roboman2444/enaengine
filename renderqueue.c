@@ -211,8 +211,8 @@ void renderqueueRadixSort(const renderqueue_t * queue){
 	renderqueue_radix(7, place, renderscratch, list);
 	renderqueue_radix(8, place, list, renderscratch);
 	renderqueue_radix(9, place, renderscratch, list);
-	renderqueue_radix(10,place, list, renderscratch);
-	renderqueue_radix(11,place, renderscratch, list);
+//	renderqueue_radix(10,place, list, renderscratch);
+//	renderqueue_radix(11,place, renderscratch, list);
 	//todo SHOULD BE RADIXSORTSIZE-1
 }
 

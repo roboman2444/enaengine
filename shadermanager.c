@@ -20,7 +20,8 @@ int shadersOK = 0;
 
 shaderprogram_t *shaderlist;
 
-shaderpermutation_t * shaderCurrentBound;
+shaderpermutation_t * shaderCurrentBound = 0;
+GLuint currentprogram = 0;
 
 hashbucket_t shaderhashtable[MAXHASHBUCKETS];
 
@@ -553,14 +554,24 @@ GLint findShaderAttribPos(shaderprogram_t * shader, char * name){
 }
 */
 
+void shaderUseProgram(GLuint program){
+	if(program != currentprogram){
+		currentprogram = program;
+		glUseProgram(program);
+	}
+}
+
 
 int bindShaderPerm(shaderpermutation_t * perm){
 	if(!perm) return FALSE;
-	if(perm == shaderCurrentBound) return 2;
 	if(perm->compiled < 2) return FALSE;
-	shaderCurrentBound = perm;
-	glUseProgram(perm->id);
-	//todo error check
+	GLuint program = perm->id;
+	if(program != currentprogram){
+		shaderCurrentBound = perm;
+		currentprogram = program;
+		glUseProgram(program);
+		return 2;
+	}
 	return TRUE;
 }
 

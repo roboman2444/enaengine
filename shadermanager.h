@@ -78,11 +78,13 @@ int createAndAddShaderRINT(char * name);
 void pruneShaderList(void);
 
 
+
 int printProgramLogStatus(int id);
 int getProgramLogStatus(int id, char ** output);
 shaderpermutation_t * findShaderPermutation(shaderprogram_t * shader, unsigned int permutation);
 shaderpermutation_t * addPermutationToShader(shaderprogram_t * shader, unsigned int permutation);
 
 
+void shaderUseProgram(GLuint program);
 int bindShaderPerm(shaderpermutation_t * perm);
 #endif

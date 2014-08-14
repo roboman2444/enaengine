@@ -28,7 +28,7 @@ typedef struct renderbatche_s {
 
 GLuint renderqueueuboid;//need this
 
-#define RADIXSORTSIZE 12 // currently 2 for shader id, 4 for permutation, 2 for modelid/vboid (if any, ones with 0 probably use the vert data method, have to check), 2 for texture id, 1 for depth, 1 for misc flags (such as alpha blending or not)
+#define RADIXSORTSIZE 10 // 4 for shader, 2 for modelid/vboid (if any, ones with 0 probably use the vert data method, have to check), 2 for texture id, 1 for depth, 1 for misc flags (such as alpha blending or not)
 
 typedef void (* renderqueueCallback_t)(void ** data, unsigned int count);
 typedef struct renderlistitem_s {
