@@ -30,14 +30,19 @@ GLuint renderqueueuboid;//need this
 
 #define RADIXSORTSIZE 10 // 4 for shader, 2 for modelid/vboid (if any, ones with 0 probably use the vert data method, have to check), 2 for texture id, 1 for depth, 1 for misc flags (such as alpha blending or not)
 
-typedef void (* renderqueueCallback_t)(void ** data, unsigned int count);
+#define MAXINSTANCESIZE 4096 //for databuf
+
+//typedef void (* renderqueueCallback_t)(void ** data, unsigned int count);
+struct renderlistitem_s;
+typedef void (* renderqueueCallback_t)(struct renderlistitem_s * ilist, unsigned int count);
 typedef struct renderlistitem_s {
 	void * data;
 	unsigned int datasize;
 	unsigned int dataoffset;
 	renderqueueCallback_t setup;
 	renderqueueCallback_t draw;
-	unsigned char flags; //1 is freeable, 2 is copyable
+	unsigned char flags; //1 is freeable, 2 is copyable, 4 is instanceable
+	unsigned int counter; //for instancecounts
 	unsigned char sort[RADIXSORTSIZE];
 } renderlistitem_t;
 

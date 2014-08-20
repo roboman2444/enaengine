@@ -186,8 +186,12 @@ typedef struct renderModelCallbackData_s {
 	matrix4x4_t mvp;
 	matrix4x4_t mv;
 } renderModelCallbackData_t;
-void drawModelCallback(void ** data, unsigned int count){
-	renderModelCallbackData_t *d = (renderModelCallbackData_t *)*data;
+typedef struct modelUBOStruct_s {
+	GLfloat mvp[16];
+	GLfloat mv[16];
+} modelUBOStruct_t;
+void drawModelCallback(renderlistitem_t * ilist, unsigned int count){
+	renderModelCallbackData_t *d = ilist->data;
 	//todo make instancing support
 	model_t *m = returnModelById(d->modelid);
 	vbo_t *v = returnVBOById(m->vbo);
@@ -200,22 +204,52 @@ void drawModelCallback(void ** data, unsigned int count){
 	shaderUseProgram(d->shaderprogram);
 	texturegroup_t *t = returnTexturegroupById(d->texturegroupid);
 	bindTexturegroup(t);
-	glBindBufferRange(GL_UNIFORM_BUFFER, 0, renderqueueuboid, d->ubodataoffset, 32 * sizeof(GLfloat));
+	glBindBufferRange(GL_UNIFORM_BUFFER, 0, renderqueueuboid, d->ubodataoffset, count * sizeof(modelUBOStruct_t));
 
-	glDrawElements(GL_TRIANGLES, v->numfaces * 3, GL_UNSIGNED_INT, 0);
-//	glDrawElementsInstanced(GL_TRIANGLES, v->numfaces * 3, GL_UNSIGNED_INT, 0, 1);
-//	consolePrintf("Rendered\n");
+//	glDrawElements(GL_TRIANGLES, v->numfaces * 3, GL_UNSIGNED_INT, 0);
+	glDrawElementsInstanced(GL_TRIANGLES, v->numfaces * 3, GL_UNSIGNED_INT, 0, count);
+//	printf("Rendered %i\n", count);
 }
-void setupModelCallback(void ** data, unsigned int count){
-	renderModelCallbackData_t *d = (renderModelCallbackData_t *)*data;
-	//todo make instancing support?
-	GLfloat ubodata[32];
-	Matrix4x4_ToArrayFloatGL(&d->mvp, &ubodata[0]);
-	Matrix4x4_ToArrayFloatGL(&d->mv,  &ubodata[16]);
-	int t = pushDataToUBOCache(32 * sizeof(GLfloat), ubodata);
-	if(t < 0) printf("BAAAD\n");
-	d->ubodataoffset = t;
-//	consolePrintf("Setup\n");
+void setupModelCallback(renderlistitem_t * ilist, unsigned int count){
+
+	if(count > 1){
+		//TODO alloc to max size that it can be, slow, but i may have a resizeablebuffer or a fixed size (MAXINSTANCECOUNT)
+		modelUBOStruct_t * ubodata = malloc(count * sizeof(modelUBOStruct_t));
+		unsigned int i;
+		for(i = 0; i < count; /*i++*/){
+			renderModelCallbackData_t *d = ilist[i].data;
+
+			Matrix4x4_ToArrayFloatGL(&d->mvp, ubodata->mvp);
+			Matrix4x4_ToArrayFloatGL(&d->mv,  ubodata->mv);
+
+			unsigned int counter;
+			unsigned int max = count-i;
+			unsigned int currentmodelid = d->modelid;
+			unsigned int currentshaderprogram = d->shaderprogram;
+			unsigned int currenttexturegroupid = d->texturegroupid;
+			for(counter = 1; counter < max && currentmodelid == d[counter].modelid && currentshaderprogram == d[counter].shaderprogram && currenttexturegroupid == d[counter].texturegroupid; counter++){
+				Matrix4x4_ToArrayFloatGL(&d[counter].mvp, ubodata[counter].mvp);
+				Matrix4x4_ToArrayFloatGL(&d[counter].mv,  ubodata[counter].mv);
+			}
+			int t = pushDataToUBOCache(counter * sizeof(modelUBOStruct_t), ubodata);
+//			if(t < 0) printf("BAAAD\n");
+			d->ubodataoffset = t;
+			ilist[i].counter = counter;// reset instance size to whats right
+			i+=counter;
+		}
+		free(ubodata);
+	} else if (count == 1){
+		renderModelCallbackData_t *d = ilist->data;
+
+		modelUBOStruct_t ubodata;
+		Matrix4x4_ToArrayFloatGL(&d->mvp, ubodata.mvp);
+		Matrix4x4_ToArrayFloatGL(&d->mv,  ubodata.mv);
+		int t = pushDataToUBOCache(sizeof(modelUBOStruct_t), &ubodata);
+		d->ubodataoffset = t;
+	} else {
+		consolePrintf("ERROR: RENDER CALLBACK WITH 0 AS COUNT!\n");
+	}
+//	consolePrintf("Setup %i\n", count);
 }
 
 void addObjectToRenderqueue(const worldobject_t *o, renderqueue_t * q, const viewport_t * v){
@@ -251,7 +285,7 @@ void addObjectToRenderqueue(const worldobject_t *o, renderqueue_t * q, const vie
 	r.draw = drawModelCallback;
 
 	r.datasize = sizeof(renderModelCallbackData_t);
-	r.flags = 2; //copyable
+	r.flags = 2 | 4; //copyable, instanceable
 //	r.flags = 1; //freeable
 //	r.data = malloc(r.datasize);
 //	memcpy(r.data, &d, r.datasize);
@@ -405,7 +439,7 @@ void addEntityToRenderqueue(const entity_t *e, renderqueue_t * q, const viewport
 
 
 	r.datasize = sizeof(renderModelCallbackData_t);
-	r.flags = 2; //copyable
+	r.flags = 2 | 4; //copyable, freeable
 //	r.flags = 1; //freeable
 //	r.data = malloc(r.datasize);
 //	memcpy(r.data, &d, r.datasize);

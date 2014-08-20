@@ -64,6 +64,8 @@ GLuint renderqueueuboid = 0;
 unsigned int renderscratchsize = 0;
 renderlistitem_t * renderscratch = 0;
 
+//void * tdatabuf[MAXINSTANCESIZE]; //todo make dynamically resizeable
+
 unsigned int renderqueueCleanup(renderqueue_t *queue){
 	if(!queue) return FALSE;
 	renderlistitem_t * list = queue->list;
@@ -140,26 +142,49 @@ void renderqueueHalfVBO(void){
 }
 
 void renderqueueDraw(renderqueue_t * queue){
-	//todo instancing support
-	unsigned int i;
+	unsigned int i = 0;
 	unsigned int place = queue->place;
 	renderlistitem_t * list = queue->list;
-	for(i = 0; i < place; i++){
-		list[i].draw(&list[i].data, 1);
-		if(list[i].flags & 1) free(list[i].data);
+	while(i < place){
+		list[i].draw(&list[i], list[i].counter);
+		if(list[i].counter < 1) i++; //just in case
+		else i += list[i].counter;
+//		if(list[i].flags & 1) free(list[i].data);
 	}
 	//reset it
 	queue->place = 0;
 	queue->dataplace = 0;
 }
 void renderqueueSetup(const renderqueue_t * queue){
-	//todo instancing support?
-	unsigned int i;
+	unsigned int i = 0;
 	unsigned int place = queue->place;
 	renderlistitem_t * list = queue->list;
-	for(i = 0; i < place; i++){
+	while(i < place){
+//		int oldi = i;
 		if(list[i].flags & 2) list[i].data = queue->data + list[i].dataoffset;
-		list[i].setup(&list[i].data, 1);
+		//instance path
+		if(list[i].flags & 4){
+
+			//find an approximation of the instancing using callbacks and flags
+
+			renderqueueCallback_t currentcalls = list[i].setup;
+			renderqueueCallback_t currentcalld = list[i].draw;
+			unsigned int max = place-i;
+			unsigned int counter = 0;
+			renderlistitem_t * current = &list[i];
+			//run forward in list and check to see if the callbacks line up and is instanceable
+			for(counter = 1; counter < max && (current[counter].flags & 4) && current[counter].draw == currentcalld && current[counter].setup == currentcalls; counter++){
+				if(current[counter].flags & 2) current[counter].data = queue->data + current[counter].dataoffset;
+			}
+			list[i].counter = counter;
+			list[i].setup(&list[i], counter);
+			i+=counter;
+		//normal path
+		} else {
+			list[i].counter = 1;
+			list[i].setup(&list[i], 1);
+			i++;
+		}
 	}
 	flushVertCacheToBuffers();
 	flushUBOCacheToBuffers();
