@@ -78,6 +78,7 @@ unsigned int renderqueueCleanup(renderqueue_t *queue){
 			counter++;
 		}
 	}
+//	printf("place=%i\n",place);
 	free(list);
 	memset(queue, 0, sizeof(renderqueue_t));
 	return counter;
@@ -151,9 +152,10 @@ void renderqueueDraw(renderqueue_t * queue){
 		else i += list[i].counter;
 //		if(list[i].flags & 1) free(list[i].data);
 	}
+	//DONT RESET IT! cleanup func handles this
 	//reset it
-	queue->place = 0;
-	queue->dataplace = 0;
+//	queue->place = 0;
+//	queue->dataplace = 0;
 }
 void renderqueueSetup(const renderqueue_t * queue){
 	unsigned int i = 0;

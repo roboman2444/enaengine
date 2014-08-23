@@ -214,7 +214,9 @@ void setupModelCallback(renderlistitem_t * ilist, unsigned int count){
 
 	if(count > 1){
 		//TODO alloc to max size that it can be, slow, but i may have a resizeablebuffer or a fixed size (MAXINSTANCECOUNT)
-		modelUBOStruct_t * ubodata = malloc(count * sizeof(modelUBOStruct_t));
+//		modelUBOStruct_t * ubodata = malloc(count * sizeof(modelUBOStruct_t));
+		modelUBOStruct_t ubodata[MAXINSTANCESIZE];
+	//todo get max per shader ubodata max size
 		unsigned int i;
 		for(i = 0; i < count; /*i++*/){
 			renderModelCallbackData_t *d = ilist[i].data;
@@ -227,7 +229,7 @@ void setupModelCallback(renderlistitem_t * ilist, unsigned int count){
 			unsigned int currentmodelid = d->modelid;
 			unsigned int currentshaderprogram = d->shaderprogram;
 			unsigned int currenttexturegroupid = d->texturegroupid;
-			for(counter = 1; counter < max && currentmodelid == d[counter].modelid && currentshaderprogram == d[counter].shaderprogram && currenttexturegroupid == d[counter].texturegroupid; counter++){
+			for(counter = 1; counter < max && counter < MAXINSTANCESIZE && currentmodelid == d[counter].modelid && currentshaderprogram == d[counter].shaderprogram && currenttexturegroupid == d[counter].texturegroupid; counter++){
 				Matrix4x4_ToArrayFloatGL(&d[counter].mvp, ubodata[counter].mvp);
 				Matrix4x4_ToArrayFloatGL(&d[counter].mv,  ubodata[counter].mv);
 			}
@@ -237,7 +239,7 @@ void setupModelCallback(renderlistitem_t * ilist, unsigned int count){
 			ilist[i].counter = counter;// reset instance size to whats right
 			i+=counter;
 		}
-		free(ubodata);
+//		free(ubodata);
 	} else if (count == 1){
 		renderModelCallbackData_t *d = ilist->data;
 
