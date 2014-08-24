@@ -71,15 +71,22 @@ unsigned int renderqueueCleanup(renderqueue_t *queue){
 	renderlistitem_t * list = queue->list;
 	if(!list) return FALSE;
 	unsigned int i, counter = 0;
-	unsigned int place = queue->place;
+//	unsigned int place = queue->place;
+	unsigned int place = queue->size;
 	for(i = 0; i < place; i++){
 		if(list[i].flags & 1){
-			free(list[i].data);
-			counter++;
+			if(list[i].data){
+				free(list[i].data);
+				list[i].data = 0;
+				counter++;
+			}
 		}
 	}
 //	printf("place=%i\n",place);
-	free(list);
+	printf("ubodatasize=%i\n", ubodatasize);
+	printf("queuesize=%i\n", queue->size);
+	free(queue->list);
+	free(queue->data);
 	memset(queue, 0, sizeof(renderqueue_t));
 	return counter;
 }
@@ -148,14 +155,18 @@ void renderqueueDraw(renderqueue_t * queue){
 	renderlistitem_t * list = queue->list;
 	while(i < place){
 		list[i].draw(&list[i], list[i].counter);
+		if(list[i].flags & 1){
+			free(list[i].data);
+			list[i].data = 0;
+		}
 		if(list[i].counter < 1) i++; //just in case
 		else i += list[i].counter;
-//		if(list[i].flags & 1) free(list[i].data);
+
 	}
-	//DONT RESET IT! cleanup func handles this
 	//reset it
-//	queue->place = 0;
-//	queue->dataplace = 0;
+	queue->place = 0;
+//	printf("dataplace=%i\n", queue->dataplace);
+	queue->dataplace = 0;
 }
 void renderqueueSetup(const renderqueue_t * queue){
 	unsigned int i = 0;
@@ -175,9 +186,10 @@ void renderqueueSetup(const renderqueue_t * queue){
 			unsigned int counter = 0;
 			renderlistitem_t * current = &list[i];
 			//run forward in list and check to see if the callbacks line up and is instanceable
-			for(counter = 1; counter < max && (current[counter].flags & 4) && current[counter].draw == currentcalld && current[counter].setup == currentcalls; counter++){
-				if(current[counter].flags & 2) current[counter].data = queue->data + current[counter].dataoffset;
-			}
+			counter=1;
+		//	for(counter = 1; counter < max && (current[counter].flags & 4) && current[counter].draw == currentcalld && current[counter].setup == currentcalls; counter++){
+		//		if(current[counter].flags & 2) current[counter].data = queue->data + current[counter].dataoffset;
+		//	}
 			list[i].counter = counter;
 			list[i].setup(&list[i], counter);
 			i+=counter;

@@ -896,7 +896,7 @@ int glDrawViewport(viewport_t *v){
 	renderqueueRadixSort(&deferred);
 	renderqueueSetup(&deferred);
 	renderqueueDraw(&deferred);
-	renderqueueCleanup(&deferred);
+//	renderqueueCleanup(&deferred);
 	//todo queue stuff
 
 //	glStencilFunc(GL_EQUAL, 1, 0xFF);
