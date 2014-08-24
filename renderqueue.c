@@ -187,9 +187,9 @@ void renderqueueSetup(const renderqueue_t * queue){
 			renderlistitem_t * current = &list[i];
 			//run forward in list and check to see if the callbacks line up and is instanceable
 			counter=1;
-		//	for(counter = 1; counter < max && (current[counter].flags & 4) && current[counter].draw == currentcalld && current[counter].setup == currentcalls; counter++){
-		//		if(current[counter].flags & 2) current[counter].data = queue->data + current[counter].dataoffset;
-		//	}
+			for(counter = 1; counter < max && (current[counter].flags & 4) && current[counter].draw == currentcalld && current[counter].setup == currentcalls; counter++){
+				if(current[counter].flags & 2) current[counter].data = queue->data + current[counter].dataoffset;
+			}
 			list[i].counter = counter;
 			list[i].setup(&list[i], counter);
 			i+=counter;
@@ -545,6 +545,7 @@ int pushDataToVertCache(const unsigned int vertcount, const unsigned int facecou
 
 int readyRenderQueueBuffers(void){
 	glGetIntegerv(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT, &uboalignment);
+	consolePrintf("renderqueue ubo alignment is %i\n", uboalignment);
 //	vbo_t * vbo =  createAndAddVBORPOINT("renderqueue", 1);
 //	renderqueuevboid = vbo->myid;
 	renderqueuevbo.type = 0;

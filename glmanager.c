@@ -224,19 +224,23 @@ void setupModelCallback(renderlistitem_t * ilist, unsigned int count){
 			Matrix4x4_ToArrayFloatGL(&d->mvp, ubodata->mvp);
 			Matrix4x4_ToArrayFloatGL(&d->mv,  ubodata->mv);
 
-			unsigned int counter;
+			unsigned int counter = 1;
 			unsigned int max = count-i;
+			if(max> MAXINSTANCESIZE) max = MAXINSTANCESIZE;
+//			max = 1;
 			unsigned int currentmodelid = d->modelid;
 			unsigned int currentshaderprogram = d->shaderprogram;
 			unsigned int currenttexturegroupid = d->texturegroupid;
-			for(counter = 1; counter < max && counter < MAXINSTANCESIZE && currentmodelid == d[counter].modelid && currentshaderprogram == d[counter].shaderprogram && currenttexturegroupid == d[counter].texturegroupid; counter++){
+			for(counter = 1; counter < max && currentmodelid == d[counter].modelid && currentshaderprogram == d[counter].shaderprogram && currenttexturegroupid == d[counter].texturegroupid; counter++){
 				Matrix4x4_ToArrayFloatGL(&d[counter].mvp, ubodata[counter].mvp);
 				Matrix4x4_ToArrayFloatGL(&d[counter].mv,  ubodata[counter].mv);
 			}
 			int t = pushDataToUBOCache(counter * sizeof(modelUBOStruct_t), ubodata);
-//			if(t < 0) printf("BAAAD\n");
+			if(t < 0) printf("BAAAD\n");
 			d->ubodataoffset = t;
-			ilist[i].counter = counter;// reset instance size to whats right
+
+
+			ilist[i].counter = counter;//reset instance size to whats right
 			i+=counter;
 		}
 //		free(ubodata);
