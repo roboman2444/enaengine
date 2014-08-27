@@ -64,8 +64,6 @@ GLuint renderqueueuboid = 0;
 unsigned int renderscratchsize = 0;
 renderlistitem_t * renderscratch = 0;
 
-//void * tdatabuf[MAXINSTANCESIZE]; //todo make dynamically resizeable
-
 unsigned int renderqueueCleanup(renderqueue_t *queue){
 	if(!queue) return FALSE;
 	renderlistitem_t * list = queue->list;
@@ -154,14 +152,24 @@ void renderqueueDraw(renderqueue_t * queue){
 	unsigned int place = queue->place;
 	renderlistitem_t * list = queue->list;
 	while(i < place){
-		list[i].draw(&list[i], list[i].counter);
+		unsigned int counter = list[i].counter;
+		list[i].draw(&list[i], counter);
 		if(list[i].flags & 1){
 			free(list[i].data);
 			list[i].data = 0;
 		}
 		if(list[i].counter < 1) i++; //just in case
-		else i += list[i].counter;
-
+		else {
+			//run through and free if needed, as well as add to i
+			int cmax;
+			for(cmax = i + counter; i < cmax; i++){
+				if(list[i].flags & 1){
+					free(list[i].data);
+					list[i].data = 0;
+				}
+			}
+//			i += counter;
+		}
 	}
 	//reset it
 	queue->place = 0;

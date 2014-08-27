@@ -1,6 +1,6 @@
 #ifndef RENDERQUEUEHEADER
 #define RENDERQUEUEHEADER
-
+/*
 typedef struct modelbatche_s {
 	int modelid;
 	int count;
@@ -24,7 +24,7 @@ typedef struct renderbatche_s {
 	shaderbatche_t * shaderbatch;
 	//int something;
 }renderbatche_t; // the e stands for entity
-
+*/
 
 GLuint renderqueueuboid;//need this
 

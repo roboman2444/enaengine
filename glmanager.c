@@ -204,10 +204,16 @@ void drawModelCallback(renderlistitem_t * ilist, unsigned int count){
 	shaderUseProgram(d->shaderprogram);
 	texturegroup_t *t = returnTexturegroupById(d->texturegroupid);
 	bindTexturegroup(t);
-	glBindBufferRange(GL_UNIFORM_BUFFER, 0, renderqueueuboid, d->ubodataoffset, count * sizeof(modelUBOStruct_t));
+	unsigned int uboalignment = 256;
+	unsigned int mysize = ((count*sizeof(modelUBOStruct_t)) + uboalignment-1) & ~(uboalignment-1);
+//	glBindBufferRange(GL_UNIFORM_BUFFER, 0, renderqueueuboid, d->ubodataoffset, count * sizeof(modelUBOStruct_t));
+	glBindBufferRange(GL_UNIFORM_BUFFER, 0, renderqueueuboid, d->ubodataoffset, count * mysize);
 
-//	glDrawElements(GL_TRIANGLES, v->numfaces * 3, GL_UNSIGNED_INT, 0);
-	glDrawElementsInstanced(GL_TRIANGLES, v->numfaces * 3, GL_UNSIGNED_INT, 0, count);
+//	if(count > 1){
+		glDrawElementsInstanced(GL_TRIANGLES, v->numfaces * 3, GL_UNSIGNED_INT, 0, count);
+//	} else {
+//		glDrawElements(GL_TRIANGLES, v->numfaces * 3, GL_UNSIGNED_INT, 0);
+//	}
 //	printf("Rendered %i\n", count);
 }
 void setupModelCallback(renderlistitem_t * ilist, unsigned int count){
@@ -217,16 +223,16 @@ void setupModelCallback(renderlistitem_t * ilist, unsigned int count){
 //		modelUBOStruct_t * ubodata = malloc(count * sizeof(modelUBOStruct_t));
 		modelUBOStruct_t ubodata[MAXINSTANCESIZE];
 	//todo get max per shader ubodata max size
-		unsigned int i;
-		for(i = 0; i < count; /*i++*/){
+		unsigned int i = 0;
+		while(i < count){
 			renderModelCallbackData_t *d = ilist[i].data;
 
+			unsigned int counter = 0;
 			Matrix4x4_ToArrayFloatGL(&d->mvp, ubodata->mvp);
 			Matrix4x4_ToArrayFloatGL(&d->mv,  ubodata->mv);
 
-			unsigned int counter = 1;
 			unsigned int max = count-i;
-			if(max> MAXINSTANCESIZE) max = MAXINSTANCESIZE;
+			if(max > MAXINSTANCESIZE) max = MAXINSTANCESIZE;
 //			max = 1;
 			unsigned int currentmodelid = d->modelid;
 			unsigned int currentshaderprogram = d->shaderprogram;
