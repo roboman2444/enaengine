@@ -233,7 +233,9 @@ void setupModelCallback(renderlistitem_t * ilist, unsigned int count){
 
 			unsigned int max = count-i;
 			if(max > MAXINSTANCESIZE) max = MAXINSTANCESIZE;
-//			max = 1;
+//COMMENT THIS LINE IF YOU WANT INSTANCING
+			max = 1;
+//TODO ^^
 			unsigned int currentmodelid = d->modelid;
 			unsigned int currentshaderprogram = d->shaderprogram;
 			unsigned int currenttexturegroupid = d->texturegroupid;
@@ -545,139 +547,7 @@ int loadEntitiesIntoQueueDeferred(renderqueue_t * queue, viewport_t * v){
 	}
 	return count;
 }
-/*
-//deprecaaaated
-int drawEntitiesM(modelbatche_t * batch){
-
-	//todo i need something to go through all the model batches and double check that there is more than x ents in there to draw. If not, it repositions it into a new shaderbatch where it does not use instancing
-	if(!batch) return FALSE;
-	int count = batch->count;
-	if(!count || !batch->matlist) return FALSE;
-	int i;
-	//todo
-	//stuff here
-	model_t * m = returnModelById(batch->modelid);
-	vbo_t * tvbo = returnVBOById(m->vbo);
-	if(!tvbo) return FALSE;
-	glBindVertexArray(tvbo->vaoid);
-
-//	for(i = 0; i < count; i++){
-//		glDrawModel(m, &batch->matlist[i], &cam->viewproj);
-//	}
-
-
-//	glBindBuffer(GL_ARRAY_BUFFER, instancevbo);
-		size_t sizePerInstance = 16*sizeof(GLfloat);
-//		size_t sizePerInstance2 = 12*sizeof(GLfloat);
-		size_t instancedatasize = count * sizePerInstance;
-//		size_t instancedatasize2 = count * sizePerInstance2;
-
-//		for(i = 0; i < 4; i++){
-//			glEnableVertexAttribArray(INSTANCEATTRIBLOC+i); //tell the location
-//			glVertexAttribPointer(INSTANCEATTRIBLOC+i, 4, GL_FLOAT, GL_FALSE, 16 * sizeof(GLfloat), (char *)(i*4*sizeof(GLfloat)) ); //tell other data
-//			glVertexAttribDivisor(INSTANCEATTRIBLOC+i, 1); //is it instanced?
-//		}
-
-		unsigned int iPerUBOBlock = maxUBOSize / sizePerInstance;
-		GLfloat * instancedata = malloc(instancedatasize);
-//		GLfloat * instancedata2 = malloc(instancedatasize2);
-		GLfloat * instancedata2 = malloc(instancedatasize);
-
-
-		for(i = 0; i < count; i++){
-//		glDrawModel(m, &batch->matlist[i], &cam->viewproj);
-
-			unsigned int bump = i * 16;
-			unsigned int bump2 = i * 12;
-			matrix4x4_t outmat, outmatrot;
-		//	Matrix4x4_Concat(&outmat, modworld, viewproj);
-			Matrix4x4_Concat(&outmat, &cam->viewproj, &batch->matlist[i]);
-			Matrix4x4_ToArrayFloatGL(&outmat, &instancedata[bump]);
-
-			Matrix4x4_Concat(&outmat, &cam->view, &batch->matlist[i]);
-//			Matrix4x4_CopyRotateOnly(&outmatrot, &outmat);
-//			Matrix4x4_ToArray12FloatGL(&outmatrot, &instancedata2[bump2]);
-			Matrix4x4_ToArrayFloatGL(&outmat, &instancedata2[bump]);
-			//todo
-
-		}
-
-		glBindBuffer(GL_ARRAY_BUFFER, instancevbo);
-		glBufferData(GL_ARRAY_BUFFER, instancedatasize, instancedata, GL_DYNAMIC_DRAW); // change to stream?
-		free(instancedata);
-
-		glBindBuffer(GL_ARRAY_BUFFER, instancevbo2);
-//		glBufferData(GL_ARRAY_BUFFER, instancedatasize2, instancedata2, GL_DYNAMIC_DRAW); // change to stream?
-		glBufferData(GL_ARRAY_BUFFER, instancedatasize, instancedata2, GL_DYNAMIC_DRAW); // change to stream?
-		free(instancedata2);
-
-//		glDrawElementsInstanced(GL_TRIANGLES, tvbo->numfaces * 3, GL_UNSIGNED_INT, 0, count);
-
-                if(TRUE){
-			unsigned int rendered = 0;
-			unsigned int torender = iPerUBOBlock;
-			unsigned int vertdrawcount = tvbo->numfaces*3;
-                        while(rendered < count){
-				if((rendered+torender)>count) torender = count - rendered;
-				glBindBufferRange(GL_UNIFORM_BUFFER, 0 , instancevbo, (rendered * sizePerInstance),(torender*sizePerInstance));
-//				glBindBufferRange(GL_UNIFORM_BUFFER, 1 , instancevbo2, (rendered * sizePerInstance2),(torender*sizePerInstance2));
-				glBindBufferRange(GL_UNIFORM_BUFFER, 1 , instancevbo2, (rendered * sizePerInstance),(torender*sizePerInstance));
-				glDrawElementsInstanced(GL_TRIANGLES, vertdrawcount, GL_UNSIGNED_INT, 0, torender);
-				rendered+=torender;
-			}
-		}
-		totalface += tvbo->numfaces * count;
-		totalvert += tvbo->numverts * count;
-		totalcount+= count;
-
-	return count;
-}
-int drawEntitiesT(texturebatche_t * batch){
-	if(!batch) return FALSE;
-	int count = batch->count;
-	if(!count || !batch->modelbatch) return FALSE;
-	int i;
-	//stuff here
-	texturegroup_t * tex = returnTexturegroupById(batch->textureid);
-	bindTexturegroup(tex); //todo make it bind error texture
-//		consolePrintf("error:%i\n", glGetError());
-	for(i = 0; i < count; i++){
-		drawEntitiesM(&batch->modelbatch[i]);
-	}
-	return count;
-}
-int drawEntitiesS(shaderbatche_t * batch){
-	if(!batch) return FALSE;
-	int count = batch->count;
-	if(!count || !batch->texturebatch) return FALSE;
-	int i;
-	//stuff here
-	shaderprogram_t * shader = returnShaderById(batch->shaderid);
-	//todo have something to load the shader if that check fails
-
-	shaderpermutation_t * perm = addPermutationToShader(shader, batch->shaderperm);
-	if(!bindShaderPerm(perm)) return FALSE;
-//	glUseProgram(perm->id);
-//	glUniform1i(glGetUniformLocation(perm->id, "texture0"), 0);
-
-	for(i = 0; i < count; i++){
-		drawEntitiesT(&batch->texturebatch[i]);
-	}
-
-	return count;
-}
-int drawEntitiesR(renderbatche_t * batch){
-	if(!batch) return FALSE;
-	int count = batch->count;
-	if(!count || !batch->shaderbatch) return FALSE;
-	int i;
-	//stuff here
-	for(i = 0; i < count; i++){
-		drawEntitiesS(&batch->shaderbatch[i]);
-	}
-	return count;
-}
-*/
+//deprecated
 void glDrawFSQuad(void){
 	model_t * m = returnModelById(fsquadmodel);
 	vbo_t * tvbo = returnVBOById(m->vbo);
@@ -699,11 +569,32 @@ GLuint tris[36] = {
 			3, 6, 7
 	};
 
+
 typedef struct renderLightCallbackData_s {
 	//todo?
+	GLuint shaderprogram;
+	unsigned int shaderid;
+	unsigned int shaderperm;
 	unsigned int ubodataoffset;
 	unsigned char numsamples;
 } renderLightCallbackData_t;
+typedef struct lightPUBOdata_s {
+	GLfloat size;
+	GLfloat pos[3];
+} lightPUBOdata_t;
+int glAddLightsToQueue(viewport_t *v, renderqueue_t * queue){
+	framebuffer_t *df = returnFramebufferById(v->dfbid);
+	framebuffer_t *of = returnFramebufferById(v->outfbid);
+	if(!df || !of) return FALSE;
+
+	lightrenderout_t out = readyLightsForRender(v, 50, 0);
+	if(!out.lin.count && !out.lout.count) return FALSE;
+//	shaderprogram_t * shader = returnShaderById(lightshaderid);
+//	shaderpermutation_t * perm;
+//	unsigned int numsamples = df->rbflags & FRAMEBUFFERRBFLAGSMSCOUNT;
+	//todo
+	return FALSE;
+}
 int glDrawLights(viewport_t *v){
 	lightrenderout_t out = readyLightsForRender(v, 50, 0);
 	if(!out.lin.count && !out.lout.count) return FALSE;

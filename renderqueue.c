@@ -2,13 +2,10 @@
 #include <GL/gl.h>
 
 #include "globaldefs.h"
-#include "matrixlib.h"
-#include "entitymanager.h"
-#include "worldmanager.h"
-//#include "lightmanager.h"
 #include "vbomanager.h"
 #include "renderqueue.h"
 #include "glmanager.h"
+#include "console.h"
 
 //VERTEX BUFFER STUFF
 
