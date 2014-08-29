@@ -90,13 +90,14 @@ int sdlCheckEvent(void){
 	int queuewidth = 0, queueheight = 0;
 	char queuebpp = 24, queuedebug = 0;
 
+//	SDL_Event  * event = malloc(sizeof(SDL_Event));
 	SDL_Event event;
 	while (SDL_PollEvent(&event)){
 		switch(event.type){
 			case SDL_QUIT:
 				//todo make exit functions
-				SDL_Quit(); //this segfaults for some reason
-//				exit(0);
+//				SDL_Quit(); //this segfaults for some reason
+				exit(0);
 			break;
 			case SDL_KEYDOWN:
 				//todo move to own place

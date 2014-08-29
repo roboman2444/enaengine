@@ -551,6 +551,7 @@ int pushDataToVertCache(const unsigned int vertcount, const unsigned int facecou
 int readyRenderQueueBuffers(void){
 	glGetIntegerv(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT, &uboalignment);
 	consolePrintf("renderqueue ubo alignment is %i\n", uboalignment);
+	if(!uboalignment) consolePrintf("ERROR: ubo alignment is 0.\n");
 //	vbo_t * vbo =  createAndAddVBORPOINT("renderqueue", 1);
 //	renderqueuevboid = vbo->myid;
 	renderqueuevbo.type = 0;
