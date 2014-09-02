@@ -207,7 +207,7 @@ void drawModelCallback(renderlistitem_t * ilist, unsigned int count){
 	unsigned int uboalignment = 256;
 	unsigned int mysize = ((count*sizeof(modelUBOStruct_t)) + uboalignment-1) & ~(uboalignment-1);
 //	glBindBufferRange(GL_UNIFORM_BUFFER, 0, renderqueueuboid, d->ubodataoffset, count * sizeof(modelUBOStruct_t));
-	glBindBufferRange(GL_UNIFORM_BUFFER, 0, renderqueueuboid, d->ubodataoffset, count * mysize);
+	glBindBufferRange(GL_UNIFORM_BUFFER, 0, renderqueueuboid, d->ubodataoffset, mysize);
 
 //	if(count > 1){
 		glDrawElementsInstanced(GL_TRIANGLES, v->numfaces * 3, GL_UNSIGNED_INT, 0, count);
@@ -234,7 +234,7 @@ void setupModelCallback(renderlistitem_t * ilist, unsigned int count){
 			unsigned int max = count-i;
 			if(max > MAXINSTANCESIZE) max = MAXINSTANCESIZE;
 //COMMENT THIS LINE IF YOU WANT INSTANCING
-			max = 1;
+//			max = 1;
 //TODO ^^
 			unsigned int currentmodelid = d->modelid;
 			unsigned int currentshaderprogram = d->shaderprogram;
@@ -261,7 +261,7 @@ void setupModelCallback(renderlistitem_t * ilist, unsigned int count){
 		int t = pushDataToUBOCache(sizeof(modelUBOStruct_t), &ubodata);
 		d->ubodataoffset = t;
 	} else {
-		consolePrintf("ERROR: RENDER CALLBACK WITH 0 AS COUNT!\n");
+		consolePrintf("ERROR: MODEL SETUP CALLBACK WITH 0 AS COUNT!\n");
 	}
 //	consolePrintf("Setup %i\n", count);
 }
@@ -570,31 +570,177 @@ GLuint tris[36] = {
 	};
 
 
-typedef struct renderLightCallbackData_s {
+typedef struct pLightPUBOStruct_s {
+	GLfloat pos[3];
+	GLfloat size;
+} pLightUBOStruct_t;
+
+typedef struct renderPLightCallbackData_s {
 	//todo?
 	GLuint shaderprogram;
 	unsigned int shaderid;
 	unsigned int shaderperm;
-	unsigned int ubodataoffset;
 	unsigned char numsamples;
-} renderLightCallbackData_t;
-typedef struct lightPUBOdata_s {
-	GLfloat size;
-	GLfloat pos[3];
-} lightPUBOdata_t;
-int glAddLightsToQueue(viewport_t *v, renderqueue_t * queue){
-	framebuffer_t *df = returnFramebufferById(v->dfbid);
-	framebuffer_t *of = returnFramebufferById(v->outfbid);
-	if(!df || !of) return FALSE;
+	unsigned int modelid;
+	unsigned int ubodataoffset;
+	viewport_t *v;
+	pLightUBOStruct_t light;
+} renderPLightCallbackData_t;
+
+
+void drawPLightICallback(renderlistitem_t * ilist, unsigned int count){
+	//todo
+//	statesCullFace(GL_FRONT);
+}
+void setupPLightICallback(renderlistitem_t * ilist, unsigned int count){
+	//todo
+}
+void drawPLightOCallback(renderlistitem_t * ilist, unsigned int count){
+/*
+	renderPLightCallbackData_t *d = ilist->data;
+	statesBlendFunc(GL_ONE, GL_ONE);
+	statesCullFace(GL_BACK);
+	if(shaderUseProgram() == 2){
+	//TODODODODODO
+		viewport_t *v = d->viewport;
+		//also have to set some basic uniforms?
+		GLfloat mout[16];
+		Matrix4x4_ToArrayFloatGL(&v->viewproj, mout);
+		glUniformMatrix4fv(shaderCurrentBound->unimat40, 1, GL_FALSE, mout);
+		Matrix4x4_ToArrayFloatGL(&v->view, mout);
+		glUniformMatrix4fv(shaderCurrentBound->unimat41, 1, GL_FALSE, mout);
+		glUniform2f(shaderCurrentBound->uniscreensizefix, 1.0/of->width, 1.0/of->height);
+	
+		float far = v->far;
+		float near = v->near;
+		glUniform2f(shaderCurrentBound->uniscreentodepth, far/(far-near),far*near/(near-far));
+	}
+	model_t *m = returnModelById(d->modelid);
+	vbo_t *v = returnVBOById(m->vbo);
+	statesBindVertexArray(v->vaoid);
+	unsigned int mysize = ((count * sizeof(pLightUBOStruct_t));
+	glBindBufferRange(GL_UNIFORM_BUFFER, 0, renderqueueuboid, d->ubodataoffset, mysize);
+	glDrawElementsInstanced(GL_TRIANGLES, v->numfaces * 3, GL_UNSIGNED_INT, 0, count);
+*/
+	//todo
+}
+void setupPLightOCallback(renderlistitem_t * ilist, unsigned int count){
+	if(count > 1){
+		pLightUBOStruct_t ubodata[MAXINSTANCESIZE];
+		unsigned int i = 0;
+		while(i < count){
+			renderPLightCallbackData_t *d = ilist[i].data;
+			unsigned int counter = 0;
+			ubodata[0] = d[0].light;
+			unsigned int max = count-i;
+			if(max > MAXINSTANCESIZE) max = MAXINSTANCESIZE;
+//COMMENT THIS LINE IF YOU WANT INSTANCE
+			max = 1;
+//TODO^^
+			for(counter = 1; counter < max; counter++){
+				ubodata[counter] = d[counter].light;
+			}
+			int t = pushDataToUBOCache(counter * sizeof(pLightUBOStruct_t), ubodata);
+			d->ubodataoffset = t;
+			ilist[i].counter = counter; // reset counter, likely wont be needed in this case;
+			i+=counter;
+		}
+	} else if(count == 1){
+		renderPLightCallbackData_t *d = ilist->data;
+		int t = pushDataToUBOCache(sizeof(pLightUBOStruct_t), &d->light);
+		d->ubodataoffset = t;
+	} else {
+		consolePrintf("ERROR: PLIGHT SETUP CALLBACK WITH 0 AS COUNT!\n");
+	}
+}
+
+int glAddLightsToQueue(viewport_t *v, renderqueue_t * q, unsigned int numsamples){
+	shaderprogram_t * shader = returnShaderById(lightshaderid);
+	unsigned int permutation = 0;
+	shaderpermutation_t * perm;
+
+//	framebuffer_t *df = returnFramebufferById(v->dfbid);
+//	framebuffer_t *of = returnFramebufferById(v->outfbid);
+//	if(!df || !of) return FALSE;
+
+//	unsigned int numsamples = df->rbflags & FRAMEBUFFERRBFLAGSMSCOUNT;
+
+	if(numsamples){
+		numsamples = 1<<numsamples;
+//		resolveMultisampleFramebuffer(df); //only resolves if multisampled
+//		resolveMultisampleFramebufferSpecify(df, 4);
+		permutation = 2;
+	}
+	perm = addPermutationToShader(shader, permutation);
+
+
 
 	lightrenderout_t out = readyLightsForRender(v, 50, 0);
 	if(!out.lin.count && !out.lout.count) return FALSE;
-//	shaderprogram_t * shader = returnShaderById(lightshaderid);
-//	shaderpermutation_t * perm;
-//	unsigned int numsamples = df->rbflags & FRAMEBUFFERRBFLAGSMSCOUNT;
+	int i;
+	for(i = 0; i < out.lin.count; i++){
+		renderPLightCallbackData_t pl;
+		pl.light.size = out.lin.list[i]->scale;
+		pl.light.pos[0] = out.lin.list[i]->pos[0];
+		pl.light.pos[1] = out.lin.list[i]->pos[1];
+		pl.light.pos[2] = out.lin.list[i]->pos[2];
+		pl.modelid = cubeModel;
+		pl.shaderid = lightshaderid;
+		pl.shaderperm = permutation;
+		pl.numsamples = numsamples;
+		pl.shaderprogram = perm->id;
+
+		renderlistitem_t r;
+		r.sort[0] = 0; //first to be drawn in this queue
+		r.sort[1] = 0;
+		r.sort[2] = 0;
+		r.sort[3] = 0;
+		r.sort[4] = pl.shaderprogram & 0x000000FF;
+		r.sort[5] = pl.shaderprogram & 0x0000FF00;
+		r.sort[6] = pl.shaderprogram & 0x00FF0000;
+		r.sort[7] = pl.shaderprogram & 0xFF000000;
+		r.sort[8] = pl.modelid & 0x00FF;
+		r.sort[9] = pl.modelid & 0xFF00;
+		r.setup = setupPLightICallback;
+		r.draw = drawPLightICallback;
+		r.flags = 2 | 4; //copyable, instanceable
+		r.datasize = sizeof(renderPLightCallbackData_t);
+		r.data = &pl;
+		addRenderlistitem(q, r);
+	}
+	for(i = 0; i < out.lout.count; i++){
+		renderPLightCallbackData_t pl;
+		pl.light.size = out.lin.list[i]->scale;
+		pl.light.pos[0] = out.lin.list[i]->pos[0];
+		pl.light.pos[1] = out.lin.list[i]->pos[1];
+		pl.light.pos[2] = out.lin.list[i]->pos[2];
+		pl.modelid = cubeModel;
+		pl.shaderid = lightshaderid;
+//		pl.shaderperm = perm;
+		pl.shaderprogram = perm->id;
+
+		renderlistitem_t r;
+		r.sort[0] = 1; //second to be drawn in this queue
+		r.sort[1] = 0;
+		r.sort[2] = 0;
+		r.sort[3] = 0;
+		r.sort[4] = pl.shaderprogram & 0x000000FF;
+		r.sort[5] = pl.shaderprogram & 0x0000FF00;
+		r.sort[6] = pl.shaderprogram & 0x00FF0000;
+		r.sort[7] = pl.shaderprogram & 0xFF000000;
+		r.sort[8] = pl.modelid & 0x00FF;
+		r.sort[9] = pl.modelid & 0xFF00;
+		r.setup = setupPLightOCallback;
+		r.draw = drawPLightOCallback;
+		r.flags = 2 | 4; //copyable, instanceable
+		r.datasize = sizeof(renderPLightCallbackData_t);
+		r.data = &pl;
+		addRenderlistitem(q, r);
+	}
 	//todo
-	return FALSE;
+	return TRUE;
 }
+//deprecated
 int glDrawLights(viewport_t *v){
 	lightrenderout_t out = readyLightsForRender(v, 50, 0);
 	if(!out.lin.count && !out.lout.count) return FALSE;

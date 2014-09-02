@@ -554,11 +554,13 @@ GLint findShaderAttribPos(shaderprogram_t * shader, char * name){
 }
 */
 
-void shaderUseProgram(GLuint program){
+int shaderUseProgram(GLuint program){
 	if(program != currentprogram){
 		currentprogram = program;
 		glUseProgram(program);
+		return 2;
 	}
+	return TRUE;
 }
 
 
