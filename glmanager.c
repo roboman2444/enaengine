@@ -234,7 +234,7 @@ void setupModelCallback(renderlistitem_t * ilist, unsigned int count){
 			unsigned int max = count-i;
 			if(max > MAXINSTANCESIZE) max = MAXINSTANCESIZE;
 //COMMENT THIS LINE IF YOU WANT INSTANCING
-//			max = 1;
+			max = 1;
 //TODO ^^
 			unsigned int currentmodelid = d->modelid;
 			unsigned int currentshaderprogram = d->shaderprogram;
@@ -580,6 +580,7 @@ typedef struct renderPLightCallbackData_s {
 	GLuint shaderprogram;
 	unsigned int shaderid;
 	unsigned int shaderperm;
+	shaderpermutation_t * perm;
 	unsigned char numsamples;
 	unsigned int modelid;
 	unsigned int ubodataoffset;
@@ -588,43 +589,109 @@ typedef struct renderPLightCallbackData_s {
 } renderPLightCallbackData_t;
 
 
-void drawPLightICallback(renderlistitem_t * ilist, unsigned int count){
-	//todo
-//	statesCullFace(GL_FRONT);
-}
-void setupPLightICallback(renderlistitem_t * ilist, unsigned int count){
-	//todo
-}
 void drawPLightOCallback(renderlistitem_t * ilist, unsigned int count){
-/*
+
+		statesDisable(GL_DEPTH_TEST);
+		statesCullFace(GL_FRONT);
+
 	renderPLightCallbackData_t *d = ilist->data;
 	statesBlendFunc(GL_ONE, GL_ONE);
 	statesCullFace(GL_BACK);
-	if(shaderUseProgram() == 2){
+	shaderpermutation_t * perm = d->perm;
+	if(bindShaderPerm(perm) == 2){
 	//TODODODODODO
-		viewport_t *v = d->viewport;
+		viewport_t *v = d->v;
 		//also have to set some basic uniforms?
+	//	framebuffer_t *df = returnFramebufferById(v->dfbid);
+		framebuffer_t *of = returnFramebufferById(v->outfbid);
+
 		GLfloat mout[16];
 		Matrix4x4_ToArrayFloatGL(&v->viewproj, mout);
-		glUniformMatrix4fv(shaderCurrentBound->unimat40, 1, GL_FALSE, mout);
+		glUniformMatrix4fv(perm->unimat40, 1, GL_FALSE, mout);
 		Matrix4x4_ToArrayFloatGL(&v->view, mout);
-		glUniformMatrix4fv(shaderCurrentBound->unimat41, 1, GL_FALSE, mout);
-		glUniform2f(shaderCurrentBound->uniscreensizefix, 1.0/of->width, 1.0/of->height);
-	
+		glUniformMatrix4fv(perm->unimat41, 1, GL_FALSE, mout);
+		glUniform2f(perm->uniscreensizefix, 1.0/of->width, 1.0/of->height);
 		float far = v->far;
 		float near = v->near;
-		glUniform2f(shaderCurrentBound->uniscreentodepth, far/(far-near),far*near/(near-far));
+		glUniform2f(perm->uniscreentodepth, far/(far-near),far*near/(near-far));
+		unsigned char numsamples = d->numsamples;
+		if(numsamples) glUniform1i(perm->uniint0, numsamples);
 	}
 	model_t *m = returnModelById(d->modelid);
 	vbo_t *v = returnVBOById(m->vbo);
 	statesBindVertexArray(v->vaoid);
-	unsigned int mysize = ((count * sizeof(pLightUBOStruct_t));
+	unsigned int mysize = ((count * sizeof(pLightUBOStruct_t)));
 	glBindBufferRange(GL_UNIFORM_BUFFER, 0, renderqueueuboid, d->ubodataoffset, mysize);
 	glDrawElementsInstanced(GL_TRIANGLES, v->numfaces * 3, GL_UNSIGNED_INT, 0, count);
-*/
+
+		statesCullFace(GL_BACK);
+		statesEnable(GL_DEPTH_TEST);
 	//todo
 }
 void setupPLightOCallback(renderlistitem_t * ilist, unsigned int count){
+	if(count > 1){
+		pLightUBOStruct_t ubodata[MAXINSTANCESIZE];
+		unsigned int i = 0;
+		while(i < count){
+			renderPLightCallbackData_t *d = ilist[i].data;
+			unsigned int counter = 0;
+			ubodata[0] = d[0].light;
+			unsigned int max = count-i;
+			if(max > MAXINSTANCESIZE) max = MAXINSTANCESIZE;
+//COMMENT THIS LINE IF YOU WANT INSTANCE
+			max = 1;
+//TODO^^
+			for(counter = 1; counter < max; counter++){
+				ubodata[counter] = d[counter].light;
+			}
+			int t = pushDataToUBOCache(counter * sizeof(pLightUBOStruct_t), ubodata);
+			d->ubodataoffset = t;
+			ilist[i].counter = counter; // reset counter, likely wont be needed in this case;
+			i+=counter;
+		}
+	} else if(count == 1){
+		renderPLightCallbackData_t *d = ilist->data;
+		int t = pushDataToUBOCache(sizeof(pLightUBOStruct_t), &d->light);
+		d->ubodataoffset = t;
+	} else {
+		consolePrintf("ERROR: PLIGHT SETUP CALLBACK WITH 0 AS COUNT!\n");
+	}
+}
+void drawPLightICallback(renderlistitem_t * ilist, unsigned int count){
+
+	renderPLightCallbackData_t *d = ilist->data;
+	statesBlendFunc(GL_ONE, GL_ONE);
+	statesCullFace(GL_BACK);
+	shaderpermutation_t * perm = d->perm;
+	if(bindShaderPerm(perm) == 2){
+	//TODODODODODO
+		viewport_t *v = d->v;
+		//also have to set some basic uniforms?
+	//	framebuffer_t *df = returnFramebufferById(v->dfbid);
+		framebuffer_t *of = returnFramebufferById(v->outfbid);
+
+		GLfloat mout[16];
+		Matrix4x4_ToArrayFloatGL(&v->viewproj, mout);
+		glUniformMatrix4fv(perm->unimat40, 1, GL_FALSE, mout);
+		Matrix4x4_ToArrayFloatGL(&v->view, mout);
+		glUniformMatrix4fv(perm->unimat41, 1, GL_FALSE, mout);
+		glUniform2f(perm->uniscreensizefix, 1.0/of->width, 1.0/of->height);
+		float far = v->far;
+		float near = v->near;
+		glUniform2f(perm->uniscreentodepth, far/(far-near),far*near/(near-far));
+		unsigned char numsamples = d->numsamples;
+		if(numsamples) glUniform1i(perm->uniint0, numsamples);
+	}
+	model_t *m = returnModelById(d->modelid);
+	vbo_t *v = returnVBOById(m->vbo);
+	statesBindVertexArray(v->vaoid);
+	unsigned int mysize = ((count * sizeof(pLightUBOStruct_t)));
+	glBindBufferRange(GL_UNIFORM_BUFFER, 0, renderqueueuboid, d->ubodataoffset, mysize);
+	glDrawElementsInstanced(GL_TRIANGLES, v->numfaces * 3, GL_UNSIGNED_INT, 0, count);
+
+	//todo
+}
+void setupPLightICallback(renderlistitem_t * ilist, unsigned int count){
 	if(count > 1){
 		pLightUBOStruct_t ubodata[MAXINSTANCESIZE];
 		unsigned int i = 0;
@@ -687,8 +754,10 @@ int glAddLightsToQueue(viewport_t *v, renderqueue_t * q, unsigned int numsamples
 		pl.modelid = cubeModel;
 		pl.shaderid = lightshaderid;
 		pl.shaderperm = permutation;
+		pl.perm = perm;
 		pl.numsamples = numsamples;
 		pl.shaderprogram = perm->id;
+		pl.v = v;
 
 		renderlistitem_t r;
 		r.sort[0] = 0; //first to be drawn in this queue
@@ -710,14 +779,18 @@ int glAddLightsToQueue(viewport_t *v, renderqueue_t * q, unsigned int numsamples
 	}
 	for(i = 0; i < out.lout.count; i++){
 		renderPLightCallbackData_t pl;
-		pl.light.size = out.lin.list[i]->scale;
-		pl.light.pos[0] = out.lin.list[i]->pos[0];
-		pl.light.pos[1] = out.lin.list[i]->pos[1];
-		pl.light.pos[2] = out.lin.list[i]->pos[2];
+		pl.light.size = out.lout.list[i]->scale;
+		pl.light.pos[0] = out.lout.list[i]->pos[0];
+		pl.light.pos[1] = out.lout.list[i]->pos[1];
+		pl.light.pos[2] = out.lout.list[i]->pos[2];
 		pl.modelid = cubeModel;
 		pl.shaderid = lightshaderid;
-//		pl.shaderperm = perm;
+		pl.shaderperm = permutation;
+		pl.perm = perm;
 		pl.shaderprogram = perm->id;
+		pl.v = v;
+		pl.numsamples = numsamples;
+
 
 		renderlistitem_t r;
 		r.sort[0] = 1; //second to be drawn in this queue
@@ -738,6 +811,47 @@ int glAddLightsToQueue(viewport_t *v, renderqueue_t * q, unsigned int numsamples
 		addRenderlistitem(q, r);
 	}
 	//todo
+	return TRUE;
+}
+int glDeferredLighting(viewport_t *v, renderqueue_t * q){
+	framebuffer_t *df = returnFramebufferById(v->dfbid);
+	framebuffer_t *of = returnFramebufferById(v->outfbid);
+	unsigned int numsamples = df->rbflags & FRAMEBUFFERRBFLAGSMSCOUNT;
+	if(numsamples){
+		numsamples = 1<<numsamples;
+//		resolveMultisampleFramebuffer(df); //only resolves if multisampled
+		resolveMultisampleFramebufferSpecify(df, 4);
+	}
+	bindFramebuffer(of);
+	glDepthMask(GL_FALSE);
+	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT| GL_STENCIL_BUFFER_BIT);//todo set OF to use the same renderbuffer for depth as DF
+//	glClearBufferfi(of->rb​, GLint drawBuffer​, GLfloat depth​, GLint stencil​);
+	glViewport(0, 0, of->width, of->height);
+
+
+	if(numsamples){
+//		glUniform1i(shaderCurrentBound->uniint0, numsamples);
+
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, df->multisampletextures[0].id);
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, df->multisampletextures[1].id);
+		glActiveTexture(GL_TEXTURE2);
+		glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, df->multisampletextures[2].id);
+	} else {
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, df->textures[0].id);
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, df->textures[1].id);
+		glActiveTexture(GL_TEXTURE2);
+		glBindTexture(GL_TEXTURE_2D, df->textures[2].id);
+	}
+	glAddLightsToQueue(v, q, numsamples);
+	renderqueueRadixSort(q);
+	renderqueueSetup(q);
+	renderqueueDraw(q);
+	glDepthMask(GL_TRUE);
+
 	return TRUE;
 }
 //deprecated
@@ -898,7 +1012,6 @@ int glDrawLights(viewport_t *v){
 			}
 		}
 
-
 		statesCullFace(GL_BACK);
 		statesEnable(GL_DEPTH_TEST);
 
@@ -950,6 +1063,7 @@ int glDrawViewport(viewport_t *v){
 //	glStencilMask(0x00);
 
 	glDrawLights(v);
+//	glDeferredLighting(v, &forward);
 
 
 
