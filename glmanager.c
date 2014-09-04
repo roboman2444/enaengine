@@ -211,6 +211,7 @@ void drawModelCallback(renderlistitem_t * ilist, unsigned int count){
 
 //	if(count > 1){
 		glDrawElementsInstanced(GL_TRIANGLES, v->numfaces * 3, GL_UNSIGNED_INT, 0, count);
+//		printf("count:%i\n", count);
 //	} else {
 //		glDrawElements(GL_TRIANGLES, v->numfaces * 3, GL_UNSIGNED_INT, 0);
 //	}
@@ -221,7 +222,7 @@ void setupModelCallback(renderlistitem_t * ilist, unsigned int count){
 	if(count > 1){
 		//TODO alloc to max size that it can be, slow, but i may have a resizeablebuffer or a fixed size (MAXINSTANCECOUNT)
 //		modelUBOStruct_t * ubodata = malloc(count * sizeof(modelUBOStruct_t));
-		modelUBOStruct_t ubodata[MAXINSTANCESIZE];
+		modelUBOStruct_t ubodata[MAXINSTANCESIZE]; //TODO figure out per=callback max object sizes
 	//todo get max per shader ubodata max size
 		unsigned int i = 0;
 		while(i < count){
@@ -232,24 +233,32 @@ void setupModelCallback(renderlistitem_t * ilist, unsigned int count){
 			Matrix4x4_ToArrayFloatGL(&d->mv,  ubodata->mv);
 
 			unsigned int max = count-i;
-			if(max > MAXINSTANCESIZE) max = MAXINSTANCESIZE;
+			if(max > MAXINSTANCESIZE) max = MAXINSTANCESIZE; //TODO figure out per-callback object sizes
 //COMMENT THIS LINE IF YOU WANT INSTANCING
-			max = 1;
+//			max = 2;
 //TODO ^^
 			unsigned int currentmodelid = d->modelid;
 			unsigned int currentshaderprogram = d->shaderprogram;
 			unsigned int currenttexturegroupid = d->texturegroupid;
-			for(counter = 1; counter < max && currentmodelid == d[counter].modelid && currentshaderprogram == d[counter].shaderprogram && currenttexturegroupid == d[counter].texturegroupid; counter++){
-				Matrix4x4_ToArrayFloatGL(&d[counter].mvp, ubodata[counter].mvp);
-				Matrix4x4_ToArrayFloatGL(&d[counter].mv,  ubodata[counter].mv);
+//			counter = 1;
+//			d = ilist[i+counter].data;
+			for(counter = 1; counter < max; counter++){
+				renderModelCallbackData_t *dl = ilist[i+counter].data;
+//				d = ilist[i+counter].data;
+				if(currentmodelid != dl->modelid || currentshaderprogram != dl->shaderprogram || currenttexturegroupid != dl->texturegroupid) break;
+				Matrix4x4_ToArrayFloatGL(&dl->mvp, ubodata[counter].mvp);
+				Matrix4x4_ToArrayFloatGL(&dl->mv,  ubodata[counter].mv);
+//				counter++;
 			}
 			int t = pushDataToUBOCache(counter * sizeof(modelUBOStruct_t), ubodata);
 			if(t < 0) printf("BAAAD\n");
+//			d = ilist[i].data;
 			d->ubodataoffset = t;
 
 
 			ilist[i].counter = counter;//reset instance size to whats right
 			i+=counter;
+//			i++;
 		}
 //		free(ubodata);
 	} else if (count == 1){

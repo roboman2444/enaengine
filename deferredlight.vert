@@ -9,10 +9,14 @@ uniform mat4 unimat41; // mv
 
 
 in vec3 posattrib;
+struct lightdata {
+	vec3 pos;
+	float size;
+};
 
 #define N 4096
 layout (std140) uniform uniblock0 {
-	vec4 ldata[N];
+	vec4 ldata[N]; //todo
 } uniblock0_t;
 
 out vec3 mvpos; // vertex position in viewspace

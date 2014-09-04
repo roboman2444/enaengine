@@ -155,7 +155,7 @@ void renderqueueDraw(renderqueue_t * queue){
 			free(list[i].data);
 			list[i].data = 0;
 		}
-		if(list[i].counter < 1) i++; //just in case
+		if(counter < 1) i++; //just in case
 		else {
 			//run through and free if needed, as well as add to i
 			int cmax;
@@ -314,6 +314,7 @@ char flushUBOCacheToBuffers(void){
 int pushDataToUBOCache(const unsigned int size, const void * data){
 	if(!size || !data) return -1;
 	unsigned int mysize = (size + uboalignment-1) & ~(uboalignment-1);
+//	mysize = size;
 	//check if it needs a resize
 	unsigned int ubodatanewsize = ubodataplace + mysize;
 	if(ubodatanewsize > ubodatasize){
@@ -321,6 +322,10 @@ int pushDataToUBOCache(const unsigned int size, const void * data){
 		ubodatasize = ubodatanewsize;
 	}
 	memcpy(ubodata + ubodataplace, data, size);
+//	int dif = mysize-size;
+//	if(dif > 0) printf ("ubodif: %i\n", dif);
+//	memset(ubodata + ubodataplace + size, 0, dif);
+//	printf("size: %i mysize: %i\n", size, mysize);
 	int ubodataoldplace = ubodataplace;
 	ubodataplace += mysize;
 	return ubodataoldplace;

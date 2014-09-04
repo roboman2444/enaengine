@@ -30,7 +30,7 @@ GLuint renderqueueuboid;//need this
 
 #define RADIXSORTSIZE 10 // 4 for shader, 2 for modelid/vboid (if any, ones with 0 probably use the vert data method, have to check), 2 for texture id, 1 for depth, 1 for misc flags (such as alpha blending or not)
 
-#define MAXINSTANCESIZE 4096 //for databuf
+#define MAXINSTANCESIZE 256 //for databuf
 
 //typedef void (* renderqueueCallback_t)(void ** data, unsigned int count);
 struct renderlistitem_s;
