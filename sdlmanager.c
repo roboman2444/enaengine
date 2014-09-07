@@ -34,6 +34,7 @@ int resizeWindow(int width, int height, int bpp, int debugmode){
 	}
 	return TRUE;
 }
+
 int setMSAA(int samples){
 //	int msbuf = 0;
 //	int mssamp = 0;
@@ -52,7 +53,7 @@ int setMSAA(int samples){
 		//SDL_GL_GetAttribute(SDL_GL_MULTISAMPLEBUFFERS, &msbuf);//todo
 		//returns 0 on success -error code on fail
 	}
-	/*if(mssamp != samples)*/ SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, samples);
+//	/*if(mssamp != samples)*/ SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, samples);
 	//SDL_GL_GetAttribute(SDL_GL_MULTISAMPLESAMPLES, &mssamp);
 	//if(mssamp != samples){
 	//	return FALSE;
@@ -63,6 +64,7 @@ int setMSAA(int samples){
 
 	return samples;
 }
+
 int sdlInit(int width, int height, int bpp, int debugmode){
 	if(debugmode) consolePrintf("DEBUG -- SDL window initializing \n");
 	if(SDL_Init(SDL_INIT_VIDEO)<0){

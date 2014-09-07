@@ -16,6 +16,7 @@
 int gamecodeOK;
 int tGameTime = 0;
 
+
 int setupGameCodeCallbacks(void){
 	//todo
 	return TRUE;
@@ -180,9 +181,8 @@ int initGameCodeSystem(void){
 		enttinydragon->texturegroupid = 0;//findtexturegroupidByName("coil");
 		enttinydragon->attachmentid = findEntityByNameRINT("coil");
 		enttinydragon->shaderperm = 0;
+
 	int i;
-
-
 	tempid = 0;
 	for(i = 0; i < 100; i++){
 		enttinydragon = addEntityRPOINT("bunny");
@@ -212,6 +212,7 @@ int initGameCodeSystem(void){
 
 
 #ifdef RESAVEWORLD
+
 	srand(103010);
 	for(i = 0; i < 200000; i++){
 		enttinydragon = addEntityRPOINT("cube");
@@ -247,7 +248,7 @@ int initGameCodeSystem(void){
 		enttinydragon->scale = (rand()/(double)RAND_MAX) * 4.0;
 //		enttinydragon->scale =  20.0f;
 		enttinydragon->needsmatupdate = TRUE;
-		enttinydragon->modelid = createAndAddModelRINT("cube");
+		enttinydragon->modelid = createAndAddModelRINT("cube2");
 		enttinydragon->shaderid = createAndAddShaderRINT("deferredmodel");
 		enttinydragon->flags = 1;
 
@@ -262,6 +263,7 @@ int initGameCodeSystem(void){
 
 	saveWorld("world2");
 	deleteWorld();
+
 #endif
 	loadWorld("world");
 	loadWorld("world2");

@@ -3,6 +3,7 @@
 
 #include "globaldefs.h"
 #include "vbomanager.h"
+#include "ubomanager.h" // for sizes...
 #include "renderqueue.h"
 #include "glmanager.h"
 #include "console.h"
@@ -45,7 +46,6 @@ GLuint * facedata = 0;
 
 //UNIFORM BUFFER STUFF
 
-GLint uboalignment = 0;
 
 unsigned int ubodatasize = 0; //in bytes
 unsigned int ubodataplace = 0; // in bytes
@@ -313,7 +313,7 @@ char flushUBOCacheToBuffers(void){
 //returns the offset, in bytes
 int pushDataToUBOCache(const unsigned int size, const void * data){
 	if(!size || !data) return -1;
-	unsigned int mysize = (size + uboalignment-1) & ~(uboalignment-1);
+	unsigned int mysize = (size + uboAlignment-1) & ~(uboAlignment-1);
 //	mysize = size;
 	//check if it needs a resize
 	unsigned int ubodatanewsize = ubodataplace + mysize;
@@ -554,9 +554,6 @@ int pushDataToVertCache(const unsigned int vertcount, const unsigned int facecou
 }
 
 int readyRenderQueueBuffers(void){
-	glGetIntegerv(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT, &uboalignment);
-	consolePrintf("renderqueue ubo alignment is %i\n", uboalignment);
-	if(!uboalignment) consolePrintf("ERROR: ubo alignment is 0.\n");
 //	vbo_t * vbo =  createAndAddVBORPOINT("renderqueue", 1);
 //	renderqueuevboid = vbo->myid;
 	renderqueuevbo.type = 0;

@@ -7,6 +7,7 @@
 #include "console.h"
 
 GLint maxUBOSize;
+GLint uboAlignment;
 int uboOK = 0;
 //int ubocount = 0;
 //int uboArrayFirstOpen = 0;
@@ -22,8 +23,10 @@ int initUBOSystem(void){
 //	vbolist = 0;
 
 	glGetIntegerv(GL_MAX_UNIFORM_BLOCK_SIZE, &maxUBOSize);
-
 	consolePrintf("max uniform size is %i\n", maxUBOSize);
+	glGetIntegerv(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT, &uboAlignment);
+	consolePrintf("uniform alignment size is %i\n", uboAlignment);
+
 
 	uboOK = TRUE;
 	return TRUE;

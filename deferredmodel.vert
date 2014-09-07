@@ -13,7 +13,7 @@ struct modeldata {
 	mat4 modelview;
 };
 
-#define N 512 // 32 floats
+#define N 512 // 32 floats //setting this to 16 or something low doesnt seem to make a difference...
 layout (std140) uniform uniblock0 {
 	modeldata data[N];
 } uniblock0_t;

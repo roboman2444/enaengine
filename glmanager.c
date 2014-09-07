@@ -23,6 +23,7 @@
 #include "animmanager.h"
 #include <tgmath.h> //for sin and cos
 
+#define CHECKGLERROR {if (TRUE){if (FALSE) consolePrintf("CHECKGLERROR at %s:%d\n", __FILE__, __LINE__);errornumber = glGetError();if (errornumber) GL_PrintError(errornumber, __FILE__, __LINE__);}}
 
 float degnumber;
 
@@ -56,9 +57,58 @@ renderqueue_t deferred;
 int glShutdown(void){
 	return FALSE;
 }
+int errornumber = 0;
+
+void GL_PrintError(int errornumber, const char *filename, int linenumber){
+	switch(errornumber){
+#ifdef GL_INVALID_ENUM
+	case GL_INVALID_ENUM:
+		consolePrintf("GL_INVALID_ENUM at %s:%i\n", filename, linenumber);
+		break;
+#endif
+#ifdef GL_INVALID_VALUE
+	case GL_INVALID_VALUE:
+		consolePrintf("GL_INVALID_VALUE at %s:%i\n", filename, linenumber);
+		break;
+#endif
+#ifdef GL_INVALID_OPERATION
+	case GL_INVALID_OPERATION:
+		consolePrintf("GL_INVALID_OPERATION at %s:%i\n", filename, linenumber);
+		break;
+#endif
+#ifdef GL_STACK_OVERFLOW
+	case GL_STACK_OVERFLOW:
+		consolePrintf("GL_STACK_OVERFLOW at %s:%i\n", filename, linenumber);
+		break;
+#endif
+#ifdef GL_STACK_UNDERFLOW
+	case GL_STACK_UNDERFLOW:
+		consolePrintf("GL_STACK_UNDERFLOW at %s:%i\n", filename, linenumber);
+		break;
+#endif
+#ifdef GL_OUT_OF_MEMORY
+	case GL_OUT_OF_MEMORY:
+		consolePrintf("GL_OUT_OF_MEMORY at %s:%i\n", filename, linenumber);
+		break;
+#endif
+#ifdef GL_TABLE_TOO_LARGE
+	case GL_TABLE_TOO_LARGE:
+		consolePrintf("GL_TABLE_TOO_LARGE at %s:%i\n", filename, linenumber);
+		break;
+#endif
+#ifdef GL_INVALID_FRAMEBUFFER_OPERATION
+	case GL_INVALID_FRAMEBUFFER_OPERATION:
+		consolePrintf("GL_INVALID_FRAMEBUFFER_OPERATION at %s:%i\n", filename, linenumber);
+		break;
+#endif
+	default:
+		consolePrintf("GL UNKNOWN (%i) at %s:%i\n", errornumber, filename, linenumber);
+		break;
+	}
+}
 
 
-
+extern void drawModelSetMax(void);
 int glInit(void){
 	GLenum glewError = glewInit();
 	if(glewError != GLEW_OK){
@@ -171,7 +221,8 @@ int glInit(void){
 
 	readyRenderQueueBuffers();
 
-//	setMSAA(16);
+	drawModelSetMax();
+
 
 	return TRUE; // so far so good
 }
@@ -190,27 +241,39 @@ typedef struct modelUBOStruct_s {
 	GLfloat mvp[16];
 	GLfloat mv[16];
 } modelUBOStruct_t;
+modelUBOStruct_t * modelUBOData;
+unsigned int modelMaxSize = 0;
+
+void drawModelSetMax(void){
+	modelMaxSize = maxUBOSize / sizeof(modelUBOStruct_t);
+	consolePrintf("Max model instance count is %i\n", modelMaxSize);
+	modelUBOData = malloc(modelMaxSize * sizeof(modelUBOStruct_t));
+}
 void drawModelCallback(renderlistitem_t * ilist, unsigned int count){
+
 	renderModelCallbackData_t *d = ilist->data;
-	//todo make instancing support
 	model_t *m = returnModelById(d->modelid);
 	vbo_t *v = returnVBOById(m->vbo);
+	CHECKGLERROR
 	statesBindVertexArray(v->vaoid);
+	CHECKGLERROR
 //	shaderprogram_t *s = returnShaderById(d->shaderid);
 //	shaderpermutation_t * sp = findShaderPermutation(s, d->shaderperm);
 //	shaderpermutation_t * sp = addPermutationToShader(s, d->shaderperm);
 
 //	bindShaderPerm(sp);
 	shaderUseProgram(d->shaderprogram);
+	CHECKGLERROR
 	texturegroup_t *t = returnTexturegroupById(d->texturegroupid);
 	bindTexturegroup(t);
-	unsigned int uboalignment = 256;
-	unsigned int mysize = ((count*sizeof(modelUBOStruct_t)) + uboalignment-1) & ~(uboalignment-1);
-//	glBindBufferRange(GL_UNIFORM_BUFFER, 0, renderqueueuboid, d->ubodataoffset, count * sizeof(modelUBOStruct_t));
+	CHECKGLERROR
+	unsigned int mysize = (count * sizeof(modelUBOStruct_t));
 	glBindBufferRange(GL_UNIFORM_BUFFER, 0, renderqueueuboid, d->ubodataoffset, mysize);
 
 //	if(count > 1){
+		CHECKGLERROR
 		glDrawElementsInstanced(GL_TRIANGLES, v->numfaces * 3, GL_UNSIGNED_INT, 0, count);
+		CHECKGLERROR
 //		printf("count:%i\n", count);
 //	} else {
 //		glDrawElements(GL_TRIANGLES, v->numfaces * 3, GL_UNSIGNED_INT, 0);
@@ -222,43 +285,34 @@ void setupModelCallback(renderlistitem_t * ilist, unsigned int count){
 	if(count > 1){
 		//TODO alloc to max size that it can be, slow, but i may have a resizeablebuffer or a fixed size (MAXINSTANCECOUNT)
 //		modelUBOStruct_t * ubodata = malloc(count * sizeof(modelUBOStruct_t));
-		modelUBOStruct_t ubodata[MAXINSTANCESIZE]; //TODO figure out per=callback max object sizes
+//		modelUBOStruct_t ubodata[MAXINSTANCESIZE]; //TODO figure out per=callback max object sizes
 	//todo get max per shader ubodata max size
 		unsigned int i = 0;
 		while(i < count){
 			renderModelCallbackData_t *d = ilist[i].data;
 
 			unsigned int counter = 0;
-			Matrix4x4_ToArrayFloatGL(&d->mvp, ubodata->mvp);
-			Matrix4x4_ToArrayFloatGL(&d->mv,  ubodata->mv);
+			Matrix4x4_ToArrayFloatGL(&d->mvp, modelUBOData->mvp);
+			Matrix4x4_ToArrayFloatGL(&d->mv,  modelUBOData->mv);
 
 			unsigned int max = count-i;
-			if(max > MAXINSTANCESIZE) max = MAXINSTANCESIZE; //TODO figure out per-callback object sizes
-//COMMENT THIS LINE IF YOU WANT INSTANCING
-//			max = 2;
-//TODO ^^
+			if(max > modelMaxSize) max = modelMaxSize;
 			unsigned int currentmodelid = d->modelid;
 			unsigned int currentshaderprogram = d->shaderprogram;
 			unsigned int currenttexturegroupid = d->texturegroupid;
-//			counter = 1;
-//			d = ilist[i+counter].data;
 			for(counter = 1; counter < max; counter++){
 				renderModelCallbackData_t *dl = ilist[i+counter].data;
-//				d = ilist[i+counter].data;
 				if(currentmodelid != dl->modelid || currentshaderprogram != dl->shaderprogram || currenttexturegroupid != dl->texturegroupid) break;
-				Matrix4x4_ToArrayFloatGL(&dl->mvp, ubodata[counter].mvp);
-				Matrix4x4_ToArrayFloatGL(&dl->mv,  ubodata[counter].mv);
-//				counter++;
+				Matrix4x4_ToArrayFloatGL(&dl->mvp, modelUBOData[counter].mvp);
+				Matrix4x4_ToArrayFloatGL(&dl->mv,  modelUBOData[counter].mv);
 			}
-			int t = pushDataToUBOCache(counter * sizeof(modelUBOStruct_t), ubodata);
+			int t = pushDataToUBOCache(counter * sizeof(modelUBOStruct_t), modelUBOData);
 			if(t < 0) printf("BAAAD\n");
-//			d = ilist[i].data;
 			d->ubodataoffset = t;
 
 
 			ilist[i].counter = counter;//reset instance size to whats right
 			i+=counter;
-//			i++;
 		}
 //		free(ubodata);
 	} else if (count == 1){
@@ -309,9 +363,7 @@ void addObjectToRenderqueue(const worldobject_t *o, renderqueue_t * q, const vie
 
 	r.datasize = sizeof(renderModelCallbackData_t);
 	r.flags = 2 | 4; //copyable, instanceable
-//	r.flags = 1; //freeable
-//	r.data = malloc(r.datasize);
-//	memcpy(r.data, &d, r.datasize);
+//	r.flags = 2;
 	r.data = &d;
 
 

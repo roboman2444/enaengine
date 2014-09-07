@@ -32,6 +32,7 @@ typedef struct ubo_s {
 */
 
 GLint maxUBOSize;
+GLint uboAlignment;
 
 int uboOK;
 //int ubonumber;
