@@ -49,7 +49,7 @@ typedef struct worldFileObject_s {
 int saveWorldPopList(int * count, worldobject_t ** list, worldleaf_t * leaf){
 
 	if(!leaf) return FALSE;
-//	consolePrintf("count: %i\n", *count);
+//	console_printf("count: %i\n", *count);
 
 	int i;
 	for(i = 0; i < leaf->numobjects && *count < worldNumObjects; i++){
@@ -64,18 +64,18 @@ int saveWorldPopList(int * count, worldobject_t ** list, worldleaf_t * leaf){
 }
 
 int saveWorld(char * filename){
-	consolePrintf("Saving %i objects to %s\n", worldNumObjects, filename);
+	console_printf("Saving %i objects to %s\n", worldNumObjects, filename);
 	if(!worldroot){
-		consolePrintf("ERROR: No root world to save!\n");
+		console_printf("ERROR: No root world to save!\n");
 		return FALSE;
 	}
 	if(!worldNumObjects){
-		consolePrintf("ERROR: No world objects to save!\n");
+		console_printf("ERROR: No world objects to save!\n");
 		return FALSE;
 	}
 	FILE *f = fopen(filename,"wb");
 	if(!f){
-		consolePrintf("ERROR: could not open file %s for writing\n", filename);
+		console_printf("ERROR: could not open file %s for writing\n", filename);
 		return FALSE;
 	}
 	worldFileHeader_t header;
@@ -90,7 +90,7 @@ int saveWorld(char * filename){
 	saveWorldPopList(&count, worldlist, worldroot);
 	if(count != worldNumObjects){
 		free(worldlist);
-		consolePrintf("ERROR: leaflist prop failed\n");
+		console_printf("ERROR: leaflist prop failed\n");
 		return FALSE;
 	}
 	worldFileObject_t * objlist = malloc(count*sizeof(worldFileObject_t));
@@ -104,7 +104,7 @@ int saveWorld(char * filename){
 	int *texturelist = 0;
 	int i = 0;
 	for(i = 0; i < count; i++){
-//		consolePrintf("count: %i i: %i\n", count, i);
+//		console_printf("count: %i i: %i\n", count, i);
 
 		worldobject_t * testobj = worldlist[i];
 		objlist[i].mat = testobj->mat;
@@ -304,7 +304,7 @@ char **loadWorldNameList(char *buf, unsigned int bc, unsigned int nc){
 int loadWorld(char * filename){
 	FILE *f = fopen(filename, "rb");
 	if(!f){
-		consolePrintf("opening file:%s failed\n", filename);
+		console_printf("opening file:%s failed\n", filename);
 		return FALSE;
 	}
 	worldFileHeader_t header;
@@ -375,7 +375,7 @@ int loadWorld(char * filename){
 	free(buf);
 	fclose(f);
 	//maybe check if worldNumObjects = header.objectlistcount...
-	consolePrintf("%i objects loaded from %s\n", header.objectlistcount, filename);
+	console_printf("%i objects loaded from %s\n", header.objectlistcount, filename);
 	return TRUE;
 
 	error:
@@ -384,7 +384,7 @@ int loadWorld(char * filename){
 		if(modelnamelist) free(modelnamelist);
 		if(texturenamelist) free(texturenamelist);
 		if(shadernamelist) free(shadernamelist);
-		consolePrintf("%s: error while loading world\n", filename);
+		console_printf("%s: error while loading world\n", filename);
 	return FALSE;
 }
 worldleaf_t * createWorldLeaf(int depth, vec2_t center){

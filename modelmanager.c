@@ -34,7 +34,7 @@ char *animtypes[] = {".iqm"}; //todo filesys //todo
 int makeCubeModel(void){
 	model_t m;// = malloc(sizeof(model_T));
 //	memset(m, 0, sizeof(model_t));
-//	consolePrintf("generating cube\n");
+//	console_printf("generating cube\n");
 	m.type = 1;
 	m.name = malloc(strlen("cube")+1);
 	strcpy(m.name, "cube");
@@ -117,7 +117,7 @@ int makeCubeModel(void){
 int makeFSQuadModel(void){
 	model_t m;// = malloc(sizeof(model_T));
 //	memset(m, 0, sizeof(model_t));
-//	consolePrintf("generating cube\n");
+//	console_printf("generating cube\n");
 	m.type = 1;
 	m.name = malloc(strlen("fsquad")+1);
 	strcpy(m.name, "fsquad");
@@ -152,7 +152,7 @@ int makeFSQuadModel(void){
 int makeCubeModel2(void){
 	model_t m;// = malloc(sizeof(model_T));
 //	memset(m, 0, sizeof(model_t));
-//	consolePrintf("generating cube\n");
+//	console_printf("generating cube\n");
 	m.type = 1;
 	m.name = malloc(strlen("cube2")+1);
 	strcpy(m.name, "cube2");
@@ -396,7 +396,7 @@ float getSphereFromInterleavedMesh(GLfloat * interleavedbuffer, GLuint vertcount
 		float mysize = vec3length(vert);
 		if(mysize > size) size = mysize;
 	}
-//	consolePrintf("spheresize = %f\n", size);
+//	console_printf("spheresize = %f\n", size);
 	return size;
 }
 int getBBoxFromInterleavedMesh(GLfloat * interleavedbuffer, GLuint vertcount, int stride, vec_t * bbox){
@@ -422,7 +422,7 @@ int getBBoxFromInterleavedMesh(GLfloat * interleavedbuffer, GLuint vertcount, in
 
 /*
 	for(i = 0; i < 6; i++){
-		consolePrintf("bbox %i:%f\n", i, bbox[i]);
+		console_printf("bbox %i:%f\n", i, bbox[i]);
 	}
 */
 	return TRUE;
@@ -652,7 +652,7 @@ int loadiqmmeshes(model_t * m, const struct iqmheader hdr, unsigned char *buf){
 //	m->numfaces = numtris;
 	//free(tris); // its the buffer
 
-	consolePrintf("Model %s.iqm has %i faces and %i verts with a stride of %i\n", m->name, numtris, numverts, stride);
+	console_printf("Model %s.iqm has %i faces and %i verts with a stride of %i\n", m->name, numtris, numverts, stride);
 
 
 
@@ -661,7 +661,7 @@ int loadiqmmeshes(model_t * m, const struct iqmheader hdr, unsigned char *buf){
 /*
 	for(int i = 0; i < (int)hdr.num_meshes; i++){
 		struct iqmmesh &m = meshes[i];
-		consolePrintf("%s: loaded mesh: %s\n", filename, &str[m.name]);
+		console_printf("%s: loaded mesh: %s\n", filename, &str[m.name]);
 	}
 */
 	return TRUE;
@@ -743,7 +743,7 @@ int loadiqmbboxes(model_t *m){
 	vbo_t *v =returnVBOById(m->vbo);
 	if(!v) return FALSE;
 	if(v->totalstride != 14){
-		consolePrintf("model has the wrong stride for joints!\n");
+		console_printf("model has the wrong stride for joints!\n");
 		return FALSE;
 	}
 
@@ -794,7 +794,7 @@ int loadModelIQM(model_t *m, char * filename){
 	if(hdr.num_meshes > 0 && !loadiqmmeshes(m, hdr, buf)) goto error;
 	if(hdr.num_joints > 0 && !loadiqmjoints(m, hdr, buf)) goto error;
 	if(hdr.num_poses){
-		anim_t *a = createAndAddAnimRPOINT(m->name);
+		anim_t *a = anim_createAndAddRPOINT(m->name);
 		//todo actually have these have an error return
 		if(!loadiqmanimscenes(a, hdr, buf)) goto error;
 		if(!loadiqmposes(a, hdr, buf)) goto error;
@@ -811,7 +811,7 @@ int loadModelIQM(model_t *m, char * filename){
 	error:
 	if(m->interleaveddata) free(m->interleaveddata);
 	m->interleaveddata = 0;
-	consolePrintf("%s: error while loading\n", filename);
+	console_printf("%s: error while loading\n", filename);
 	free(buf);
 //	if(buf != meshdata && buf != animdata) free(buf);
 	fclose(f);
@@ -1003,7 +1003,7 @@ int loadModelOBJ(model_t * m, char * filename){//todo flags
 	free(facebuffer);
 	free(tcbuffer);
 
-	consolePrintf("Model %s has %i faces and %i verts\n", filename, readface, readvert);
+	console_printf("Model %s has %i faces and %i verts\n", filename, readface, readvert);
 //	int print;
 //	for(print = 0; print < facecount*3; printf("%i ", indicebuffer[print++]));
 //	printf("\n\n\n\n\n\n\n\n\n\n%ix%i data: ", vertcount, readvert);
@@ -1029,8 +1029,8 @@ int loadModelOBJ(model_t * m, char * filename){//todo flags
 */
 	//todo actually set flags for if gen verts is needed, and if it should area weight
 	if(!readnorm){
-//		consolePrintf("Generating vertex normals for Model %s with area weighting\n", filename);
-		consolePrintf("Generating vertex normals for Model %s\n", filename);
+//		console_printf("Generating vertex normals for Model %s with area weighting\n", filename);
+		console_printf("Generating vertex normals for Model %s\n", filename);
 		generateNormalsFromInterleavedMesh(interleavedbuffer, indicebuffer, facecount*3, vertcount, 8 , 0);
 	}
 	m->spheresize = getSphereFromInterleavedMesh(interleavedbuffer, vertcount, 8);
@@ -1044,7 +1044,7 @@ int loadModelOBJ(model_t * m, char * filename){//todo flags
 //	GLuint totalface;
 //	indicebuffer = meshDecimate(interleavedbuffer, indicebuffer, facecount*3, vertcount, 8 , 0.0001, &totalface);
 //	m->numfaces[1] = totalface;
-//	consolePrintf("Model %s has %d total triangles for LOD\n", filename, totalface);
+//	console_printf("Model %s has %d total triangles for LOD\n", filename, totalface);
 
 
 //	normalizeNormalsFromInterleavedMesh(interleavedbuffer, vertcount, 8);

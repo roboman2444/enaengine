@@ -1,0 +1,8 @@
+global variable names are file_allonewordlowercase
+struct names are name_t
+
+local variables are allonewordlowercase
+
+local function names are alwaysCamelCase
+
+global function names are file_alwaysCamelCase

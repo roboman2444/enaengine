@@ -1,10 +1,10 @@
 #ifndef CONSOLEHEADER
 #define CONSOLEHEADER
-int initConsoleSystem(void); // works for now
-int consolePrintf(const char *format, ...);
-int consoleNPrintf(size_t size, const char *format, ...);
-int printConsoleBackwards(void);
-int updateConsoleText(unsigned int offset);
+int console_init(void); // works for now
+int console_printf(const char *format, ...);
+int console_nprintf(size_t size, const char *format, ...);
+int console_printBackwards(void);
+int console_updateText(unsigned int offset);
 
 //int consoleVAOid;
 
@@ -16,9 +16,9 @@ typedef struct consoleTextTracker_s {
 	unsigned int width;
 } consoleTextTracker_t;
 
-unsigned int consoleDrawLines;
-consoleTextTracker_t * texttracker;
-int consoleDisplayNeedsUpdate;
+unsigned int console_drawlines;
+consoleTextTracker_t * console_texttracker;
+int console_displayneedsupdate;
 
-int consoleoffset; //temp, will move
+int console_offset; //temp, will move
 #endif

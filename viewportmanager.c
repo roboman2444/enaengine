@@ -234,7 +234,7 @@ int testBBoxPInFrustum(viewport_t * v, vec_t * points){
 		for(j = 0; j < 8; j++){
 			vec_t * p = &points[j*3];
 			float dist = vec3dot(n, p) + d;
-//			consolePrintf("dist:%f\n",dist);
+//			console_printf("dist:%f\n",dist);
 			if(dist > 0.0) break; // point infront of the plane
 		}
 		if(j==8) return FALSE; //all the points failed the frustum
@@ -306,7 +306,7 @@ int testBBoxPInFrustumNearPlane(viewport_t * v, vec_t * points){
 		for(j = 0; j < 8; j++){
 			vec_t * p = &points[j*3];
 			float dist = vec3dot(n, p) + d;
-//			consolePrintf("dist:%f\n",dist);
+//			console_printf("dist:%f\n",dist);
 			if(dist > 0.0) break; // point infront of the plane
 		}
 		if(j==8) return FALSE; //all the points failed the frustum
@@ -318,7 +318,7 @@ int testBBoxPInFrustumNearPlane(viewport_t * v, vec_t * points){
 	for(j = 0; j < 8; j++){
 		vec_t * p = &points[j*3];
 		float dist = vec3dot(n, p) + d;
-//		consolePrintf("dist:%f\n",dist);
+//		console_printf("dist:%f\n",dist);
 		//if(dist > 0.0) break; // point infront of the plane
 		//point in front of nearplane
 		if(dist > 0.0){

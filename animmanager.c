@@ -9,54 +9,54 @@
 #include "iqm.h"
 
 
-int animsOK = 0;
-int animcount = 0;
-int animArrayFirstOpen = 0;
-int animArrayLastTaken = -1;
-int animArraySize = 0;
+int anim_ok = 0;
+int anim_count = 0;
+int anim_arrayfirstopen = 0;
+int anim_arraylasttaken = -1;
+int anim_arraysize = 0;
 
 hashbucket_t animhashtable[MAXHASHBUCKETS];
 
-anim_t *animlist;
+anim_t *anim_list;
 
-int initAnimSystem(void){
+int anim_init(void){
 	memset(animhashtable, 0, MAXHASHBUCKETS * sizeof(hashbucket_t));
-	if(animlist) free(animlist);
-	animlist = 0;
-//	animlist = malloc(animnumber * sizeof(anim_t));
-//	if(!animlist) memset(animlist, 0, animnumber * sizeof(anim_t));
+	if(anim_list) free(anim_list);
+	anim_list = 0;
+//	anim_list = malloc(animnumber * sizeof(anim_t));
+//	if(!anim_list) memset(anim_list, 0, animnumber * sizeof(anim_t));
 //	defaultanim = addanimToList(createanim("default", 0));
 	//todo error checking
-	animsOK = TRUE;
+	anim_ok= TRUE;
 	return TRUE;
 }
 
-anim_t * findAnimByNameRPOINT(char * name){
-	return returnAnimById(findByNameRINT(name, animhashtable));
+anim_t * anim_findByNameRPOINT(char * name){
+	return anim_returnById(findByNameRINT(name, animhashtable));
 }
-int findAnimByNameRINT(char * name){
+int anim_findByNameRINT(char * name){
 	return findByNameRINT(name, animhashtable);
 }
-int deleteAnim(int id){
+int anim_delete(int id){
 	int animindex = (id & 0xFFFF);
-	anim_t * a = &animlist[animindex];
+	anim_t * a = &anim_list[animindex];
 	if(a->myid != id) return FALSE;
 	if(!a->name) return FALSE;
 	free(a->name);
 	memset(a,0, sizeof(anim_t));
-	if(animindex < animArrayFirstOpen) animArrayFirstOpen = animindex;
-	for(; animArrayLastTaken > 0 && !animlist[animArrayLastTaken].type; animArrayLastTaken--);
+	if(animindex < anim_arrayfirstopen) anim_arrayfirstopen = animindex;
+	for(; anim_arraylasttaken > 0 && !anim_list[anim_arraylasttaken].type; anim_arraylasttaken--);
 	return TRUE;
 }
-anim_t * returnAnimById(int id){
+anim_t * anim_returnById(int id){
 	int animindex = (id & 0xFFFF);
-	anim_t * a = &animlist[animindex];
+	anim_t * a = &anim_list[animindex];
 	if(!a->type) return FALSE;
 	if(a->myid == id) return a;
 	return FALSE;
 }
 
-anim_t createAnim(char * name){
+anim_t anim_create(char * name){
 	anim_t a;
 	a.name = malloc(strlen(name)+1);
 	strcpy(a.name, name);
@@ -73,57 +73,57 @@ anim_t createAndLoadAnim(char * name){
 	return a;
 }
 */
-int addAnimRINT(anim_t a){
-	animcount++;
-	for(; animArrayFirstOpen < animArraySize && animlist[animArrayFirstOpen].type; animArrayFirstOpen++);
-	if(animArrayFirstOpen == animArraySize){	//resize
-		animArraySize++;
-		animlist = realloc(animlist, animArraySize * sizeof(anim_t));
+int anim_addRINT(anim_t a){
+	anim_count++;
+	for(; anim_arrayfirstopen < anim_arraysize && anim_list[anim_arrayfirstopen].type; anim_arrayfirstopen++);
+	if(anim_arrayfirstopen == anim_arraysize){	//resize
+		anim_arraysize++;
+		anim_list = realloc(anim_list, anim_arraysize * sizeof(anim_t));
 	}
-	animlist[animArrayFirstOpen] = a;
-	int returnid = (animcount << 16) | animArrayFirstOpen;
-	animlist[animArrayFirstOpen].myid = returnid;
+	anim_list[anim_arrayfirstopen] = a;
+	int returnid = (anim_count << 16) | anim_arrayfirstopen;
+	anim_list[anim_arrayfirstopen].myid = returnid;
 
-	addToHashTable(animlist[animArrayFirstOpen].name, returnid, animhashtable);
-	if(animArrayLastTaken < animArrayFirstOpen) animArrayLastTaken = animArrayFirstOpen; //todo redo
+	addToHashTable(anim_list[anim_arrayfirstopen].name, returnid, animhashtable);
+	if(anim_arraylasttaken < anim_arrayfirstopen) anim_arraylasttaken = anim_arrayfirstopen; //todo redo
 	return returnid;
 }
-anim_t * addAnimRPOINT(anim_t a){
-	animcount++;
-	for(; animArrayFirstOpen < animArraySize && animlist[animArrayFirstOpen].type; animArrayFirstOpen++);
-	if(animArrayFirstOpen == animArraySize){	//resize
-		animArraySize++;
-		animlist = realloc(animlist, animArraySize * sizeof(anim_t));
+anim_t * anim_addRPOINT(anim_t a){
+	anim_count++;
+	for(; anim_arrayfirstopen < anim_arraysize && anim_list[anim_arrayfirstopen].type; anim_arrayfirstopen++);
+	if(anim_arrayfirstopen == anim_arraysize){	//resize
+		anim_arraysize++;
+		anim_list = realloc(anim_list, anim_arraysize * sizeof(anim_t));
 	}
-	animlist[animArrayFirstOpen] = a;
-	int returnid = (animcount << 16) | animArrayFirstOpen;
-	animlist[animArrayFirstOpen].myid = returnid;
+	anim_list[anim_arrayfirstopen] = a;
+	int returnid = (anim_count << 16) | anim_arrayfirstopen;
+	anim_list[anim_arrayfirstopen].myid = returnid;
 
-	addToHashTable(animlist[animArrayFirstOpen].name, returnid, animhashtable);
+	addToHashTable(anim_list[anim_arrayfirstopen].name, returnid, animhashtable);
 	//todo maybe have anim have a hash variable, so i dont have to calculate it again if i want to delete... maybe
-	if(animArrayLastTaken < animArrayFirstOpen) animArrayLastTaken = animArrayFirstOpen;
-//	printf("animarraysize = %i\n", animArraySize);
-//	printf("animcount = %i\n", animcount);
+	if(anim_arraylasttaken < anim_arrayfirstopen) anim_arraylasttaken = anim_arrayfirstopen;
+//	printf("animarraysize = %i\n", anim_arraysize);
+//	printf("anim_count = %i\n", anim_count);
 
-	return &animlist[animArrayFirstOpen];
+	return &anim_list[anim_arrayfirstopen];
 
 }
-int createAndAddAnimRINT(char * name){
-	int m = findAnimByNameRINT(name);
+int anim_createAndAddRINT(char * name){
+	int m = anim_findByNameRINT(name);
 	if(m) return m;
-	return addAnimRINT(createAnim(name));
-//	return &animlist[addanimToList(createAndLoadanim(name))];
+	return anim_addRINT(anim_create(name));
+//	return &anim_list[addanimToList(createAndLoadanim(name))];
 }
-anim_t * createAndAddAnimRPOINT(char * name){
-	anim_t * m = findAnimByNameRPOINT(name);
+anim_t * anim_createAndAddRPOINT(char * name){
+	anim_t * m = anim_findByNameRPOINT(name);
 	if(m) return m;
-	return addAnimRPOINT(createAnim(name));
-//	return &animlist[addanimToList(createAndLoadanim(name))];
+	return anim_addRPOINT(anim_create(name));
+//	return &anim_list[addanimToList(createAndLoadanim(name))];
 }
-void pruneAnimList(void){
-	if(animArraySize == animArrayLastTaken+1) return;
-	animArraySize = animArrayLastTaken+1;
-	animlist = realloc(animlist, animArraySize * sizeof(anim_t));
+void anim_pruneList(void){
+	if(anim_arraysize == anim_arraylasttaken+1) return;
+	anim_arraysize = anim_arraylasttaken+1;
+	anim_list = realloc(anim_list, anim_arraysize * sizeof(anim_t));
 }
 
 int loadiqmposes(anim_t *a, const struct iqmheader hdr, unsigned char *buf){

@@ -230,7 +230,7 @@ texture_t loadTexture(char * filepath, char type){
 	i = imagedata;
 	for(y = 0; y < tex.height; y++){
 		for(x = 0; x < tex.width; x++){
-			consolePrintf("%i %i %i %i\t", (int)*i, (int)*i+1, (int)*i+2, (int) *i+3);
+			console_printf("%i %i %i %i\t", (int)*i, (int)*i+1, (int)*i+2, (int) *i+3);
 			i+=4;
 		}
 		printf("\n");
@@ -259,13 +259,13 @@ texture_t loadTexture(char * filepath, char type){
 	glGenerateMipmap(GL_TEXTURE_2D);
 
 	tex.type = type;
-	consolePrintf("loaded texture %s with dimensions %ix%i format %i and type %i\n", filepath, tex.width, tex.height, n, tex.type);
+	console_printf("loaded texture %s with dimensions %ix%i format %i and type %i\n", filepath, tex.width, tex.height, n, tex.type);
 
 	stbi_image_free(imagedata);
 	imagedata = 0;
 //	SDL_FreeSurface(teximage);
 //	glBindTexture(GL_TEXTURE_2D, 0);
-//	if(glIsTexture(tex.id))consolePrintf("yes, its a texture!\n");
+//	if(glIsTexture(tex.id))console_printf("yes, its a texture!\n");
 
 
 	return tex;
@@ -364,8 +364,8 @@ int bindTexturegroup(texturegroup_t * texturegroup){
 
 		count++;
 		glBindTexture(GL_TEXTURE_2D, texturespointer[i].id);
-//		consolePrintf("error:%i\n",glGetError());
-//		consolePrintf("texture bound with id %i and space %i\n", texturespointer[i].id, texturespointer[i].type-1);
+//		console_printf("error:%i\n",glGetError());
+//		console_printf("texture bound with id %i and space %i\n", texturespointer[i].id, texturespointer[i].type-1);
 	}
 	glActiveTexture(GL_TEXTURE0);
 	return count;

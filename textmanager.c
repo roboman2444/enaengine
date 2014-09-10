@@ -49,7 +49,7 @@ int initTextSystem(void){
 }
 
 text_t * findTextByNameRPOINT(char * name){
-//	consolePrintf("text id:%i\n", findByNameRINT(name, texthashtable));
+//	console_printf("text id:%i\n", findByNameRINT(name, texthashtable));
 //	if(!textlist) return FALSE;
 	return returnTextById(findByNameRINT(name, texthashtable));
 }
@@ -294,7 +294,7 @@ text_t createAndRenderText(char * name, int font, char style, char fgcolor[3]){
 	tex.color[0] = fgcolor[0];
 	tex.color[1] = fgcolor[1];
 	tex.color[2] = fgcolor[2];
-//	consolePrintf("rendered text \"%s\" with font %s\n", name, f->filename );
+//	console_printf("rendered text \"%s\" with font %s\n", name, f->filename );
 //	printf("rendered text \"%s\" with font %s\n", name, f->filename );
 	return tex;
 }
@@ -308,7 +308,7 @@ font_t createAndLoadFont(char * filename ,unsigned short size){
 	font.font = TTF_OpenFont(font.filename, size); //todo size
 	if(!font.font) return font;
 	font.type = 2;
-	consolePrintf("loaded font %s with size %i\n", filename, size);
+	console_printf("loaded font %s with size %i\n", filename, size);
 	return font;
 }
 int deleteAllText(void){
@@ -403,14 +403,14 @@ font_t * addFontRPOINT(font_t tex){
 }
 int createAndAddTextFindFontRINT(char * name, char * fontname, unsigned short size, char style, char fgcolor[3]){
 	int m = findTextByNameRINT(name); //todo list and make sure that is is same font/size
-//	consolePrintf("text id: %i\n", m);
+//	console_printf("text id: %i\n", m);
 	if(m) return m; //todo instead of return single, return LIST and check that its the same size and font
 	return addTextRINT(createAndRenderTextFindFont(name, fontname, size, style, fgcolor));
 //	return &textlist[addtextToList(createAndLoadtext(name))];
 }
 text_t * createAndAddTextFindFontRPOINT(char * name, char * fontname, unsigned short size, char style, char fgcolor[3]){
 	text_t * m = findTextByNameRPOINT(name);
-//	if(m) consolePrintf("text id: %i\n", m->myid);
+//	if(m) console_printf("text id: %i\n", m->myid);
 	if(m) return m; //todo instead of return single, return LIST and check that its the same size and font
 	return addTextRPOINT(createAndRenderTextFindFont(name, fontname, size, style, fgcolor));
 //	return &textlist[addtextToList(createAndLoadtext(name))];
@@ -418,14 +418,14 @@ text_t * createAndAddTextFindFontRPOINT(char * name, char * fontname, unsigned s
 
 int createAndAddTextRINT(char * name, int font, char style, char fgcolor[3]){
 	int m = findTextByNameRINT(name); //todo list and make sure that is is same font/size
-//	consolePrintf("text id: %i\n", m);
+//	console_printf("text id: %i\n", m);
 	if(m) return m; //todo instead of return single, return LIST and check that its the same size and font
 	return addTextRINT(createAndRenderText(name, font, style, fgcolor));
 //	return &textlist[addtextToList(createAndLoadtext(name))];
 }
 text_t * createAndAddTextRPOINT(char * name, int font, char style, char fgcolor[3]){
 	text_t * m = findTextByNameRPOINT(name);
-//	if(m) consolePrintf("text id: %i\n", m->myid);
+//	if(m) console_printf("text id: %i\n", m->myid);
 	if(m) return m; //todo instead of return single, return LIST and check that its the same size and font
 	return addTextRPOINT(createAndRenderText(name, font, style, fgcolor));
 //	return &textlist[addtextToList(createAndLoadtext(name))];
@@ -433,14 +433,14 @@ text_t * createAndAddTextRPOINT(char * name, int font, char style, char fgcolor[
 
 int createAndAddFontRINT(char * name, unsigned short size){
 	int m = findFontByNameSizeRINT(name, size);
-//	consolePrintf("font id: %i\n", m);
+//	console_printf("font id: %i\n", m);
 	if(m) return m;
 	return addFontRINT(createAndLoadFont(name, size));
 //	return &fontlist[addFontToList(createAndLoadFont(name))];
 }
 font_t * createAndAddFontRPOINT(char * name, unsigned short size){
 	font_t * m = findFontByNameSizeRPOINT(name, size);
-//	if(m) consolePrintf("font id: %i\n", m->myid);
+//	if(m) console_printf("font id: %i\n", m->myid);
 	if(m) return m;
 	return addFontRPOINT(createAndLoadFont(name, size));
 //	return &fontlist[addFontToList(createAndLoadFont(name))];

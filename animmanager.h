@@ -20,42 +20,38 @@ typedef struct anim_s{
 	int myid;
 }anim_t;
 
-int textureCurrentBound;
+int anim_ok;
+int anim_groupnumber;
 
-int animsOK;
-int animgroupnumber;
+anim_t *anim_list;
+int anim_count;
+int anim_arraysize;
+int anim_arraylasttaken;
 
-anim_t *animlist;
-int animcount;
-int animArraySize;
-int animArrayLastTaken;
+anim_t anim_create(char * name);
 
-anim_t createAnim(char * name);
+anim_t * anim_addRPOINT(anim_t texgroup);
+int anim_addRINT(anim_t texgroup);
 
-anim_t * addAnimRPOINT(anim_t texgroup);
-int addAnimRINT(anim_t texgroup);
+int anim_init(void);
 
-int initAnimSystem(void);
+anim_t * anim_findByNameRPOINT(char * name);
+int anim_findByNameRINT(char * name);
 
-anim_t * findAnimByNameRPOINT(char * name);
-int findAnimByNameRINT(char * name);
-
-int deleteAnim(int id);
+int anim_delete(int id);
 
 
 //int loadiqmposes(anim_t *a, const struct iqmheader hdr, unsigned char *buf);
 //int loadiqmanimscenes(anim_t *a, const struct iqmheader hdr, unsigned char *buf);
 
 //anim_t createAndLoadAnim(char *name);
-anim_t createAnim(char *name);
-
-void pruneAnimList(void);
+void anim_pruneList(void);
 
 
-anim_t * createAndAddAnimRPOINT(char * name);
-int createAndAddAnimRINT(char * name);
+anim_t * anim_createAndAddRPOINT(char * name);
+int anim_createAndAddRINT(char * name);
 
-anim_t * returnAnimById(int id);
+anim_t * anim_returnById(int id);
 
 #endif
 

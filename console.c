@@ -15,41 +15,41 @@ typedef struct consolechar_s { //todo redo
 	GLfloat verts[16];
 }consolechar_t;
 
-char ** consoleOutputBuffer;
+char ** consoleoutputbuffer;
 
 
-int maxConsoleBufferLines = 2048; //todo make into cvar
-int maxConsoleBufferLineLength = 2048; //todo make cvar/define
+int maxconsolebufferlines = 2048; //todo make into cvar
+int maxconsolebufferlinelength = 2048; //todo make cvar/define
 
-int consoleCircleBufferPlace = 0; // start!... err end
-int consoleStringsPrinted = 0; // useful to not print blank lines + reallocation
+int consolecirclebufferplace = 0; // start!... err end
+int consolestringsprinted = 0; // useful to not print blank lines + reallocation
 
-char *tempPrint;
+char *tempprint;
 
-int consoleDisplayNeedsUpdate;
-char currentConsoleTextTrackerFlag;
-
-
-char * consoleFont = "FreeMono.ttf";
+int console_displayneedsupdate;
+char currentconsoletexttrackerflag;
 
 
+char * consolefont = "FreeMono.ttf";
 
-int consoleWidth = 64;
-int consoleHeight = 20;
+
+
+int consolewidth = 64;
+int consoleheight = 20;
 
 
 //a flag system to delete text not drawn in the past x frames
 //todo
 
 consoleTextTracker_t * texttracker;
-unsigned int consoleDrawLines;
+unsigned int console_drawlines;
 
 //int consoleVBO;
 
-int updateConsoleText(unsigned int offset){
+int console_updateText(unsigned int offset){
 
-	if(offset > consoleStringsPrinted - consoleHeight) offset = consoleStringsPrinted - consoleHeight;
-	currentConsoleTextTrackerFlag = !currentConsoleTextTrackerFlag;
+	if(offset > consolestringsprinted - consoleheight) offset = consolestringsprinted - consoleheight;
+	currentconsoletexttrackerflag = !currentconsoletexttrackerflag;
 /*
 	if(!consoleVBO){
 		consoleVBO= createAndAddVBORPOINT("console", 2);
@@ -61,24 +61,24 @@ int updateConsoleText(unsigned int offset){
 	}
 */
 	if(!texttracker){
-		texttracker = malloc(consoleHeight * sizeof(consoleTextTracker_t));
-		memset(texttracker, 0, consoleHeight * sizeof(consoleTextTracker_t));
+		texttracker = malloc(consoleheight * sizeof(consoleTextTracker_t));
+		memset(texttracker, 0, consoleheight * sizeof(consoleTextTracker_t));
 	}
-	consoleDrawLines= consoleStringsPrinted;
-	if(consoleDrawLines > consoleHeight) consoleDrawLines = consoleHeight;
+	console_drawlines= consolestringsprinted;
+	if(console_drawlines > consoleheight) console_drawlines = consoleheight;
 
-	int n, p = consoleCircleBufferPlace - consoleDrawLines - offset;
-	for(n = 0; n < consoleDrawLines; n++){
+	int n, p = consolecirclebufferplace - console_drawlines - offset;
+	for(n = 0; n < console_drawlines; n++){
 //		printf("p = %i\n",p);
 		char fg[3] = {255, 255, 255};
-		text_t *t = createAndAddTextFindFontRPOINT(consoleOutputBuffer[p], consoleFont, 10, 1, fg);
-		texttracker[n].flag = currentConsoleTextTrackerFlag;
+		text_t *t = createAndAddTextFindFontRPOINT(consoleoutputbuffer[p], consolefont, 10, 1, fg);
+		texttracker[n].flag = currentconsoletexttrackerflag;
 		texttracker[n].textid = t->myid;
 		texttracker[n].textureid = t->textureid;
 		texttracker[n].width = t->width;
 		texttracker[n].height = t->height;
 //		printf("texttracker: %i, %ix%i\n", t->textureid, t->width, t->height);
-		p = (p+1) % maxConsoleBufferLines;
+		p = (p+1) % maxconsolebufferlines;
 	}
 
 
@@ -87,7 +87,7 @@ int updateConsoleText(unsigned int offset){
 
 /*
 	int i;
-	for(i = 0; i < consoleHeight; i++;){
+	for(i = 0; i < consoleheight; i++;){
 		//delete old crap
 		if(texttracker[i].flag
 	}
@@ -116,23 +116,23 @@ int updateConsoleVBO(void){
 	glBindVertexArray(consoleVBO->vaoid);
 	glBindBuffer(GL_ARRAY_BUFFER, consoleVBO->vboid);
 	int charcount = 0;
-	int n, p = consoleCircleBufferPlace;
-	for(n = 0; n < consoleStringsPrinted && n < consoleHeight; n++){
+	int n, p = consolecirclebufferplace;
+	for(n = 0; n < consolestringsprinted && n < consoleheight; n++){
 		p--;
-		if(p < 0) p = maxConsoleBufferLines-1;
-		if(consoleOutputBuffer)charcount += strlen(consoleOutputBuffer[p]);
+		if(p < 0) p = maxconsolebufferlines-1;
+		if(consoleoutputbuffer)charcount += strlen(consoleoutputbuffer[p]);
 	}
 
 	consolechar_t * consoleVBOTempBuffer = malloc(charcount * sizeof(consolechar_t));
 
-	p = consoleCircleBufferPlace;
+	p = consolecirclebufferplace;
 	int numchecked = 0;
-	for(n = 0; n < consoleStringsPrinted && n < consoleHeight; n++){
+	for(n = 0; n < consolestringsprinted && n < consoleheight; n++){
 		p--;
-		if(p < 0) p = maxConsoleBufferLines-1;
+		if(p < 0) p = maxconsolebufferlines-1;
 		int g;
-		for(g = 0; g < strlen(consoleOutputBuffer[p]); g++){
-			consoleVBOTempBuffer[numchecked] = generateCharacter((float)g/consoleWidth, 1.0 - ((float)n/consoleHeight), 1.0/consoleWidth, 1.0/consoleHeight, consoleOutputBuffer[p][g]);
+		for(g = 0; g < strlen(consoleoutputbuffer[p]); g++){
+			consoleVBOTempBuffer[numchecked] = generateCharacter((float)g/consoleWidth, 1.0 - ((float)n/consoleheight), 1.0/consoleWidth, 1.0/consoleheight, consoleoutputbuffer[p][g]);
 		}
 	}
 	glBufferData(GL_ARRAY_BUFFER, charcount * 16 * sizeof(GLfloat), consoleVBOTempBuffer, GL_STATIC_DRAW);
@@ -151,159 +151,159 @@ int updateConsoleVBO(void){
 */
 int deleteConsoleBuffer(void){
 	int n;
-	if(!consoleOutputBuffer) return FALSE; // its already deleted
-	for(n = 0; n < maxConsoleBufferLines; n++){
-		if(consoleOutputBuffer[n]) free(consoleOutputBuffer[n]);
-		consoleOutputBuffer[n] = 0;
+	if(!consoleoutputbuffer) return FALSE; // its already deleted
+	for(n = 0; n < maxconsolebufferlines; n++){
+		if(consoleoutputbuffer[n]) free(consoleoutputbuffer[n]);
+		consoleoutputbuffer[n] = 0;
 	}
-	free(consoleOutputBuffer);
-	consoleOutputBuffer = 0;
-	consoleCircleBufferPlace = 0;
-	consoleStringsPrinted = 0;
-	consoleDisplayNeedsUpdate = TRUE;
+	free(consoleoutputbuffer);
+	consoleoutputbuffer = 0;
+	consolecirclebufferplace = 0;
+	consolestringsprinted = 0;
+	console_displayneedsupdate = TRUE;
 	return TRUE; // should do for now
 }
 
 int resizeConsoleBuffer(int size){
 	if(size < 1) size = 1; //force a size
 
-	char **newBuffer = malloc(size * sizeof(char *));
+	char **newbuffer = malloc(size * sizeof(char *));
 
-//	if(!newBuffer); //todo debug
-	memset(newBuffer, 0, size*sizeof(char *));
+//	if(!newbuffer); //todo debug
+	memset(newbuffer, 0, size*sizeof(char *));
 
-	if(consoleOutputBuffer){ //if there already is one
+	if(consoleoutputbuffer){ //if there already is one
 
-		//TODO since newBuffer is already zero'd  i can probably only reset the parts that were set. Some hocus pocus with consoleStringsPrinted
+		//TODO since newbuffer is already zero'd  i can probably only reset the parts that were set. Some hocus pocus with consolestringsprinted
 
-		if(consoleStringsPrinted > size) consoleStringsPrinted = size; // set the number of printed strings to the size of the buffer if they are too much... needed if i eventually resize the buffer back up to that size or such
+		if(consolestringsprinted > size) consolestringsprinted = size; // set the number of printed strings to the size of the buffer if they are too much... needed if i eventually resize the buffer back up to that size or such
 
-		int toClean = maxConsoleBufferLines - consoleStringsPrinted;
+		int toclean = maxconsolebufferlines - consolestringsprinted;
 		int n;
-		for(n = 0; n < toClean; n++){
-			int check = (n + consoleCircleBufferPlace) % maxConsoleBufferLines;
-			if(consoleOutputBuffer[check]) free(consoleOutputBuffer[check]);
-			consoleOutputBuffer[check] = 0;
+		for(n = 0; n < toclean; n++){
+			int check = (n + consolecirclebufferplace) % maxconsolebufferlines;
+			if(consoleoutputbuffer[check]) free(consoleoutputbuffer[check]);
+			consoleoutputbuffer[check] = 0;
 		}
 
-		consoleCircleBufferPlace -= consoleStringsPrinted;
-		if(consoleCircleBufferPlace < 0) consoleCircleBufferPlace += size; //to get to the "start" of the buffer
+		consolecirclebufferplace -= consolestringsprinted;
+		if(consolecirclebufferplace < 0) consolecirclebufferplace += size; //to get to the "start" of the buffer
 
-		for(n = 0; n < consoleStringsPrinted; n++, consoleCircleBufferPlace++){ //fill new buffer with old buffers data, at place 0
-			newBuffer[n] = consoleOutputBuffer[consoleCircleBufferPlace]; // moved for readability... used to have this in the for
+		for(n = 0; n < consolestringsprinted; n++, consolecirclebufferplace++){ //fill new buffer with old buffers data, at place 0
+			newbuffer[n] = consoleoutputbuffer[consolecirclebufferplace]; // moved for readability... used to have this in the for
 		}
 
-		free(consoleOutputBuffer);
-		consoleCircleBufferPlace = n;
+		free(consoleoutputbuffer);
+		consolecirclebufferplace = n;
 	} else { // and if you are doing the init
-		memset(newBuffer, 0, size * sizeof(char*));
-		consoleCircleBufferPlace = 0;//just in case
-		consoleStringsPrinted = 0;
+		memset(newbuffer, 0, size * sizeof(char*));
+		consolecirclebufferplace = 0;//just in case
+		consolestringsprinted = 0;
 	}
 
-	consoleOutputBuffer = newBuffer;
-	maxConsoleBufferLines = size;
-	consoleDisplayNeedsUpdate = TRUE;
-	return maxConsoleBufferLines;
+	consoleoutputbuffer = newbuffer;
+	maxconsolebufferlines = size;
+	console_displayneedsupdate = TRUE;
+	return maxconsolebufferlines;
 }
-int initConsoleSystem(void){ //should work for now
-	tempPrint = malloc(maxConsoleBufferLineLength * sizeof(char));
-	resizeConsoleBuffer(maxConsoleBufferLines);
+int console_init(void){ //should work for now
+	tempprint = malloc(maxconsolebufferlinelength * sizeof(char));
+	resizeConsoleBuffer(maxconsolebufferlines);
 //	consoleVBO = createAndAddVBO("console", 2); //todo set type to something
 //	consoleVAOid = consoleVBO->vaoid;
 //	resizeConsoleBuffer(5); for testing resizing
-	consoleDisplayNeedsUpdate = TRUE;
-	currentConsoleTextTrackerFlag = 0;
+	console_displayneedsupdate = TRUE;
+	currentconsoletexttrackerflag = 0;
 	return TRUE; // good enough for now
 }
-int consolePrintf(const char *format, ...){//very similar to printf...
+int console_printf(const char *format, ...){//very similar to printf...
 	va_list arg;
 	int done;
 
 
-	if(!consoleOutputBuffer){ //no console, fall back to stdout printing
+	if(!consoleoutputbuffer){ //no console, fall back to stdout printing
 		va_start(arg, format);
-		done = vfprintf (stdout, format, arg); //not likely to be a tempPrint malloced, so not using it
+		done = vfprintf (stdout, format, arg); //not likely to be a tempprint malloced, so not using it
 		va_end(arg);
 		return done;
 	}
 
-	if(!tempPrint) return 0;// somehow we messed up
+	if(!tempprint) return 0;// somehow we messed up
 
 	//initialize string
 	//slap string into buffer
 	//move down into empty buffer spot
 	int length;
 	va_start(arg, format);
-	done = vsnprintf(tempPrint, maxConsoleBufferLineLength, format, arg);
+	done = vsnprintf(tempprint, maxconsolebufferlinelength, format, arg);
 	va_end(arg);
 
-	printf(tempPrint); // possibly faster than having it re-interpret the format
+	printf(tempprint); // possibly faster than having it re-interpret the format
 
-	length = strlen(tempPrint) + 2;
-	consoleOutputBuffer[consoleCircleBufferPlace] = realloc(consoleOutputBuffer[consoleCircleBufferPlace], length * sizeof(char)); //reallocate that string in the buffer to only the size needed
-	strncpy(consoleOutputBuffer[consoleCircleBufferPlace], tempPrint, length * sizeof(char));
+	length = strlen(tempprint) + 2;
+	consoleoutputbuffer[consolecirclebufferplace] = realloc(consoleoutputbuffer[consolecirclebufferplace], length * sizeof(char)); //reallocate that string in the buffer to only the size needed
+	strncpy(consoleoutputbuffer[consolecirclebufferplace], tempprint, length * sizeof(char));
 
-	consoleCircleBufferPlace++;
-	consoleCircleBufferPlace = (consoleCircleBufferPlace % maxConsoleBufferLines); // add one to the position
-	if(consoleStringsPrinted < maxConsoleBufferLines)consoleStringsPrinted++; //add one to how "full" the buffer is
+	consolecirclebufferplace++;
+	consolecirclebufferplace = (consolecirclebufferplace % maxconsolebufferlines); // add one to the position
+	if(consolestringsprinted < maxconsolebufferlines)consolestringsprinted++; //add one to how "full" the buffer is
 
 	//maybe call a function to update vbos for the console or something
 
 
-	consoleDisplayNeedsUpdate = TRUE;
+	console_displayneedsupdate = TRUE;
 	return done;
 }
 
 /*NOTE
 	when using this function you have to take into account the length of all of the inputs. That includes format.
-	So, if you are doing consoleNPrintf( SOMESIZE, "yar har %s\n", string); with string being 200 characters long,
+	So, if you are doing console_nprintf( SOMESIZE, "yar har %s\n", string); with string being 200 characters long,
 	you have to take into account of the length of "yar har \n" as well. (so final would be 210 or so characters long.
 */
-int consoleNPrintf(size_t size, const char *format, ...){//very similar to printf...
+int console_nprintf(size_t size, const char *format, ...){//very similar to printf...
 	va_list arg;
 	int done;
 
-	if(!consoleOutputBuffer){ //no console, fall back to stdout printing
+	if(!consoleoutputbuffer){ //no console, fall back to stdout printing
 		va_start(arg, format);
-		done = vfprintf (stdout, format, arg); //not likely to be a tempPrint malloced, so not using it
+		done = vfprintf (stdout, format, arg); //not likely to be a tempprint malloced, so not using it
 		va_end(arg);
 		return done;
 	}
 
-	char * bigTempPrint = malloc(size);
-	if(!bigTempPrint) return 0;// somehow we messed up
+	char * bigtempprint = malloc(size);
+	if(!bigtempprint) return 0;// somehow we messed up
 
 	//initialize string
 	//slap string into buffer
 	//move down into empty buffer spot
 	va_start(arg, format);
-	done = vsnprintf(bigTempPrint, size, format, arg);
+	done = vsnprintf(bigtempprint, size, format, arg);
 	va_end(arg);
 
-	printf(bigTempPrint); // possibly faster than having it re-interpret the format
+	printf(bigtempprint); // possibly faster than having it re-interpret the format
 
-	consoleOutputBuffer[consoleCircleBufferPlace] = realloc(consoleOutputBuffer[consoleCircleBufferPlace], size); //reallocate that string in the buffer to only the size needed
-	strncpy(consoleOutputBuffer[consoleCircleBufferPlace], bigTempPrint, size);
-	free(bigTempPrint);
+	consoleoutputbuffer[consolecirclebufferplace] = realloc(consoleoutputbuffer[consolecirclebufferplace], size); //reallocate that string in the buffer to only the size needed
+	strncpy(consoleoutputbuffer[consolecirclebufferplace], bigtempprint, size);
+	free(bigtempprint);
 
-	consoleCircleBufferPlace++;
-	consoleCircleBufferPlace = (consoleCircleBufferPlace % maxConsoleBufferLines); // add one to the position
-	if(consoleStringsPrinted < maxConsoleBufferLines)consoleStringsPrinted++; //add one to how "full" the buffer is
+	consolecirclebufferplace++;
+	consolecirclebufferplace = (consolecirclebufferplace % maxconsolebufferlines); // add one to the position
+	if(consolestringsprinted < maxconsolebufferlines)consolestringsprinted++; //add one to how "full" the buffer is
 
 	//maybe call a function to update vbos for the console or something
 
 
-	consoleDisplayNeedsUpdate = TRUE;
+	console_displayneedsupdate = TRUE;
 	return done;
 }
-int printConsoleBackwards(void){
+int console_printBackwards(void){
 	printf("Console buffer backwards : \n");
-	int n, p = consoleCircleBufferPlace;
-	for(n = 0; n < consoleStringsPrinted; n++){
+	int n, p = consolecirclebufferplace;
+	for(n = 0; n < consolestringsprinted; n++){
 		p--;
-		if(p < 0) p = maxConsoleBufferLines-1;
-		if(consoleOutputBuffer)printf(consoleOutputBuffer[p]);
+		if(p < 0) p = maxconsolebufferlines-1;
+		if(consoleoutputbuffer)printf(consoleoutputbuffer[p]);
 	}
 	return TRUE;
 }

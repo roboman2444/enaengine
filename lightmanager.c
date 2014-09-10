@@ -53,7 +53,7 @@ int lightLoop(void){
 				recheckLightLeaf(l);
 				count++;
 				l->needsupdate = 0;
-//	consolePrintf("updated light\n");
+//	console_printf("updated light\n");
 			}
 		} else if(l->needsupdate){
 				recalcLightBBox(l);
@@ -256,7 +256,7 @@ typedef struct lightbuckethead_s {
 void lightHashSortPrune(lightlistdist_t * list, vec_t lmaxdist, unsigned int max){
 	unsigned int count = list->count;
 	unsigned int bucketcount = (count / 10) +1;
-//	consolePrintf("bucketcount is %i\n", bucketcount);
+//	console_printf("bucketcount is %i\n", bucketcount);
 	//todo fix this?
 	vec_t bucketsize = lmaxdist / (vec_t)(bucketcount-1);
 
@@ -269,7 +269,7 @@ void lightHashSortPrune(lightlistdist_t * list, vec_t lmaxdist, unsigned int max
 	//fill table
 	for(i = 0; i < count; i++){
 		unsigned int lighthash = (int)(dist[i] / bucketsize);
-		if(lighthash > bucketcount) consolePrintf("u dun goofed now! %i:%i:%i:%i\n", lighthash, dist, bucketsize, bucketcount);
+		if(lighthash > bucketcount) console_printf("u dun goofed now! %i:%i:%i:%i\n", lighthash, dist, bucketsize, bucketcount);
 //		printf("lighthash is %i\n", lighthash);
 		lightbuckethead_t * h = &table[lighthash];
 		lightbucket_t * j = malloc(sizeof(lightbucket_t));

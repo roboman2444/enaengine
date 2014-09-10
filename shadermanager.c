@@ -174,7 +174,7 @@ void pruneShaderList(void){
 
 //shaderpermutation_t compilePermutation(shaderprogram_t * shader, int permutation){
 shaderpermutation_t createPermutation(shaderprogram_t * shader, unsigned int permutation){
-//	consolePrintf("readying shader %s with permutation %i", shader->name, permutation);
+//	console_printf("readying shader %s with permutation %i", shader->name, permutation);
 	shaderpermutation_t perm;
 	memset(&perm, 0 , sizeof(shaderpermutation_t));
 	perm.permutation = permutation;
@@ -249,12 +249,12 @@ shaderpermutation_t createPermutation(shaderprogram_t * shader, unsigned int per
 
 	glGetShaderiv(fragid, GL_COMPILE_STATUS, &status);
 	if(status == GL_FALSE){
-//			consolePrintf("Shader %s compile failed\n", shader->name);
+//			console_printf("Shader %s compile failed\n", shader->name);
 			fail = 1;
 	}
 	glGetShaderiv(vertid, GL_COMPILE_STATUS, &status);
 	if(status == GL_FALSE){
-//			consolePrintf("Shader %s compile failed\n", shader->name);
+//			console_printf("Shader %s compile failed\n", shader->name);
 			fail = 1;
 	}
 
@@ -291,7 +291,7 @@ shaderpermutation_t createPermutation(shaderprogram_t * shader, unsigned int per
 	//TODO errorcheck
 	glGetProgramiv(programid, GL_LINK_STATUS, &status);
 	if(status == GL_FALSE){
-//			consolePrintf("Shader %s compile failed\n", shader->name);
+//			console_printf("Shader %s compile failed\n", shader->name);
 			fail = 1;
 	}
 
@@ -313,10 +313,10 @@ shaderpermutation_t createPermutation(shaderprogram_t * shader, unsigned int per
 				sprintf(error, "%s%s", error, "UNUSED\n");
 			}
 			sprintf(error, "%sLine offset in file: %i\n", error, linebounce);
-			consoleNPrintf(strlen(error)+1,error);
+			console_nprintf(strlen(error)+1,error);
 			free(error);
 /*		} else {
-			consolePrintf("Shader %s compile failed\n", shader->name);
+			console_printf("Shader %s compile failed\n", shader->name);
 		}
 */
 		perm.compiled = 1;
@@ -332,7 +332,7 @@ shaderpermutation_t createPermutation(shaderprogram_t * shader, unsigned int per
 		sprintf(texstring, "texture%i", i);
 		perm.texturespos[i] = glGetUniformLocation(programid, texstring);
 		glUniform1i(perm.texturespos[i], i);
-//		consolePrintf("texture space %i at uniform loc %i\n", i, perm->texturespos[i]);
+//		console_printf("texture space %i at uniform loc %i\n", i, perm->texturespos[i]);
 	}
 	free(texstring);
 
@@ -354,7 +354,7 @@ shaderpermutation_t createPermutation(shaderprogram_t * shader, unsigned int per
 	//it will be very useful for some stuff i guess
 
 	perm.compiled = 2;
-	consolePrintf("Shader %s compile successful\n", shader->name);
+	console_printf("Shader %s compile successful\n", shader->name);
 
 
 /*
@@ -367,7 +367,7 @@ shaderpermutation_t createPermutation(shaderprogram_t * shader, unsigned int per
 			}
 		}
 	}
-	consoleNPrintf(strlen(error)+1,error);
+	console_nprintf(strlen(error)+1,error);
 	free(error);
 */
 
@@ -383,7 +383,7 @@ int readyShader(shaderprogram_t * shader){
 
 	FILE *f;
 	if(!(f = fopen(definename, "r"))){
-		consolePrintf("Count not find .define file for shader %s\n", name);
+		console_printf("Count not find .define file for shader %s\n", name);
 		shader->defines = 0;
 		//todo debug?
 	} else {
@@ -393,9 +393,9 @@ int readyShader(shaderprogram_t * shader){
 			shader->defines[i] = malloc(100);
 			if(fgets(shader->defines[i], 100, f)){
 				shader->defines[i] = realloc(shader->defines[i], strlen(shader->defines[i])+1);
-//				consolePrintf("%s\n",shader->defines[i]);
+//				console_printf("%s\n",shader->defines[i]);
 			} else {
-//				consolePrintf("%s\n",shader.defines[i]);
+//				console_printf("%s\n",shader.defines[i]);
 
 				free(shader->defines[i]);
 				shader->defines[i] = 0;
@@ -418,7 +418,7 @@ int readyShader(shaderprogram_t * shader){
 	sprintf(flagname, "%s.flags", name);
 	if(!(f = fopen(flagname, "r"))){
 		shader->sysflagssupport = 0;
-		consolePrintf("Count not find .flags file for shader %s\n", name);
+		console_printf("Count not find .flags file for shader %s\n", name);
 		//todo debug?
 	} else {
 		char * dfstring = malloc(30*sizeof(char));
@@ -490,7 +490,7 @@ int printProgramLogStatus(int id){
 	if(blen > 1){
 		GLchar *log = (GLchar *) malloc(blen);
 		glGetProgramInfoLog(id, blen, 0, log);
-		consoleNPrintf(blen + 16, "program log: %s \n", log); //too much for the console
+		console_nprintf(blen + 16, "program log: %s \n", log); //too much for the console
 		free(log);
 		return blen;
 	}

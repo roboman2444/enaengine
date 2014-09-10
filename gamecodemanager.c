@@ -68,7 +68,6 @@ int initGameCodeSystem(void){
 		entfloor->type = 2;
 		entfloor->modelid = createAndAddModelRINT("cube2");
 		entteapot->needsmatupdate = TRUE;
-		entfloor->texturegroupid = 0;
 		entfloor->shaderid = createAndAddShaderRINT("deferredmodel");
 		entfloor->flags = 1;
 

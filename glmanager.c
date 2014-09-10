@@ -23,7 +23,7 @@
 #include "animmanager.h"
 #include <tgmath.h> //for sin and cos
 
-#define CHECKGLERROR {if (TRUE){if (FALSE) consolePrintf("CHECKGLERROR at %s:%d\n", __FILE__, __LINE__);errornumber = glGetError();if (errornumber) GL_PrintError(errornumber, __FILE__, __LINE__);}}
+#define CHECKGLERROR {if (TRUE){if (FALSE) console_printf("CHECKGLERROR at %s:%d\n", __FILE__, __LINE__);errornumber = glGetError();if (errornumber) GL_PrintError(errornumber, __FILE__, __LINE__);}}
 
 float degnumber;
 
@@ -63,46 +63,46 @@ void GL_PrintError(int errornumber, const char *filename, int linenumber){
 	switch(errornumber){
 #ifdef GL_INVALID_ENUM
 	case GL_INVALID_ENUM:
-		consolePrintf("GL_INVALID_ENUM at %s:%i\n", filename, linenumber);
+		console_printf("GL_INVALID_ENUM at %s:%i\n", filename, linenumber);
 		break;
 #endif
 #ifdef GL_INVALID_VALUE
 	case GL_INVALID_VALUE:
-		consolePrintf("GL_INVALID_VALUE at %s:%i\n", filename, linenumber);
+		console_printf("GL_INVALID_VALUE at %s:%i\n", filename, linenumber);
 		break;
 #endif
 #ifdef GL_INVALID_OPERATION
 	case GL_INVALID_OPERATION:
-		consolePrintf("GL_INVALID_OPERATION at %s:%i\n", filename, linenumber);
+		console_printf("GL_INVALID_OPERATION at %s:%i\n", filename, linenumber);
 		break;
 #endif
 #ifdef GL_STACK_OVERFLOW
 	case GL_STACK_OVERFLOW:
-		consolePrintf("GL_STACK_OVERFLOW at %s:%i\n", filename, linenumber);
+		console_printf("GL_STACK_OVERFLOW at %s:%i\n", filename, linenumber);
 		break;
 #endif
 #ifdef GL_STACK_UNDERFLOW
 	case GL_STACK_UNDERFLOW:
-		consolePrintf("GL_STACK_UNDERFLOW at %s:%i\n", filename, linenumber);
+		console_printf("GL_STACK_UNDERFLOW at %s:%i\n", filename, linenumber);
 		break;
 #endif
 #ifdef GL_OUT_OF_MEMORY
 	case GL_OUT_OF_MEMORY:
-		consolePrintf("GL_OUT_OF_MEMORY at %s:%i\n", filename, linenumber);
+		console_printf("GL_OUT_OF_MEMORY at %s:%i\n", filename, linenumber);
 		break;
 #endif
 #ifdef GL_TABLE_TOO_LARGE
 	case GL_TABLE_TOO_LARGE:
-		consolePrintf("GL_TABLE_TOO_LARGE at %s:%i\n", filename, linenumber);
+		console_printf("GL_TABLE_TOO_LARGE at %s:%i\n", filename, linenumber);
 		break;
 #endif
 #ifdef GL_INVALID_FRAMEBUFFER_OPERATION
 	case GL_INVALID_FRAMEBUFFER_OPERATION:
-		consolePrintf("GL_INVALID_FRAMEBUFFER_OPERATION at %s:%i\n", filename, linenumber);
+		console_printf("GL_INVALID_FRAMEBUFFER_OPERATION at %s:%i\n", filename, linenumber);
 		break;
 #endif
 	default:
-		consolePrintf("GL UNKNOWN (%i) at %s:%i\n", errornumber, filename, linenumber);
+		console_printf("GL UNKNOWN (%i) at %s:%i\n", errornumber, filename, linenumber);
 		break;
 	}
 }
@@ -112,7 +112,7 @@ extern void drawModelSetMax(void);
 int glInit(void){
 	GLenum glewError = glewInit();
 	if(glewError != GLEW_OK){
-		consolePrintf("ERROR with the glew: %s\n", glewGetErrorString(glewError));
+		console_printf("ERROR with the glew: %s\n", glewGetErrorString(glewError));
 		return FALSE;
 	}
 	initShaderSystem();
@@ -140,8 +140,8 @@ int glInit(void){
 		return FALSE;
 		//todo call some sort of shutdown of everything
 	}
-	initAnimSystem();
-	if(!animsOK){
+	anim_init();
+	if(!anim_ok){
 		//todo call some sort of shutdown of everything
 		return FALSE;
 	}
@@ -192,7 +192,7 @@ int glInit(void){
 	if(maxIntSamples < maxMSAASamples) maxMSAASamples = maxIntSamples;
 	if(maxColorTextureSamples < maxMSAASamples) maxMSAASamples = maxColorTextureSamples;
 	if(maxDepthTextureSamples < maxMSAASamples) maxMSAASamples = maxDepthTextureSamples;
-	consolePrintf("Max multisample samples: %i\n", maxMSAASamples);
+	console_printf("Max multisample samples: %i\n", maxMSAASamples);
 
 
 	cam = createAndAddViewportRPOINT("cam", 1);
@@ -246,7 +246,7 @@ unsigned int modelMaxSize = 0;
 
 void drawModelSetMax(void){
 	modelMaxSize = maxUBOSize / sizeof(modelUBOStruct_t);
-	consolePrintf("Max model instance count is %i\n", modelMaxSize);
+	console_printf("Max model instance count is %i\n", modelMaxSize);
 	modelUBOData = malloc(modelMaxSize * sizeof(modelUBOStruct_t));
 }
 void drawModelCallback(renderlistitem_t * ilist, unsigned int count){
@@ -324,9 +324,9 @@ void setupModelCallback(renderlistitem_t * ilist, unsigned int count){
 		int t = pushDataToUBOCache(sizeof(modelUBOStruct_t), &ubodata);
 		d->ubodataoffset = t;
 	} else {
-		consolePrintf("ERROR: MODEL SETUP CALLBACK WITH 0 AS COUNT!\n");
+		console_printf("ERROR: MODEL SETUP CALLBACK WITH 0 AS COUNT!\n");
 	}
-//	consolePrintf("Setup %i\n", count);
+//	console_printf("Setup %i\n", count);
 }
 
 void addObjectToRenderqueue(const worldobject_t *o, renderqueue_t * q, const viewport_t * v){
@@ -369,7 +369,7 @@ void addObjectToRenderqueue(const worldobject_t *o, renderqueue_t * q, const vie
 
 
 	addRenderlistitem(q, r);
-//	consolePrintf("ADDED\n");
+//	console_printf("ADDED\n");
 }
 
 int addAllChildrenLeafIntoQueues(worldleaf_t *l, renderqueue_t * forwardqueue, renderqueue_t * deferredqueue, viewport_t *v){
@@ -521,7 +521,7 @@ void addEntityToRenderqueue(const entity_t *e, renderqueue_t * q, const viewport
 	r.data = &d;
 
 	addRenderlistitem(q, r);
-//	consolePrintf("ADDED\n");
+//	console_printf("ADDED\n");
 }
 int loadEntitiesIntoQueue(renderqueue_t * queue, viewport_t * v){
 	int i;
@@ -715,7 +715,7 @@ void setupPLightOCallback(renderlistitem_t * ilist, unsigned int count){
 		int t = pushDataToUBOCache(sizeof(pLightUBOStruct_t), &d->light);
 		d->ubodataoffset = t;
 	} else {
-		consolePrintf("ERROR: PLIGHT SETUP CALLBACK WITH 0 AS COUNT!\n");
+		console_printf("ERROR: PLIGHT SETUP CALLBACK WITH 0 AS COUNT!\n");
 	}
 }
 void drawPLightICallback(renderlistitem_t * ilist, unsigned int count){
@@ -778,7 +778,7 @@ void setupPLightICallback(renderlistitem_t * ilist, unsigned int count){
 		int t = pushDataToUBOCache(sizeof(pLightUBOStruct_t), &d->light);
 		d->ubodataoffset = t;
 	} else {
-		consolePrintf("ERROR: PLIGHT SETUP CALLBACK WITH 0 AS COUNT!\n");
+		console_printf("ERROR: PLIGHT SETUP CALLBACK WITH 0 AS COUNT!\n");
 	}
 }
 
@@ -1000,7 +1000,7 @@ int glDrawLights(viewport_t *v){
 	glVertexAttribPointer( INSTANCEATTRIBLOC, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), 0 ); //tell other data
 	glVertexAttribDivisor( INSTANCEATTRIBLOC, 1 ); //is it instanced?
 */
-//	consolePrintf("lcount is %i:%i\n", out.lin.count, out.lout.count);
+//	console_printf("lcount is %i:%i\n", out.lin.count, out.lout.count);
 	unsigned int iPerUBOBlock = maxUBOSize / (4*sizeof(GLfloat));
 
 	if(out.lin.count){
@@ -1150,7 +1150,7 @@ int glDrawViewport(viewport_t *v){
 	return TRUE;
 }
 int updateConsoleVBO(unsigned int offset){
-	updateConsoleText(offset);
+	console_updateText(offset);
 	if(!consoleVBO){
 		consoleVBO = createAndAddVBORPOINT("console", 2);
 		glBindVertexArray(consoleVBO->vaoid);
@@ -1161,13 +1161,13 @@ int updateConsoleVBO(unsigned int offset){
                 glVertexAttribPointer(TCATTRIBLOC, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (void*)(2*sizeof(GLfloat)));
 	}
 
-	GLfloat * points = malloc(16 * consoleDrawLines * sizeof(GLfloat));
-//	memset(points, 0.0 , 16* consoleDrawLines * sizeof(GLfloat));
-	GLuint * indices = malloc(6 * consoleDrawLines * sizeof(GLuint));
+	GLfloat * points = malloc(16 * console_drawlines * sizeof(GLfloat));
+//	memset(points, 0.0 , 16* console_drawlines * sizeof(GLfloat));
+	GLuint * indices = malloc(6 * console_drawlines * sizeof(GLuint));
 
 	unsigned int currentheight = 0;
 	int i;
-	for(i = 0; i < consoleDrawLines; i++){
+	for(i = 0; i < console_drawlines; i++){
 		int k;
 		for(k = 0; k <6; k++) indices[(i*6)+k] = rectangleindices[k] + 4*i;
 //		indices[0+i*6] = 0 + 4*i;
@@ -1180,34 +1180,34 @@ int updateConsoleVBO(unsigned int offset){
 //		memcpy(&points[i*16], fsquadpoints, 16 * sizeof(GLfloat));
 		points[i*16 +13] = 1.0 - 2.0*((float)currentheight/(float)screenHeight);
 		points[i*16 +9] = 1.0 - 2.0*((float)currentheight/(float)screenHeight);
-		currentheight += texttracker[i].height;
+		currentheight += console_texttracker[i].height;
 //		currentheight += 10;
 //		currentheight = i*10 +10;
 		points[i*16 +5] = 1.0 - 2.0*((float)currentheight/(float)screenHeight);
 		points[i*16 +1] = 1.0 - 2.0*((float)currentheight/(float)screenHeight);
 
-		points[i*16+4] = 2.0*((float)texttracker[i].width/(float)screenWidth) -1.0;
-//		points[i*16+4] = 1.0-2.0*((float)texttracker[i].width/(float)screenWidth);
-		points[i*16+8] = 2.0*((float)texttracker[i].width/(float)screenWidth) - 1.0;
+		points[i*16+4] = 2.0*((float)console_texttracker[i].width/(float)screenWidth) -1.0;
+//		points[i*16+4] = 1.0-2.0*((float)console_texttracker[i].width/(float)screenWidth);
+		points[i*16+8] = 2.0*((float)console_texttracker[i].width/(float)screenWidth) - 1.0;
 
 //		points[i*16+0] = -0.9;
 //		points[i*16+12] = -0.9;
 	}
 	glBindVertexArray(consoleVBO->vaoid);
 	glBindBuffer(GL_ARRAY_BUFFER, consoleVBO->vboid);
-	glBufferData(GL_ARRAY_BUFFER, 16 * consoleDrawLines * sizeof(GLfloat), points, GL_STATIC_DRAW); // change to stream?
+	glBufferData(GL_ARRAY_BUFFER, 16 * console_drawlines * sizeof(GLfloat), points, GL_STATIC_DRAW); // change to stream?
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, consoleVBO->indicesid);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6 *consoleDrawLines* sizeof(GLuint), indices, GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6 *console_drawlines* sizeof(GLuint), indices, GL_STATIC_DRAW);
 	free(points);
 	free(indices);
-	consoleVBO->numfaces = 2*consoleDrawLines;
-	consoleVBO->numverts = 4*consoleDrawLines;
-	consoleDisplayNeedsUpdate = 0;
+	consoleVBO->numfaces = 2*console_drawlines;
+	consoleVBO->numverts = 4*console_drawlines;
+	console_displayneedsupdate = 0;
 
 	return TRUE;
 }
 int glDrawConsole(void){
-	if(consoleDisplayNeedsUpdate)updateConsoleVBO(consoleoffset);
+	if(console_displayneedsupdate)updateConsoleVBO(console_offset);
 
 	glActiveTexture(GL_TEXTURE0);
 //	glBindTexture(GL_TEXTURE_2D, t->textureid);
@@ -1216,16 +1216,16 @@ int glDrawConsole(void){
 	shaderpermutation_t * perm = addPermutationToShader(shader, 0);
 	if(!bindShaderPerm(perm)) return FALSE;
 	glBindVertexArray(consoleVBO->vaoid);
-//	printf("consoledraw = %i\n", consoleDrawLines);
+//	printf("consoledraw = %i\n", console_drawlines);
 	int i;
-	for(i =0; i < consoleDrawLines; i++){
-//		text_t *t = returnTextById(texttracker[i].textid);
-		glBindTexture(GL_TEXTURE_2D, texttracker[i].textureid);
+	for(i =0; i < console_drawlines; i++){
+//		text_t *t = returnTextById(console_texttracker[i].textid);
+		glBindTexture(GL_TEXTURE_2D, console_texttracker[i].textureid);
 //		glBindTexture(GL_TEXTURE_2D, t->textureid);
 		glDrawRangeElements(GL_TRIANGLES, i*4, (i*4)+4, 6, GL_UNSIGNED_INT,  (void*)(i*6*sizeof(GLuint)));
-//		texttracker[i].textureid;
+//		console_texttracker[i].textureid;
 	}
-//	glDrawElements(GL_TRIANGLES, 6*consoleDrawLines, GL_UNSIGNED_INT, 0);
+//	glDrawElements(GL_TRIANGLES, 6*console_drawlines, GL_UNSIGNED_INT, 0);
 
 	return TRUE;
 }
@@ -1270,7 +1270,7 @@ int glMainDraw(void){
 
 //	glDrawFSQuad();
 	swapBuffers();
-//	consolePrintf("Faces: %li Verts: %li Objects: %li\n", totalface, totalvert, totalcount);
+//	console_printf("Faces: %li Verts: %li Objects: %li\n", totalface, totalvert, totalcount);
 	return TRUE;
 }
 int glResizeViewports(int width, int height){
@@ -1281,7 +1281,7 @@ int glResizeViewports(int width, int height){
 	count+=resizeViewport(findViewportByNameRPOINT("cam"), width, height);
 	screenHeight = height;
 	screenWidth = width;
-	consoleDisplayNeedsUpdate = 1;
+	console_displayneedsupdate = 1;
 //	updateConsoleVBO();
 	return count;
 }

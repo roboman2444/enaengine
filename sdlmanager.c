@@ -16,19 +16,19 @@ int videoFlags;
 //functions
 extern int glResizeViewports(int width, int height);
 int resizeWindow(int width, int height, int bpp, int debugmode){
-	if(debugmode) consolePrintf("DEBUG -- SDL video resize to: %ix%i with %i bits per pixel \n", width, height, bpp);
+	if(debugmode) console_printf("DEBUG -- SDL video resize to: %ix%i with %i bits per pixel \n", width, height, bpp);
 	if(height<1) height = 1;
 	if(width<1) width = 1;
 	surface = SDL_SetVideoMode(width, height, bpp, videoFlags);
 	//todo resize any framebuffers
 	if(!surface){
 //		fprintf(stderr, "ERROR -- SDL video resize failed: %s \n", SDL_GetError());
-		consolePrintf("ERROR -- SDL video resize failed: %s \n", SDL_GetError());
+		console_printf("ERROR -- SDL video resize failed: %s \n", SDL_GetError());
 		return FALSE;
 	}
 	int r = glResizeViewports(width, height);
 	if(!r){
-		consolePrintf("ERROR -- GL framebuffers resize failed\n");
+		console_printf("ERROR -- GL framebuffers resize failed\n");
 		return FALSE;
 
 	}
@@ -66,10 +66,10 @@ int setMSAA(int samples){
 }
 
 int sdlInit(int width, int height, int bpp, int debugmode){
-	if(debugmode) consolePrintf("DEBUG -- SDL window initializing \n");
+	if(debugmode) console_printf("DEBUG -- SDL window initializing \n");
 	if(SDL_Init(SDL_INIT_VIDEO)<0){
 //		fprintf(stderr, "ERROR -- SDL video init failed: %s \n", SDL_GetError());
-		consolePrintf("ERROR -- SDL video init failed: %s \n", SDL_GetError());
+		console_printf("ERROR -- SDL video init failed: %s \n", SDL_GetError());
 		return FALSE;
 	}
 	videoInfo = SDL_GetVideoInfo();
@@ -108,13 +108,13 @@ int sdlCheckEvent(void){
 		                	        SDL_Quit();
 		                	break;
 		                	case SDLK_PAGEUP:
-						consoleoffset++;
-						consoleDisplayNeedsUpdate = 1;
+						console_offset++;
+						console_displayneedsupdate = 1;
 		                	break;
 		                	case SDLK_PAGEDOWN:
-						consoleoffset--;
-						if(consoleoffset <0) consoleoffset = 0;
-						consoleDisplayNeedsUpdate = 1;
+						console_offset--;
+						if(console_offset <0) console_offset = 0;
+						console_displayneedsupdate = 1;
 		                	break;
 					case SDLK_s:
 						reloadAllShaderPrograms();
