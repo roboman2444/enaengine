@@ -25,8 +25,8 @@ extern int calcEntAttachMat(entity_t *e);
 extern int recalcEntBBox(entity_t *e);
 
 int initGameCodeSystem(void){
-	initEntitySystem();
-	if(!entitiesOK){
+	entity_init();
+	if(!entity_ok){
 		gamecodeOK = FALSE;
 		return FALSE;
 	}
@@ -350,8 +350,8 @@ void gameCodeTick(void){ //todo maybe change to float in seconds
 	int i;
 
 	//ent phys
-	for(i = 0; i <= entityArrayLastTaken; i++){
-		entity_t * e = &entitylist[i];
+	for(i = 0; i <= entity_arraylasttaken; i++){
+		entity_t * e = &entity_list[i];
 		if(!e->type) continue;
 		if(e->vel[0] || e->vel[1] || e->vel[2]){
 			e->pos[0] += e->vel[0] * GCTIMESTEPSECONDS;
@@ -366,17 +366,17 @@ void gameCodeTick(void){ //todo maybe change to float in seconds
 			e->needsmatupdate = TRUE;
 		}
 	}
-	for(i = 0; i <= entityArrayLastTaken; i++){
-		entity_t *e = &entitylist[i];
+	for(i = 0; i <= entity_arraylasttaken; i++){
+		entity_t *e = &entity_list[i];
 		if(!e->type) continue;
 		calcEntAttachMat(e);
 		if(e->needsmatupdate || e->needsbboxupdate) recalcEntBBox(e);
 	}
 	//todo maybe convert to an entity "carry" system instead of a light attach system
 	lightLoop();
-	for(i = 0; i <= entityArrayLastTaken; i++){// make sure they dont update again
-		entitylist[i].needsmatupdate = FALSE;
-		entitylist[i].needsbboxupdate = FALSE;
+	for(i = 0; i <= entity_arraylasttaken; i++){// make sure they dont update again
+		entity_list[i].needsmatupdate = FALSE;
+		entity_list[i].needsbboxupdate = FALSE;
 	}
 
 

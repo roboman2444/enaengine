@@ -527,8 +527,8 @@ int loadEntitiesIntoQueue(renderqueue_t * queue, viewport_t * v){
 	int i;
 	int count = 0;
 	int cullcount = 0;
-	for(i =0; i <= entityArrayLastTaken; i++){
-		entity_t *e = &entitylist[i];
+	for(i =0; i <= entity_arraylasttaken; i++){
+		entity_t *e = &entity_list[i];
 		if(e->type < 2)continue;
 		if(!e->modelid)continue;
 
@@ -547,8 +547,8 @@ int loadEntitiesIntoQueues(renderqueue_t * forwardqueue, renderqueue_t * deferre
 	int i;
 	int count = 0;
 	int cullcount = 0;
-	for(i =0; i <= entityArrayLastTaken; i++){
-		entity_t *e = &entitylist[i];
+	for(i =0; i <= entity_arraylasttaken; i++){
+		entity_t *e = &entity_list[i];
 		if(e->type < 2)continue;
 		if(!e->modelid)continue;
 
@@ -570,8 +570,8 @@ int loadEntitiesIntoQueueForward(renderqueue_t * queue, viewport_t * v){
 	int i;
 	int count = 0;
 	int cullcount = 0;
-	for(i =0; i <= entityArrayLastTaken; i++){
-		entity_t *e = &entitylist[i];
+	for(i =0; i <= entity_arraylasttaken; i++){
+		entity_t *e = &entity_list[i];
 		if(e->type < 2)continue;
 		if(!(e->flags & FORWARDFLAG))continue;
 		if(!e->modelid)continue;
@@ -591,8 +591,8 @@ int loadEntitiesIntoQueueDeferred(renderqueue_t * queue, viewport_t * v){
 	int i;
 	int count = 0;
 	int cullcount = 0;
-	for(i =0; i <= entityArrayLastTaken; i++){
-		entity_t *e = &entitylist[i];
+	for(i =0; i <= entity_arraylasttaken; i++){
+		entity_t *e = &entity_list[i];
 		if(e->type < 2)continue;
 		if(!(e->flags & DEFERREDFLAG))continue; //test if its "deferred" flag is set
 		if(!e->modelid)continue;

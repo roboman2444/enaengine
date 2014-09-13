@@ -47,12 +47,12 @@ typedef struct entitylistint_s {
 	unsigned int count;
 } entitylistint_t; // yeah yeah i know naming
 
-entity_t *entitylist;
-int initEntitySystem(void);
-int entitycount;
-int entityArraySize;
-int entityArrayLastTaken;
-int entitiesOK;
+entity_t *entity_list;
+int entity_init(void);
+int entity_count;
+int entity_arraysize;
+int entity_arraylasttaken;
+int entity_ok;
 
 //returns first entity it finds with name
 entity_t * findEntityByNameRPOINT(char * nam);

@@ -7,23 +7,23 @@
 #include "matrixlib.h"
 #include "entitymanager.h"
 
-int entitycount = 0;
-int entityArrayFirstOpen = 0;
-int entityArrayLastTaken = -1;
-int entityArraySize = 0;
-int entitiesOK = 0;
-entity_t *entitylist;
+int entity_count = 0;
+int entity_arrayfirstopen = 0;
+int entity_arraylasttaken = -1;
+int entity_arraysize = 0;
+int entity_ok = 0;
+entity_t *entity_list;
 hashbucket_t entityhashtable[MAXHASHBUCKETS];
 
 
-int initEntitySystem(void){
+int entity_init(void){
 	memset(entityhashtable, 0, MAXHASHBUCKETS * sizeof(hashbucket_t));
-	if(entitylist) free(entitylist);
-	entitylist = 0;
-//	entitylist = malloc(entitycount * sizeof(entity_t));
-//	if(!entitylist) memset(entitylist, 0 , entitycount * sizeof(entity_t));
+	if(entity_list) free(entity_list);
+	entity_list = 0;
+//	entity_list = malloc(entity_count * sizeof(entity_t));
+//	if(!entity_list) memset(entity_list, 0 , entity_count * sizeof(entity_t));
 	addEntityRINT("default");
-	entitiesOK = TRUE;
+	entity_ok = TRUE;
 	return TRUE; // todo error check
 }
 entitylistpoint_t findEntitiesByNameRPOINT(char * name){
@@ -66,7 +66,7 @@ int findEntityByNameRINT(char * name){
 
 int deleteEntity(int id){
 	int entityindex = (id & 0xFFFF);
-	entity_t * ent = &entitylist[entityindex];
+	entity_t * ent = &entity_list[entityindex];
 	if(ent->myid != id) return FALSE;
 	if(!ent->name) return FALSE;
 	deleteFromHashTable(ent->name, id, entityhashtable);
@@ -76,14 +76,14 @@ int deleteEntity(int id){
 //	ent->model = 0;
 //	ent->name = 0;
 //	ent->myid = 0;
-	if(entityindex < entityArrayFirstOpen) entityArrayFirstOpen = entityindex;
-	for(; entityArrayLastTaken > 0 && !entitylist[entityArrayLastTaken].type; entityArrayLastTaken--);
+	if(entityindex < entity_arrayfirstopen) entity_arrayfirstopen = entityindex;
+	for(; entity_arraylasttaken > 0 && !entity_list[entity_arraylasttaken].type; entity_arraylasttaken--);
 	return TRUE;
 }
 entity_t * returnEntityById(int id){
 //	int entityspawncount = (id >> 16);
 	int entityindex = (id & 0xFFFF);
-	entity_t * ent = &entitylist[entityindex];
+	entity_t * ent = &entity_list[entityindex];
 	if(!ent->type) return FALSE;
 	if(ent->myid == id) return ent;
 	return FALSE;
@@ -113,8 +113,8 @@ entity_t createEntity(char * name){
 */
 	newent.scale = 1.0;
 	Matrix4x4_CreateFromQuakeEntity(&newent.mat, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0);
-//	entitycount++;
-//	newent.spawncount = entitycount;
+//	entity_count++;
+//	newent.spawncount = entity_count;
 	return newent;
 //todo
 }
@@ -122,42 +122,42 @@ entity_t createEntity(char * name){
 
 
 int addEntityRINT(char * name){
-	entitycount++;
-	for(; entityArrayFirstOpen < entityArraySize && entitylist[entityArrayFirstOpen].type; entityArrayFirstOpen++);
-	if(entityArrayFirstOpen == entityArraySize){	//resize
-		entityArraySize++;
-		entitylist = realloc(entitylist, entityArraySize * sizeof(entity_t));
+	entity_count++;
+	for(; entity_arrayfirstopen < entity_arraysize && entity_list[entity_arrayfirstopen].type; entity_arrayfirstopen++);
+	if(entity_arrayfirstopen == entity_arraysize){	//resize
+		entity_arraysize++;
+		entity_list = realloc(entity_list, entity_arraysize * sizeof(entity_t));
 	}
-	entitylist[entityArrayFirstOpen] = createEntity(name);
-	int returnid = (entitycount << 16) | entityArrayFirstOpen;
-	entitylist[entityArrayFirstOpen].myid = returnid;
+	entity_list[entity_arrayfirstopen] = createEntity(name);
+	int returnid = (entity_count << 16) | entity_arrayfirstopen;
+	entity_list[entity_arrayfirstopen].myid = returnid;
 
-	addToHashTable(entitylist[entityArrayFirstOpen].name, returnid, entityhashtable);
-	if(entityArrayLastTaken < entityArrayFirstOpen) entityArrayLastTaken = entityArrayFirstOpen; //todo redo
+	addToHashTable(entity_list[entity_arrayfirstopen].name, returnid, entityhashtable);
+	if(entity_arraylasttaken < entity_arrayfirstopen) entity_arraylasttaken = entity_arrayfirstopen; //todo redo
 	return returnid;
 }
 entity_t * addEntityRPOINT(char * name){
-	entitycount++;
-	for(; entityArrayFirstOpen < entityArraySize && entitylist[entityArrayFirstOpen].type; entityArrayFirstOpen++);
-	if(entityArrayFirstOpen == entityArraySize){	//resize
-		entityArraySize++;
-		entitylist = realloc(entitylist, entityArraySize * sizeof(entity_t));
+	entity_count++;
+	for(; entity_arrayfirstopen < entity_arraysize && entity_list[entity_arrayfirstopen].type; entity_arrayfirstopen++);
+	if(entity_arrayfirstopen == entity_arraysize){	//resize
+		entity_arraysize++;
+		entity_list = realloc(entity_list, entity_arraysize * sizeof(entity_t));
 	}
-	entitylist[entityArrayFirstOpen] = createEntity(name);
-	int returnid = (entitycount << 16) | entityArrayFirstOpen;
-	entitylist[entityArrayFirstOpen].myid = returnid;
+	entity_list[entity_arrayfirstopen] = createEntity(name);
+	int returnid = (entity_count << 16) | entity_arrayfirstopen;
+	entity_list[entity_arrayfirstopen].myid = returnid;
 
-	addToHashTable(entitylist[entityArrayFirstOpen].name, returnid, entityhashtable);
+	addToHashTable(entity_list[entity_arrayfirstopen].name, returnid, entityhashtable);
 	//todo maybe have entity have a hash variable, so i dont have to calculate it again if i want to delete... maybe
-	if(entityArrayLastTaken < entityArrayFirstOpen) entityArrayLastTaken = entityArrayFirstOpen;
-//	printf("entityarraysize = %i\n", entityArraySize);
-//	printf("entitycount = %i\n", entitycount);
+	if(entity_arraylasttaken < entity_arrayfirstopen) entity_arraylasttaken = entity_arrayfirstopen;
+//	printf("entity_arraysize = %i\n", entity_arraysize);
+//	printf("entity_count = %i\n", entity_count);
 
-	return &entitylist[entityArrayFirstOpen];
+	return &entity_list[entity_arrayfirstopen];
 
 }
 void pruneEntityList(void){
-	if(entityArraySize == entityArrayLastTaken+1) return;
-	entityArraySize = entityArrayLastTaken+1;
-	entitylist = realloc(entitylist, entityArraySize * sizeof(entity_t));
+	if(entity_arraysize == entity_arraylasttaken+1) return;
+	entity_arraysize = entity_arraylasttaken+1;
+	entity_list = realloc(entity_list, entity_arraysize * sizeof(entity_t));
 }

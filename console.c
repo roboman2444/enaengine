@@ -41,7 +41,7 @@ int consoleheight = 20;
 //a flag system to delete text not drawn in the past x frames
 //todo
 
-consoleTextTracker_t * texttracker;
+consoleTextTracker_t * console_texttracker;
 unsigned int console_drawlines;
 
 //int consoleVBO;
@@ -60,9 +60,9 @@ int console_updateText(unsigned int offset){
 		glVertexAttribPointer(TCATTRIBLOC, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (void*)(2*sizeof(GLfloat)));
 	}
 */
-	if(!texttracker){
-		texttracker = malloc(consoleheight * sizeof(consoleTextTracker_t));
-		memset(texttracker, 0, consoleheight * sizeof(consoleTextTracker_t));
+	if(!console_texttracker){
+		console_texttracker = malloc(consoleheight * sizeof(consoleTextTracker_t));
+		memset(console_texttracker, 0, consoleheight * sizeof(consoleTextTracker_t));
 	}
 	console_drawlines= consolestringsprinted;
 	if(console_drawlines > consoleheight) console_drawlines = consoleheight;
@@ -72,11 +72,11 @@ int console_updateText(unsigned int offset){
 //		printf("p = %i\n",p);
 		char fg[3] = {255, 255, 255};
 		text_t *t = createAndAddTextFindFontRPOINT(consoleoutputbuffer[p], consolefont, 10, 1, fg);
-		texttracker[n].flag = currentconsoletexttrackerflag;
-		texttracker[n].textid = t->myid;
-		texttracker[n].textureid = t->textureid;
-		texttracker[n].width = t->width;
-		texttracker[n].height = t->height;
+		console_texttracker[n].flag = currentconsoletexttrackerflag;
+		console_texttracker[n].textid = t->myid;
+		console_texttracker[n].textureid = t->textureid;
+		console_texttracker[n].width = t->width;
+		console_texttracker[n].height = t->height;
 //		printf("texttracker: %i, %ix%i\n", t->textureid, t->width, t->height);
 		p = (p+1) % maxconsolebufferlines;
 	}
