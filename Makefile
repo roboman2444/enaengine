@@ -27,6 +27,8 @@ clean-everything:
 	@rm -f enaengine-profile
 	@rm -f ./*.gcda
 	
-profile:	CFLAGS= -Wall -O3 `sdl-config --cflags`-fstrict-aliasing -fprofile-generate
+profile:	CFLAGS= -Wall -O3 -g `sdl-config --cflags`-fstrict-aliasing -fprofile-generate
 profile: 	$(OBJECTS)
 	$(CC) $(CFLAGS) $(OBJECTS) -o enaengine-$@ $(LDFLAGS)
+	@echo
+	@echo You must run make clean before trying to compile any other option than profile
