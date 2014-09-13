@@ -294,7 +294,7 @@ int findModelByNameRINT(char * name){ //todo global
 	return findByNameRINT(name, modelhashtable);
 }
 
-int deleteModel(int id){
+int deleteModel(const int id){
 	int modelindex = (id & 0xFFFF);
 	model_t * m = &modellist[modelindex];
 	if(m->myid != id) return FALSE;
@@ -329,7 +329,7 @@ int deleteAllModels(void){
 	return count;
 }
 
-model_t * returnModelById(int id){
+model_t * returnModelById(const int id){
 	int modelindex = (id & 0xFFFF);
 	model_t * mod = &modellist[modelindex];
 	if(!mod->type) return FALSE;

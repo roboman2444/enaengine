@@ -1,7 +1,7 @@
 #include "globaldefs.h"
 #include "hashtables.h"
 
-int getHash(char * string){
+int getHash(const char * string){
 	unsigned long rethash = 0;
 	while(*string){
 		rethash = rethash * 31 + *string;
@@ -10,7 +10,7 @@ int getHash(char * string){
 	return rethash%MAXHASHBUCKETS;
 }
 
-int addToHashTable(char * name, int id, hashbucket_t * ht){
+int addToHashTable(const char * name, int id, hashbucket_t * ht){
 	int hash = getHash(name);
 	hashbucket_t * hb = &ht[hash];
 	if(hb->id){
@@ -18,12 +18,12 @@ int addToHashTable(char * name, int id, hashbucket_t * ht){
 		hb->next = malloc(sizeof(hashbucket_t));
 		hb = hb->next;
 	}
-	hb->name = name;
+	hb->name = (char *)name;
 	hb->id = id;
 	hb->next = 0;
 	return hash;
 }
-int deleteFromHashTable(char * name, int id, hashbucket_t *ht){
+int deleteFromHashTable(const char * name, int id, hashbucket_t *ht){
 	int hash = getHash(name);
 	hashbucket_t * hb = &ht[hash];
 	if(hb->id == id){ // check first one
@@ -46,7 +46,7 @@ int deleteFromHashTable(char * name, int id, hashbucket_t *ht){
         }
 	return FALSE;
 }
-int findByNameRINT(char * name, hashbucket_t *ht){
+int findByNameRINT(const char * name, hashbucket_t *ht){
 	int hash = getHash(name);
 	hashbucket_t * hb = &ht[hash];
 	if(!hb->name) return 0;

@@ -64,7 +64,7 @@ int findEntityByNameRINT(char * name){
 	return findByNameRINT(name, entityhashtable);
 }
 
-int deleteEntity(int id){
+int deleteEntity(const int id){
 	int entityindex = (id & 0xFFFF);
 	entity_t * ent = &entity_list[entityindex];
 	if(ent->myid != id) return FALSE;
@@ -80,7 +80,7 @@ int deleteEntity(int id){
 	for(; entity_arraylasttaken > 0 && !entity_list[entity_arraylasttaken].type; entity_arraylasttaken--);
 	return TRUE;
 }
-entity_t * returnEntityById(int id){
+entity_t * returnEntityById(const int id){
 //	int entityspawncount = (id >> 16);
 	int entityindex = (id & 0xFFFF);
 	entity_t * ent = &entity_list[entityindex];

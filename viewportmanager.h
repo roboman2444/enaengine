@@ -52,9 +52,9 @@ int findViewportByNameRINT(char * name);
 viewportlistpoint_t findViewportsByNameRPOINT(char * name);
 viewportlistint_t findViewportsByNameRINT(char * name);
 
-viewport_t * returnViewportById(int id);
+viewport_t * returnViewportById(const int id);
 
-viewport_t * createAndAddViewportRPOINT(char * name, char type);
+viewport_t * createAndAddViewportRPOINT(char * name, const char type);
 int createAndAddViewportRINT(char * name, char type);
 
 viewport_t createViewport(char * name, char type);
@@ -77,4 +77,5 @@ int testSphereInFrustumNearPlane(viewport_t *v, vec_t *p, float size);
 int testBBoxPInFrustumNearPlane(viewport_t *v, vec_t *points);
 
 int resizeViewport(viewport_t *v, int width, int height);
+int deleteViewport(const int id);
 #endif

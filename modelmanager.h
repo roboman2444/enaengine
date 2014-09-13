@@ -50,11 +50,11 @@ int initModelSystem(void);
 model_t * findModelByNameRPOINT(char * name);
 int findModelByNameRINT(char * name);
 
-model_t * returnModelById(int id);
+model_t * returnModelById(const int id);
 
 model_t * addModelRPOINT(model_t mod);
 int addModelRINT(model_t mod);
-int deleteModel(int id);
+int deleteModel(const int id);
 int deleteAllModels(void);
 void pruneModelList(void);
 

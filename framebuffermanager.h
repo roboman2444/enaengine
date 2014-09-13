@@ -55,7 +55,7 @@ int findFramebufferByNameRINT(char * name);
 framebufferlistpoint_t findFramebuffersByNameRPOINT(char * name);
 framebufferlistint_t findFramebuffersByNameRINT(char * name);
 
-framebuffer_t * returnFramebufferById(int id);
+framebuffer_t * returnFramebufferById(const int id);
 
 framebuffer_t * createAndAddFramebufferRPOINT(char * name, unsigned char count, unsigned char rbflags, unsigned char * perflags);
 int createAndAddFramebufferRINT(char * name, unsigned char count, unsigned char rbflags, unsigned char *perflags);
@@ -70,4 +70,6 @@ char resolveMultisampleFramebufferSpecify(framebuffer_t *fb, unsigned int buffer
 
 
 void bindFramebuffer(framebuffer_t *fb);
+
+int deleteFramebuffer(const int id);
 #endif

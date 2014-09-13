@@ -38,7 +38,7 @@ int anim_init(void);
 anim_t * anim_findByNameRPOINT(char * name);
 int anim_findByNameRINT(char * name);
 
-int anim_delete(int id);
+int anim_delete(const int id);
 
 
 //int loadiqmposes(anim_t *a, const struct iqmheader hdr, unsigned char *buf);
@@ -51,7 +51,7 @@ void anim_pruneList(void);
 anim_t * anim_createAndAddRPOINT(char * name);
 int anim_createAndAddRINT(char * name);
 
-anim_t * anim_returnById(int id);
+anim_t * anim_returnById(const int id);
 
 #endif
 

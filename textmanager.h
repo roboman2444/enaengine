@@ -90,8 +90,8 @@ int findFontByNameRINT(char * name);
 fontlistpoint_t findFontsByNameRPOINT(char * name);
 fontlistint_t findFontsByNameRINT(char * name);
 
-int deleteText(int id);
-int deleteFont(int id);
+int deleteText(const int id);
+int deleteFont(const int id);
 
 //text_t loadText(char *filepath, char type);
 
@@ -103,8 +103,8 @@ int createAndAddTextRINT(char * name, int font, char style, char fgcolor[3]);
 font_t * createAndAddFontRPOINT(char * name, unsigned short size);
 int createAndAddFontRINT(char * name, unsigned short size);
 
-text_t * returnTextById(int id);
-font_t * returnFontById(int id);
+text_t * returnTextById(const int id);
+font_t * returnFontById(const int id);
 
 
 int deleteAllText(void);

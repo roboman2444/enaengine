@@ -37,18 +37,19 @@ anim_t * anim_findByNameRPOINT(char * name){
 int anim_findByNameRINT(char * name){
 	return findByNameRINT(name, animhashtable);
 }
-int anim_delete(int id){
+int anim_delete(const int id){
 	int animindex = (id & 0xFFFF);
 	anim_t * a = &anim_list[animindex];
 	if(a->myid != id) return FALSE;
 	if(!a->name) return FALSE;
+	deleteFromHashTable(a->name, id, animhashtable);
 	free(a->name);
 	memset(a,0, sizeof(anim_t));
 	if(animindex < anim_arrayfirstopen) anim_arrayfirstopen = animindex;
 	for(; anim_arraylasttaken > 0 && !anim_list[anim_arraylasttaken].type; anim_arraylasttaken--);
 	return TRUE;
 }
-anim_t * anim_returnById(int id){
+anim_t * anim_returnById(const int id){
 	int animindex = (id & 0xFFFF);
 	anim_t * a = &anim_list[animindex];
 	if(!a->type) return FALSE;

@@ -67,7 +67,7 @@ viewport_t * findViewportByNameRPOINT(char * name){
 int findViewportByNameRINT(char * name){
 	return findByNameRINT(name, viewporthashtable);
 }
-int deleteViewport(int id){
+int deleteViewport(const int id){
 	int viewportindex = (id & 0xFFFF);
 	viewport_t * viewport = &viewportlist[viewportindex];
 	if(viewport->myid != id) return FALSE;
@@ -82,7 +82,7 @@ int deleteViewport(int id){
 	return TRUE;
 }
 
-viewport_t * returnViewportById(int id){
+viewport_t * returnViewportById(const int id){
 	int index = (id & 0xFFFF);
 //	if(index > viewportArrayLastTaken) return FALSE;
 	viewport_t * v = &viewportlist[index];
@@ -91,7 +91,7 @@ viewport_t * returnViewportById(int id){
 	return FALSE;
 }
 
-viewport_t createViewport (char * name, char type){
+viewport_t createViewport (char * name, const char type){
 	viewport_t v;
 	v.type = 0; //todo make useful
 	v.aspect = 1.0f;

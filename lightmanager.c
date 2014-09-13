@@ -117,7 +117,7 @@ int findLightByNameRINT(char * name){
 	return findByNameRINT(name, lighthashtable);
 }
 
-int deleteLight(int id){
+int deleteLight(const int id){
 	int lightindex = (id & 0xFFFF);
 	light_t * ent = &lightlist[lightindex];
 	if(ent->myid != id) return FALSE;
@@ -133,7 +133,7 @@ int deleteLight(int id){
 	for(; lightArrayLastTaken > 0 && !lightlist[lightArrayLastTaken].type; lightArrayLastTaken--);
 	return TRUE;
 }
-light_t * returnLightById(int id){
+light_t * returnLightById(const int id){
 //	int lightspawncount = (id >> 16);
 	int lightindex = (id & 0xFFFF);
 	light_t * ent = &lightlist[lightindex];

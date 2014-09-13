@@ -48,7 +48,7 @@ texturegroup_t * findTexturegroupByNameRPOINT(char * name){
 int findTexturegroupByNameRINT(char * name){
 	return findByNameRINT(name, texturegrouphashtable);
 }
-int deleteTexturegroup(int id){
+int deleteTexturegroup(const int id){
 	int texturegroupindex = (id & 0xFFFF);
 	texturegroup_t * tex = &texturegrouplist[texturegroupindex];
 	if(tex->myid != id) return FALSE;
@@ -60,13 +60,14 @@ int deleteTexturegroup(int id){
 		}
 		free(tex->textures);
 	}
+	deleteFromHashTable(tex->name, id, texturegrouphashtable);
 	free(tex->name);
 	memset(tex,0, sizeof(texturegroup_t));
 	if(texturegroupindex < texturegroupArrayFirstOpen) texturegroupArrayFirstOpen = texturegroupindex;
 	for(; texturegroupArrayLastTaken > 0 && !texturegrouplist[texturegroupArrayLastTaken].type; texturegroupArrayLastTaken--);
 	return i;
 }
-texturegroup_t * returnTexturegroupById(int id){
+texturegroup_t * returnTexturegroupById(const int id){
 	int texturegroupindex = (id & 0xFFFF);
 	texturegroup_t * tex = &texturegrouplist[texturegroupindex];
 	if(!tex->type) return FALSE;
@@ -74,7 +75,7 @@ texturegroup_t * returnTexturegroupById(int id){
 	return FALSE;
 }
 
-texturegroup_t createTexturegroup(char * name, int num){
+texturegroup_t createTexturegroup(char * name, const int num){
 	texturegroup_t texgroup;
 	texgroup.textures = malloc(num*sizeof(texture_t));
 	texgroup.num = num;

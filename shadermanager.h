@@ -59,17 +59,17 @@ int initShaderSystem(void);
 shaderprogram_t * findShaderByNameRPOINT(char * name);
 int findShaderByNameRINT(char * name);
 
-shaderprogram_t * returnShaderById(int id);
+shaderprogram_t * returnShaderById(const int id);
 
 shaderprogram_t * addShaderRPOINT(shaderprogram_t shader);
 int addShaderRINT(shaderprogram_t shader);
 
-int deleteShaderPermutation(shaderprogram_t * shader, unsigned int permutation);
-int deleteShaderProgram(int id);
+int deleteShaderPermutation(shaderprogram_t * shader, const unsigned int permutation);
+int deleteShaderProgram(const int id);
 int deleteAllShaderPrograms(void);
 
 
-int reloadShaderProgram(int id);
+int reloadShaderProgram(const int id);
 int reloadAllShaderPrograms(void);
 
 shaderprogram_t * createAndAddShaderRPOINT(char * name);
@@ -79,12 +79,12 @@ void pruneShaderList(void);
 
 
 
-int printProgramLogStatus(int id);
-int getProgramLogStatus(int id, char ** output);
+int printProgramLogStatus(const int id);
+int getProgramLogStatus(const int id, char ** output);
 shaderpermutation_t * findShaderPermutation(shaderprogram_t * shader, unsigned int permutation);
 shaderpermutation_t * addPermutationToShader(shaderprogram_t * shader, unsigned int permutation);
 
 
-int shaderUseProgram(GLuint program);
+int shaderUseProgram(const GLuint program);
 int bindShaderPerm(shaderpermutation_t * perm);
 #endif

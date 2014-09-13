@@ -88,12 +88,12 @@ int findLightByNameRINT(char * name);
 lightlistpoint_t findLightsByNameRPOINT(char * nam);
 lightlistint_t findLightsByNameRINT(char * name);
 //returns pointer by light id
-light_t * returnLightById(int id);
+light_t * returnLightById(const int id);
 //creates and adds light to listwith name
 light_t * addLightRPOINT(char * name);
 int addLightRINT(char * name);
 //deletes light, only id is accepted
-int deleteLight(int id);
+int deleteLight(const int id);
 void pruneLightList(void);
 
 

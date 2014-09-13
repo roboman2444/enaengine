@@ -63,7 +63,7 @@ int initVBOSystem(void);
 vbo_t * findVBOByNameRPOINT(char * name);
 int findVBOByNameRINT(char * name);
 
-vbo_t * returnVBOById(int id);
+vbo_t * returnVBOById(const int id);
 
 vbo_t * createAndAddVBORPOINT(char * name, char type);
 int createAndAddVBORINT(char * name, char type);
@@ -71,7 +71,7 @@ vbo_t createVBO(char *name, char type);
 void pruneVBOList(void);
 
 
-int deleteVBO(int vboid);
+int deleteVBO(const int id);
 int setUpVBOStride(vbo_t * vbo, unsigned char posstride, unsigned char normstride, unsigned char tcstride, unsigned char tangentstride, unsigned char blendistride, unsigned char blendwstride);
 
 void statesBindBuffer(const GLenum type, const GLuint id);

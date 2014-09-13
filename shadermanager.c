@@ -69,7 +69,7 @@ int deleteShaderPermutation(shaderprogram_t * s, unsigned int permutation){
 }
 
 
-int deleteShaderProgram(int id){
+int deleteShaderProgram(const int id){
 	int shaderindex = (id & 0xFFFF);
 	shaderprogram_t * shader = &shaderlist[shaderindex];
 	if(shader->myid != id) return FALSE;
@@ -125,7 +125,7 @@ int deleteAllShaderPrograms(void){
 	return count;
 }
 
-shaderprogram_t * returnShaderById(int id){
+shaderprogram_t * returnShaderById(const int id){
 	int shaderindex = (id & 0xFFFF);
 	shaderprogram_t * shader = &shaderlist[shaderindex];
 	if(!shader->type) return FALSE;
@@ -484,7 +484,7 @@ shaderprogram_t createAndReadyShader(char * name){
 	return shader;
 }
 
-int printProgramLogStatus(int id){
+int printProgramLogStatus(const int id){
 	GLint blen = 0;
 	glGetProgramiv(id, GL_INFO_LOG_LENGTH, &blen);
 	if(blen > 1){
@@ -497,7 +497,7 @@ int printProgramLogStatus(int id){
 	return FALSE;
 }
 //UNTESTED
-int getProgramLogStatus(int id, char ** output){
+int getProgramLogStatus(const int id, char ** output){
 	GLint length = 0;
 	glGetProgramiv(id, GL_INFO_LOG_LENGTH, &length);
 	if(length > 1){
@@ -554,7 +554,7 @@ GLint findShaderAttribPos(shaderprogram_t * shader, char * name){
 }
 */
 
-int shaderUseProgram(GLuint program){
+int shaderUseProgram(const GLuint program){
 	if(program != currentprogram){
 		currentprogram = program;
 		glUseProgram(program);
@@ -577,7 +577,7 @@ int bindShaderPerm(shaderpermutation_t * perm){
 	return TRUE;
 }
 
-int reloadShaderProgram(int id){
+int reloadShaderProgram(const int id){
 	int shaderindex = (id & 0xFFFF);
 	shaderprogram_t * shader = &shaderlist[shaderindex];
 	if(shader->myid != id) return FALSE;

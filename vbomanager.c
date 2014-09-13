@@ -35,7 +35,7 @@ int findVBOByNameRINT(char * name){
 	return findByNameRINT(name, vbohashtable);
 }
 
-int deleteVBO(int id){
+int deleteVBO(const int id){
 	int vboindex = (id & 0xFFFF);
 	vbo_t * vbo = &vbolist[vboindex];
 	if(vbo->myid != id) return FALSE;
@@ -51,7 +51,7 @@ int deleteVBO(int id){
 	return TRUE;
 }
 
-vbo_t * returnVBOById(int id){
+vbo_t * returnVBOById(const int id){
 	int vboindex = (id & 0xFFFF);
 	vbo_t * vbo = &vbolist[vboindex];
 	if(!vbo->type) return FALSE;

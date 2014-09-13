@@ -152,12 +152,13 @@ int findFontByNameSizeRINT(char * name, unsigned short size){
 }
 
 
-int deleteText(int id){
+int deleteText(const int id){
 	int textindex = (id & 0xFFFF);
 	text_t * tex = &textlist[textindex];
 	if(tex->myid != id) return FALSE;
 	if(!tex->name) return FALSE;
 	glDeleteTextures(1, &tex->textureid);
+	deleteFromHashTable(tex->name, id, texthashtable);
 	free(tex->name);
 	memset(tex,0, sizeof(text_t));
 	if(textindex < textArrayFirstOpen) textArrayFirstOpen = textindex;
@@ -175,26 +176,27 @@ int deleteUnmarkedText(void){
 	}
 	return count;
 }
-int deleteFont(int id){
+int deleteFont(const int id){
 	int fontindex = (id & 0xFFFF);
 	font_t * tex = &fontlist[fontindex];
 	if(tex->myid != id) return FALSE;
 	if(!tex->filename) return FALSE;
 	if(tex->font) TTF_CloseFont((TTF_Font *)tex->font);
+	deleteFromHashTable(tex->filename, id, fonthashtable);
 	free(tex->filename);
 	memset(tex, 0, sizeof(text_t));
 	if(fontindex < fontArrayFirstOpen) fontArrayFirstOpen = fontindex;
 	for(; fontArrayLastTaken > 0 && !fontlist[fontArrayLastTaken].type; fontArrayLastTaken--);
 	return TRUE;
 }
-text_t * returnTextById(int id){
+text_t * returnTextById(const int id){
 	int textindex = (id & 0xFFFF);
 	text_t * tex = &textlist[textindex];
 	if(!tex->type) return FALSE;
 	if(tex->myid == id) return tex;
 	return FALSE;
 }
-font_t * returnFontById(int id){
+font_t * returnFontById(const int id){
 	int fontindex = (id & 0xFFFF);
 	font_t * tex = &fontlist[fontindex];
 	if(!tex->type) return FALSE;

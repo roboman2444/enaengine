@@ -56,7 +56,7 @@ int texturegroupcount;
 int texturegroupArraySize;
 int texturegroupArrayLastTaken;
 
-texturegroup_t createTexturegroup(char * name, int num);
+texturegroup_t createTexturegroup(char * name, const int num);
 
 texturegroup_t * addTexturegroupRPOINT(texturegroup_t texgroup);
 int addTexturegroupRINT(texturegroup_t texgroup);
@@ -66,7 +66,7 @@ int initTextureSystem(void);
 texturegroup_t * findTexturegroupByNameRPOINT(char * name);
 int findTexturegroupByNameRINT(char * name);
 
-int deleteTexturegroup(int id);
+int deleteTexturegroup(const int id);
 
 
 texture_t loadTexture(char *filepath, char type);
@@ -76,7 +76,7 @@ texturegroup_t createAndLoadTexturegroup(char *name);
 texturegroup_t * createAndAddTexturegroupRPOINT(char * name);
 int createAndAddTexturegroupRINT(char * name);
 
-texturegroup_t * returnTexturegroupById(int id);
+texturegroup_t * returnTexturegroupById(const int id);
 
 int bindTexturegroup(texturegroup_t * texgroup);
 

@@ -61,12 +61,12 @@ int findEntityByNameRINT(char * name);
 entitylistpoint_t findEntitiesByNameRPOINT(char * nam);
 entitylistint_t findEntitiesByNameRINT(char * name);
 //returns pointer by entity id
-entity_t * returnEntityById(int id);
+entity_t * returnEntityById(const int id);
 //creates and adds entity to listwith name
 entity_t * addEntityRPOINT(char * name);
 int addEntityRINT(char * name);
 void pruneEntityList(void);
 
 //deletes entity, only id is accepted
-int deleteEntity(int id);
+int deleteEntity(const int id);
 #endif

@@ -82,7 +82,7 @@ framebuffer_t *findFramebufferByNameRPOINT(char * name){
 int findFramebufferByNameRINT(char * name){
 	return findByNameRINT(name, framebufferhashtable);
 }
-int deleteFramebuffer(int id){
+int deleteFramebuffer(const int id){
 	int framebufferindex = (id & 0xFFFF);
 	framebuffer_t * fb = &framebufferlist[framebufferindex];
 	if(fb->myid != id) return FALSE;
@@ -99,7 +99,7 @@ int deleteFramebuffer(int id){
 	return TRUE;
 }
 
-framebuffer_t * returnFramebufferById(int id){
+framebuffer_t * returnFramebufferById(const int id){
 	int framebufferindex = (id & 0xFFFF);
 	framebuffer_t * framebuffer = &framebufferlist[framebufferindex];
 	if(!framebuffer->type) return FALSE;
