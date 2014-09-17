@@ -11,6 +11,7 @@ typedef struct texture_s {
 
 //first two are components
 #define TEXTUREFLAGFLOAT 4
+#define TEXTUREFLAGFLOATHIGHP 8
 //todo flags for mipmapping and stuff
 
 /* types of textures ... i should do enums for these

@@ -94,6 +94,7 @@ char resizeTexture(texture_t *t, unsigned int width, unsigned int height){
 
 	char componentflags = t->flags & 3;
 	GLint texfmt0 = GL_RGB, texfmt1 = GL_RGB;
+	GLenum type = GL_UNSIGNED_BYTE;
 	switch(componentflags){
 		case 0: texfmt0 = GL_RED; break;
 		case 1: texfmt0 = GL_RG; break;
@@ -101,19 +102,29 @@ char resizeTexture(texture_t *t, unsigned int width, unsigned int height){
 		case 3: texfmt0 = GL_RGBA; break;
 		default: break;
 	}
+	texfmt1 = texfmt0;
 
 	if(t->flags & TEXTUREFLAGFLOAT){
-		switch(componentflags){
-			case 0: texfmt1 = GL_R32F; break;
-			case 1: texfmt1 = GL_RG32F; break;
-			case 2: texfmt1 = GL_RGB32F; break;
-			case 3: texfmt1 = GL_RGBA32F; break;
-			default: break; // never hit this
+		type = GL_FLOAT;
+		if(t->flags & TEXTUREFLAGFLOATHIGHP){
+			switch(componentflags){
+				case 0: texfmt1 = GL_R32F; break;
+				case 1: texfmt1 = GL_RG32F; break;
+				case 2: texfmt1 = GL_RGB32F; break;
+				case 3: texfmt1 = GL_RGBA32F; break;
+				default: break; // never hit this
+			}
+		} else {
+			switch(componentflags){
+				case 0: texfmt1 = GL_R16F; break;
+				case 1: texfmt1 = GL_RG16F; break;
+				case 2: texfmt1 = GL_RGB16F; break;
+				case 3: texfmt1 = GL_RGBA16F; break;
+				default: break; // never hit this
+			}
 		}
-		glTexImage2D(GL_TEXTURE_2D, 0, texfmt1, width, height, 0, texfmt0, GL_FLOAT, NULL);
-	} else {
-		glTexImage2D(GL_TEXTURE_2D, 0, texfmt0, width, height, 0, texfmt0, GL_UNSIGNED_BYTE, NULL);
 	}
+	glTexImage2D(GL_TEXTURE_2D, 0, texfmt1, width, height, 0, texfmt0, type, NULL);
 	t->width = width;
 	t->height = height;
 	return TRUE;
@@ -147,8 +158,10 @@ char resizeTextureMultisample(texture_t *t, unsigned int width, unsigned int hei
 	//todo make use of a state manager for texture binds
 	glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, t->id);
 
+
+
 	char componentflags = t->flags & 3;
-	GLint texfmt0 = GL_RGB, texfmt1 = GL_RGB;
+	GLint texfmt0 = GL_RGB;
 	switch(componentflags){
 		case 0: texfmt0 = GL_RED; break;
 		case 1: texfmt0 = GL_RG; break;
@@ -158,17 +171,25 @@ char resizeTextureMultisample(texture_t *t, unsigned int width, unsigned int hei
 	}
 
 	if(t->flags & TEXTUREFLAGFLOAT){
-		switch(componentflags){
-			case 0: texfmt1 = GL_R32F; break;
-			case 1: texfmt1 = GL_RG32F; break;
-			case 2: texfmt1 = GL_RGB32F; break;
-			case 3: texfmt1 = GL_RGBA32F; break;
-			default: break; // never hit this
+		if(t->flags & TEXTUREFLAGFLOATHIGHP){
+			switch(componentflags){
+				case 0: texfmt0 = GL_R32F; break;
+				case 1: texfmt0 = GL_RG32F; break;
+				case 2: texfmt0 = GL_RGB32F; break;
+				case 3: texfmt0 = GL_RGBA32F; break;
+				default: break; // never hit this
+			}
+		} else {
+			switch(componentflags){
+				case 0: texfmt0 = GL_R16F; break;
+				case 1: texfmt0 = GL_RG16F; break;
+				case 2: texfmt0 = GL_RGB16F; break;
+				case 3: texfmt0 = GL_RGBA16F; break;
+				default: break; // never hit this
+			}
 		}
-		glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, samples, texfmt1, width, height, FALSE);
-	} else {
-		glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, samples, texfmt0, width, height, FALSE);
 	}
+	glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, samples, texfmt0, width, height, FALSE);
 	t->width = width;
 	t->height = height;
 	return TRUE;

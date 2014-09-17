@@ -1,6 +1,8 @@
 #include "globaldefs.h"
 #include <string.h>
 
+#include "stringlib.h"
+
 #include "hashtables.h"
 #include "cvarmanager.h"
 
@@ -37,7 +39,6 @@ cvar_t * cvar_returnById(const int id){
 	return FALSE;
 }
 
-
 int cvar_register(cvar_t *c){
 	cvar_count++;
 	for(; cvar_arrayfirstopen < cvar_arraysize && cvar_list[cvar_arrayfirstopen]; cvar_arrayfirstopen++); //note absence of .type
@@ -53,7 +54,7 @@ int cvar_register(cvar_t *c){
 	if(cvar_arraylasttaken < cvar_arrayfirstopen) cvar_arraylasttaken = cvar_arrayfirstopen; //todo redo
 	return returnid;
 }
-int cvar_delete(const int id){
+int cvar_unregister(const int id){
 	int index = (id & 0xFFFF);
 	cvar_t *c = cvar_list[index];
 	if(!c) return FALSE;
@@ -74,4 +75,31 @@ int cvar_delete(const int id){
 	if(index < cvar_arrayfirstopen) cvar_arrayfirstopen = index;
 	for(; cvar_arraylasttaken > 0 && !cvar_list[cvar_arraylasttaken]; cvar_arraylasttaken--);
 	return TRUE;
+}
+
+
+void cvar_pset(cvar_t *c, const char *value){
+	if(!c) return;
+
+	//make sure we actually set it to something different
+	if(strcmp(value, c->valuestring) == 0) return;
+
+	//make sure size is right
+	unsigned int inlength = strlen(value)+1;
+	if(c->valuestringlength != inlength){
+		c->valuestring = realloc(c->valuestring, inlength * sizeof(char));
+		c->valuestringlength = inlength;
+	}
+	//copy new string in
+	memcpy(c->valuestring, value, inlength);
+	float vf = atof(value);
+	c->valueint = (int)vf;
+	c->valuefloat = vf;
+	string_toVec(value, c->valuevector, 3);
+
+	c->onchange(c);
+}
+
+void cvar_idset(const int id, const char *value){
+	cvar_pset(cvar_returnById(id), value);
 }

@@ -1,6 +1,9 @@
 #ifndef CVARHEADER
 #define CVARHEDER
 
+struct cvar_s;
+typedef void (* cvarcallback_t)(struct cvar_s * c);
+
 typedef struct cvar_s {
 	char * name;
 	int myid;
@@ -8,8 +11,12 @@ typedef struct cvar_s {
 
 	int valueint;
 	float valuefloat;
-	float valuevector[3];
+	float valuevector[3]; //todo write something for this...
 	char * valuestring; //ALWAYS freeable
+	unsigned int valuestringlength;
+
+
+	cvarcallback_t onchange;
 
 //	int defaultint; //todo
 //	float defaultfloat;
@@ -39,6 +46,10 @@ int cvar_findByNameRINT(char * name);
 
 int cvar_register(cvar_t *c);
 
-int cvar_delete(const int id);
+int cvar_unregister(const int id);
+
+void cvar_pset(cvar_t * c, const char *value);
+
+void cvar_idset(const int id, const char *value);
 
 #endif
