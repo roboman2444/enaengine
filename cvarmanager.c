@@ -17,7 +17,6 @@ hashbucket_t cvarhashtable[MAXHASHBUCKETS];
 cvar_t **cvar_list;
 
 int cvar_init(void){
-
 	memset(cvarhashtable, 0, MAXHASHBUCKETS * sizeof(hashbucket_t));
 	if(cvar_list) free(cvar_list); //todo this might require a special cleanup case
 	cvar_list = 0;
@@ -54,7 +53,7 @@ int cvar_register(cvar_t *c){
 	if(cvar_arraylasttaken < cvar_arrayfirstopen) cvar_arraylasttaken = cvar_arrayfirstopen; //todo redo
 	return returnid;
 }
-int cvar_unregister(const int id){
+int cvar_unregister(const int id){ //dunno why you would want to do this...
 	int index = (id & 0xFFFF);
 	cvar_t *c = cvar_list[index];
 	if(!c) return FALSE;
@@ -96,10 +95,13 @@ void cvar_pset(cvar_t *c, const char *value){
 	c->valueint = (int)vf;
 	c->valuefloat = vf;
 	string_toVec(value, c->valuevector, 3);
-
 	c->onchange(c);
 }
 
 void cvar_idset(const int id, const char *value){
 	cvar_pset(cvar_returnById(id), value);
+}
+
+void cvar_nameset(char * name, const char *value){
+	cvar_pset(cvar_findByNameRPOINT(name), value);
 }

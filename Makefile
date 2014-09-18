@@ -18,8 +18,8 @@ valgrind: 	$(OBJECTS)
 clean:
 	@echo cleaning oop
 	@rm -f $(OBJECTS)
-clean-everything:
-	@echo cleaning oop
+purge:
+	@echo purging oop
 	@rm -f $(OBJECTS)
 	@rm -f enaengine
 	@rm -f enaengine-debug

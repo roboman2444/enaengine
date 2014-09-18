@@ -49,7 +49,7 @@ int cvar_register(cvar_t *c);
 int cvar_unregister(const int id);
 
 void cvar_pset(cvar_t * c, const char *value);
-
 void cvar_idset(const int id, const char *value);
+void cvar_nameset(char * name, const char *value);
 
 #endif
