@@ -48,9 +48,14 @@ int cvar_register(cvar_t *c){
 	cvar_list[cvar_arrayfirstopen] = c;
 	int returnid = (cvar_count << 16) | cvar_arrayfirstopen;
 	c->myid = returnid;
-
+	c->type = c->type | CVAR_REGISTERED;
+	char flags = c->type;
 	addToHashTable(c->name, returnid, cvarhashtable);
 	if(cvar_arraylasttaken < cvar_arrayfirstopen) cvar_arraylasttaken = cvar_arrayfirstopen; //todo redo
+	if(!(flags & CVAR_NODEFAULT)){
+		cvar_pset(c, c->defaultstring);
+	}
+
 	return returnid;
 }
 int cvar_unregister(const int id){ //dunno why you would want to do this...
@@ -81,7 +86,7 @@ void cvar_pset(cvar_t *c, const char *value){
 	if(!c) return;
 
 	//make sure we actually set it to something different
-	if(strcmp(value, c->valuestring) == 0) return;
+	if(c->valuestringlength && strcmp(value, c->valuestring) == 0) return;
 
 	//make sure size is right
 	unsigned int inlength = strlen(value)+1;
@@ -95,7 +100,9 @@ void cvar_pset(cvar_t *c, const char *value){
 	c->valueint = (int)vf;
 	c->valuefloat = vf;
 	string_toVec(value, c->valuevector, 3);
-	c->onchange(c);
+
+	c->notdefault = !(strcmp(value, c->defaultstring) == 0);
+	if(c->onchange)c->onchange(c);
 }
 
 void cvar_idset(const int id, const char *value){

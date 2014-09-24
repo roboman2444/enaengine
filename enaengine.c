@@ -7,6 +7,7 @@
 #include "sdlmanager.h"
 #include "console.h"
 #include "gamecodemanager.h"
+#include "cvarmanager.h"
 //#include "worldmanager.h"
 extern int initWorldSystem(void);
 extern int worldOK;
@@ -17,6 +18,14 @@ extern int SDL_GetTicks(); //will remove later todo
 int main(int argc, char *argv[]){
 	unsigned int to, t;
 	unsigned int framecount = 0;
+	cvar_init();
+	if(!cvar_ok){
+		//todo some sorta shutdown path
+		printf("ERROR initializing cvar system!\n");
+		exit(1);
+	} else {
+		printf("Cvar system has initialized correctly\n");
+	}
 	console_init();
 	sdlInit(800, 600, 24, 1);
 	if(glInit()){

@@ -22,6 +22,7 @@
 #include "glstates.h"
 #include "animmanager.h"
 #include <tgmath.h> //for sin and cos
+#include "cvarmanager.h"
 
 #define CHECKGLERROR {if (TRUE){if (FALSE) console_printf("CHECKGLERROR at %s:%d\n", __FILE__, __LINE__);errornumber = glGetError();if (errornumber) GL_PrintError(errornumber, __FILE__, __LINE__);}}
 
@@ -50,6 +51,8 @@ GLuint rectangleindices[6] = { 0, 1, 2, 0, 2, 3};
 int fsquadmodel = 0;
 
 vbo_t * consoleVBO = 0; //temp
+
+cvar_t cvar_gl_MSAA_Samples = {CVAR_SAVEABLE, "gl_MSAA_Samples", "How many samples to use with multisample AA", "0"};
 
 //temp?
 renderqueue_t forward;
@@ -110,6 +113,11 @@ void GL_PrintError(int errornumber, const char *filename, int linenumber){
 
 extern void drawModelSetMax(void);
 int glInit(void){
+	cvar_register(&cvar_gl_MSAA_Samples);
+	cvar_pset(&cvar_gl_MSAA_Samples, "0");
+//	console_printf("cvar id is %i\n", cvar_gl_MSAA_Samples.myid);
+//	console_printf("cvar name is %s\n", cvar_gl_MSAA_Samples.name);
+//	console_printf("cvar value is %s\n", cvar_gl_MSAA_Samples.valuestring);
 	GLenum glewError = glewInit();
 	if(glewError != GLEW_OK){
 		console_printf("ERROR with the glew: %s\n", glewGetErrorString(glewError));

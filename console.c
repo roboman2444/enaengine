@@ -10,6 +10,7 @@
 #include "vbomanager.h"
 #include "shadermanager.h"
 #include "textmanager.h"
+#include "cvarmanager.h"
 
 typedef struct consolechar_s { //todo redo
 	GLfloat verts[16];
@@ -35,7 +36,6 @@ char * consolefont = "FreeMono.ttf";
 
 
 int consolewidth = 64;
-int consoleheight = 20;
 
 
 //a flag system to delete text not drawn in the past x frames
@@ -44,9 +44,12 @@ int consoleheight = 20;
 consoleTextTracker_t * console_texttracker;
 unsigned int console_drawlines;
 
+cvar_t cvar_console_Height = {CVAR_SAVEABLE, "console_Height", "sets the consoles display height", "20"};
+
 //int consoleVBO;
 
 int console_updateText(unsigned int offset){
+	int consoleheight = cvar_console_Height.valueint;
 
 	if(offset > consolestringsprinted - consoleheight) offset = consolestringsprinted - consoleheight;
 	currentconsoletexttrackerflag = !currentconsoletexttrackerflag;
@@ -207,6 +210,7 @@ int resizeConsoleBuffer(int size){
 	return maxconsolebufferlines;
 }
 int console_init(void){ //should work for now
+	cvar_register(&cvar_console_Height);
 	tempprint = malloc(maxconsolebufferlinelength * sizeof(char));
 	resizeConsoleBuffer(maxconsolebufferlines);
 //	consoleVBO = createAndAddVBO("console", 2); //todo set type to something
