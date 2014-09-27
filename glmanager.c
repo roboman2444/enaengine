@@ -258,6 +258,12 @@ void drawModelSetMax(void){
 	modelUBOData = malloc(modelMaxSize * sizeof(modelUBOStruct_t));
 }
 void drawModelCallback(renderlistitem_t * ilist, unsigned int count){
+	statesEnable(GL_DEPTH_TEST);
+	statesEnable(GL_CULL_FACE);
+	statesDisable(GL_BLEND );
+	statesDisable(GL_ALPHA_TEST);
+	statesDepthFunc(GL_LEQUAL);
+	statesCullFace(GL_BACK);
 
 	renderModelCallbackData_t *d = ilist->data;
 	model_t *m = returnModelById(d->modelid);
@@ -278,14 +284,9 @@ void drawModelCallback(renderlistitem_t * ilist, unsigned int count){
 	unsigned int mysize = (count * sizeof(modelUBOStruct_t));
 	glBindBufferRange(GL_UNIFORM_BUFFER, 0, renderqueueuboid, d->ubodataoffset, mysize);
 
-//	if(count > 1){
 		CHECKGLERROR
 		glDrawElementsInstanced(GL_TRIANGLES, v->numfaces * 3, GL_UNSIGNED_INT, 0, count);
 		CHECKGLERROR
-//		printf("count:%i\n", count);
-//	} else {
-//		glDrawElements(GL_TRIANGLES, v->numfaces * 3, GL_UNSIGNED_INT, 0);
-//	}
 //	printf("Rendered %i\n", count);
 }
 void setupModelCallback(renderlistitem_t * ilist, unsigned int count){
