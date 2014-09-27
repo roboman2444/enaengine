@@ -10,6 +10,8 @@ GLenum depthfunc;
 
 GLenum cullface;
 
+GLenum depthmask;
+
 char enabledstates = 0;
 
 void statesBlendFunc(const GLenum source, const GLenum dest){
@@ -27,6 +29,11 @@ void statesCullFace(const GLenum face){
 	if(face == cullface) return;
 	glCullFace(face);
 	cullface = face;
+}
+void statesDepthMask(const GLenum mask){
+	if(mask == depthmask) return;
+	glDepthMask(mask);
+	depthmask = mask;
 }
 
 void statesEnableForce(GLenum en){

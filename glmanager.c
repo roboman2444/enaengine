@@ -260,10 +260,12 @@ void drawModelSetMax(void){
 void drawModelCallback(renderlistitem_t * ilist, unsigned int count){
 	statesEnable(GL_DEPTH_TEST);
 	statesEnable(GL_CULL_FACE);
-	statesDisable(GL_BLEND );
+	statesDisable(GL_BLEND);
+	statesDisable(GL_MULTISAMPLE);
 	statesDisable(GL_ALPHA_TEST);
 	statesDepthFunc(GL_LEQUAL);
 	statesCullFace(GL_BACK);
+	statesDepthMask(GL_TRUE);
 
 	renderModelCallbackData_t *d = ilist->data;
 	model_t *m = returnModelById(d->modelid);
@@ -661,8 +663,8 @@ typedef struct renderPLightCallbackData_s {
 
 void drawPLightOCallback(renderlistitem_t * ilist, unsigned int count){
 
-		statesDisable(GL_DEPTH_TEST);
-		statesCullFace(GL_FRONT);
+	statesDisable(GL_DEPTH_TEST);
+	statesCullFace(GL_FRONT);
 
 	renderPLightCallbackData_t *d = ilist->data;
 	statesBlendFunc(GL_ONE, GL_ONE);
@@ -893,7 +895,8 @@ int glDeferredLighting(viewport_t *v, renderqueue_t * q){
 		resolveMultisampleFramebufferSpecify(df, 4);
 	}
 	bindFramebuffer(of);
-	glDepthMask(GL_FALSE);
+//	glDepthMask(GL_FALSE);
+	statesDepthMask(GL_FALSE);
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT| GL_STENCIL_BUFFER_BIT);//todo set OF to use the same renderbuffer for depth as DF
 //	glClearBufferfi(of->rb​, GLint drawBuffer​, GLfloat depth​, GLint stencil​);
 	glViewport(0, 0, of->width, of->height);
@@ -920,7 +923,8 @@ int glDeferredLighting(viewport_t *v, renderqueue_t * q){
 	renderqueueRadixSort(q);
 	renderqueueSetup(q);
 	renderqueueDraw(q);
-	glDepthMask(GL_TRUE);
+//	glDepthMask(GL_TRUE);
+	statesDepthMask(GL_TRUE);
 
 	return TRUE;
 }
@@ -949,7 +953,8 @@ int glDrawLights(viewport_t *v){
 
 	//glBindFramebuffer(GL_FRAMEBUFFER, of->id);
 	bindFramebuffer(of);
-	glDepthMask(GL_FALSE);
+//	glDepthMask(GL_FALSE);
+	statesDepthMask(GL_FALSE);
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT| GL_STENCIL_BUFFER_BIT);//todo set OF to use the same renderbuffer for depth as DF
 //	glClearBufferfi(of->rb​, GLint drawBuffer​, GLfloat depth​, GLint stencil​);
 	glViewport(0, 0, of->width, of->height);
@@ -1093,7 +1098,8 @@ int glDrawLights(viewport_t *v){
 //	glDisable(GL_CULL_FACE);
 
 
-	glDepthMask(GL_TRUE);
+//	glDepthMask(GL_TRUE);
+	statesDepthMask(GL_TRUE);
 	statesDisable(GL_BLEND);
 	return TRUE;
 }

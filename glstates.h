@@ -10,6 +10,7 @@
 void statesBlendFunc(const GLenum source, const GLenum dest);
 void statesDepthFunc(const GLenum dfunc);
 void statesCullFace(const GLenum face);
+void statesDepthMask(const GLenum mask);
 
 void statesEnableForce(GLenum en);
 void statesEnable(GLenum en);
