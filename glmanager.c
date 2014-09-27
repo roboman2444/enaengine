@@ -359,14 +359,14 @@ void addObjectToRenderqueue(const worldobject_t *o, renderqueue_t * q, const vie
 	d.ubodataoffset = 0;
 	Matrix4x4_Concat(&d.mvp, &v->viewproj, &o->mat);
 	Matrix4x4_Concat(&d.mv, &v->view, &o->mat);
-	r.sort[0] = d.shaderprogram & 0x000000FF;
-	r.sort[1] = d.shaderprogram & 0x0000FF00;
-	r.sort[2] = d.shaderprogram & 0x00FF0000;
-	r.sort[3] = d.shaderprogram & 0xFF000000;
-	r.sort[4] = modelid & 0x00FF;
-	r.sort[5] = modelid & 0xFF00;
-	r.sort[6] = texturegroupid & 0x00FF;
-	r.sort[7] = texturegroupid & 0xFF00;
+	r.sort[0] = (d.shaderprogram >> 0) & 0xFF;
+	r.sort[1] = (d.shaderprogram >> 8) & 0xFF;
+	r.sort[2] = (d.shaderprogram >> 16) & 0xFF;
+	r.sort[3] = (d.shaderprogram >> 24) & 0xFF;
+	r.sort[4] = (modelid >> 0) & 0xFF;
+	r.sort[5] = (modelid >> 8) & 0xFF;
+	r.sort[6] = (texturegroupid >> 0) & 0xFF;
+	r.sort[7] = (texturegroupid >> 8) & 0xFF;
 	r.sort[8] = 0; //could be distance data in here...
 	r.sort[9] = 0;
 	r.setup = setupModelCallback;
@@ -510,14 +510,14 @@ void addEntityToRenderqueue(const entity_t *e, renderqueue_t * q, const viewport
 
 	Matrix4x4_Concat(&d.mvp, &v->viewproj, &e->mat);
 	Matrix4x4_Concat(&d.mv, &v->view, &e->mat);
-	r.sort[0] = d.shaderprogram & 0x000000FF;
-	r.sort[1] = d.shaderprogram & 0x0000FF00;
-	r.sort[2] = d.shaderprogram & 0x00FF0000;
-	r.sort[3] = d.shaderprogram & 0xFF000000;
-	r.sort[4] = modelid & 0x00FF;
-	r.sort[5] = modelid & 0xFF00;
-	r.sort[6] = texturegroupid & 0x00FF;
-	r.sort[7] = texturegroupid & 0xFF00;
+	r.sort[0] = (d.shaderprogram >> 0) & 0xFF;
+	r.sort[1] = (d.shaderprogram >> 8) & 0xFF;
+	r.sort[2] = (d.shaderprogram >> 16) & 0xFF;
+	r.sort[3] = (d.shaderprogram >> 24) & 0xFF;
+	r.sort[4] = (modelid >> 0) & 0xFF;
+	r.sort[5] = (modelid >> 8) & 0xFF;
+	r.sort[6] = (texturegroupid >> 0) & 0xFF;
+	r.sort[7] = (texturegroupid >> 8) & 0xFF;
 	r.sort[8] = 0;
 	r.sort[9] = 0;
 	r.setup = setupModelCallback;
@@ -836,12 +836,12 @@ int glAddLightsToQueue(viewport_t *v, renderqueue_t * q, unsigned int numsamples
 		r.sort[1] = 0;
 		r.sort[2] = 0;
 		r.sort[3] = 0;
-		r.sort[4] = pl.shaderprogram & 0x000000FF;
-		r.sort[5] = pl.shaderprogram & 0x0000FF00;
-		r.sort[6] = pl.shaderprogram & 0x00FF0000;
-		r.sort[7] = pl.shaderprogram & 0xFF000000;
-		r.sort[8] = pl.modelid & 0x00FF;
-		r.sort[9] = pl.modelid & 0xFF00;
+		r.sort[4] = (pl.shaderprogram >> 0) & 0xFF;
+		r.sort[5] = (pl.shaderprogram >> 8) & 0xFF;
+		r.sort[6] = (pl.shaderprogram >> 16) & 0xFF;
+		r.sort[7] = (pl.shaderprogram >> 24) & 0xFF;
+		r.sort[8] = (pl.modelid >> 0) & 0xFF;
+		r.sort[9] = (pl.modelid >> 8) & 0xFF;
 		r.setup = setupPLightICallback;
 		r.draw = drawPLightICallback;
 		r.flags = 2 | 4; //copyable, instanceable
@@ -869,12 +869,13 @@ int glAddLightsToQueue(viewport_t *v, renderqueue_t * q, unsigned int numsamples
 		r.sort[1] = 0;
 		r.sort[2] = 0;
 		r.sort[3] = 0;
-		r.sort[4] = pl.shaderprogram & 0x000000FF;
-		r.sort[5] = pl.shaderprogram & 0x0000FF00;
-		r.sort[6] = pl.shaderprogram & 0x00FF0000;
-		r.sort[7] = pl.shaderprogram & 0xFF000000;
-		r.sort[8] = pl.modelid & 0x00FF;
-		r.sort[9] = pl.modelid & 0xFF00;
+		r.sort[4] = (pl.shaderprogram >> 0) & 0xFF;
+		r.sort[5] = (pl.shaderprogram >> 8) & 0xFF;
+		r.sort[6] = (pl.shaderprogram >> 16) & 0xFF;
+		r.sort[7] = (pl.shaderprogram >> 24) & 0xFF;
+		r.sort[8] = (pl.modelid >> 0) & 0xFF;
+		r.sort[9] = (pl.modelid >> 8) & 0xFF;
+
 		r.setup = setupPLightOCallback;
 		r.draw = drawPLightOCallback;
 		r.flags = 2 | 4; //copyable, instanceable
