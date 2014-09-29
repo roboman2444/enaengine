@@ -14,6 +14,7 @@
 #include "mathlib.h"
 #include "iqm.h"
 #include "animmanager.h"
+#include "glstates.h"
 
 int modelcount = 0;
 int modelArrayFirstOpen = 0;
@@ -87,7 +88,7 @@ int makeCubeModel(void){
 	m.vbo = myvbo->myid;
 
 
-	glBindBuffer(GL_ARRAY_BUFFER, myvbo->vboid);
+	states_bindBuffer(GL_ARRAY_BUFFER, myvbo->vboid);
 	glBufferData(GL_ARRAY_BUFFER, 8 * 8 * sizeof(GLfloat), points, GL_STATIC_DRAW);
 	myvbo->numverts = 8;
 //	m.interleaveddata = points;
@@ -105,7 +106,7 @@ int makeCubeModel(void){
 
 
 
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,myvbo->indicesid);
+	states_bindBuffer(GL_ELEMENT_ARRAY_BUFFER,myvbo->indicesid);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, 12 * 3 *sizeof(GLuint), tris, GL_STATIC_DRAW);
 	myvbo->numfaces = 12;
 //	m.tris = tris;
@@ -129,7 +130,7 @@ int makeFSQuadModel(void){
 	m.vbo = myvbo->myid;
 
 
-	glBindBuffer(GL_ARRAY_BUFFER, myvbo->vboid);
+	states_bindBuffer(GL_ARRAY_BUFFER, myvbo->vboid);
 	glBufferData(GL_ARRAY_BUFFER, 16 * sizeof(GLfloat), points, GL_STATIC_DRAW);
 	myvbo->numverts = 4;
 //	m.interleaveddata = points;
@@ -144,7 +145,7 @@ int makeFSQuadModel(void){
 
 
 
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,myvbo->indicesid);
+	states_bindBuffer(GL_ELEMENT_ARRAY_BUFFER,myvbo->indicesid);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6 *sizeof(GLuint), tris, GL_STATIC_DRAW);
 	myvbo->numfaces = 2;
 	return addModelRINT(m);
@@ -240,7 +241,7 @@ int makeCubeModel2(void){
 	m.vbo = myvbo->myid;
 
 
-	glBindBuffer(GL_ARRAY_BUFFER, myvbo->vboid);
+	states_bindBuffer(GL_ARRAY_BUFFER, myvbo->vboid);
 	glBufferData(GL_ARRAY_BUFFER, 192 * sizeof(GLfloat), points, GL_STATIC_DRAW);
 	myvbo->numverts = 24;
 //	m.interleaveddata = points;
@@ -258,7 +259,7 @@ int makeCubeModel2(void){
 
 
 
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,myvbo->indicesid);
+	states_bindBuffer(GL_ELEMENT_ARRAY_BUFFER,myvbo->indicesid);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, 12 * 3 *sizeof(GLuint), tris, GL_STATIC_DRAW);
 	myvbo->numfaces = 12;
 //	m.tris = tris;
@@ -626,7 +627,7 @@ int loadiqmmeshes(model_t * m, const struct iqmheader hdr, unsigned char *buf){
 
 
 
-	glBindBuffer(GL_ARRAY_BUFFER, myvbo->vboid);
+	states_bindBuffer(GL_ARRAY_BUFFER, myvbo->vboid);
 	glBufferData(GL_ARRAY_BUFFER, numverts * stride * sizeof(GLfloat), interleavedbuffer, GL_STATIC_DRAW);
 	myvbo->numverts = numverts;
 	m->interleaveddata = interleavedbuffer;
@@ -645,7 +646,7 @@ int loadiqmmeshes(model_t * m, const struct iqmheader hdr, unsigned char *buf){
 
 
 
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,myvbo->indicesid);
+	states_bindBuffer(GL_ELEMENT_ARRAY_BUFFER,myvbo->indicesid);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER,numtris * 3 *sizeof(GLuint), tris, GL_STATIC_DRAW);
 	myvbo->numfaces = numtris;
 //	m->tris = tris;
@@ -1061,8 +1062,8 @@ int loadModelOBJ(model_t * m, char * filename){//todo flags
 //	printf("%s\n",m->vbo->name);
 	//the correct vao should be bound at this point.
 //	printf("%s vao: %i\n", m->name, m->vbo->vaoid);
-//	glBindVertexArray(m->vbo->vaoid);
-	glBindBuffer(GL_ARRAY_BUFFER,myvbo->vboid);
+//	states_bindVertexArray(m->vbo->vaoid);
+	states_bindBuffer(GL_ARRAY_BUFFER,myvbo->vboid);
 	glBufferData(GL_ARRAY_BUFFER, vertcount * 8 * sizeof(GLfloat), interleavedbuffer, GL_STATIC_DRAW);
 	myvbo->numverts = vertcount;
 //	m->numverts = vertcount;
@@ -1091,7 +1092,7 @@ int loadModelOBJ(model_t * m, char * filename){//todo flags
 
 
 
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,myvbo->indicesid);
+	states_bindBuffer(GL_ELEMENT_ARRAY_BUFFER,myvbo->indicesid);
 //	glBufferData(GL_ELEMENT_ARRAY_BUFFER,sizeof(*indicebuffer), indicebuffer, GL_STATIC_DRAW);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER,facecount * 3 *sizeof(GLuint), indicebuffer, GL_STATIC_DRAW);
 //	glBufferData(GL_ELEMENT_ARRAY_BUFFER,totalface * 3 *sizeof(GLuint), indicebuffer, GL_STATIC_DRAW);

@@ -74,7 +74,5 @@ void pruneVBOList(void);
 int deleteVBO(const int id);
 int setUpVBOStride(vbo_t * vbo, unsigned char posstride, unsigned char normstride, unsigned char tcstride, unsigned char tangentstride, unsigned char blendistride, unsigned char blendwstride);
 
-void statesBindBuffer(const GLenum type, const GLuint id);
-void statesBindVertexArray(const GLuint id);
 #endif
 

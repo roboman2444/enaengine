@@ -7,6 +7,7 @@
 #include "renderqueue.h"
 #include "glmanager.h"
 #include "console.h"
+#include "glstates.h"
 
 //VERTEX BUFFER STUFF
 
@@ -304,7 +305,8 @@ char createAndAddRenderlistitem(renderqueue_t * queue, const void * data, const 
 
 char flushUBOCacheToBuffers(void){
 	if(!ubodataplace) return FALSE;
-	glBindBuffer(GL_ARRAY_BUFFER, renderqueueuboid);
+	//glBindBuffer(GL_ARRAY_BUFFER, renderqueueuboid);
+	states_bindBuffer(GL_ARRAY_BUFFER, renderqueueuboid);
 	glBufferData(GL_ARRAY_BUFFER, ubodataplace, ubodata, GL_DYNAMIC_DRAW);
 	ubodataplace = 0;
 	return TRUE;
@@ -333,7 +335,8 @@ int pushDataToUBOCache(const unsigned int size, const void * data){
 
 char flushVertCacheToBuffers(void){
 	if(!facedataplace) return FALSE;
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, renderqueuevbo.indicesid);
+	//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, renderqueuevbo.indicesid);
+	states_bindBuffer(GL_ELEMENT_ARRAY_BUFFER, renderqueuevbo.indicesid);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, facedatasize * 3 * sizeof(GLuint), facedata, GL_DYNAMIC_DRAW);
 
 	//check if its actually used
@@ -348,7 +351,8 @@ char flushVertCacheToBuffers(void){
 		unsigned int vertdataplacemul = vertdataplace*3;
 		if(vertdataplacemul > vertposdataplace) memset(&vertposdata[vertposdataplace], 0, (newvertposdatasize - vertposdataplace) * sizeof(GLfloat));
 		//upload
-		glBindBuffer(GL_ARRAY_BUFFER, renderqueuevbo.vboposid);
+		//glBindBuffer(GL_ARRAY_BUFFER, renderqueuevbo.vboposid);
+		states_bindBuffer(GL_ARRAY_BUFFER, renderqueuevbo.vboposid);
 		glBufferData(GL_ARRAY_BUFFER, newvertposdatasize * sizeof(GLfloat), vertposdata, GL_DYNAMIC_DRAW);
 	}
 	if(vertnormdataplace){
@@ -362,7 +366,7 @@ char flushVertCacheToBuffers(void){
 		unsigned int vertdataplacemul = vertdataplace*3;
 		if(vertdataplacemul > vertnormdataplace) memset(&vertnormdata[vertnormdataplace], 0, (newvertnormdatasize - vertnormdataplace) * sizeof(GLfloat));
 		//upload
-		glBindBuffer(GL_ARRAY_BUFFER, renderqueuevbo.vbonormid);
+		states_bindBuffer(GL_ARRAY_BUFFER, renderqueuevbo.vbonormid);
 		glBufferData(GL_ARRAY_BUFFER, newvertnormdatasize * sizeof(GLfloat), vertnormdata, GL_DYNAMIC_DRAW);
 	}
 	if(verttcdataplace){
@@ -376,7 +380,7 @@ char flushVertCacheToBuffers(void){
 		unsigned int vertdataplacemul = vertdataplace*2;
 		if(vertdataplacemul > verttcdataplace) memset(&verttcdata[verttcdataplace], 0, (newverttcdatasize - verttcdataplace) * sizeof(GLfloat));
 		//upload
-		glBindBuffer(GL_ARRAY_BUFFER, renderqueuevbo.vbotcid);
+		states_bindBuffer(GL_ARRAY_BUFFER, renderqueuevbo.vbotcid);
 		glBufferData(GL_ARRAY_BUFFER, newverttcdatasize * sizeof(GLfloat), verttcdata, GL_DYNAMIC_DRAW);
 	}
 	if(verttangentdataplace){
@@ -390,7 +394,7 @@ char flushVertCacheToBuffers(void){
 		unsigned int vertdataplacemul = vertdataplace*3;
 		if(vertdataplacemul > verttangentdataplace) memset(&verttangentdata[verttangentdataplace], 0, (newverttangentdatasize - verttangentdataplace) * sizeof(GLfloat));
 		//upload
-		glBindBuffer(GL_ARRAY_BUFFER, renderqueuevbo.vbotangentid);
+		states_bindBuffer(GL_ARRAY_BUFFER, renderqueuevbo.vbotangentid);
 		glBufferData(GL_ARRAY_BUFFER, newverttangentdatasize * sizeof(GLfloat), verttangentdata, GL_DYNAMIC_DRAW);
 	}
 	if(vertblendidataplace){
@@ -404,7 +408,7 @@ char flushVertCacheToBuffers(void){
 		unsigned int vertdataplacemul = vertdataplace;
 		if(vertdataplacemul > vertblendidataplace) memset(&vertblendidata[vertblendidataplace], 0, (newvertblendidatasize - vertblendidataplace) * sizeof(GLuint));
 		//upload
-		glBindBuffer(GL_ARRAY_BUFFER, renderqueuevbo.vboblendiid);
+		states_bindBuffer(GL_ARRAY_BUFFER, renderqueuevbo.vboblendiid);
 		glBufferData(GL_ARRAY_BUFFER, newvertblendidatasize * sizeof(GLuint), vertblendidata, GL_DYNAMIC_DRAW);
 	}
 	if(vertblendwdataplace){
@@ -418,7 +422,7 @@ char flushVertCacheToBuffers(void){
 		unsigned int vertdataplacemul = vertdataplace;
 		if(vertdataplacemul > vertblendwdataplace) memset(&vertblendwdata[vertblendwdataplace], 0, (newvertblendwdatasize - vertblendwdataplace) * sizeof(GLuint));
 		//upload
-		glBindBuffer(GL_ARRAY_BUFFER, renderqueuevbo.vboblendwid);
+		states_bindBuffer(GL_ARRAY_BUFFER, renderqueuevbo.vboblendwid);
 		glBufferData(GL_ARRAY_BUFFER, newvertblendwdatasize * sizeof(GLuint), vertblendwdata, GL_DYNAMIC_DRAW);
 	}
 	//reset places
@@ -558,7 +562,7 @@ int readyRenderQueueBuffers(void){
 //	renderqueuevboid = vbo->myid;
 	renderqueuevbo.type = 0;
 	glGenVertexArrays(1, &renderqueuevbo.vaoid); if(!renderqueuevbo.vaoid) return FALSE;
-	glBindVertexArray(renderqueuevbo.vaoid);
+	states_bindVertexArray(renderqueuevbo.vaoid);
 	glGenBuffers(7, &renderqueuevbo.vboposid);
 	char name[] = "renderqueue";
 	renderqueuevbo.name = malloc(strlen(name)+1);
@@ -566,23 +570,23 @@ int readyRenderQueueBuffers(void){
 	strcpy(renderqueuevbo.name, name);
 	//todo add more checks
 
-	glBindBuffer(GL_ARRAY_BUFFER, renderqueuevbo.vboposid);
+	states_bindBuffer(GL_ARRAY_BUFFER, renderqueuevbo.vboposid);
 		glEnableVertexAttribArray(POSATTRIBLOC);
 		glVertexAttribPointer(POSATTRIBLOC, 3, GL_FLOAT, GL_FALSE, 3, 0);
-	glBindBuffer(GL_ARRAY_BUFFER, renderqueuevbo.vbonormid);
+	states_bindBuffer(GL_ARRAY_BUFFER, renderqueuevbo.vbonormid);
 		glEnableVertexAttribArray(NORMATTRIBLOC);
 		glVertexAttribPointer(NORMATTRIBLOC, 3, GL_FLOAT, GL_FALSE, 3, 0);
-	glBindBuffer(GL_ARRAY_BUFFER, renderqueuevbo.vbotcid);
+	states_bindBuffer(GL_ARRAY_BUFFER, renderqueuevbo.vbotcid);
 		glEnableVertexAttribArray(TCATTRIBLOC);
 		glVertexAttribPointer(TCATTRIBLOC, 2, GL_FLOAT, GL_FALSE, 2, 0);
-	glBindBuffer(GL_ARRAY_BUFFER, renderqueuevbo.vbotangentid);
+	states_bindBuffer(GL_ARRAY_BUFFER, renderqueuevbo.vbotangentid);
 		glEnableVertexAttribArray(TANGENTATTRIBLOC);
 		glVertexAttribPointer(TANGENTATTRIBLOC, 3, GL_FLOAT, GL_FALSE, 3, 0);
 		//todo are these really 1?
-	glBindBuffer(GL_ARRAY_BUFFER, renderqueuevbo.vboblendiid);
+	states_bindBuffer(GL_ARRAY_BUFFER, renderqueuevbo.vboblendiid);
 		glEnableVertexAttribArray(BLENDIATTRIBLOC);
 		glVertexAttribPointer(BLENDIATTRIBLOC, 1, GL_UNSIGNED_BYTE, GL_FALSE, 1, 0);
-	glBindBuffer(GL_ARRAY_BUFFER, renderqueuevbo.vboblendwid);
+	states_bindBuffer(GL_ARRAY_BUFFER, renderqueuevbo.vboblendwid);
 		glEnableVertexAttribArray(BLENDWATTRIBLOC);
 		glVertexAttribPointer(BLENDWATTRIBLOC, 1, GL_UNSIGNED_BYTE, GL_TRUE, 1, 0);
 

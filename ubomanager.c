@@ -67,7 +67,7 @@ vbo_t createVBO(char * name, char type){
 	vbo_t v;
 	v.type = 0;
 	glGenVertexArrays(1, &v.vaoid);	if(!v.vaoid) return v;
-	glBindVertexArray(v.vaoid);
+	states_bindVertexArray(v.vaoid);
 	glGenBuffers(1, &v.vboid);	if(!v.vboid) return v;
 	glGenBuffers(1, &v.indicesid);	if(!v.indicesid) return v;
 	v.name = malloc(strlen(name)+1);
@@ -119,8 +119,8 @@ int setUpVBO(vbo_t * vbo, unsigned char posstride, unsigned char normstride, uns
 	GLuint totalstride = (posstride + tcstride + normstride);
 	if(!totalstride) return FALSE;
 	if(!vbo) return FALSE;
-	glBindVertexArray(vbo->vaoid);
-	glBindBuffer(GL_ARRAY_BUFFER, vbo->vboid);
+	states_bindVertexArray(vbo->vaoid);
+	states_bindBuffer(GL_ARRAY_BUFFER, vbo->vboid);
 	GLuint curstride = 0;
 	GLuint totalstridesize = totalstride * sizeof(GLfloat);
 	if(posstride){

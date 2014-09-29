@@ -4,6 +4,7 @@
 #include "globaldefs.h"
 #include "vbomanager.h"
 #include "hashtables.h"
+#include "glstates.h"
 
 int vboOK = 0;
 int vbocount = 0;
@@ -12,9 +13,6 @@ int vboArrayLastTaken = -1;
 int vboArraySize = 0;
 vbo_t *vbolist;
 
-GLuint vaoCurrentId = 0;
-GLuint vboCurrentId = 0;
-GLenum vboCurrentType = GL_ARRAY_BUFFER;
 
 hashbucket_t vbohashtable[MAXHASHBUCKETS];
 
@@ -62,7 +60,7 @@ vbo_t createVBO(char * name, char type){
 	vbo_t v;
 	v.type = 0;
 	glGenVertexArrays(1, &v.vaoid);	if(!v.vaoid) return v;
-	glBindVertexArray(v.vaoid);
+	states_bindVertexArray(v.vaoid);
 	glGenBuffers(1, &v.vboid);	if(!v.vboid) return v;
 	glGenBuffers(1, &v.indicesid);	if(!v.indicesid) return v;
 	v.name = malloc(strlen(name)+1);
@@ -120,8 +118,8 @@ int setUpVBOStride(vbo_t * vbo, unsigned char posstride, unsigned char normstrid
 	GLuint totalstride = posstride + normstride + tcstride + tangentstride + blendistride + blendwstride;
 	if(!totalstride) return FALSE;
 	if(!vbo) return FALSE;
-	glBindVertexArray(vbo->vaoid);
-	glBindBuffer(GL_ARRAY_BUFFER, vbo->vboid);
+	states_bindVertexArray(vbo->vaoid);
+	states_bindBuffer(GL_ARRAY_BUFFER, vbo->vboid);
 	size_t curstride = 0;
 	GLuint totalstridesize = totalstride * sizeof(GLfloat);
 	//todo make this more general?
@@ -166,18 +164,4 @@ int setUpVBOStride(vbo_t * vbo, unsigned char posstride, unsigned char normstrid
 }
 
 //states stuff
-
-void statesBindVertexArray(const GLuint id){
-	if(id != vaoCurrentId){
-		vaoCurrentId = id;
-		glBindVertexArray(id);
-	}
-}
-void statesBindBuffer(const GLenum type, const GLuint id){
-	if(type != vboCurrentType || id != vboCurrentId){
-		glBindBuffer(type, id);
-		vboCurrentType = type;
-		vboCurrentId = id;
-	}
-}
 

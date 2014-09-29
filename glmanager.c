@@ -181,15 +181,15 @@ int glInit(void){
 		return FALSE;
 	}
 
-	statesEnableForce(GL_MULTISAMPLE);
+	states_enableForce(GL_MULTISAMPLE);
 	glClearDepth(1.0);
 	glClearColor(0.0, 0.0, 0.0, 0.0);
-	statesDisableForce(GL_FOG);
-	statesEnableForce(GL_DEPTH_TEST);
+	states_disableForce(GL_FOG);
+	states_enableForce(GL_DEPTH_TEST);
 //	glDepthFunc(GL_LESS);
-	statesDepthFunc(GL_LESS);
-	statesEnableForce(GL_CULL_FACE);
-	statesCullFace(GL_BACK);
+	states_depthFunc(GL_LESS);
+	states_enableForce(GL_CULL_FACE);
+	states_cullFace(GL_BACK);
 
 	int maxSamples, maxIntSamples, maxColorTextureSamples, maxDepthTextureSamples;
 	glGetIntegerv(GL_MAX_SAMPLES, &maxSamples);
@@ -258,20 +258,20 @@ void drawModelSetMax(void){
 	modelUBOData = malloc(modelMaxSize * sizeof(modelUBOStruct_t));
 }
 void drawModelCallback(renderlistitem_t * ilist, unsigned int count){
-	statesEnable(GL_DEPTH_TEST);
-	statesEnable(GL_CULL_FACE);
-	statesDisable(GL_BLEND);
-	statesDisable(GL_MULTISAMPLE);
-	statesDisable(GL_ALPHA_TEST);
-	statesDepthFunc(GL_LEQUAL);
-	statesCullFace(GL_BACK);
-	statesDepthMask(GL_TRUE);
+	states_enable(GL_DEPTH_TEST);
+	states_enable(GL_CULL_FACE);
+	states_disable(GL_BLEND);
+	states_disable(GL_MULTISAMPLE);
+	states_disable(GL_ALPHA_TEST);
+	states_depthFunc(GL_LEQUAL);
+	states_cullFace(GL_BACK);
+	states_depthMask(GL_TRUE);
 
 	renderModelCallbackData_t *d = ilist->data;
 	model_t *m = returnModelById(d->modelid);
 	vbo_t *v = returnVBOById(m->vbo);
 	CHECKGLERROR
-	statesBindVertexArray(v->vaoid);
+	states_bindVertexArray(v->vaoid);
 	CHECKGLERROR
 //	shaderprogram_t *s = returnShaderById(d->shaderid);
 //	shaderpermutation_t * sp = findShaderPermutation(s, d->shaderperm);
@@ -284,7 +284,7 @@ void drawModelCallback(renderlistitem_t * ilist, unsigned int count){
 	bindTexturegroup(t);
 	CHECKGLERROR
 	unsigned int mysize = (count * sizeof(modelUBOStruct_t));
-	glBindBufferRange(GL_UNIFORM_BUFFER, 0, renderqueueuboid, d->ubodataoffset, mysize);
+	states_bindBufferRange(GL_UNIFORM_BUFFER, 0, renderqueueuboid, d->ubodataoffset, mysize);
 
 		CHECKGLERROR
 		glDrawElementsInstanced(GL_TRIANGLES, v->numfaces * 3, GL_UNSIGNED_INT, 0, count);
@@ -623,7 +623,7 @@ int loadEntitiesIntoQueueDeferred(renderqueue_t * queue, viewport_t * v){
 void glDrawFSQuad(void){
 	model_t * m = returnModelById(fsquadmodel);
 	vbo_t * tvbo = returnVBOById(m->vbo);
-	glBindVertexArray(tvbo->vaoid);
+	states_bindVertexArray(tvbo->vaoid);
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 }
 GLuint tris[36] = {
@@ -663,12 +663,12 @@ typedef struct renderPLightCallbackData_s {
 
 void drawPLightOCallback(renderlistitem_t * ilist, unsigned int count){
 
-	statesDisable(GL_DEPTH_TEST);
-	statesCullFace(GL_FRONT);
+	states_disable(GL_DEPTH_TEST);
+	states_cullFace(GL_FRONT);
 
 	renderPLightCallbackData_t *d = ilist->data;
-	statesBlendFunc(GL_ONE, GL_ONE);
-	statesCullFace(GL_BACK);
+	states_blendFunc(GL_ONE, GL_ONE);
+	states_cullFace(GL_BACK);
 	shaderpermutation_t * perm = d->perm;
 	if(bindShaderPerm(perm) == 2){
 	//TODODODODODO
@@ -691,13 +691,13 @@ void drawPLightOCallback(renderlistitem_t * ilist, unsigned int count){
 	}
 	model_t *m = returnModelById(d->modelid);
 	vbo_t *v = returnVBOById(m->vbo);
-	statesBindVertexArray(v->vaoid);
+	states_bindVertexArray(v->vaoid);
 	unsigned int mysize = ((count * sizeof(pLightUBOStruct_t)));
-	glBindBufferRange(GL_UNIFORM_BUFFER, 0, renderqueueuboid, d->ubodataoffset, mysize);
+	states_bindBufferRange(GL_UNIFORM_BUFFER, 0, renderqueueuboid, d->ubodataoffset, mysize);
 	glDrawElementsInstanced(GL_TRIANGLES, v->numfaces * 3, GL_UNSIGNED_INT, 0, count);
 
-		statesCullFace(GL_BACK);
-		statesEnable(GL_DEPTH_TEST);
+		states_cullFace(GL_BACK);
+		states_enable(GL_DEPTH_TEST);
 	//todo
 }
 void setupPLightOCallback(renderlistitem_t * ilist, unsigned int count){
@@ -732,8 +732,8 @@ void setupPLightOCallback(renderlistitem_t * ilist, unsigned int count){
 void drawPLightICallback(renderlistitem_t * ilist, unsigned int count){
 
 	renderPLightCallbackData_t *d = ilist->data;
-	statesBlendFunc(GL_ONE, GL_ONE);
-	statesCullFace(GL_BACK);
+	states_blendFunc(GL_ONE, GL_ONE);
+	states_cullFace(GL_BACK);
 	shaderpermutation_t * perm = d->perm;
 	if(bindShaderPerm(perm) == 2){
 	//TODODODODODO
@@ -756,9 +756,9 @@ void drawPLightICallback(renderlistitem_t * ilist, unsigned int count){
 	}
 	model_t *m = returnModelById(d->modelid);
 	vbo_t *v = returnVBOById(m->vbo);
-	statesBindVertexArray(v->vaoid);
+	states_bindVertexArray(v->vaoid);
 	unsigned int mysize = ((count * sizeof(pLightUBOStruct_t)));
-	glBindBufferRange(GL_UNIFORM_BUFFER, 0, renderqueueuboid, d->ubodataoffset, mysize);
+	states_bindBufferRange(GL_UNIFORM_BUFFER, 0, renderqueueuboid, d->ubodataoffset, mysize);
 	glDrawElementsInstanced(GL_TRIANGLES, v->numfaces * 3, GL_UNSIGNED_INT, 0, count);
 
 	//todo
@@ -897,7 +897,7 @@ int glDeferredLighting(viewport_t *v, renderqueue_t * q){
 	}
 	bindFramebuffer(of);
 //	glDepthMask(GL_FALSE);
-	statesDepthMask(GL_FALSE);
+	states_depthMask(GL_FALSE);
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT| GL_STENCIL_BUFFER_BIT);//todo set OF to use the same renderbuffer for depth as DF
 //	glClearBufferfi(of->rb​, GLint drawBuffer​, GLfloat depth​, GLint stencil​);
 	glViewport(0, 0, of->width, of->height);
@@ -925,7 +925,7 @@ int glDeferredLighting(viewport_t *v, renderqueue_t * q){
 	renderqueueSetup(q);
 	renderqueueDraw(q);
 //	glDepthMask(GL_TRUE);
-	statesDepthMask(GL_TRUE);
+	states_depthMask(GL_TRUE);
 
 	return TRUE;
 }
@@ -955,7 +955,7 @@ int glDrawLights(viewport_t *v){
 	//glBindFramebuffer(GL_FRAMEBUFFER, of->id);
 	bindFramebuffer(of);
 //	glDepthMask(GL_FALSE);
-	statesDepthMask(GL_FALSE);
+	states_depthMask(GL_FALSE);
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT| GL_STENCIL_BUFFER_BIT);//todo set OF to use the same renderbuffer for depth as DF
 //	glClearBufferfi(of->rb​, GLint drawBuffer​, GLfloat depth​, GLint stencil​);
 	glViewport(0, 0, of->width, of->height);
@@ -980,8 +980,8 @@ int glDrawLights(viewport_t *v){
 	}
 
 
-	statesEnable(GL_BLEND);
-	statesBlendFunc(GL_ONE,GL_ONE);
+	states_enable(GL_BLEND);
+	states_blendFunc(GL_ONE,GL_ONE);
 	model_t * cuber = returnModelById(cubeModel);
 	vbo_t * cvbo = returnVBOById(cuber->vbo);
 	if(!cvbo) return FALSE;
@@ -1003,11 +1003,11 @@ int glDrawLights(viewport_t *v){
 
 
 
-	glBindVertexArray(cvbo->vaoid);
+	states_bindVertexArray(cvbo->vaoid);
 
 	//todo can i do this more efficiently
 
-	glBindBuffer(GL_ARRAY_BUFFER, instancevbo);
+	states_bindBuffer(GL_ARRAY_BUFFER, instancevbo);
 
 
 /*
@@ -1045,7 +1045,7 @@ int glDrawLights(viewport_t *v){
 			unsigned int torender = iPerUBOBlock;
 			while(rendered < out.lin.count){
 				if((rendered+torender)>out.lin.count) torender = out.lin.count - rendered;
-				glBindBufferRange(GL_UNIFORM_BUFFER, 0 , instancevbo, (rendered * 4*sizeof(GLfloat)),(torender*4*sizeof(GLfloat)));
+				states_bindBufferRange(GL_UNIFORM_BUFFER, 0 , instancevbo, (rendered * 4*sizeof(GLfloat)),(torender*4*sizeof(GLfloat)));
 				glDrawElementsInstanced(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0, torender);
 				rendered+=torender;
 			}
@@ -1070,8 +1070,8 @@ int glDrawLights(viewport_t *v){
 		free(instancedata);
 
 
-		statesDisable(GL_DEPTH_TEST);
-		statesCullFace(GL_FRONT);
+		states_disable(GL_DEPTH_TEST);
+		states_cullFace(GL_FRONT);
 
 
 //		glDrawElementsInstanced(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0, out.lout.count);
@@ -1082,14 +1082,14 @@ int glDrawLights(viewport_t *v){
 			unsigned int torender = iPerUBOBlock;
 			while(rendered < out.lout.count){
 				if((rendered+torender)>out.lout.count) torender = out.lout.count - rendered;
-				glBindBufferRange(GL_UNIFORM_BUFFER, 0 , instancevbo, (rendered * 4*sizeof(GLfloat)),(torender*4*sizeof(GLfloat)));
+				states_bindBufferRange(GL_UNIFORM_BUFFER, 0 , instancevbo, (rendered * 4*sizeof(GLfloat)),(torender*4*sizeof(GLfloat)));
 				glDrawElementsInstanced(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0, torender);
 				rendered+=torender;
 			}
 		}
 
-		statesCullFace(GL_BACK);
-		statesEnable(GL_DEPTH_TEST);
+		states_cullFace(GL_BACK);
+		states_enable(GL_DEPTH_TEST);
 
 
 	}
@@ -1100,8 +1100,8 @@ int glDrawLights(viewport_t *v){
 
 
 //	glDepthMask(GL_TRUE);
-	statesDepthMask(GL_TRUE);
-	statesDisable(GL_BLEND);
+	states_depthMask(GL_TRUE);
+	states_disable(GL_BLEND);
 	return TRUE;
 }
 int glDrawViewport(viewport_t *v){
@@ -1149,12 +1149,12 @@ int glDrawViewport(viewport_t *v){
 	shaderprogram_t * shader = returnShaderById(textshaderid);
 	shaderpermutation_t * perm = addPermutationToShader(shader, 0);
 	if(!bindShaderPerm(perm)) return FALSE;
-	statesEnable(GL_BLEND);
-	statesBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+	states_enable(GL_BLEND);
+	states_blendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, df->textures[2].id);
 	glDrawFSQuad();
-	statesDisable(GL_BLEND);
+	states_disable(GL_BLEND);
 
 
 
@@ -1169,8 +1169,8 @@ int updateConsoleVBO(unsigned int offset){
 	console_updateText(offset);
 	if(!consoleVBO){
 		consoleVBO = createAndAddVBORPOINT("console", 2);
-		glBindVertexArray(consoleVBO->vaoid);
-		glBindBuffer(GL_ARRAY_BUFFER, consoleVBO->vboid);
+		states_bindVertexArray(consoleVBO->vaoid);
+		states_bindBuffer(GL_ARRAY_BUFFER, consoleVBO->vboid);
                 glEnableVertexAttribArray(POSATTRIBLOC);
                 glVertexAttribPointer(POSATTRIBLOC, 2, GL_FLOAT, GL_FALSE, 4* sizeof(GLfloat), 0);
                 glEnableVertexAttribArray(TCATTRIBLOC);
@@ -1209,10 +1209,10 @@ int updateConsoleVBO(unsigned int offset){
 //		points[i*16+0] = -0.9;
 //		points[i*16+12] = -0.9;
 	}
-	glBindVertexArray(consoleVBO->vaoid);
-	glBindBuffer(GL_ARRAY_BUFFER, consoleVBO->vboid);
+	states_bindVertexArray(consoleVBO->vaoid);
+	states_bindBuffer(GL_ARRAY_BUFFER, consoleVBO->vboid);
 	glBufferData(GL_ARRAY_BUFFER, 16 * console_drawlines * sizeof(GLfloat), points, GL_STATIC_DRAW); // change to stream?
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, consoleVBO->indicesid);
+	states_bindBuffer(GL_ELEMENT_ARRAY_BUFFER, consoleVBO->indicesid);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6 *console_drawlines* sizeof(GLuint), indices, GL_STATIC_DRAW);
 	free(points);
 	free(indices);
@@ -1231,7 +1231,7 @@ int glDrawConsole(void){
 	shaderprogram_t * shader = returnShaderById(textshaderid);
 	shaderpermutation_t * perm = addPermutationToShader(shader, 0);
 	if(!bindShaderPerm(perm)) return FALSE;
-	glBindVertexArray(consoleVBO->vaoid);
+	states_bindVertexArray(consoleVBO->vaoid);
 //	printf("consoledraw = %i\n", console_drawlines);
 	int i;
 	for(i =0; i < console_drawlines; i++){
@@ -1264,9 +1264,9 @@ int glMainDraw(void){
 	glDrawViewport(cam);
 
 //temporary
-	statesEnable(GL_BLEND);
-	statesBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	statesDisable(GL_DEPTH_TEST);
+	states_enable(GL_BLEND);
+	states_blendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	states_disable(GL_DEPTH_TEST);
 
 	//very temp
 	framebuffer_t * outfb = returnFramebufferById(cam->outfbid);
@@ -1277,8 +1277,8 @@ int glMainDraw(void){
 	glDrawConsole();
 
 
-	statesDisable(GL_BLEND);
-	statesEnable(GL_DEPTH_TEST);
+	states_disable(GL_BLEND);
+	states_enable(GL_DEPTH_TEST);
 
 
 

@@ -3,55 +3,80 @@
 
 #include "glstates.h"
 
-GLenum blendsource;
-GLenum blenddest;
+glstate_t state;
 
-GLenum depthfunc;
-
-GLenum cullface;
-
-GLenum depthmask;
-
-char enabledstates = 0;
-
-void statesBlendFunc(const GLenum source, const GLenum dest){
-	if(source == blendsource && dest == blenddest)return;
+void states_blendFunc(const GLenum source, const GLenum dest){
+	if(source == state.blendsource && dest == state.blenddest)return;
 	glBlendFunc(source, dest);
-	blendsource = source;
-	blenddest = dest;
+	state.blendsource = source;
+	state.blenddest = dest;
 }
-void statesDepthFunc(const GLenum dfunc){
-	if(dfunc == depthfunc) return;
+void states_alpha(const GLenum func, const GLclampf ref){
+	if(func == state.alphafunc && ref == state.alpharef)return;
+	glAlphaFunc(func, ref);
+	state.alphafunc = func;
+	state.alpharef = ref;
+}
+void states_depthFunc(const GLenum dfunc){
+	if(dfunc == state.depthfunc) return;
 	glDepthFunc(dfunc);
-	depthfunc = dfunc;
+	state.depthfunc = dfunc;
 }
-void statesCullFace(const GLenum face){
-	if(face == cullface) return;
+void states_cullFace(const GLenum face){
+	if(face == state.cullface) return;
 	glCullFace(face);
-	cullface = face;
+	state.cullface = face;
 }
-void statesDepthMask(const GLenum mask){
-	if(mask == depthmask) return;
+void states_depthMask(const GLenum mask){
+	if(mask == state.depthmask) return;
 	glDepthMask(mask);
-	depthmask = mask;
+	state.depthmask = mask;
+}
+void states_bindVertexArray(const GLuint id){
+	if(id != state.vaoid){
+		glBindVertexArray(id);
+		state.vaoid = id;
+	}
+}
+void states_bindBuffer(const GLenum type, const GLuint id){
+	if(type != state.vbotype || state.vborangei ||id != state.vboid || state.vborangeo || state.vboranges){
+		glBindBuffer(type, id);
+		state.vbotype = type;
+		state.vborangei = 0;
+		state.vboid = id;
+		state.vborangeo = 0;
+		state.vboranges = 0;
+	}
+}
+void states_bindBufferRange(const GLenum type, const GLuint index, const GLuint id, const GLintptr offset, const GLsizeiptr size){
+	if(type != state.vbotype || index != state.vborangei||id != state.vboid || offset != state.vborangeo || size != state.vboranges){
+		glBindBufferRange(type, index, id, offset, size);
+		state.vbotype = type;
+		state.vborangei = index;
+		state.vboid = id;
+		state.vborangeo = offset;
+		state.vboranges = size;
+	}
 }
 
-void statesEnableForce(GLenum en){
+
+
+void states_enableForce(GLenum en){
 	switch(en){
 		case GL_DEPTH_TEST:
-			enabledstates = enabledstates | STATESENABLEDEPTH;
+			state.enabledstates = state.enabledstates | STATESENABLEDEPTH;
 		break;
 		case GL_BLEND:
-			enabledstates = enabledstates | STATESENABLEBLEND;
+			state.enabledstates = state.enabledstates | STATESENABLEBLEND;
 		break;
 		case GL_CULL_FACE:
-			enabledstates = enabledstates | STATESENABLECULLFACE;
+			state.enabledstates = state.enabledstates | STATESENABLECULLFACE;
 		break;
 		case GL_MULTISAMPLE:
-			enabledstates = enabledstates | STATESENABLEMULTISAMPLE;
+			state.enabledstates = state.enabledstates | STATESENABLEMULTISAMPLE;
 		break;
 		case GL_ALPHA_TEST:
-			enabledstates = enabledstates | STATESENABLEALPHATEST;
+			state.enabledstates = state.enabledstates | STATESENABLEALPHATEST;
 		break;
 		default:
 		break;
@@ -59,35 +84,35 @@ void statesEnableForce(GLenum en){
 	glEnable(en);
 }
 
-void statesEnable(GLenum en){
+void states_enable(GLenum en){
 	switch(en){
 		case GL_DEPTH_TEST:
-			if(!(enabledstates & STATESENABLEDEPTH)){
-				enabledstates = enabledstates | STATESENABLEDEPTH;
+			if(!(state.enabledstates & STATESENABLEDEPTH)){
+				state.enabledstates = state.enabledstates | STATESENABLEDEPTH;
 				glEnable(en);
 			}
 		break;
 		case GL_BLEND:
-			if(!(enabledstates & STATESENABLEBLEND)){
-				enabledstates = enabledstates | STATESENABLEBLEND;
+			if(!(state.enabledstates & STATESENABLEBLEND)){
+				state.enabledstates = state.enabledstates | STATESENABLEBLEND;
 				glEnable(en);
 			}
 		break;
 		case GL_CULL_FACE:
-			if(!(enabledstates & STATESENABLECULLFACE)){
-				enabledstates = enabledstates | STATESENABLECULLFACE;
+			if(!(state.enabledstates & STATESENABLECULLFACE)){
+				state.enabledstates = state.enabledstates | STATESENABLECULLFACE;
 				glEnable(en);
 			}
 		break;
 		case GL_MULTISAMPLE:
-			if(!(enabledstates & STATESENABLEMULTISAMPLE)){
-				enabledstates = enabledstates | STATESENABLEMULTISAMPLE;
+			if(!(state.enabledstates & STATESENABLEMULTISAMPLE)){
+				state.enabledstates = state.enabledstates | STATESENABLEMULTISAMPLE;
 				glEnable(en);
 			}
 		break;
 		case GL_ALPHA_TEST:
-			if(!(enabledstates & STATESENABLEALPHATEST)){
-				enabledstates = enabledstates | STATESENABLEALPHATEST;
+			if(!(state.enabledstates & STATESENABLEALPHATEST)){
+				state.enabledstates = state.enabledstates | STATESENABLEALPHATEST;
 				glEnable(en);
 			}
 		break;
@@ -98,22 +123,22 @@ void statesEnable(GLenum en){
 }
 
 
-void statesDisableForce(GLenum en){
+void states_disableForce(GLenum en){
 	switch(en){
 		case GL_DEPTH_TEST:
-			enabledstates = enabledstates & (~STATESENABLEDEPTH);
+			state.enabledstates = state.enabledstates & (~STATESENABLEDEPTH);
 		break;
 		case GL_BLEND:
-			enabledstates = enabledstates & (~STATESENABLEBLEND);
+			state.enabledstates = state.enabledstates & (~STATESENABLEBLEND);
 		break;
 		case GL_CULL_FACE:
-			enabledstates = enabledstates & (~STATESENABLECULLFACE);
+			state.enabledstates = state.enabledstates & (~STATESENABLECULLFACE);
 		break;
 		case GL_MULTISAMPLE:
-			enabledstates = enabledstates & (~STATESENABLEMULTISAMPLE);
+			state.enabledstates = state.enabledstates & (~STATESENABLEMULTISAMPLE);
 		break;
 		case GL_ALPHA_TEST:
-			enabledstates = enabledstates & (~STATESENABLEALPHATEST);
+			state.enabledstates = state.enabledstates & (~STATESENABLEALPHATEST);
 		break;
 		default:
 		break;
@@ -121,35 +146,35 @@ void statesDisableForce(GLenum en){
 	glDisable(en);
 }
 
-void statesDisable(GLenum en){
+void states_disable(GLenum en){
 	switch(en){
 		case GL_DEPTH_TEST:
-			if(enabledstates & STATESENABLEDEPTH){
-				enabledstates = enabledstates & (~STATESENABLEDEPTH); // better way of doing this?
+			if(state.enabledstates & STATESENABLEDEPTH){
+				state.enabledstates = state.enabledstates & (~STATESENABLEDEPTH); // better way of doing this?
 				glDisable(en);
 			}
 		break;
 		case GL_BLEND:
-			if(enabledstates & STATESENABLEBLEND){
-				enabledstates = enabledstates & (~STATESENABLEBLEND); // better way of doing this?
+			if(state.enabledstates & STATESENABLEBLEND){
+				state.enabledstates = state.enabledstates & (~STATESENABLEBLEND); // better way of doing this?
 				glDisable(en);
 			}
 		break;
 		case GL_CULL_FACE:
-			if(enabledstates & STATESENABLECULLFACE){
-				enabledstates = enabledstates & (~STATESENABLECULLFACE); // better way of doing this?
+			if(state.enabledstates & STATESENABLECULLFACE){
+				state.enabledstates = state.enabledstates & (~STATESENABLECULLFACE); // better way of doing this?
 				glDisable(en);
 			}
 		break;
 		case GL_MULTISAMPLE:
-			if(enabledstates & STATESENABLEMULTISAMPLE){
-				enabledstates = enabledstates & (~STATESENABLEMULTISAMPLE); // better way of doing this?
+			if(state.enabledstates & STATESENABLEMULTISAMPLE){
+				state.enabledstates = state.enabledstates & (~STATESENABLEMULTISAMPLE); // better way of doing this?
 				glDisable(en);
 			}
 		break;
 		case GL_ALPHA_TEST:
-			if(enabledstates & STATESENABLEALPHATEST){
-				enabledstates = enabledstates & (~STATESENABLEALPHATEST); // better way of doing this?
+			if(state.enabledstates & STATESENABLEALPHATEST){
+				state.enabledstates = state.enabledstates & (~STATESENABLEALPHATEST); // better way of doing this?
 				glDisable(en);
 			}
 		break;

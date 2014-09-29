@@ -11,6 +11,7 @@
 #include "shadermanager.h"
 #include "textmanager.h"
 #include "cvarmanager.h"
+#include "glstates.h" //todo remove
 
 typedef struct consolechar_s { //todo redo
 	GLfloat verts[16];
@@ -56,7 +57,7 @@ int console_updateText(unsigned int offset){
 /*
 	if(!consoleVBO){
 		consoleVBO= createAndAddVBORPOINT("console", 2);
-		glBindVertexArray(consoleVBO->vaoid);
+		states_bindVertexArray(consoleVBO->vaoid);
 		glEnableVertexAttribArray(POSATTRIBLOC);
 		glVertexAttribPointer(POSATTRIBLOC, 2, GL_FLOAT, GL_FALSE, 4* sizeof(GLfloat), 0);
 		glEnableVertexAttribArray(TCATTRIBLOC);
@@ -116,8 +117,8 @@ consolechar_t generateCharacter(float offsetx, float offsety, float scalex, floa
 /*
 int updateConsoleVBO(void){
 	if(!consoleVBO) return 0; // something bad
-	glBindVertexArray(consoleVBO->vaoid);
-	glBindBuffer(GL_ARRAY_BUFFER, consoleVBO->vboid);
+	states_bindVertexArray(consoleVBO->vaoid);
+	states_bindBuffer(GL_ARRAY_BUFFER, consoleVBO->vboid);
 	int charcount = 0;
 	int n, p = consolecirclebufferplace;
 	for(n = 0; n < consolestringsprinted && n < consoleheight; n++){
