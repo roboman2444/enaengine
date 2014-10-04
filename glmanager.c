@@ -257,38 +257,22 @@ void drawModelSetMax(void){
 	console_printf("Max model instance count is %i\n", modelMaxSize);
 	modelUBOData = malloc(modelMaxSize * sizeof(modelUBOStruct_t));
 }
+
 void drawModelCallback(renderlistitem_t * ilist, unsigned int count){
-	states_enable(GL_DEPTH_TEST);
-	states_enable(GL_CULL_FACE);
-	states_disable(GL_BLEND);
-	states_disable(GL_MULTISAMPLE);
-	states_disable(GL_ALPHA_TEST);
-	states_depthFunc(GL_LEQUAL);
-	states_cullFace(GL_BACK);
-	states_depthMask(GL_TRUE);
 
 	renderModelCallbackData_t *d = ilist->data;
 	model_t *m = returnModelById(d->modelid);
 	vbo_t *v = returnVBOById(m->vbo);
+	unsigned int mysize = (count * sizeof(modelUBOStruct_t));
+	glstate_t s = {STATESENABLEDEPTH|STATESENABLECULLFACE, GL_ONE, GL_ONE, GL_LESS, GL_BACK, GL_TRUE, GL_LESS, 0.0, v->vaoid, renderqueueuboid, GL_UNIFORM_BUFFER, 0, d->ubodataoffset, mysize};
+	states_setState(s);
 	CHECKGLERROR
-	states_bindVertexArray(v->vaoid);
-	CHECKGLERROR
-//	shaderprogram_t *s = returnShaderById(d->shaderid);
-//	shaderpermutation_t * sp = findShaderPermutation(s, d->shaderperm);
-//	shaderpermutation_t * sp = addPermutationToShader(s, d->shaderperm);
-
-//	bindShaderPerm(sp);
 	shaderUseProgram(d->shaderprogram);
 	CHECKGLERROR
 	texturegroup_t *t = returnTexturegroupById(d->texturegroupid);
 	bindTexturegroup(t);
+	glDrawElementsInstanced(GL_TRIANGLES, v->numfaces * 3, GL_UNSIGNED_INT, 0, count);
 	CHECKGLERROR
-	unsigned int mysize = (count * sizeof(modelUBOStruct_t));
-	states_bindBufferRange(GL_UNIFORM_BUFFER, 0, renderqueueuboid, d->ubodataoffset, mysize);
-
-		CHECKGLERROR
-		glDrawElementsInstanced(GL_TRIANGLES, v->numfaces * 3, GL_UNSIGNED_INT, 0, count);
-		CHECKGLERROR
 //	printf("Rendered %i\n", count);
 }
 void setupModelCallback(renderlistitem_t * ilist, unsigned int count){

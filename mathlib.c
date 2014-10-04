@@ -1,6 +1,7 @@
 #include "globaldefs.h"
 #include "math.h"
 #include "mathlib.h"
+//todo should i inline these?
 void getBBoxpFromBBox(vec_t * bbox, vec_t *bboxp){
 	int i;
 	for(i = 0; i < 8; i++){
@@ -29,6 +30,7 @@ vec_t vec4distfastvec(vec4_t b, vec4_t c){
 	vec4subvec(math, b, c);
 	return vec4dot(math, math);
 }
+
 /*
 vec_t * vec3norm(vec3_t b){
 	vec_t length = vec3length(b);
@@ -43,6 +45,7 @@ vec_t * vec4norm(vec4_t b){
 	return out;
 }
 */
+
 void vec3norm2(vec3_t a, vec3_t b){
 	vec_t length = vec3length(b);
 	vec3div(a, b, length);
@@ -51,3 +54,5 @@ void vec4norm2(vec4_t a, vec4_t b){
 	vec_t length = vec4length(b);
 	vec4div(a, b, length);
 }
+
+

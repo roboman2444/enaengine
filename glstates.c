@@ -83,6 +83,64 @@ void states_enableForce(GLenum en){
 	}
 	glEnable(en);
 }
+void states_setState(glstate_t s){
+	if(s.enabledstates != state.enabledstates){
+		char teststates = s.enabledstates ^ state.enabledstates;
+		if(teststates & STATESENABLEDEPTH) (s.enabledstates & STATESENABLEDEPTH) ? glEnable(GL_DEPTH_TEST) : glDisable(GL_DEPTH_TEST);
+		if(teststates & STATESENABLEBLEND) (s.enabledstates & STATESENABLEBLEND) ? glEnable(GL_BLEND) : glDisable(GL_BLEND);
+		if(teststates & STATESENABLECULLFACE) (s.enabledstates & STATESENABLECULLFACE) ? glEnable(GL_CULL_FACE) : glDisable(GL_CULL_FACE);
+		if(teststates & STATESENABLEMULTISAMPLE) (s.enabledstates & STATESENABLEMULTISAMPLE) ? glEnable(GL_MULTISAMPLE) : glDisable(GL_MULTISAMPLE);
+		if(teststates & STATESENABLEALPHATEST) (s.enabledstates & STATESENABLEALPHATEST) ? glEnable(GL_ALPHA_TEST) : glDisable(GL_ALPHA_TEST);
+		//todo add more
+		state.enabledstates = s.enabledstates;
+	}
+	if(s.enabledstates & STATESENABLEBLEND && (s.blendsource != state.blendsource || s.blenddest != state.blenddest)){
+		glBlendFunc(s.blendsource, s.blenddest);
+		state.blendsource = s.blendsource;
+		state.blenddest = s.blenddest;
+	}
+	if(s.enabledstates & STATESENABLEALPHATEST && (s.alphafunc != state.alphafunc || s.alpharef != state.alpharef)){
+		glAlphaFunc(s.alphafunc, s.alpharef);
+		state.alphafunc = s.alphafunc;
+		state.alpharef = s.alpharef;
+	}
+	if(s.enabledstates & STATESENABLEDEPTH && s.depthfunc != state.depthfunc ){
+		glDepthFunc(s.depthfunc);
+		state.depthfunc = s.depthfunc;
+	}
+	if(s.enabledstates & STATESENABLECULLFACE && s.cullface != state.cullface ){
+		glCullFace(s.cullface);
+		state.depthfunc = s.cullface;
+	}
+	if(s.depthmask != state.depthmask){
+		glDepthMask(s.depthmask);
+		state.depthmask = s.depthmask;
+	}
+	if(s.vaoid != state.vaoid){
+		glBindVertexArray(s.vaoid);
+		state.vaoid = s.vaoid;
+	}
+	if(s.vboranges){
+		if(s.vbotype != state.vbotype || s.vborangei != state.vborangei||s.vboid != state.vboid || s.vborangeo != state.vborangeo || s.vboranges != state.vboranges){
+			glBindBufferRange(s.vbotype, s.vborangei, s.vboid, s.vborangeo, s.vboranges);
+			state.vbotype = s.vbotype;
+			state.vborangei = s.vborangei;
+			state.vboid = s.vboid;
+			state.vborangeo = s.vborangeo;
+			state.vboranges = s.vboranges;
+		}
+	} else {
+		if(s.vbotype != state.vbotype || state.vborangei ||s.vboid != state.vboid || state.vborangeo || state.vboranges){
+			glBindBuffer(s.vbotype, s.vboid);
+			state.vbotype = s.vbotype;
+			state.vborangei = 0;
+			state.vboid = s.vboid;
+			state.vborangeo = 0;
+			state.vboranges = 0;
+		}
+	}
+}
+
 
 void states_enable(GLenum en){
 	switch(en){
@@ -183,4 +241,6 @@ void states_disable(GLenum en){
 		break;
 	}
 }
+
+
 

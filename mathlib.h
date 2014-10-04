@@ -72,6 +72,8 @@
 #define vec3comp(a,b) ((a)[0] == (b)[0] && (a)[1] == (b)[1] && (a)[2] == (b)[2])
 #define vec4comp(a,b) ((a)[0] == (b)[0] && (a)[1] == (b)[1] && (a)[2] == (b)[2] && (a)[3] == (b)[3])
 
+
+//todo should i inline these?
 void getBBoxpFromBBox(vec_t * bbox, vec_t *bboxp);
 // distance from one vector to another (dist between points)
 vec_t vec3distvec(vec3_t b, vec3_t c);
@@ -86,4 +88,5 @@ vec_t vec4distfastvec(vec4_t b, vec4_t c);
 
 void vec3norm2(vec3_t a, vec3_t b);
 void vec4norm2(vec4_t a, vec4_t b);
+
 #endif
