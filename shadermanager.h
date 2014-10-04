@@ -44,7 +44,7 @@ typedef struct shaderprogram_s
 } shaderprogram_t;
 
 
-shaderpermutation_t * shaderCurrentBound;
+//shaderpermutation_t * shaderCurrentBound;
 
 int shadersOK;
 int programnumber;
@@ -85,6 +85,6 @@ shaderpermutation_t * findShaderPermutation(shaderprogram_t * shader, unsigned i
 shaderpermutation_t * addPermutationToShader(shaderprogram_t * shader, unsigned int permutation);
 
 
-int shaderUseProgram(const GLuint program);
-int bindShaderPerm(shaderpermutation_t * perm);
+//int shaderUseProgram(const GLuint program);
+char bindShaderPerm(shaderpermutation_t * perm);
 #endif

@@ -12,6 +12,8 @@
 #include "vbomanager.h" //for attriblocs
 #include "ubomanager.h" //for ubo size
 
+#include "glstates.h" //for useProgram
+
 int shadercount = 0;
 int shaderArrayFirstOpen = 0;
 int shaderArrayLastTaken = -1;
@@ -21,7 +23,7 @@ int shadersOK = 0;
 shaderprogram_t *shaderlist;
 
 shaderpermutation_t * shaderCurrentBound = 0;
-GLuint currentprogram = 0;
+//GLuint currentprogram = 0;
 
 hashbucket_t shaderhashtable[MAXHASHBUCKETS];
 
@@ -263,7 +265,6 @@ shaderpermutation_t createPermutation(shaderprogram_t * shader, unsigned int per
 	//TODO errorcheck
 	glAttachShader(programid, vertid);
 	glAttachShader(programid, fragid);
-//	glUseProgram(programid);
 	glBindFragDataLocation(programid, 0, "fragColor"); //todo move this
 	glBindFragDataLocation(programid, 1, "normColor"); //todo move this
 	glBindFragDataLocation(programid, 2, "specColor"); //todo move this
@@ -323,7 +324,7 @@ shaderpermutation_t createPermutation(shaderprogram_t * shader, unsigned int per
 //		return perm;
 	}
 	if(fail) return perm;
-	glUseProgram(programid);
+	states_useProgram(programid);
 //set up texture uniforms
 
 	char * texstring = malloc(10);
@@ -554,6 +555,7 @@ GLint findShaderAttribPos(shaderprogram_t * shader, char * name){
 }
 */
 
+/*
 int shaderUseProgram(const GLuint program){
 	if(program != currentprogram){
 		currentprogram = program;
@@ -562,19 +564,20 @@ int shaderUseProgram(const GLuint program){
 	}
 	return TRUE;
 }
+*/
 
-
-int bindShaderPerm(shaderpermutation_t * perm){
+char bindShaderPerm(shaderpermutation_t * perm){
 	if(!perm) return FALSE;
 	if(perm->compiled < 2) return FALSE;
 	GLuint program = perm->id;
-	if(program != currentprogram){
-		shaderCurrentBound = perm;
-		currentprogram = program;
-		glUseProgram(program);
-		return 2;
-	}
-	return TRUE;
+//	if(program != currentprogram){
+		shaderCurrentBound = perm; //todo remove this entirely...
+//		currentprogram = program;
+//		glUseProgram(program);
+//		return 2;
+//	}
+//	return TRUE;
+	return states_useProgram(program);
 }
 
 int reloadShaderProgram(const int id){

@@ -30,6 +30,8 @@ typedef struct glstate_s {
 	GLuint vborangei;
 	GLintptr vborangeo;
 	GLsizeiptr vboranges;
+
+	GLuint shaderid;
 } glstate_t;
 
 void states_blendFunc(const GLenum source, const GLenum dest);
@@ -41,6 +43,8 @@ void states_depthMask(const GLenum mask);
 void states_bindVertexArray(const GLuint id);
 void states_bindBuffer(const GLenum type, const GLuint id);
 void states_bindBufferRange(const GLenum type, const GLuint index, const GLuint id, const GLintptr offset, const GLsizeiptr size);
+
+char states_useProgram(const GLuint shaderid);
 
 void states_setState(glstate_t s);
 

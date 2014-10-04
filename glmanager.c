@@ -264,10 +264,10 @@ void drawModelCallback(renderlistitem_t * ilist, unsigned int count){
 	model_t *m = returnModelById(d->modelid);
 	vbo_t *v = returnVBOById(m->vbo);
 	unsigned int mysize = (count * sizeof(modelUBOStruct_t));
-	glstate_t s = {STATESENABLEDEPTH|STATESENABLECULLFACE, GL_ONE, GL_ONE, GL_LESS, GL_BACK, GL_TRUE, GL_LESS, 0.0, v->vaoid, renderqueueuboid, GL_UNIFORM_BUFFER, 0, d->ubodataoffset, mysize};
+	glstate_t s = {STATESENABLEDEPTH|STATESENABLECULLFACE, GL_ONE, GL_ONE, GL_LESS, GL_BACK, GL_TRUE, GL_LESS, 0.0, v->vaoid, renderqueueuboid, GL_UNIFORM_BUFFER, 0, d->ubodataoffset, mysize, d->shaderprogram};
 	states_setState(s);
-	CHECKGLERROR
-	shaderUseProgram(d->shaderprogram);
+//	CHECKGLERROR
+//	states_useProgram(d->shaderprogram);
 	CHECKGLERROR
 	texturegroup_t *t = returnTexturegroupById(d->texturegroupid);
 	bindTexturegroup(t);
@@ -974,14 +974,18 @@ int glDrawLights(viewport_t *v){
 	GLfloat mout[16];
 
 	Matrix4x4_ToArrayFloatGL(&v->viewproj, mout);
-	glUniformMatrix4fv(shaderCurrentBound->unimat40, 1, GL_FALSE, mout);
+//	glUniformMatrix4fv(shaderCurrentBound->unimat40, 1, GL_FALSE, mout);
+	glUniformMatrix4fv(perm->unimat40, 1, GL_FALSE, mout);
 	Matrix4x4_ToArrayFloatGL(&v->view, mout);
-	glUniformMatrix4fv(shaderCurrentBound->unimat41, 1, GL_FALSE, mout);
-	glUniform2f(shaderCurrentBound->uniscreensizefix, 1.0/of->width, 1.0/of->height);
+//	glUniformMatrix4fv(shaderCurrentBound->unimat41, 1, GL_FALSE, mout);
+	glUniformMatrix4fv(perm->unimat41, 1, GL_FALSE, mout);
+//	glUniform2f(shaderCurrentBound->uniscreensizefix, 1.0/of->width, 1.0/of->height);
+	glUniform2f(perm->uniscreensizefix, 1.0/of->width, 1.0/of->height);
 
 	float far = v->far;
 	float near = v->near;
-	glUniform2f(shaderCurrentBound->uniscreentodepth, far/(far-near),far*near/(near-far));
+//	glUniform2f(shaderCurrentBound->uniscreentodepth, far/(far-near),far*near/(near-far));
+	glUniform2f(perm->uniscreentodepth, far/(far-near),far*near/(near-far));
 
 
 

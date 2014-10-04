@@ -143,7 +143,6 @@ int updateConsoleVBO(void){
 	free(consoleVBOTempBuffer);
 	shaderprogram_t *program = findProgramByName("console"); //todo redo this
 	if(!program->id) return FALSE;
-	glUseProgram(program->id);
 	GLint posattrib = findShaderAttribPos(program, "position");
 	glEnableVertexAttribArray(posattrib);
 	glVertexAttribPointer(posattrib, 2, GL_FLOAT, GL_FALSE, 4 *sizeof(GLfloat), 0);

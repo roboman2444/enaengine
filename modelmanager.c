@@ -1073,7 +1073,6 @@ int loadModelOBJ(model_t * m, char * filename){//todo flags
 //	shaderprogram_t * program = findProgramByName("staticmodel");//todo per model materials and permutations
 //	printf("\n%i\n", program->id);
 //	if(!program->id) return FALSE; //todo debug
-//	glUseProgram(program->id);
 
 //	GLint posattrib = findShaderAttribPos(program, "position"); //todo per model materials?
 //	printf("%i\n", posattrib);

@@ -59,6 +59,15 @@ void states_bindBufferRange(const GLenum type, const GLuint index, const GLuint 
 	}
 }
 
+char states_useProgram(const GLuint shaderid){
+	if(shaderid != state.shaderid){
+		glUseProgram(shaderid);
+		state.shaderid = shaderid;
+		return 2;
+	}
+	return 1;
+}
+
 
 
 void states_enableForce(GLenum en){
@@ -119,6 +128,10 @@ void states_setState(glstate_t s){
 	if(s.vaoid != state.vaoid){
 		glBindVertexArray(s.vaoid);
 		state.vaoid = s.vaoid;
+	}
+	if(s.shaderid != state.shaderid){
+		glUseProgram(s.shaderid);
+		state.shaderid = s.shaderid;
 	}
 	if(s.vboranges){
 		if(s.vbotype != state.vbotype || s.vborangei != state.vborangei||s.vboid != state.vboid || s.vborangeo != state.vborangeo || s.vboranges != state.vboranges){
