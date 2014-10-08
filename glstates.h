@@ -6,6 +6,9 @@
 #define STATESENABLECULLFACE 4
 #define STATESENABLEMULTISAMPLE 8
 #define STATESENABLEALPHATEST 16
+
+
+#define STATESTEXTUREUNITCOUNT 8
 //todo add more
 
 typedef struct glstate_s {
@@ -32,6 +35,13 @@ typedef struct glstate_s {
 	GLsizeiptr vboranges;
 
 	GLuint shaderid;
+
+//	GLenum activetexture;
+	unsigned char activetexture;
+	 //IF I CHANGE STATESTEXTUREUNITCOUNT, I HAVE TO MAKE THIS BIGGER
+	char enabledtextures; //only used when applying a whole state
+	GLuint textureunitid[STATESTEXTUREUNITCOUNT];
+	GLenum textureunittarget[STATESTEXTUREUNITCOUNT];
 } glstate_t;
 
 void states_blendFunc(const GLenum source, const GLenum dest);
@@ -46,12 +56,18 @@ void states_bindBufferRange(const GLenum type, const GLuint index, const GLuint 
 
 char states_useProgram(const GLuint shaderid);
 
-void states_setState(glstate_t s);
+//void states_activeTexture(const GLenum activetexture);
+void states_activeTexture(const unsigned char activetexture);
 
-void states_enableForce(GLenum en);
-void states_enable(GLenum en);
+void states_bindTexture(const GLenum target, const GLuint id);
+void states_bindActiveTexture(const unsigned char activetexture, const GLenum target, const GLuint id);
 
-void states_disableForce(GLenum en);
-void states_disable(GLenum en);
+void states_setState(const glstate_t s);
+
+void states_enableForce(const GLenum en);
+void states_enable(const GLenum en);
+
+void states_disableForce(const GLenum en);
+void states_disable(const GLenum en);
 
 #endif

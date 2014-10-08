@@ -13,6 +13,8 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
+#include "glstates.h" //for states_bindTexture, states_bindActiveTexture and states_activeTexture
+
 texturegroup_t * textureGroupCurrentBound = 0;
 
 int texturesOK = 0;
@@ -90,7 +92,7 @@ char resizeTexture(texture_t *t, unsigned int width, unsigned int height){
 	if(t->width == width && t->height == height) return FALSE;
 
 	//todo make use of a state manager for texture binds
-	glBindTexture(GL_TEXTURE_2D, t->id);
+	states_bindTexture(GL_TEXTURE_2D, t->id);
 
 	char componentflags = t->flags & 3;
 	GLint texfmt0 = GL_RGB, texfmt1 = GL_RGB;
@@ -156,7 +158,7 @@ char resizeTextureMultisample(texture_t *t, unsigned int width, unsigned int hei
 	if(t->width == width && t->height == height) return FALSE;
 
 	//todo make use of a state manager for texture binds
-	glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, t->id);
+	states_bindTexture(GL_TEXTURE_2D_MULTISAMPLE, t->id);
 
 
 
@@ -244,7 +246,7 @@ texture_t loadTexture(char * filepath, char type){
 		break;
 	}
 	glGenTextures(1, &tex.id);
-	glBindTexture(GL_TEXTURE_2D, tex.id); //todo set filters, etc
+	states_bindTexture(GL_TEXTURE_2D, tex.id); //todo set filters, etc
 	if(!tex.id) return tex;
 /*
 	int x,y;
@@ -286,7 +288,7 @@ texture_t loadTexture(char * filepath, char type){
 	stbi_image_free(imagedata);
 	imagedata = 0;
 //	SDL_FreeSurface(teximage);
-//	glBindTexture(GL_TEXTURE_2D, 0);
+//	states_BindTexture(GL_TEXTURE_2D, 0);
 //	if(glIsTexture(tex.id))console_printf("yes, its a texture!\n");
 
 
@@ -344,12 +346,12 @@ texturegroup_t createAndLoadTexturegroup(char * name){
 	return texgroup;
 }
 
-
+/*
 //SLOW, DONT USE
 void unbindTexturegroup(void){
 
 		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, 0);
+		BindTexture(GL_TEXTURE_2D, 0);
 		glActiveTexture(GL_TEXTURE2);
 		glBindTexture(GL_TEXTURE_2D, 0);
 		glActiveTexture(GL_TEXTURE3);
@@ -361,7 +363,7 @@ void unbindTexturegroup(void){
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, 0);
 }
-
+*/
 int bindTexturegroup(texturegroup_t * texturegroup){
 	if(!texturegroup) return -1;
 	int total = texturegroup->num;
@@ -371,25 +373,28 @@ int bindTexturegroup(texturegroup_t * texturegroup){
 	if(!texturespointer) return -2;
 	for(i = 0; i < total; i++){
 //		if(!texturespointer[i].id) continue;
+/*
 		switch(texturespointer[i].type){
 			//atm only model textures todo
 			case 0: continue; break;
-			case 1: glActiveTexture(GL_TEXTURE0);break;
-			case 2: glActiveTexture(GL_TEXTURE1);break;
-			case 3: glActiveTexture(GL_TEXTURE2);break;
-			case 4: glActiveTexture(GL_TEXTURE3);break;
-			case 5: glActiveTexture(GL_TEXTURE4);break;
-			case 6: glActiveTexture(GL_TEXTURE5);break;
+			case 1: states_activeTexture(GL_TEXTURE0);break;
+			case 2: states_activeTexture(GL_TEXTURE1);break;
+			case 3: states_activeTexture(GL_TEXTURE2);break;
+			case 4: states_activeTexture(GL_TEXTURE3);break;
+			case 5: states_activeTexture(GL_TEXTURE4);break;
+			case 6: states_activeTexture(GL_TEXTURE5);break;
 			case 10: continue; break;
 			default: continue; break;
 		}
-
+*/
+		if(!texturespointer[i].type) continue;
+//		states_activeTexture(texturespointer[i].type -1);
 		count++;
-		glBindTexture(GL_TEXTURE_2D, texturespointer[i].id);
+		states_bindActiveTexture(texturespointer[i].type -1, GL_TEXTURE_2D, texturespointer[i].id);
 //		console_printf("error:%i\n",glGetError());
 //		console_printf("texture bound with id %i and space %i\n", texturespointer[i].id, texturespointer[i].type-1);
 	}
-	glActiveTexture(GL_TEXTURE0);
+//	states_activeTexture(0);
 	return count;
 }
 

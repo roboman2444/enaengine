@@ -185,12 +185,15 @@ void recalcProjectionMatrix(viewport_t * v){
 		return;
 	}
 	cotangent = cos(radians) / sine;
+//	const float nudge = 1.0 - 1.0 / (1<<23);
 
 	v->projection.m[0][0] = cotangent / v->aspect;
 	v->projection.m[1][1] = cotangent;
 	v->projection.m[2][2] = -(v->far + v->near) / deltaZ;
+//	v->projection.m[2][2] = -nudge;
 	v->projection.m[2][3] = -1;
 	v->projection.m[3][2] = -2 * v->near * v->far / deltaZ;
+//	v->projection.m[3][2] = -2 * v->near * nudge;
 	v->projection.m[3][3] = 0;
 
 }

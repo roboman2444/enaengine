@@ -67,10 +67,42 @@ char states_useProgram(const GLuint shaderid){
 	}
 	return 1;
 }
+/*
+void states_activeTexture(const GLenum activetexture){
+	if(activetexture != state.activetexture){
+		glActiveTexture(activetexture);
+		state.activetexture = activetexture;
+	}
+}
+*/
+void states_activeTexture(const unsigned char activetexture){
+	if(activetexture > STATESTEXTUREUNITCOUNT) return; //todo error return?
+	if(activetexture != state.activetexture){
+		glActiveTexture(GL_TEXTURE0 + activetexture);
+		state.activetexture = activetexture;
+	}
+}
+void states_bindTexture(const GLenum target, const GLuint id){
+	if(id != state.textureunitid[state.activetexture] ||target != state.textureunittarget[state.activetexture]){
+		glBindTexture(target, id);
+		state.textureunitid[state.activetexture] = id;
+		state.textureunittarget[state.activetexture] = target;
+	}
+}
+void states_bindActiveTexture(const unsigned char activetexture, const GLenum target, const GLuint id){
+	if(id != state.textureunitid[activetexture] ||target != state.textureunittarget[activetexture]){
+		if(activetexture != state.activetexture){
+			glActiveTexture(GL_TEXTURE0 + activetexture);
+			state.activetexture = activetexture;
+		}
+		glBindTexture(target, id);
+		state.textureunitid[activetexture] = id;
+		state.textureunittarget[activetexture] = target;
+	}
+}
 
 
-
-void states_enableForce(GLenum en){
+void states_enableForce(const GLenum en){
 	switch(en){
 		case GL_DEPTH_TEST:
 			state.enabledstates = state.enabledstates | STATESENABLEDEPTH;
@@ -92,7 +124,7 @@ void states_enableForce(GLenum en){
 	}
 	glEnable(en);
 }
-void states_setState(glstate_t s){
+void states_setState(const glstate_t s){
 	if(s.enabledstates != state.enabledstates){
 		char teststates = s.enabledstates ^ state.enabledstates;
 		if(teststates & STATESENABLEDEPTH) (s.enabledstates & STATESENABLEDEPTH) ? glEnable(GL_DEPTH_TEST) : glDisable(GL_DEPTH_TEST);
@@ -152,10 +184,28 @@ void states_setState(glstate_t s){
 			state.vboranges = 0;
 		}
 	}
+
+	unsigned int i;
+	for(i = 0; i < STATESTEXTUREUNITCOUNT; i++){
+		if(s.enabledtextures & (1 << i)){
+			GLuint id = s.textureunitid[i];
+			GLenum target = s.textureunittarget[i];
+			if(id != state.textureunitid[i] ||target != state.textureunittarget[i]){
+				//if(i != state.activetexture){
+					glActiveTexture(GL_TEXTURE0 + i);
+					state.activetexture = i;
+				//}
+				glBindTexture(target, id);
+				state.textureunitid[i] = id;
+				state.textureunittarget[i] = target;
+			}
+		}
+	}
+
 }
 
 
-void states_enable(GLenum en){
+void states_enable(const GLenum en){
 	switch(en){
 		case GL_DEPTH_TEST:
 			if(!(state.enabledstates & STATESENABLEDEPTH)){
@@ -194,7 +244,7 @@ void states_enable(GLenum en){
 }
 
 
-void states_disableForce(GLenum en){
+void states_disableForce(const GLenum en){
 	switch(en){
 		case GL_DEPTH_TEST:
 			state.enabledstates = state.enabledstates & (~STATESENABLEDEPTH);
@@ -217,7 +267,7 @@ void states_disableForce(GLenum en){
 	glDisable(en);
 }
 
-void states_disable(GLenum en){
+void states_disable(const GLenum en){
 	switch(en){
 		case GL_DEPTH_TEST:
 			if(state.enabledstates & STATESENABLEDEPTH){

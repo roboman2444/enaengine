@@ -890,19 +890,13 @@ int glDeferredLighting(viewport_t *v, renderqueue_t * q){
 	if(numsamples){
 //		glUniform1i(shaderCurrentBound->uniint0, numsamples);
 
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, df->multisampletextures[0].id);
-		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, df->multisampletextures[1].id);
-		glActiveTexture(GL_TEXTURE2);
-		glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, df->multisampletextures[2].id);
+		states_bindActiveTexture(0, GL_TEXTURE_2D_MULTISAMPLE, df->multisampletextures[0].id);
+		states_bindActiveTexture(1, GL_TEXTURE_2D_MULTISAMPLE, df->multisampletextures[1].id);
+		states_bindActiveTexture(2, GL_TEXTURE_2D_MULTISAMPLE, df->multisampletextures[2].id);
 	} else {
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, df->textures[0].id);
-		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, df->textures[1].id);
-		glActiveTexture(GL_TEXTURE2);
-		glBindTexture(GL_TEXTURE_2D, df->textures[2].id);
+		states_bindActiveTexture(0, GL_TEXTURE_2D, df->textures[0].id);
+		states_bindActiveTexture(1, GL_TEXTURE_2D, df->textures[1].id);
+		states_bindActiveTexture(2, GL_TEXTURE_2D, df->textures[2].id);
 	}
 	glAddLightsToQueue(v, q, numsamples);
 	renderqueueRadixSort(q);
@@ -946,21 +940,16 @@ int glDrawLights(viewport_t *v){
 
 
 	if(numsamples){
-		glUniform1i(shaderCurrentBound->uniint0, numsamples);
+//		glUniform1i(shaderCurrentBound->uniint0, numsamples);
+		glUniform1i(perm->uniint0, numsamples);
 
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, df->multisampletextures[0].id);
-		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, df->multisampletextures[1].id);
-		glActiveTexture(GL_TEXTURE2);
-		glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, df->multisampletextures[2].id);
+		states_bindActiveTexture(0, GL_TEXTURE_2D_MULTISAMPLE, df->multisampletextures[0].id);
+		states_bindActiveTexture(1, GL_TEXTURE_2D_MULTISAMPLE, df->multisampletextures[1].id);
+		states_bindActiveTexture(2, GL_TEXTURE_2D_MULTISAMPLE, df->multisampletextures[2].id);
 	} else {
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, df->textures[0].id);
-		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, df->textures[1].id);
-		glActiveTexture(GL_TEXTURE2);
-		glBindTexture(GL_TEXTURE_2D, df->textures[2].id);
+		states_bindActiveTexture(0, GL_TEXTURE_2D, df->textures[0].id);
+		states_bindActiveTexture(1, GL_TEXTURE_2D, df->textures[1].id);
+		states_bindActiveTexture(2, GL_TEXTURE_2D, df->textures[2].id);
 	}
 
 
@@ -1139,8 +1128,7 @@ int glDrawViewport(viewport_t *v){
 	if(!bindShaderPerm(perm)) return FALSE;
 	states_enable(GL_BLEND);
 	states_blendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, df->textures[2].id);
+	states_bindActiveTexture(0, GL_TEXTURE_2D, df->textures[2].id);
 	glDrawFSQuad();
 	states_disable(GL_BLEND);
 
@@ -1213,8 +1201,8 @@ int updateConsoleVBO(unsigned int offset){
 int glDrawConsole(void){
 	if(console_displayneedsupdate)updateConsoleVBO(console_offset);
 
-	glActiveTexture(GL_TEXTURE0);
-//	glBindTexture(GL_TEXTURE_2D, t->textureid);
+	states_activeTexture(0);
+//	states_bindTexture(GL_TEXTURE_2D, t->textureid);
 //	vbo_t * tvbo = returnVBOById(textvbo);
 	shaderprogram_t * shader = returnShaderById(textshaderid);
 	shaderpermutation_t * perm = addPermutationToShader(shader, 0);
@@ -1224,8 +1212,8 @@ int glDrawConsole(void){
 	int i;
 	for(i =0; i < console_drawlines; i++){
 //		text_t *t = returnTextById(console_texttracker[i].textid);
-		glBindTexture(GL_TEXTURE_2D, console_texttracker[i].textureid);
-//		glBindTexture(GL_TEXTURE_2D, t->textureid);
+		states_bindTexture(GL_TEXTURE_2D, console_texttracker[i].textureid);
+//		states_bindTexture(GL_TEXTURE_2D, t->textureid);
 		glDrawRangeElements(GL_TRIANGLES, i*4, (i*4)+4, 6, GL_UNSIGNED_INT,  (void*)(i*6*sizeof(GLuint)));
 //		console_texttracker[i].textureid;
 	}

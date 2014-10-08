@@ -85,7 +85,7 @@ int deleteAllTexturegroups(void);
 
 int deleteTexture(texture_t tex);
 
-void unbindTexturegroup(void);
+//void unbindTexturegroup(void);
 
 void pruneTexturegroupList(void);
 
