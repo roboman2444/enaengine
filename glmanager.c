@@ -276,7 +276,7 @@ void drawModelCallback(renderlistitem_t * ilist, unsigned int count){
 		if(texturespointer){
 			for(i = 0; i < total; i++){
 				int type = texturespointer[i].type - 1;
-				if(type> -1){
+				if(type > -1){
 					s.enabledtextures = s.enabledtextures | 1<<type;
 					s.textureunitid[type] = texturespointer[i].id;
 					s.textureunittarget[type] = GL_TEXTURE_2D;

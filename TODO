@@ -1,16 +1,15 @@
-Text-
+Text
 	Manage old text and remove it
-Renderbatch
-	Add a second generic UBO to push data to
 Lights
 	Non point lights
 	Experiment with the lightloop with entities attaching lights to themselves, not lights attaching to entities
-	Global lights (rendered as FSquad no matter what)
+	Global lights (rendered as FSquad/alltiles no matter what)
 Console
 	get it rendering text better
 World
 	Disable depth testing to see weather or not my little ordering method helps
 Deferred
+	add tiled defferred lighting
 	finish directional light shading
 Forward
 	add forward pipeline
@@ -18,3 +17,5 @@ Entities
 	Add into a SEPERATE quadtree
 	walk all quadtrees together, only diviate when paths diverge
 	change quadtree check algorithm to add all entities if the entire quadtree bbox checks out, dont bother checking ent bboxes
+Gamecode
+	Figure it out
