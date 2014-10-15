@@ -265,12 +265,29 @@ void drawModelCallback(renderlistitem_t * ilist, unsigned int count){
 	vbo_t *v = returnVBOById(m->vbo);
 	unsigned int mysize = (count * sizeof(modelUBOStruct_t));
 	glstate_t s = {STATESENABLEDEPTH|STATESENABLECULLFACE, GL_ONE, GL_ONE, GL_LESS, GL_BACK, GL_TRUE, GL_LESS, 0.0, v->vaoid, renderqueueuboid, GL_UNIFORM_BUFFER, 0, d->ubodataoffset, mysize, d->shaderprogram};
-	states_setState(s);
+//	states_setState(s);
 //	CHECKGLERROR
-//	states_useProgram(d->shaderprogram);
 	CHECKGLERROR
 	texturegroup_t *t = returnTexturegroupById(d->texturegroupid);
-	bindTexturegroup(t);
+	if(t){
+		unsigned int total = t->num;
+		unsigned int i;
+		texture_t *texturespointer = t->textures;
+		if(texturespointer){
+			for(i = 0; i < total; i++){
+				int type = texturespointer[i].type - 1;
+				if(type> -1){
+					s.enabledtextures = s.enabledtextures | 1<<type;
+					s.textureunitid[type] = texturespointer[i].id;
+					s.textureunittarget[type] = GL_TEXTURE_2D;
+				}
+			}
+		}
+	}
+//	bindTexturegroup(t);
+	states_setState(s);
+	CHECKGLERROR
+
 	glDrawElementsInstanced(GL_TRIANGLES, v->numfaces * 3, GL_UNSIGNED_INT, 0, count);
 	CHECKGLERROR
 //	printf("Rendered %i\n", count);

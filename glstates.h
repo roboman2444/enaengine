@@ -9,6 +9,7 @@
 
 
 #define STATESTEXTUREUNITCOUNT 8
+#define STATESTENABLEDTRACK char
 //todo add more
 
 typedef struct glstate_s {
@@ -39,7 +40,7 @@ typedef struct glstate_s {
 //	GLenum activetexture;
 	unsigned char activetexture;
 	 //IF I CHANGE STATESTEXTUREUNITCOUNT, I HAVE TO MAKE THIS BIGGER
-	char enabledtextures; //only used when applying a whole state
+	STATESTENABLEDTRACK enabledtextures; //only used when applying a whole state
 	GLuint textureunitid[STATESTEXTUREUNITCOUNT];
 	GLenum textureunittarget[STATESTEXTUREUNITCOUNT];
 } glstate_t;

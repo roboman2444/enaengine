@@ -1,11 +1,7 @@
 Text-
 	Manage old text and remove it
 Renderbatch
-	Renderbatch with flags (transparency, blending, depth test, depth mask, etc)
-		- state flags for less switching around
-	Generic "shove vertex and indice data here" renderbatch
-	Generic "shove VAO here" renderbatch
-	rework renderbatch system, two pass
+	Add a second generic UBO to push data to
 Lights
 	Non point lights
 	Experiment with the lightloop with entities attaching lights to themselves, not lights attaching to entities
