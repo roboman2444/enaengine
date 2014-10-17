@@ -27,7 +27,7 @@ void states_cullFace(const GLenum face){
 	glCullFace(face);
 	state.cullface = face;
 }
-void states_depthMask(const GLenum mask){
+void states_depthMask(const GLboolean mask){
 	if(mask == state.depthmask) return;
 	glDepthMask(mask);
 	state.depthmask = mask;
@@ -135,23 +135,23 @@ void states_setState(const glstate_t s){
 		//todo add more
 		state.enabledstates = s.enabledstates;
 	}
-	if(s.enabledstates & STATESENABLEBLEND && (s.blendsource != state.blendsource || s.blenddest != state.blenddest)){
+	if((s.enabledstates & STATESENABLEBLEND) && (s.blendsource != state.blendsource || s.blenddest != state.blenddest)){
 		glBlendFunc(s.blendsource, s.blenddest);
 		state.blendsource = s.blendsource;
 		state.blenddest = s.blenddest;
 	}
-	if(s.enabledstates & STATESENABLEALPHATEST && (s.alphafunc != state.alphafunc || s.alpharef != state.alpharef)){
+	if((s.enabledstates & STATESENABLEALPHATEST) && (s.alphafunc != state.alphafunc || s.alpharef != state.alpharef)){
 		glAlphaFunc(s.alphafunc, s.alpharef);
 		state.alphafunc = s.alphafunc;
 		state.alpharef = s.alpharef;
 	}
-	if(s.enabledstates & STATESENABLEDEPTH && s.depthfunc != state.depthfunc ){
+	if((s.enabledstates & STATESENABLEDEPTH) && (s.depthfunc != state.depthfunc) ){
 		glDepthFunc(s.depthfunc);
 		state.depthfunc = s.depthfunc;
 	}
-	if(s.enabledstates & STATESENABLECULLFACE && s.cullface != state.cullface ){
+	if((s.enabledstates & STATESENABLECULLFACE) && (s.cullface != state.cullface) ){
 		glCullFace(s.cullface);
-		state.depthfunc = s.cullface;
+		state.cullface = s.cullface;
 	}
 	if(s.depthmask != state.depthmask){
 		glDepthMask(s.depthmask);

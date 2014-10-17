@@ -134,6 +134,6 @@ void main(){
 		}
 
 #endif
-
+//	fragColor.rgb = vec3(0.1);
 
 }

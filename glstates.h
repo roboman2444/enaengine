@@ -22,7 +22,7 @@ typedef struct glstate_s {
 
 	GLenum cullface;
 
-	GLenum depthmask;
+	GLboolean depthmask;
 
 	GLenum alphafunc;
 	GLclampf alpharef;
@@ -49,7 +49,7 @@ void states_blendFunc(const GLenum source, const GLenum dest);
 void states_alphaFunc(const GLenum func, const GLclampf ref);
 void states_depthFunc(const GLenum dfunc);
 void states_cullFace(const GLenum face);
-void states_depthMask(const GLenum mask);
+void states_depthMask(const GLboolean mask);
 
 void states_bindVertexArray(const GLuint id);
 void states_bindBuffer(const GLenum type, const GLuint id);
