@@ -693,7 +693,7 @@ void drawPLightOCallback(renderlistitem_t * ilist, unsigned int count){
 //	states_bindVertexArray(v->vaoid);
 	unsigned int mysize = ((count * sizeof(pLightUBOStruct_t)));
 //	states_bindBufferRange(GL_UNIFORM_BUFFER, 0, renderqueueuboid, d->ubodataoffset, mysize);
-	glstate_t s = {STATESENABLECULLFACE | STATESENABLEBLEND, GL_ONE, GL_ONE, GL_LESS, GL_FRONT, GL_FALSE, GL_LESS, 0.0, v->vaoid, renderqueueuboid, GL_UNIFORM_BUFFER, 0, d->ubodataoffset, mysize, perm->id};
+	glstate_t s = {STATESENABLECULLFACE | STATESENABLEBLEND, GL_ONE, GL_ONE, GL_LESS, GL_FRONT, GL_TRUE, GL_LESS, 0.0, v->vaoid, renderqueueuboid, GL_UNIFORM_BUFFER, 0, d->ubodataoffset, mysize, perm->id};
 	states_setState(s);
 	//states_cullFace(GL_FRONT);
 	CHECKGLERROR
@@ -756,7 +756,7 @@ void drawPLightICallback(renderlistitem_t * ilist, unsigned int count){
 //	states_bindVertexArray(v->vaoid);
 	unsigned int mysize = ((count * sizeof(pLightUBOStruct_t)));
 //	states_bindBufferRange(GL_UNIFORM_BUFFER, 0, renderqueueuboid, d->ubodataoffset, mysize);
-	glstate_t s = {STATESENABLECULLFACE | STATESENABLEBLEND, GL_ONE, GL_ONE, GL_LESS, GL_BACK, GL_FALSE, GL_LESS, 0.0, v->vaoid, renderqueueuboid, GL_UNIFORM_BUFFER, 0, d->ubodataoffset, mysize, perm->id};
+	glstate_t s = {STATESENABLECULLFACE | STATESENABLEBLEND, GL_ONE, GL_ONE, GL_LESS, GL_BACK, GL_TRUE, GL_LESS, 0.0, v->vaoid, renderqueueuboid, GL_UNIFORM_BUFFER, 0, d->ubodataoffset, mysize, perm->id};
 	states_setState(s);
 //	states_cullFace(GL_BACK);
 	CHECKGLERROR
@@ -1136,12 +1136,16 @@ int glDrawViewport(viewport_t *v){
 	//todo actually redo this sorta stuffs
 	shaderprogram_t * shader = returnShaderById(textshaderid);
 	shaderpermutation_t * perm = addPermutationToShader(shader, 0);
-	if(!bindShaderPerm(perm)) return FALSE;
-	states_enable(GL_BLEND);
-	states_blendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+//	if(!bindShaderPerm(perm)) return FALSE;
+
+	glstate_t s = {STATESENABLEBLEND, GL_ONE, GL_ONE_MINUS_SRC_ALPHA, GL_LESS, GL_BACK, GL_FALSE, GL_LESS, 0.0, 0, 0, GL_UNIFORM_BUFFER, 0, 0, 0, perm->id};
+	states_setState(s);
+
+//	states_enable(GL_BLEND);
+//	states_blendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 	states_bindActiveTexture(0, GL_TEXTURE_2D, df->textures[2].id);
 	glDrawFSQuad();
-	states_disable(GL_BLEND);
+//	states_disable(GL_BLEND);
 
 
 
@@ -1218,7 +1222,7 @@ int glDrawConsole(void){
 	shaderpermutation_t * perm = addPermutationToShader(shader, 0);
 //	if(!bindShaderPerm(perm)) return FALSE;
 //	states_bindVertexArray(consoleVBO->vaoid);
-	glstate_t s = {STATESENABLEBLEND, GL_ONE, GL_ONE, GL_LESS, GL_BACK, GL_FALSE, GL_LESS, 0.0, consoleVBO->vaoid, 0, GL_UNIFORM_BUFFER, 0, 0, 0, perm->id};
+	glstate_t s = {STATESENABLEBLEND, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_LESS, GL_BACK, GL_TRUE, GL_LESS, 0.0, consoleVBO->vaoid, 0, GL_UNIFORM_BUFFER, 0, 0, 0, perm->id};
 	states_setState(s);
 	states_activeTexture(0);
 
@@ -1255,10 +1259,10 @@ int glMainDraw(void){
 	glDrawViewport(cam);
 
 //temporary
-	states_enable(GL_BLEND);
-	states_disable(GL_CULL_FACE);
-	states_blendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	states_disable(GL_DEPTH_TEST);
+//	states_enable(GL_BLEND);
+//	states_disable(GL_CULL_FACE);
+//	states_blendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+//	states_disable(GL_DEPTH_TEST);
 
 	//very temp
 	framebuffer_t * outfb = returnFramebufferById(cam->outfbid);
