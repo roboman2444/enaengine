@@ -267,7 +267,6 @@ void drawModelCallback(renderlistitem_t * ilist, unsigned int count){
 	unsigned int mysize = (count * sizeof(modelUBOStruct_t));
 	glstate_t s = {STATESENABLEDEPTH|STATESENABLECULLFACE, GL_ONE, GL_ONE, GL_LESS, GL_BACK, GL_TRUE, GL_LESS, 0.0, v->vaoid, renderqueueuboid, GL_UNIFORM_BUFFER, 0, d->ubodataoffset, mysize, d->shaderprogram};
 //	states_setState(s);
-	CHECKGLERROR
 	texturegroup_t *t = returnTexturegroupById(d->texturegroupid);
 	if(t){
 		unsigned int total = t->num;
@@ -693,7 +692,7 @@ void drawPLightOCallback(renderlistitem_t * ilist, unsigned int count){
 //	states_bindVertexArray(v->vaoid);
 	unsigned int mysize = ((count * sizeof(pLightUBOStruct_t)));
 //	states_bindBufferRange(GL_UNIFORM_BUFFER, 0, renderqueueuboid, d->ubodataoffset, mysize);
-	glstate_t s = {STATESENABLECULLFACE | STATESENABLEBLEND, GL_ONE, GL_ONE, GL_LESS, GL_FRONT, GL_TRUE, GL_LESS, 0.0, v->vaoid, renderqueueuboid, GL_UNIFORM_BUFFER, 0, d->ubodataoffset, mysize, perm->id};
+	glstate_t s = {STATESENABLECULLFACE | STATESENABLEBLEND, GL_ONE, GL_ONE, GL_LESS, GL_FRONT, GL_FALSE, GL_LESS, 0.0, v->vaoid, renderqueueuboid, GL_UNIFORM_BUFFER, 0, d->ubodataoffset, mysize, perm->id};
 	states_setState(s);
 	//states_cullFace(GL_FRONT);
 	CHECKGLERROR
@@ -756,7 +755,7 @@ void drawPLightICallback(renderlistitem_t * ilist, unsigned int count){
 //	states_bindVertexArray(v->vaoid);
 	unsigned int mysize = ((count * sizeof(pLightUBOStruct_t)));
 //	states_bindBufferRange(GL_UNIFORM_BUFFER, 0, renderqueueuboid, d->ubodataoffset, mysize);
-	glstate_t s = {STATESENABLECULLFACE | STATESENABLEBLEND, GL_ONE, GL_ONE, GL_LESS, GL_BACK, GL_TRUE, GL_LESS, 0.0, v->vaoid, renderqueueuboid, GL_UNIFORM_BUFFER, 0, d->ubodataoffset, mysize, perm->id};
+	glstate_t s = {STATESENABLECULLFACE | STATESENABLEBLEND, GL_ONE, GL_ONE, GL_LESS, GL_BACK, GL_FALSE, GL_LESS, 0.0, v->vaoid, renderqueueuboid, GL_UNIFORM_BUFFER, 0, d->ubodataoffset, mysize, perm->id};
 	states_setState(s);
 //	states_cullFace(GL_BACK);
 	CHECKGLERROR
@@ -1103,6 +1102,7 @@ int glDrawViewport(viewport_t *v){
 //	GLenum buffers[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2};
 //	glDrawBuffers(3, buffers);
 //	glBindFramebuffer(GL_FRAMEBUFFER, of->id);
+	states_depthMask(GL_TRUE);//needs this to be true to clear it
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT| GL_STENCIL_BUFFER_BIT);//todo set OF to use the same renderbuffer for depth as DF
 //	glViewport(0, 0, df->width, df->height);
 
@@ -1136,24 +1136,15 @@ int glDrawViewport(viewport_t *v){
 	//todo actually redo this sorta stuffs
 	shaderprogram_t * shader = returnShaderById(textshaderid);
 	shaderpermutation_t * perm = addPermutationToShader(shader, 0);
-//	if(!bindShaderPerm(perm)) return FALSE;
+	model_t * m = returnModelById(fsquadmodel);
+	vbo_t * tvbo = returnVBOById(m->vbo);
 
-	glstate_t s = {STATESENABLEBLEND, GL_ONE, GL_ONE_MINUS_SRC_ALPHA, GL_LESS, GL_BACK, GL_FALSE, GL_LESS, 0.0, 0, 0, GL_UNIFORM_BUFFER, 0, 0, 0, perm->id};
+	glstate_t s = {STATESENABLEBLEND, GL_ONE, GL_ONE_MINUS_SRC_ALPHA, GL_LESS, GL_BACK, GL_FALSE, GL_LESS, 0.0, tvbo->vaoid, renderqueueuboid, GL_UNIFORM_BUFFER, 0, 0, 0, perm->id};
+
 	states_setState(s);
 
-//	states_enable(GL_BLEND);
-//	states_blendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 	states_bindActiveTexture(0, GL_TEXTURE_2D, df->textures[2].id);
-	glDrawFSQuad();
-//	states_disable(GL_BLEND);
-
-
-
-
-//	glBindFramebuffer(GL_FRAMEBUFFER, of->id);
-//	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-//	glDrawFSQuad();
-
+	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 	return TRUE;
 }
 int updateConsoleVBO(unsigned int offset){
@@ -1216,13 +1207,9 @@ int updateConsoleVBO(unsigned int offset){
 int glDrawConsole(void){
 	if(console_displayneedsupdate)updateConsoleVBO(console_offset);
 
-//	states_bindTexture(GL_TEXTURE_2D, t->textureid);
-//	vbo_t * tvbo = returnVBOById(textvbo);
 	shaderprogram_t * shader = returnShaderById(textshaderid);
 	shaderpermutation_t * perm = addPermutationToShader(shader, 0);
-//	if(!bindShaderPerm(perm)) return FALSE;
-//	states_bindVertexArray(consoleVBO->vaoid);
-	glstate_t s = {STATESENABLEBLEND, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_LESS, GL_BACK, GL_TRUE, GL_LESS, 0.0, consoleVBO->vaoid, 0, GL_UNIFORM_BUFFER, 0, 0, 0, perm->id};
+	glstate_t s = {STATESENABLEBLEND, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_LESS, GL_BACK, GL_FALSE, GL_LESS, 0.0, consoleVBO->vaoid, 0, GL_UNIFORM_BUFFER, 0, 0, 0, perm->id};
 	states_setState(s);
 	states_activeTexture(0);
 
@@ -1230,21 +1217,16 @@ int glDrawConsole(void){
 	int i;
 	for(i =0; i < console_drawlines; i++){
 
-//		text_t *t = returnTextById(console_texttracker[i].textid);
 		states_bindTexture(GL_TEXTURE_2D, console_texttracker[i].textureid);
-//		states_bindTexture(GL_TEXTURE_2D, t->textureid);
 		glDrawRangeElements(GL_TRIANGLES, i*4, (i*4)+4, 6, GL_UNSIGNED_INT,  (void*)(i*6*sizeof(GLuint)));
-//		console_texttracker[i].textureid;
 	}
-//	glDrawElements(GL_TRIANGLES, 6*console_drawlines, GL_UNSIGNED_INT, 0);
-
 	return TRUE;
 }
 int glMainDraw(void){
 	totalface = 0;
 	totalcount = 0;
 	totalvert = 0;
-	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+	//glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 	degnumber = degnumber+0.1;
 	if(degnumber>360.0) degnumber -=360.0;
 	vec3_t pos = {0.0, 9.0, 15.0};
@@ -1259,11 +1241,6 @@ int glMainDraw(void){
 	glDrawViewport(cam);
 
 //temporary
-//	states_enable(GL_BLEND);
-//	states_disable(GL_CULL_FACE);
-//	states_blendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-//	states_disable(GL_DEPTH_TEST);
-
 	//very temp
 	framebuffer_t * outfb = returnFramebufferById(cam->outfbid);
 //	glBindFramebuffer(GL_FRAMEBUFFER, 0);
