@@ -410,7 +410,7 @@ void getDir(viewport_t * v){
 	//code inspired by iquilezles volumetric sort
 	vec_t *forward = v->v_forward;
 	const int   sx = forward[0]<0.0f;
-	const int   sz = forward[2]<0.0f;
+	const int   sz = forward[2]>0.0f;
 	const float ax = fabsf(forward[0]);
 	const float az = fabsf(forward[2]);
 
@@ -444,6 +444,8 @@ int recalcViewport(viewport_t * v, vec3_t pos, vec3_t angle, float fov, float as
 	}
 	if(fov != v->fov || aspect != v->aspect || v->near!= near || v->far != far){
 		v->viewchanged = TRUE;
+		v->far = far;
+		v->near = near;
 		v->aspect = aspect;
 		v->fov = fov;
 		recalcProjectionMatrix(v);

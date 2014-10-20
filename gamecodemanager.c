@@ -13,6 +13,8 @@
 #include "viewportmanager.h"
 #include "lightmanager.h"
 
+#include "mathlib.h"
+
 int gamecodeOK;
 int tGameTime = 0;
 
@@ -33,6 +35,7 @@ int initGameCodeSystem(void){
 	setupGameCodeCallbacks();
 
 //#define RESAVEWORLD
+//#define EXTRALIGHTS
 
 #ifdef RESAVEWORLD
 	entity_t * entdragon = addEntityRPOINT("dragon");
@@ -208,6 +211,19 @@ int initGameCodeSystem(void){
 		light->scale = 5.0f;
 
 	}
+#ifdef EXTRALIGHTS
+	srand(103010);
+	for(i = 0; i < 2000; i++){
+		light = addLightRPOINT("light");
+		light->type = 1;
+		light->needsupdate = 1;
+		light->scale = 50.0f;
+
+		light->pos[0] = (rand()/(double)RAND_MAX -0.5) * 1000.0;
+		light->pos[1] = 5.0;
+		light->pos[2] = (rand()/(double)RAND_MAX -0.5) * 1000.0;
+	}
+#endif
 
 
 #ifdef RESAVEWORLD
@@ -222,7 +238,8 @@ int initGameCodeSystem(void){
 
 		enttinydragon->scale = (rand()/(double)RAND_MAX) * 2.0;
 //		enttinydragon->scale = 20.0f;
-//		enttinydragon->scale = (rand()/(double)RAND_MAX) * vec4length(enttinydragon->pos);
+//		enttinydragon->scale = (rand()/(double)RAND_MAX) * vec3length(enttinydragon->pos);
+//		enttinydragon->scale *= vec3length(enttinydragon->pos);
 		enttinydragon->needsmatupdate = TRUE;
 		enttinydragon->modelid = createAndAddModelRINT("coil");
 		enttinydragon->shaderid = createAndAddShaderRINT("deferredmodel");

@@ -266,6 +266,7 @@ void drawModelCallback(renderlistitem_t * ilist, unsigned int count){
 	vbo_t *v = returnVBOById(m->vbo);
 	unsigned int mysize = (count * sizeof(modelUBOStruct_t));
 	glstate_t s = {STATESENABLEDEPTH|STATESENABLECULLFACE, GL_ONE, GL_ONE, GL_LESS, GL_BACK, GL_TRUE, GL_LESS, 0.0, v->vaoid, renderqueueuboid, GL_UNIFORM_BUFFER, 0, d->ubodataoffset, mysize, d->shaderprogram};
+//	glstate_t s = {STATESENABLECULLFACE|STATESENABLEBLEND|STATESENABLEDEPTH, GL_ONE, GL_ONE, GL_LESS, GL_BACK, GL_TRUE, GL_LESS, 0.0, v->vaoid, renderqueueuboid, GL_UNIFORM_BUFFER, 0, d->ubodataoffset, mysize, d->shaderprogram};
 //	states_setState(s);
 	texturegroup_t *t = returnTexturegroupById(d->texturegroupid);
 	if(t){
@@ -407,10 +408,10 @@ int addAllChildrenLeafIntoQueues(worldleaf_t *l, renderqueue_t * forwardqueue, r
 	return mynum;
 }
 int loadLeafIntoQueues(worldleaf_t * l, renderqueue_t * forwardqueue, renderqueue_t * deferredqueue, viewport_t *v){
-	int num = l->numobjects;
-	int mynum=0;
+	unsigned int num = l->numobjects;
+	unsigned int mynum = 0;
 	worldobject_t * list = l->list;
-	int i;
+	unsigned int i;
 	for(i = 0; i < num; i++){
 		if(testBBoxPInFrustum(v, list[i].bboxp)){
 			if(list[i].flags & DEFERREDFLAG)
@@ -803,7 +804,7 @@ int glAddLightsToQueue(viewport_t *v, renderqueue_t * q, unsigned int numsamples
 //	unsigned int numsamples = df->rbflags & FRAMEBUFFERRBFLAGSMSCOUNT;
 
 	if(numsamples){
-		numsamples = 1<<numsamples;
+//		numsamples = 1<<numsamples;
 //		resolveMultisampleFramebuffer(df); //only resolves if multisampled
 //		resolveMultisampleFramebufferSpecify(df, 4);
 		permutation = 2;
@@ -892,11 +893,11 @@ int glDeferredLighting(viewport_t *v, renderqueue_t * q){
 		resolveMultisampleFramebufferSpecify(df, 4);
 	}
 	bindFramebuffer(of);
-//	glDepthMask(GL_FALSE);
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT| GL_STENCIL_BUFFER_BIT);//todo set OF to use the same renderbuffer for depth as DF
 //	glClearBufferfi(of->rb​, GLint drawBuffer​, GLfloat depth​, GLint stencil​);
 	glViewport(0, 0, of->width, of->height);
 
+	CHECKGLERROR
 
 	if(numsamples){
 //		glUniform1i(shaderCurrentBound->uniint0, numsamples);
@@ -913,7 +914,6 @@ int glDeferredLighting(viewport_t *v, renderqueue_t * q){
 	renderqueueRadixSort(q);
 	renderqueueSetup(q);
 	renderqueueDraw(q);
-//	glDepthMask(GL_TRUE);
 
 	return TRUE;
 }
@@ -931,8 +931,8 @@ int glDrawLights(viewport_t *v){
 	unsigned int numsamples = df->rbflags & FRAMEBUFFERRBFLAGSMSCOUNT;
 	if(numsamples){
 		numsamples = 1<<numsamples;
-//		resolveMultisampleFramebuffer(df); //only resolves if multisampled
-		resolveMultisampleFramebufferSpecify(df, 4);
+		resolveMultisampleFramebuffer(df); //only resolves if multisampled
+//		resolveMultisampleFramebufferSpecify(df, 4);
 		perm = addPermutationToShader(shader, 2);
 	} else {
 		perm = addPermutationToShader(shader, 0);
@@ -1122,12 +1122,8 @@ int glDrawViewport(viewport_t *v){
 	renderqueueSetup(&deferred);
 	renderqueueDraw(&deferred);
 //	renderqueueCleanup(&deferred);
-	//todo queue stuff
 
-//	glStencilFunc(GL_EQUAL, 1, 0xFF);
-//	glStencilMask(0x00);
 
-//	glDrawLights(v);
 	glDeferredLighting(v, &forward);
 
 
@@ -1145,6 +1141,7 @@ int glDrawViewport(viewport_t *v){
 
 	states_bindActiveTexture(0, GL_TEXTURE_2D, df->textures[2].id);
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
 	return TRUE;
 }
 int updateConsoleVBO(unsigned int offset){
@@ -1227,7 +1224,8 @@ int glMainDraw(void){
 	totalcount = 0;
 	totalvert = 0;
 	//glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-	degnumber = degnumber+0.1;
+	degnumber = degnumber+0.01;
+//	degnumber = degnumber+0.1;
 	if(degnumber>360.0) degnumber -=360.0;
 	vec3_t pos = {0.0, 9.0, 15.0};
 	vec3_t angle = {30.0, 0.0, 0.0};

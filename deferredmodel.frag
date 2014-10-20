@@ -56,8 +56,8 @@ void main(){
 	//another good use for this might be a cubemap reflection shader, subsurface scattering, etc
 	vec3 add = 0.1*dcolor.rgb; // ambient
 	float alpha = 1.0-clamp((500.0+depth)/(500.0-10.0),0.0, 1.0);
-//	float alpha = 0.0;
 //	add *=(1.0-alpha); //needs the premult here, since i dont do it later
 //	add += alpha;
 	specColor = vec4(add, alpha);
+//	specColor = vec4(add, 0.1);
 }

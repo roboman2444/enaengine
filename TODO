@@ -1,22 +1,50 @@
 Text
 	Manage old text and remove it
+	Implement a glyph based system (alternative to sentance based system, for fast changing small stuff like fps counter)
+	Make a dynamic fps/object/draw call counter (like crysis)
 Lights
 	Non point lights
 	Experiment with the lightloop with entities attaching lights to themselves, not lights attaching to entities
-	Global lights (rendered as FSquad/alltiles no matter what)
+	Experiment with optimizing static lights (no need to lightloop them)
+	Global lights (rendered as FSquad/alltiles no matter what). For sun or whatever.
+	Maybe put into quadtree (more info in entities section)
 Console
 	get it rendering text better
+	get it rendering text with the renderqueue system
+	make it not shitty
 World
 	Disable depth testing to see weather or not my little ordering method helps
+		-attempted, not enough of a change to tell
 Deferred
-	add tiled defferred lighting
+	add tiled defferred lighting (see tiled deferred section)
 	finish directional light shading
 Forward
 	add forward pipeline
 Entities
-	Add into a SEPERATE quadtree
+	Add into a SEPERATE quadtree... or maybe the same
+		the world quadtree would have a bitmask for stuff in each leaf/children leafs. Just AND the bitmask as you walk up the quadtree.
 	walk all quadtrees together, only deviate when paths diverge
 	change quadtree check algorithm to add all entities if the entire quadtree bbox checks out, dont bother checking ent bboxes
 		-maybe
 Gamecode
 	Figure it out
+States
+	have states track framebuffers, different masks, and do a glclear thing
+Tiled Deferred
+	Implement a basic tiled deferred render
+	optimize tiled deferred render
+		screen quadtree method
+		frustums
+		Sphere projection method
+Models
+	Add basic sphere models
+Animations
+	Figure it out
+Textures
+	Experiment with packing whole texturegroups into one texturearray
+		-most textures in a texturegroup are gonna be same size anyway
+	Add basic procedural texture functions
+	Add basic texture manipulation functions (mirror, scale, invert, combine, etc)
+Multithread
+	Figure it out
+	A ways down the road

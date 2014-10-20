@@ -58,7 +58,6 @@ void states_bindBufferRange(const GLenum type, const GLuint index, const GLuint 
 		state.vboranges = size;
 	}
 }
-
 char states_useProgram(const GLuint shaderid){
 	if(shaderid != state.shaderid){
 		glUseProgram(shaderid);
