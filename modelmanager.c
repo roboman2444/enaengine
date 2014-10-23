@@ -621,7 +621,7 @@ int loadiqmmeshes(model_t * m, const struct iqmheader hdr, unsigned char *buf){
 	m->spheresize = getSphereFromInterleavedMesh(interleavedbuffer, numverts, stride);
 //	m->numverts = numverts;
 	getBBoxFromInterleavedMesh(interleavedbuffer, numverts, stride, m->bbox);
-	getBBoxpFromBBox(m->bbox, m->bboxp);
+	getBBoxPFromBBox(m->bbox, m->bboxp);
 
 
 
@@ -770,7 +770,7 @@ int loadiqmbboxes(model_t *m){
 		}
 	}
 	for(i = 0; i < numjoints; i++){
-		getBBoxpFromBBox(m->joints[i].bbox, m->joints[i].bboxp);
+		getBBoxPFromBBox(m->joints[i].bbox, m->joints[i].bboxp);
 	}
 	return numjoints;
 }
@@ -1036,7 +1036,7 @@ int loadModelOBJ(model_t * m, char * filename){//todo flags
 	}
 	m->spheresize = getSphereFromInterleavedMesh(interleavedbuffer, vertcount, 8);
 	getBBoxFromInterleavedMesh(interleavedbuffer, vertcount, 8, m->bbox);
-	getBBoxpFromBBox(m->bbox, m->bboxp);
+	getBBoxPFromBBox(m->bbox, m->bboxp);
 
 //	m->bbox = getBBoxFromInterleavedMesh(interleavedbuffer, vertcount, 8);
 //	m->numfaces = malloc(sizeof(GLuint)*2);

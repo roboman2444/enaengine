@@ -28,7 +28,7 @@ int recalcLightBBox(light_t *l){
 	l->bbox[3] = l->pos[1] + scale;
 	l->bbox[4] = l->pos[2] - scale;
 	l->bbox[5] = l->pos[2] + scale;
-	getBBoxpFromBBox(l->bbox, l->bboxp);
+	getBBoxPFromBBox(l->bbox, l->bboxp);
 	return TRUE;
 }
 int recheckLightLeaf(light_t *l){

@@ -21,6 +21,7 @@
 #include "ubomanager.h"
 #include "glstates.h"
 #include "animmanager.h"
+#include "mathlib.h"
 #include <tgmath.h> //for sin and cos
 #include "cvarmanager.h"
 
@@ -413,6 +414,7 @@ int loadLeafIntoQueues(worldleaf_t * l, renderqueue_t * forwardqueue, renderqueu
 	worldobject_t * list = l->list;
 	unsigned int i;
 	for(i = 0; i < num; i++){
+//		if(checkBBoxPInBBox(list[i].bbox, v->bboxp)){
 		if(testBBoxPInFrustum(v, list[i].bboxp)){
 			if(list[i].flags & DEFERREDFLAG)
 				addObjectToRenderqueue(&list[i], deferredqueue, v);
@@ -446,6 +448,7 @@ int loadLeafIntoQueues(worldleaf_t * l, renderqueue_t * forwardqueue, renderqueu
 */
 
 		if(children[i] && testBBoxPInFrustum(v, children[i]->bboxp)){
+//		if(children[i] && checkBBoxPInBBox(children[i]->bbox, v->bboxp)){
 			mynum+= loadLeafIntoQueues(children[i], forwardqueue, deferredqueue, v);
 		}
 
@@ -464,6 +467,7 @@ int loadLeafIntoQueue(worldleaf_t * l, renderqueue_t * queue, viewport_t *v){
 	int i;
 	for(i = 0; i < num; i++){
 		if(testBBoxPInFrustum(v, list[i].bboxp)){
+//		if(checkBBoxPInBBox(list[i].bbox, v->bboxp)){
 			addObjectToRenderqueue(&list[i], queue, v);
 			mynum++;
 		}
@@ -481,6 +485,7 @@ int loadLeafIntoQueue(worldleaf_t * l, renderqueue_t * queue, viewport_t *v){
 	for(j = 0; j < 4; j++){
 		i = v->dir[j];
 		if(children[i] && testBBoxPInFrustum(v, children[i]->bboxp)){
+//		if(children[i] && checkBBoxPInBBox(children[i]->bbox, v->bboxp)){
 			mynum+= loadLeafIntoQueue(children[i], queue, v);
 		}
 	}
@@ -880,6 +885,7 @@ int glAddLightsToQueue(viewport_t *v, renderqueue_t * q, unsigned int numsamples
 		r.data = &pl;
 		addRenderlistitem(q, r);
 	}
+
 	//todo
 	return TRUE;
 }
@@ -1224,8 +1230,8 @@ int glMainDraw(void){
 	totalcount = 0;
 	totalvert = 0;
 	//glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-	degnumber = degnumber+0.01;
-//	degnumber = degnumber+0.1;
+//	degnumber = degnumber+0.01;
+	degnumber = degnumber+0.1;
 	if(degnumber>360.0) degnumber -=360.0;
 	vec3_t pos = {0.0, 9.0, 15.0};
 	vec3_t angle = {30.0, 0.0, 0.0};
@@ -1234,6 +1240,8 @@ int glMainDraw(void){
 //	angle[2] = -90.0;
 	angle[1] = degnumber;
 	cam = returnViewportById(camid);
+
+
 
 	recalcViewport(cam, pos, angle, 90.0, cam->aspect, 1.0, 1000.0);
 	glDrawViewport(cam);

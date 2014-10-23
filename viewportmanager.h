@@ -17,7 +17,9 @@ typedef struct viewport_s {
 	matrix4x4_t projection;
 	matrix4x4_t view;
 	matrix4x4_t viewproj;
+	matrix4x4_t cam;//essentially the same as an entity's matrix
 	plane_t frustum[6];
+	vec_t bboxp[24];
 
 	vec3_t v_forward;
 	vec3_t v_up;

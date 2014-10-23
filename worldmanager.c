@@ -404,7 +404,7 @@ worldleaf_t * createWorldLeaf(int depth, vec2_t center){
 	leaf->bbox[5] = center[1] - leaf->size;
 	leaf->bbox[2] = 0.0;
 	leaf->bbox[3] = 0.0;
-	getBBoxpFromBBox(leaf->bbox, leaf->bboxp);
+	getBBoxPFromBBox(leaf->bbox, leaf->bboxp);
 	//todo
 	return leaf;
 }
@@ -535,7 +535,7 @@ int addObjectToLeaf(worldobject_t * o, worldleaf_t *l){
 //		if(o->bbox[4] > l->bbox[4])l->bbox[4] = o->bbox[4];
 //		if(o->bbox[5] < l->bbox[5])l->bbox[5] = o->bbox[5];
 	}
-	getBBoxpFromBBox(l->bbox, l->bboxp);
+	getBBoxPFromBBox(l->bbox, l->bboxp);
 	o->treedepth = l->treedepth;
 	o->leafpos = l->numobjects;
 	l->numobjects++;
@@ -581,7 +581,7 @@ int walkAndAddObject(worldobject_t * o, worldleaf_t * l){
 //		if(l->bbox[4] < l->children[intspace]->bbox[4]) l->bbox[4] = l->children[intspace]->bbox[4];
 //		if(l->bbox[5] > l->children[intspace]->bbox[5]) l->bbox[5] = l->children[intspace]->bbox[5];
 		//should recalc bboxp now
-		getBBoxpFromBBox(l->bbox, l->bboxp);
+		getBBoxPFromBBox(l->bbox, l->bboxp);
 		//todo i can make a more efficient way of doing this, only updating the y values of the points
 
 		return 2;

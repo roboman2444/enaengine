@@ -2,7 +2,7 @@
 #include "math.h"
 #include "mathlib.h"
 //todo should i inline these?
-void getBBoxpFromBBox(vec_t * bbox, vec_t *bboxp){
+void getBBoxPFromBBox(const vec_t * bbox, vec_t *bboxp){
 	int i;
 	for(i = 0; i < 8; i++){
 		bboxp[(i*3)+0] = bbox[(i&1)+0];
@@ -10,22 +10,44 @@ void getBBoxpFromBBox(vec_t * bbox, vec_t *bboxp){
 		bboxp[(i*3)+2] = bbox[((i&4)>>2)+4];
 	}
 }
-vec_t vec3distvec(vec3_t b, vec3_t c){
+unsigned char checkBBoxPInBBox(const vec_t *bbox, const vec_t *bboxp){
+	unsigned int j;
+	for(j = 0; j < 24; j+=3){ if(bboxp[j] < bbox[0]) break;} if(j==24)return FALSE;
+	for(j = 0; j < 24; j+=3){ if(bboxp[j] > bbox[1]) break;} if(j==24)return FALSE;
+	for(j = 1; j < 24; j+=3){ if(bboxp[j] < bbox[2]) break;} if(j> 24)return FALSE;
+	for(j = 1; j < 24; j+=3){ if(bboxp[j] > bbox[3]) break;} if(j> 24)return FALSE;
+	for(j = 2; j < 24; j+=3){ if(bboxp[j] < bbox[4]) break;} if(j> 24)return FALSE;
+	for(j = 2; j < 24; j+=3){ if(bboxp[j] > bbox[5]) break;} if(j> 24)return FALSE;
+	return TRUE;
+}
+
+unsigned char checkVertsInBBox(const vec_t *bbox, const vec_t *verts, const unsigned int count){
+	unsigned int j;
+	unsigned int max = count*3;
+	for(j = 0; j < max; j+=3){ if(verts[j] < bbox[0]) break;} if(j==max)return FALSE;
+	for(j = 0; j < max; j+=3){ if(verts[j] > bbox[1]) break;} if(j==max)return FALSE;
+	for(j = 1; j < max; j+=3){ if(verts[j] < bbox[2]) break;} if(j> max)return FALSE;
+	for(j = 1; j < max; j+=3){ if(verts[j] > bbox[3]) break;} if(j> max)return FALSE;
+	for(j = 2; j < max; j+=3){ if(verts[j] < bbox[4]) break;} if(j> max)return FALSE;
+	for(j = 2; j < max; j+=3){ if(verts[j] > bbox[5]) break;} if(j> max)return FALSE;
+	return TRUE;
+}
+vec_t vec3distvec(const vec3_t b, const vec3_t c){
 	vec3_t math;
 	vec3subvec(math, b, c);
 	return vec3length(math);
 }
-vec_t vec3distfastvec(vec3_t b, vec3_t c){
+vec_t vec3distfastvec(const vec3_t b, const vec3_t c){
 	vec3_t math;
 	vec3subvec(math, b, c);
 	return vec3dot(math, math);
 }
-vec_t vec4distvec(vec4_t b, vec4_t c){
+vec_t vec4distvec(const vec4_t b, const vec4_t c){
 	vec4_t math;
 	vec4subvec(math, b, c);
 	return vec4length(math);
 }
-vec_t vec4distfastvec(vec4_t b, vec4_t c){
+vec_t vec4distfastvec(const vec4_t b, const vec4_t c){
 	vec4_t math;
 	vec4subvec(math, b, c);
 	return vec4dot(math, math);
@@ -46,11 +68,15 @@ vec_t * vec4norm(vec4_t b){
 }
 */
 
-void vec3norm2(vec3_t a, vec3_t b){
+void vec2norm2(vec2_t a, const vec2_t b){
+	vec_t length = vec2length(b);
+	vec2div(a, b, length);
+}
+void vec3norm2(vec3_t a, const vec3_t b){
 	vec_t length = vec3length(b);
 	vec3div(a, b, length);
 }
-void vec4norm2(vec4_t a, vec4_t b){
+void vec4norm2(vec4_t a, const vec4_t b){
 	vec_t length = vec4length(b);
 	vec4div(a, b, length);
 }

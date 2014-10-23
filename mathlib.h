@@ -4,6 +4,10 @@
 #define M_PI  3.14159265358979323846
 #endif
 
+#define vec2dot(a,b) ((a)[0] * (b)[0] + (a)[1] * (b)[1])
+#define vec2length(a) sqrt(vec2dot((a), (a)))
+
+
 #define vec3dot(a,b) ((a)[0] * (b)[0] + (a)[1] * (b)[1] + (a)[2] * (b)[2])
 #define vec3cross(a,b,c) (a)[0] = (b)[1] * (c)[2] - (c)[1] * (b)[2]; (a)[1] = (b)[2] * (c)[0] - (c)[2] * (b)[0]; (a)[2] = (b)[0] * (c)[1] - (c)[0] * (b)[1];
 #define vec3length(a) sqrt(vec3dot((a), (a)))
@@ -74,19 +78,23 @@
 
 
 //todo should i inline these?
-void getBBoxpFromBBox(vec_t * bbox, vec_t *bboxp);
+void getBBoxPFromBBox(const vec_t * bbox, vec_t *bboxp);
 // distance from one vector to another (dist between points)
-vec_t vec3distvec(vec3_t b, vec3_t c);
-vec_t vec4distvec(vec4_t b, vec4_t c);
+vec_t vec3distvec(const vec3_t b, const vec3_t c);
+vec_t vec4distvec(const vec4_t b, const vec4_t c);
 // non sqrt-d distance from one vector to another (good for comparisons)
-vec_t vec3distfastvec(vec3_t b, vec3_t c);
-vec_t vec4distfastvec(vec4_t b, vec4_t c);
+vec_t vec3distfastvec(const vec3_t b, const vec3_t c);
+vec_t vec4distfastvec(const vec4_t b, const vec4_t c);
 
 //todo optimize?
 //vec_t * vec3norm(vec3_t b);
 //vec_t * vec4norm(vec4_t b);
 
-void vec3norm2(vec3_t a, vec3_t b);
-void vec4norm2(vec4_t a, vec4_t b);
+void vec2norm2(vec2_t a, const vec2_t b);
+void vec3norm2(vec3_t a, const vec3_t b);
+void vec4norm2(vec4_t a, const vec4_t b);
+
+unsigned char checkBBoxPInBBox(const vec_t *bbox, const vec_t *bboxp);
+unsigned char checkVertsInBBox(const vec_t *bbox, const vec_t *verts, const unsigned int count);
 
 #endif

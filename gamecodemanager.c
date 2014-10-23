@@ -36,7 +36,6 @@ int initGameCodeSystem(void){
 
 //#define RESAVEWORLD
 //#define EXTRALIGHTS
-
 #ifdef RESAVEWORLD
 	entity_t * entdragon = addEntityRPOINT("dragon");
 		entdragon->type = 2;
@@ -88,6 +87,19 @@ int initGameCodeSystem(void){
 	saveWorld("world");
 	deleteWorld();
 #endif
+
+	entity_t * entcampointer = addEntityRPOINT("campointer");
+		entcampointer->type = 2;
+		entcampointer->modelid = createAndAddModelRINT("coil");
+		entcampointer->shaderid = createAndAddShaderRINT("deferredmodel");
+		entcampointer->texturegroupid = createAndAddTexturegroupRINT("coil");
+		entcampointer->shaderperm = 7;
+		entcampointer->flags = 1;
+		entcampointer->angle[0] = 30;
+
+		entcampointer->scale = 1.0;
+		entcampointer->needsmatupdate = TRUE;
+
 
 
 

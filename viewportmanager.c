@@ -109,6 +109,7 @@ viewport_t createViewport (char * name, const char type){
  	v.name = malloc(strlen(name)+1);
 	strcpy(v.name, name);
 	Matrix4x4_CreateIdentity(&v.view);
+	Matrix4x4_CreateIdentity(&v.cam);
 	Matrix4x4_CreateIdentity(&v.projection);
 	Matrix4x4_CreateIdentity(&v.viewproj);
 	v.type = type;
@@ -164,6 +165,7 @@ int createAndAddViewportRINT(char * name, char type){
 vec3_t stockv_forward = { 0.0, 0.0, 1.0 };
 vec3_t stockv_up = { 0.0, 1.0, 1.0 };
 vec3_t stockv_right = { 1.0, 0.0, 0.0 };
+
 
 void recalcViewMatrix(viewport_t * v){
 	Matrix4x4_CreateRotate(&v->view, v->angle[2], 0.0f, 0.0f, 1.0f);
@@ -341,6 +343,51 @@ int testBBoxPInFrustumNearPlane(viewport_t * v, vec_t * points){
 	//points only in front of plane
 	return TRUE;
 }
+void recalcFrustumBBoxP(viewport_t *v){
+	float cotangent, cotaspect;
+	cotangent = v->projection.m[1][1] /2;
+//	cotaspect = cotangent / v->aspect;
+	cotaspect = v->projection.m[0][0] /2;
+	float near = v->near;
+	float far = v->far;
+
+	float nh = near * cotangent;
+	float nw = near * cotaspect;
+	float fh = far * cotangent;
+	float fw = far * cotaspect;
+	vec_t prebboxp[24];
+	prebboxp[0] = -nw;
+	prebboxp[1] = -nh;
+	prebboxp[2] = near;
+	prebboxp[3] = nw;
+	prebboxp[4] = -nh;
+	prebboxp[5] = near;
+	prebboxp[6] = nw;
+	prebboxp[7] = nh;
+	prebboxp[8] = near;
+	prebboxp[9] = -nw;
+	prebboxp[10] = nh;
+	prebboxp[11] = near;
+
+	prebboxp[12] = -fw;
+	prebboxp[13] = -fh;
+	prebboxp[14] = far;
+	prebboxp[15] = fw;
+	prebboxp[16] = -fh;
+	prebboxp[17] = far;
+	prebboxp[18] = fw;
+	prebboxp[19] = fh;
+	prebboxp[20] = far;
+	prebboxp[21] = -fw;
+	prebboxp[22] = fh;
+	prebboxp[23] = far;
+	int i;
+	for(i = 0; i < 8; i++){
+		Matrix4x4_Transform(&v->cam, &prebboxp[i*3], &v->bboxp[i*3]);
+	}
+//or
+//transform a unit cube by the inverse VP matrix
+}
 void recalcFrustum(viewport_t * v){
 	vec_t m[16];
 	Matrix4x4_ToArrayFloatGL(&v->viewproj, m);
@@ -431,7 +478,13 @@ void getDir(viewport_t * v){
 }
 
 int recalcViewport(viewport_t * v, vec3_t pos, vec3_t angle, float fov, float aspect, float near, float far){
-	if(pos != v->pos || angle != v->angle){
+	if(pos[0] != v->pos[0] ||
+	   pos[1] != v->pos[1] ||
+	   pos[2] != v->pos[2] ||
+	 angle[0] != v->angle[0]||
+	 angle[1] != v->angle[1]||
+	 angle[2] != v->angle[2]){
+//	if(pos != v->pos || angle != v->angle){
 		v->viewchanged = TRUE;
 		v->pos[0] = pos[0];
 		v->pos[1] = pos[1];
@@ -441,6 +494,8 @@ int recalcViewport(viewport_t * v, vec3_t pos, vec3_t angle, float fov, float as
 		v->angle[2] = angle[2];
 //		recalcViewVectors(v); // done in matrix anyway
 		recalcViewMatrix(v);
+		Matrix4x4_CreateFromQuakeEntity(&v->cam, pos[0], pos[1], pos[2], angle[2], angle[1], angle[0], 1.0);
+
 	}
 	if(fov != v->fov || aspect != v->aspect || v->near!= near || v->far != far){
 		v->viewchanged = TRUE;
@@ -453,6 +508,7 @@ int recalcViewport(viewport_t * v, vec3_t pos, vec3_t angle, float fov, float as
 	if(v->viewchanged){
 		Matrix4x4_Concat(&v->viewproj, &v->projection, &v->view);
 		recalcFrustum(v);
+		recalcFrustumBBoxP(v);
 	}
 	getDir(v);
 	return v->viewchanged;
