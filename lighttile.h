@@ -5,7 +5,8 @@
 typedef struct lighttile_s {
 	unsigned int size;
 	unsigned int count;
-	light_t ** list;
+	unsigned int * list; //list of indices
+//	light_t ** list;
 } lighttile_t;
 
 unsigned int lighttile_count;

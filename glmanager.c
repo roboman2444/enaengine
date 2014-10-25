@@ -17,6 +17,7 @@
 #include "worldmanager.h"
 #include "renderqueue.h"
 #include "lightmanager.h"
+#include "lighttile.h"
 #include "textmanager.h"
 #include "ubomanager.h"
 #include "glstates.h"
@@ -24,8 +25,6 @@
 #include "mathlib.h"
 #include <tgmath.h> //for sin and cos
 #include "cvarmanager.h"
-
-#define CHECKGLERROR {if (TRUE){if (FALSE) console_printf("CHECKGLERROR at %s:%d\n", __FILE__, __LINE__);errornumber = glGetError();if (errornumber) GL_PrintError(errornumber, __FILE__, __LINE__);}}
 
 float degnumber;
 
@@ -61,8 +60,6 @@ renderqueue_t deferred;
 int glShutdown(void){
 	return FALSE;
 }
-int errornumber = 0;
-
 void GL_PrintError(int errornumber, const char *filename, int linenumber){
 	switch(errornumber){
 #ifdef GL_INVALID_ENUM
@@ -885,6 +882,7 @@ int glAddLightsToQueue(viewport_t *v, renderqueue_t * q, unsigned int numsamples
 		r.data = &pl;
 		addRenderlistitem(q, r);
 	}
+//	lighttile_tileLights(v, 10, 10, out.lout);
 
 	//todo
 	return TRUE;
