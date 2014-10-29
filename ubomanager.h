@@ -34,14 +34,14 @@ typedef struct ubo_s {
 GLint maxUBOSize;
 GLint uboAlignment;
 
-int uboOK;
+int ubo_ok;
 //int ubonumber;
 //ubo_t * ubolist;
 //int ubocount;
 //int uboArraySize;
 //int uboArrayLastTaken;
 
-int initUBOSystem(void);
+int ubo_init(void);
 /*
 vbo_t * findVBOByNameRPOINT(char * name);
 int findVBOByNameRINT(char * name);

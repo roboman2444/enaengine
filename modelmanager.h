@@ -36,7 +36,7 @@ typedef struct model_s {
 
 */
 
-int modelsOK;
+int model_ok;
 int modelnumber;
 
 
@@ -45,7 +45,7 @@ int modelcount;
 int modelArraySize;
 int modelArrayLastTaken;
 
-int initModelSystem(void);
+int model_init(void);
 
 model_t * findModelByNameRPOINT(char * name);
 int findModelByNameRINT(char * name);

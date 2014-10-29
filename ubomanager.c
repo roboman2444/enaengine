@@ -8,7 +8,7 @@
 
 GLint maxUBOSize;
 GLint uboAlignment;
-int uboOK = 0;
+int ubo_ok = 0;
 //int ubocount = 0;
 //int uboArrayFirstOpen = 0;
 //int uboArrayLastTaken = -1;
@@ -17,7 +17,7 @@ int uboOK = 0;
 
 //hashbucket_t vbohashtable[MAXHASHBUCKETS];
 
-int initUBOSystem(void){
+int ubo_init(void){
 //	memset(vbohashtable, 0, MAXHASHBUCKETS*sizeof(hashbucket_t));
 //	if(vbolist) free(vbolist);
 //	vbolist = 0;
@@ -28,7 +28,7 @@ int initUBOSystem(void){
 	console_printf("uniform alignment size is %i\n", uboAlignment);
 
 
-	uboOK = TRUE;
+	ubo_ok = TRUE;
 	return TRUE;
 }
 

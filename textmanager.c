@@ -10,7 +10,7 @@
 #include "SDL.h"
 #include "hashtables.h"
 #include "console.h"
-int textOK = 0;
+int text_ok = 0;
 int textcount = 0;
 int textArrayFirstOpen = 0;
 int textArrayLastTaken = -1;
@@ -27,7 +27,7 @@ hashbucket_t fonthashtable[MAXHASHBUCKETS];
 text_t *textlist;
 font_t *fontlist;
 
-int initTextSystem(void){
+int text_init(void){
 	memset(texthashtable, 0, MAXHASHBUCKETS * sizeof(hashbucket_t));
 	if(textlist) free(textlist);
 	textlist = malloc(sizeof(text_t));
@@ -44,7 +44,7 @@ int initTextSystem(void){
 	if(TTF_Init() == -1){
 		return FALSE;
 	}
-	textOK = TRUE;
+	text_ok = TRUE;
 	return TRUE;
 }
 

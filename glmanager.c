@@ -121,28 +121,28 @@ int glInit(void){
 		console_printf("ERROR with the glew: %s\n", glewGetErrorString(glewError));
 		return FALSE;
 	}
-	initShaderSystem();
-	if(!shadersOK){
+	shader_init();
+	if(!shader_ok){
 		//todo call some sort of shutdown of everything
 		 return FALSE;
 	}
-	initTextureSystem();
-	if(!texturesOK){
+	texture_init();
+	if(!texture_ok){
 		//todo call some sort of shutdown of everything
 		 return FALSE;
 	}
-	initFramebufferSystem();
-	if(!framebuffersOK){
+	framebuffer_init();
+	if(!framebuffer_ok){
 		//todo call some sort of shutdown of everything
 		 return FALSE;
 	}
-	initVBOSystem();
-	if(!vboOK){
+	vbo_init();
+	if(!vbo_ok){
 		return FALSE;
 		//todo call some sort of shutdown of everything
 	}
-	initUBOSystem();
-	if(!uboOK){
+	ubo_init();
+	if(!ubo_ok){
 		return FALSE;
 		//todo call some sort of shutdown of everything
 	}
@@ -151,8 +151,8 @@ int glInit(void){
 		//todo call some sort of shutdown of everything
 		return FALSE;
 	}
-	initModelSystem();
-	if(!modelsOK){
+	model_init();
+	if(!model_ok){
 		//todo call some sort of shutdown of everything
 		 return FALSE;
 	}
@@ -163,18 +163,18 @@ int glInit(void){
 		 return FALSE;
 	}
 */
-	initLightSystem();
-	if(!lightsOK){
+	light_init();
+	if(!light_ok){
 		//todo call some sort of shutdown of everything
 		return FALSE;
 	}
-	initViewportSystem();
-	if(!viewportsOK){
+	viewport_init();
+	if(!viewport_ok){
 		//todo call some sort of shutdown of everything
 		return FALSE;
 	}
-	initTextSystem();
-	if(!textOK){
+	text_init();
+	if(!text_ok){
 		//todo call some sort of shutdown of everything
 		return FALSE;
 	}
@@ -1265,7 +1265,7 @@ int glMainDraw(void){
 	return TRUE;
 }
 int glResizeViewports(int width, int height){
-	if(!viewportsOK) return FALSE;
+	if(!viewport_ok) return FALSE;
 	if(!width) width = 1;
 	if(!height) height = 1;
 	int count =0;

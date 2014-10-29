@@ -8,12 +8,12 @@
 #include "texturemanager.h"
 #include "framebuffermanager.h"
 
-int framebuffersOK = 0;
-int framebuffercount = 0;
-int framebufferArrayFirstOpen = 0;
-int framebufferArrayLastTaken = -1;
-int framebufferArraySize = 0;
-framebuffer_t *framebufferlist;
+int framebuffer_ok = 0;
+int framebuffer_count = 0;
+int framebuffer_arrayFirstOpen = 0;
+int framebuffer_arrayLastTaken = -1;
+int framebuffer_arraySize = 0;
+framebuffer_t *framebuffer_list;
 
 
 
@@ -24,11 +24,11 @@ hashbucket_t framebufferhashtable[MAXHASHBUCKETS];
 
 extern framebuffer_t * addFramebufferRPOINT(framebuffer_t fb);
 
-int initFramebufferSystem(void){
+int framebuffer_init(void){
 	memset(framebufferhashtable, 0, MAXHASHBUCKETS*sizeof(hashbucket_t));
-	if(framebufferlist) free(framebufferlist);
-	framebufferlist = 0;
-	framebuffersOK = TRUE;
+	if(framebuffer_list) free(framebuffer_list);
+	framebuffer_list = 0;
+	framebuffer_ok = TRUE;
 	framebuffer_t * screen = malloc(sizeof(framebuffer_t));
 	screen->width = 800; //todo cvar?
 	screen->height = 600;
@@ -84,7 +84,7 @@ int findFramebufferByNameRINT(char * name){
 }
 int deleteFramebuffer(const int id){
 	int framebufferindex = (id & 0xFFFF);
-	framebuffer_t * fb = &framebufferlist[framebufferindex];
+	framebuffer_t * fb = &framebuffer_list[framebufferindex];
 	if(fb->myid != id) return FALSE;
 	if(!fb->name) return FALSE;
 	deleteFromHashTable(fb->name, id, framebufferhashtable);
@@ -94,14 +94,14 @@ int deleteFramebuffer(const int id){
 	//todo
 	free(fb->textures);
 	memset(fb, 0, sizeof(framebuffer_t));
-	if(framebufferindex < framebufferArrayFirstOpen) framebufferArrayFirstOpen = framebufferindex;
-	for(; framebufferArrayLastTaken > 0 && !framebufferlist[framebufferArrayLastTaken].type; framebufferArrayLastTaken--);
+	if(framebufferindex < framebuffer_arrayFirstOpen) framebuffer_arrayFirstOpen = framebufferindex;
+	for(; framebuffer_arrayLastTaken > 0 && !framebuffer_list[framebuffer_arrayLastTaken].type; framebuffer_arrayLastTaken--);
 	return TRUE;
 }
 
 framebuffer_t * returnFramebufferById(const int id){
 	int framebufferindex = (id & 0xFFFF);
-	framebuffer_t * framebuffer = &framebufferlist[framebufferindex];
+	framebuffer_t * framebuffer = &framebuffer_list[framebufferindex];
 	if(!framebuffer->type) return FALSE;
 	if(framebuffer->myid == id) return framebuffer;
 	return FALSE;
@@ -276,41 +276,41 @@ framebuffer_t createFramebuffer (char * name, unsigned char count, unsigned char
 }
 
 int addFramebufferRINT(framebuffer_t framebuffer){
-	framebuffercount++;
-	for(; framebufferArrayFirstOpen < framebufferArraySize && framebufferlist[framebufferArrayFirstOpen].type; framebufferArrayFirstOpen++);
-	if(framebufferArrayFirstOpen == framebufferArraySize){	//resize
-		framebufferArraySize++;
-		framebufferlist = realloc(framebufferlist, framebufferArraySize * sizeof(framebuffer_t));
+	framebuffer_count++;
+	for(; framebuffer_arrayFirstOpen < framebuffer_arraySize && framebuffer_list[framebuffer_arrayFirstOpen].type; framebuffer_arrayFirstOpen++);
+	if(framebuffer_arrayFirstOpen == framebuffer_arraySize){	//resize
+		framebuffer_arraySize++;
+		framebuffer_list = realloc(framebuffer_list, framebuffer_arraySize * sizeof(framebuffer_t));
 	}
-	framebufferlist[framebufferArrayFirstOpen] = framebuffer;
-	int returnid = (framebuffercount << 16) | framebufferArrayFirstOpen;
-	framebufferlist[framebufferArrayFirstOpen].myid = returnid;
+	framebuffer_list[framebuffer_arrayFirstOpen] = framebuffer;
+	int returnid = (framebuffer_count << 16) | framebuffer_arrayFirstOpen;
+	framebuffer_list[framebuffer_arrayFirstOpen].myid = returnid;
 
-	addToHashTable(framebufferlist[framebufferArrayFirstOpen].name, returnid, framebufferhashtable);
-	if(framebufferArrayLastTaken < framebufferArrayFirstOpen) framebufferArrayLastTaken = framebufferArrayFirstOpen; //todo redo
+	addToHashTable(framebuffer_list[framebuffer_arrayFirstOpen].name, returnid, framebufferhashtable);
+	if(framebuffer_arrayLastTaken < framebuffer_arrayFirstOpen) framebuffer_arrayLastTaken = framebuffer_arrayFirstOpen; //todo redo
 	return returnid;
 }
 framebuffer_t * addFramebufferRPOINT(framebuffer_t framebuffer){
-	framebuffercount++;
-	for(; framebufferArrayFirstOpen < framebufferArraySize && framebufferlist[framebufferArrayFirstOpen].type; framebufferArrayFirstOpen++);
-	if(framebufferArrayFirstOpen == framebufferArraySize){	//resize
-		framebufferArraySize++;
-		framebufferlist = realloc(framebufferlist, framebufferArraySize * sizeof(framebuffer_t));
+	framebuffer_count++;
+	for(; framebuffer_arrayFirstOpen < framebuffer_arraySize && framebuffer_list[framebuffer_arrayFirstOpen].type; framebuffer_arrayFirstOpen++);
+	if(framebuffer_arrayFirstOpen == framebuffer_arraySize){	//resize
+		framebuffer_arraySize++;
+		framebuffer_list = realloc(framebuffer_list, framebuffer_arraySize * sizeof(framebuffer_t));
 	}
-	framebufferlist[framebufferArrayFirstOpen] = framebuffer;
-	int returnid = (framebuffercount << 16) | framebufferArrayFirstOpen;
-	framebufferlist[framebufferArrayFirstOpen].myid = returnid;
+	framebuffer_list[framebuffer_arrayFirstOpen] = framebuffer;
+	int returnid = (framebuffer_count << 16) | framebuffer_arrayFirstOpen;
+	framebuffer_list[framebuffer_arrayFirstOpen].myid = returnid;
 
-	addToHashTable(framebufferlist[framebufferArrayFirstOpen].name, returnid, framebufferhashtable);
-	if(framebufferArrayLastTaken < framebufferArrayFirstOpen) framebufferArrayLastTaken = framebufferArrayFirstOpen; //todo redo
-	return &framebufferlist[framebufferArrayFirstOpen];
+	addToHashTable(framebuffer_list[framebuffer_arrayFirstOpen].name, returnid, framebufferhashtable);
+	if(framebuffer_arrayLastTaken < framebuffer_arrayFirstOpen) framebuffer_arrayLastTaken = framebuffer_arrayFirstOpen; //todo redo
+	return &framebuffer_list[framebuffer_arrayFirstOpen];
 }
 
 
 void pruneFramebufferList(void){
-	if(framebufferArraySize == framebufferArrayLastTaken+1) return;
-	framebufferArraySize = framebufferArrayLastTaken+1;
-	framebufferlist = realloc(framebufferlist, framebufferArraySize * sizeof(framebuffer_t));
+	if(framebuffer_arraySize == framebuffer_arrayLastTaken+1) return;
+	framebuffer_arraySize = framebuffer_arrayLastTaken+1;
+	framebuffer_list = realloc(framebuffer_list, framebuffer_arraySize * sizeof(framebuffer_t));
 }
 
 

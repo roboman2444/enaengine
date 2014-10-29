@@ -51,14 +51,14 @@ typedef struct vboseperate_s {
 	char setup;
 }vboseperate_t;
 
-int vboOK;
+int vbo_ok;
 int vbonumber;
 vbo_t * vbolist;
 int vbocount;
 int vboArraySize;
 int vboArrayLastTaken;
 
-int initVBOSystem(void);
+int vbo_init(void);
 
 vbo_t * findVBOByNameRPOINT(char * name);
 int findVBOByNameRINT(char * name);

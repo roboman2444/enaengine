@@ -2,7 +2,7 @@
 #define CONSOLEHEADER
 int console_init(void); // works for now
 int console_printf(const char *format, ...);
-int console_nprintf(size_t size, const char *format, ...);
+int console_nprintf(const size_t size, const char *format, ...);
 int console_printBackwards(void);
 int console_updateText(unsigned int offset);
 

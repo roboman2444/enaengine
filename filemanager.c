@@ -4,7 +4,7 @@
 #include "filemanager.h"
 #include "console.h"
 
-int loadFileString(const char * filename, char ** output, int * length, int debugmode){
+int file_loadString(const char * filename, char ** output, int * length, const int debugmode){
 	FILE *file = fopen(filename, "r");
 	if(!file){
 //		if(debugmode)fprintf(stderr, "ERROR -- file does not exist\n");
@@ -27,7 +27,7 @@ int loadFileString(const char * filename, char ** output, int * length, int debu
 	return *length; //will return false if length is 0
 }
 //UNTESTED
-int loadFileStringNoLength(const char * filename, char ** output, int debugmode){
+int file_loadStringNoLength(const char * filename, char ** output, const int debugmode){
 	FILE *file = fopen(filename, "r");
 	if(!file){
 		if(debugmode)console_printf("ERROR -- file %s does not exist\n", filename);

@@ -46,7 +46,7 @@ typedef struct shaderprogram_s
 
 //shaderpermutation_t * shaderCurrentBound;
 
-int shadersOK;
+int shader_ok;
 int programnumber;
 
 shaderprogram_t * shaderlist;
@@ -54,7 +54,7 @@ int shadercount;
 int shaderArraySize;
 int shaderArrayLastTaken;
 
-int initShaderSystem(void);
+int shader_init(void);
 
 shaderprogram_t * findShaderByNameRPOINT(char * name);
 int findShaderByNameRINT(char * name);

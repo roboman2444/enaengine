@@ -40,14 +40,14 @@ typedef struct framebufferlistint_s {
 	unsigned int count;
 } framebufferlistint_t;
 
-int initFramebufferSystem(void);
 
-framebuffer_t * framebufferlist;
-int vpnumber;
-int framebuffersOK;
-int framebuffercount;
-int framebufferArraySize;
-int framebufferArrayLastTaken;
+framebuffer_t * framebuffer_list;
+int framebuffer_ok;
+int framebuffer_count;
+int framebuffer_arraySize;
+int framebuffer_arrayLastTaken;
+
+int framebuffer_init(void);
 
 framebuffer_t * findFramebufferByNameRPOINT(char * name);
 int findFramebufferByNameRINT(char * name);

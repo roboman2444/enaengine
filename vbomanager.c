@@ -6,7 +6,7 @@
 #include "hashtables.h"
 #include "glstates.h"
 
-int vboOK = 0;
+int vbo_ok = 0;
 int vbocount = 0;
 int vboArrayFirstOpen = 0;
 int vboArrayLastTaken = -1;
@@ -16,12 +16,12 @@ vbo_t *vbolist;
 
 hashbucket_t vbohashtable[MAXHASHBUCKETS];
 
-int initVBOSystem(void){
+int vbo_init(void){
 	memset(vbohashtable, 0, MAXHASHBUCKETS*sizeof(hashbucket_t));
 	if(vbolist) free(vbolist);
 	vbolist = 0;
 
-	vboOK = TRUE;
+	vbo_ok = TRUE;
 	return TRUE;
 }
 

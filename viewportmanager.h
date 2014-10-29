@@ -39,11 +39,11 @@ typedef struct viewportlistint_s {
 	unsigned int count;
 } viewportlistint_t;
 
-int initViewportSystem(void);
+int viewport_init(void);
 
 viewport_t * viewportlist;
 int vpnumber;
-int viewportsOK;
+int viewport_ok;
 int viewportcount;
 int viewportArraySize;
 int viewportArrayLastTaken;

@@ -1,6 +1,10 @@
 #ifndef ENTITYMANAGERHEADER
 #define ENTITYMANAGERHEADER
 
+struct entity_s;
+struct entitylistpoint_s;
+struct entitylistint_s;
+
 typedef struct entity_s {
 	char * name;
 	int myid;
@@ -13,10 +17,10 @@ typedef struct entity_s {
 	int needsmatupdate;
 	matrix4x4_t mat;
 	double nextthink;
-	void (*spawn)(void);
-	void (*remove)(void);
-	void (*think)(void);
-	void (*touch)(int touchid); //should be entity_t * toucher
+	void (*spawn)(struct entity_s * e);
+	void (*remove)(struct entity_s * e);
+	void (*think)(struct entity_s * e);
+	void (*touch)(struct entity_s *e, int touchid); //should be entity_t * toucher
 	int parentid;
 	int attachmentid;
 
@@ -55,18 +59,18 @@ int entity_arraylasttaken;
 int entity_ok;
 
 //returns first entity it finds with name
-entity_t * findEntityByNameRPOINT(char * nam);
-int findEntityByNameRINT(char * name);
+entity_t * entity_findByNameRPOINT(const char * nam);
+int entity_findByNameRINT(const char * name);
 //returns a list of all entities with name
-entitylistpoint_t findEntitiesByNameRPOINT(char * nam);
-entitylistint_t findEntitiesByNameRINT(char * name);
+entitylistpoint_t entity_findAllByNameRPOINT(const char * name);
+entitylistint_t entity_findAllByNameRINT(const char * name);
 //returns pointer by entity id
-entity_t * returnEntityById(const int id);
+entity_t * entity_returnById(const int id);
 //creates and adds entity to listwith name
-entity_t * addEntityRPOINT(char * name);
-int addEntityRINT(char * name);
-void pruneEntityList(void);
+entity_t * entity_addRPOINT(const char * name);
+int entity_addRINT(const char * name);
+void entity_pruneList(void);
 
 //deletes entity, only id is accepted
-int deleteEntity(const int id);
+int entity_delete(const int id);
 #endif

@@ -72,11 +72,11 @@ typedef struct lightrenderout_s {
 } lightrenderout_t;
 
 light_t *lightlist;
-int initLightSystem(void);
+int light_init(void);
 int lightcount;
 int lightArraySize;
 int lightArrayLastTaken;
-int lightsOK;
+int light_ok;
 
 int maxVisLights;
 int maxShadowLights;

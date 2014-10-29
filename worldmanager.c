@@ -598,7 +598,7 @@ int addObjectToWorld(worldobject_t * o){
 	return walkAndAddObject(o, worldroot);
 }
 int addEntityToWorld(int entityid){
-	entity_t *e = returnEntityById(entityid);
+	entity_t *e = entity_returnById(entityid);
 	if(!e) return FALSE;
 
 	model_t *m = returnModelById(e->modelid);

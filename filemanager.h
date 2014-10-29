@@ -1,7 +1,7 @@
 #ifndef FILEMANAGERHEADER
 #define FILENANAGERHEADER
 
-int loadFileString(const char * filename, char ** output, int * length, int debugmode);
-int loadFileStringNoLength(const char *filename, char ** output, int debugmode);
+int file_loadString(const char * filename, char ** output, int * length, const int debugmode);
+int file_loadStringNoLength(const char *filename, char ** output, const int debugmode);
 
 #endif

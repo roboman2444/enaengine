@@ -20,7 +20,7 @@ int modelcount = 0;
 int modelArrayFirstOpen = 0;
 int modelArrayLastTaken = -1;
 int modelArraySize = 0;
-int modelsOK = 0;
+int model_ok = 0;
 model_t *modellist;
 
 hashbucket_t modelhashtable[MAXHASHBUCKETS];
@@ -270,7 +270,7 @@ int makeCubeModel2(void){
 	return addModelRINT(m);
 }
 
-int initModelSystem(void){
+int model_init(void){
 //	modelhashtable = malloc(MAXHASHBUCKETS * 2* sizeof(hashbucket_t));
 	memset(modelhashtable, 0, MAXHASHBUCKETS *sizeof(hashbucket_t));
 //	model_t none = {"default", findTextureGroupByName("default"), 0, 0};
@@ -284,7 +284,7 @@ int initModelSystem(void){
 	makeCubeModel(); //todo check these
 	makeCubeModel2();
 	makeFSQuadModel();
-	modelsOK = TRUE;
+	model_ok = TRUE;
 	return TRUE;
 }
 

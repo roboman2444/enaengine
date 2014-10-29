@@ -49,7 +49,7 @@ typedef struct texturegroup_s{
 
 int textureCurrentBound;
 
-int texturesOK;
+int texture_ok;
 int texturegroupnumber;
 
 texturegroup_t *texturegrouplist;
@@ -62,7 +62,7 @@ texturegroup_t createTexturegroup(char * name, const int num);
 texturegroup_t * addTexturegroupRPOINT(texturegroup_t texgroup);
 int addTexturegroupRINT(texturegroup_t texgroup);
 
-int initTextureSystem(void);
+int texture_init(void);
 
 texturegroup_t * findTexturegroupByNameRPOINT(char * name);
 int findTexturegroupByNameRINT(char * name);

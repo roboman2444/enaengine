@@ -17,7 +17,7 @@
 
 texturegroup_t * textureGroupCurrentBound = 0;
 
-int texturesOK = 0;
+int texture_ok = 0;
 int texturegroupcount = 0;
 int texturegroupArrayFirstOpen = 0;
 int texturegroupArrayLastTaken = -1;
@@ -32,7 +32,7 @@ hashbucket_t texturegrouphashtable[MAXHASHBUCKETS];
 
 texturegroup_t *texturegrouplist;
 
-int initTextureSystem(void){
+int texture_init(void){
 	memset(texturegrouphashtable, 0, MAXHASHBUCKETS * sizeof(hashbucket_t));
 	if(texturegrouplist) free(texturegrouplist);
 	texturegrouplist = 0;
@@ -40,7 +40,7 @@ int initTextureSystem(void){
 //	if(!texturegrouplist) memset(texturegrouplist, 0, texturegroupnumber * sizeof(texturegroup_t));
 //	defaultTextureGroup = addTextureGroupToList(createTextureGroup("default", 0));
 	//todo error checking
-	texturesOK = TRUE;
+	texture_ok = TRUE;
 	return TRUE;
 }
 

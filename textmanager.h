@@ -52,7 +52,7 @@ typedef struct textlistint_s {
 #define TEXT_FORMAT_ITALIC	4
 #define	TEXT_FORMAT_UNDERLINE	8
 
-int textOK;
+int text_ok;
 int textnumber;
 int fontnumber;
 
@@ -66,7 +66,7 @@ int fontArraySize;
 int fontArrayLastTaken;
 
 
-int initTextSystem(void);
+int text_init(void);
 
 text_t createAndRenderText(char * name, int font, char style, char fgcolor[3]);
 text_t createAndRenderTextFindFont(char * name, char * fontname, unsigned short size, char style, char fgcolor[3]);

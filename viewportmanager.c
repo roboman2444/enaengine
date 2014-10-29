@@ -11,7 +11,7 @@
 #include "texturemanager.h"
 #include "framebuffermanager.h"
 #include "mathlib.h"
-int viewportsOK = 0;
+int viewport_ok = 0;
 int viewportcount = 0;
 int viewportArrayFirstOpen = 0;
 int viewportArrayLastTaken = -1;
@@ -20,7 +20,7 @@ viewport_t *viewportlist;
 
 hashbucket_t viewporthashtable[MAXHASHBUCKETS];
 
-int initViewportSystem(void){
+int viewport_init(void){
 //	viewport_t screen = createViewport("default");
 	memset(viewporthashtable, 0, MAXHASHBUCKETS*sizeof(hashbucket_t));
 	if(viewportlist) free(viewportlist);
@@ -28,7 +28,7 @@ int initViewportSystem(void){
 //	viewportlist = malloc(vpnumber * sizeof(viewport_t));
 //	if(!viewportlist) memset(viewportlist, 0 , vpnumber * sizeof(viewport_t));
 //	defaultViewport = addViewportToList(screen);
-	viewportsOK = TRUE;
+	viewport_ok = TRUE;
 	return TRUE; // todo error check
 }
 viewportlistpoint_t findViewportsByNameRPOINT(char * name){

@@ -12,14 +12,50 @@
 #include "worldmanager.h"
 #include "viewportmanager.h"
 #include "lightmanager.h"
+#include "gamecodemanager.h"
 
 #include "mathlib.h"
+#include "console.h"
+
+#include "cvarmanager.h"
+#include "filemanager.h"
+#include "stringlib.h"
+#include "gamecodeincludes.h"
 
 int gamecodeOK;
 int tGameTime = 0;
 
+gcallheader_t gc;
+
+
 
 int setupGameCodeCallbacks(void){
+	ecallheader_t ec;
+	ec.console_printf = console_printf;
+	ec.console_nprintf = console_nprintf;
+
+	ec.cvar_register = cvar_register;
+	ec.cvar_unregister = cvar_unregister;
+	ec.cvar_nameset = cvar_nameset;
+	ec.cvar_pset = cvar_pset;
+	ec.cvar_idset = cvar_idset;
+	ec.cvar_returnById = cvar_returnById;
+	ec.cvar_findByNameRPOINT = cvar_findByNameRPOINT;
+	ec.cvar_findByNameRINT = cvar_findByNameRINT;
+
+	ec.entity_findByNameRPOINT = entity_findByNameRPOINT;
+	ec.entity_findByNameRINT = entity_findByNameRINT;
+	ec.entity_findAllByNameRPOINT = entity_findAllByNameRPOINT;
+	ec.entity_findAllByNameRINT = entity_findAllByNameRINT;
+	ec.entity_returnById = entity_returnById;
+	ec.entity_addRPOINT = entity_addRPOINT;
+	ec.entity_addRINT = entity_addRINT;
+	ec.entity_delete = entity_delete;
+
+	ec.file_loadString = file_loadString;
+	ec.file_loadStringNoLength = file_loadStringNoLength;
+
+	ec.string_toVec = string_toVec;
 	//todo
 	return TRUE;
 }
@@ -37,7 +73,7 @@ int initGameCodeSystem(void){
 //#define RESAVEWORLD
 //#define EXTRALIGHTS
 #ifdef RESAVEWORLD
-	entity_t * entdragon = addEntityRPOINT("dragon");
+	entity_t * entdragon = entity_addRPOINT("dragon");
 		entdragon->type = 2;
 		entdragon->modelid = createAndAddModelRINT("dragon");
 		entdragon->texturegroupid = 0;
@@ -49,8 +85,8 @@ int initGameCodeSystem(void){
 		recalcEntBBox(entdragon); // needed because this is added to the world before the gamecode runs
 
 		addEntityToWorld(entdragon->myid);
-		deleteEntity(entdragon->myid);
-	entity_t *entteapot = addEntityRPOINT("teapot");
+		entity_delete(entdragon->myid);
+	entity_t *entteapot = entity_addRPOINT("teapot");
 		entteapot->type = 2;
 		entteapot->pos[0] = 10.0f;
 		entteapot->needsmatupdate = TRUE;
@@ -63,10 +99,10 @@ int initGameCodeSystem(void){
 		recalcEntBBox(entteapot); // needed because this is added to the world before the gamecode runs
 
 		addEntityToWorld(entteapot->myid);
-		deleteEntity(entteapot->myid);
+		entity_delete(entteapot->myid);
 
 
-	entity_t * entfloor = addEntityRPOINT("floor");
+	entity_t * entfloor = entity_addRPOINT("floor");
 		entfloor->type = 2;
 		entfloor->modelid = createAndAddModelRINT("cube2");
 		entteapot->needsmatupdate = TRUE;
@@ -80,7 +116,7 @@ int initGameCodeSystem(void){
 		recalcEntBBox(entfloor); // needed because this is added to the world before the gamecode runs
 
 		addEntityToWorld(entfloor->myid);
-		deleteEntity(entfloor->myid);
+		entity_delete(entfloor->myid);
 
 
 
@@ -88,7 +124,7 @@ int initGameCodeSystem(void){
 	deleteWorld();
 #endif
 
-	entity_t * entcampointer = addEntityRPOINT("campointer");
+	entity_t * entcampointer = entity_addRPOINT("campointer");
 		entcampointer->type = 2;
 		entcampointer->modelid = createAndAddModelRINT("coil");
 		entcampointer->shaderid = createAndAddShaderRINT("deferredmodel");
@@ -104,7 +140,7 @@ int initGameCodeSystem(void){
 
 
 
-	entity_t * enthat = addEntityRPOINT("hat");
+	entity_t * enthat = entity_addRPOINT("hat");
 		enthat->type = 2;
 		enthat->pos[1] = 8.7;
 		enthat->pos[0] = -2.5;
@@ -116,7 +152,7 @@ int initGameCodeSystem(void){
 //		enthat->modelid = createAndAddModelRINT("coil");
 		enthat->shaderid = createAndAddShaderRINT("deferredmodel");
 		enthat->texturegroupid = 0;
-	entity_t * entcoil = addEntityRPOINT("coil");
+	entity_t * entcoil = entity_addRPOINT("coil");
 		entcoil->type = 2;
 		entcoil->pos[2] = 10.0;
 		entcoil->anglevel[2] = 360.0;
@@ -127,12 +163,12 @@ int initGameCodeSystem(void){
 		entcoil->modelid = createAndAddModelRINT("coil");
 		entcoil->texturegroupid = createAndAddTexturegroupRINT("coil");
 //		entcoil->texturegroupid = createAndAddTexturegroupRINT("bunny");
-		entcoil->attachmentid = findEntityByNameRINT("hat");
+		entcoil->attachmentid = entity_findByNameRINT("hat");
 		entcoil->shaderperm = 1;
 
 	int tempid = entcoil->myid;
 
-	entity_t * entlightoffset = addEntityRPOINT("lightoffset");
+	entity_t * entlightoffset = entity_addRPOINT("lightoffset");
 		entlightoffset->pos[2] = 3.0f;
 		entlightoffset->pos[1] = 3.0f;
 		entlightoffset->needsmatupdate = TRUE;
@@ -146,7 +182,7 @@ int initGameCodeSystem(void){
 		light->needsupdate = 1;
 		light->scale = 20.0f;
 
-	entity_t * enttinydragon = addEntityRPOINT("tinydragon");
+	entity_t * enttinydragon = entity_addRPOINT("tinydragon");
 		enttinydragon->type = 2;
 		enttinydragon->pos[1] = 3.0f;
 		enttinydragon->scale = 0.2f;
@@ -155,9 +191,9 @@ int initGameCodeSystem(void){
 //		enttinydragon->modelid = createAndAddModelRINT("coil");
 		enttinydragon->shaderid = createAndAddShaderRINT("deferredmodel");
 		enttinydragon->texturegroupid = 0;//findtexturegroupidByName("coil");
-		enttinydragon->attachmentid = findEntityByNameRINT("coil");
+		enttinydragon->attachmentid = entity_findByNameRINT("coil");
 
-	enttinydragon = addEntityRPOINT("tinydragon");
+	enttinydragon = entity_addRPOINT("tinydragon");
 		enttinydragon->type = 2;
 		enttinydragon->pos[1] = -3.0f;
 		enttinydragon->angle[2] = 180.0f;
@@ -167,10 +203,10 @@ int initGameCodeSystem(void){
 		enttinydragon->modelid = createAndAddModelRINT("dragon");
 //		enttinydragon->modelid = createAndAddModelRINT("coil");
 		enttinydragon->texturegroupid = 0;//findtexturegroupidByName("coil");
-		enttinydragon->attachmentid = findEntityByNameRINT("coil");
+		enttinydragon->attachmentid = entity_findByNameRINT("coil");
 		enttinydragon->texturegroupid = 1;
 
-	enttinydragon = addEntityRPOINT("tinydragon");
+	enttinydragon = entity_addRPOINT("tinydragon");
 		enttinydragon->type = 2;
 		enttinydragon->pos[2] = 3.0f;
 		enttinydragon->angle[2] = 90.0f;
@@ -180,10 +216,10 @@ int initGameCodeSystem(void){
 //		enttinydragon->modelid = createAndAddModelRINT("coil");
 		enttinydragon->modelid = createAndAddModelRINT("dragon");
 		enttinydragon->texturegroupid = 0;//findtexturegroupidByName("coil");
-		enttinydragon->attachmentid = findEntityByNameRINT("coil");
+		enttinydragon->attachmentid = entity_findByNameRINT("coil");
 		enttinydragon->shaderperm = 0;
 
-	enttinydragon = addEntityRPOINT("tinydragon");
+	enttinydragon = entity_addRPOINT("tinydragon");
 		enttinydragon->type = 2;
 		enttinydragon->pos[2] = -3.0f;
 		enttinydragon->angle[2] = -90.0f;
@@ -193,13 +229,13 @@ int initGameCodeSystem(void){
 //		enttinydragon->modelid = createAndAddModelRINT("coil");
 		enttinydragon->shaderid = createAndAddShaderRINT("deferredmodel");
 		enttinydragon->texturegroupid = 0;//findtexturegroupidByName("coil");
-		enttinydragon->attachmentid = findEntityByNameRINT("coil");
+		enttinydragon->attachmentid = entity_findByNameRINT("coil");
 		enttinydragon->shaderperm = 0;
 
 	int i;
 	tempid = 0;
 	for(i = 0; i < 100; i++){
-		enttinydragon = addEntityRPOINT("bunny");
+		enttinydragon = entity_addRPOINT("bunny");
 		enttinydragon->type = 2;
 		enttinydragon->pos[0] = 5.0f;
 		enttinydragon->pos[2] = -2.0f;
@@ -242,7 +278,7 @@ int initGameCodeSystem(void){
 
 	srand(103010);
 	for(i = 0; i < 200000; i++){
-		enttinydragon = addEntityRPOINT("cube");
+		enttinydragon = entity_addRPOINT("cube");
 		enttinydragon->type = 2;
 		enttinydragon->pos[0] = (rand()/(double)RAND_MAX -0.5) * 16384.0;
 		enttinydragon->pos[2] = (rand()/(double)RAND_MAX -0.5) * 16384.0;
@@ -264,11 +300,11 @@ int initGameCodeSystem(void){
 		recalcEntBBox(enttinydragon); // needed because this is added to the world before the gamecode runs
 
 		addEntityToWorld(enttinydragon->myid);
-		deleteEntity(enttinydragon->myid);
+		entity_delete(enttinydragon->myid);
 
 	}
 	for(i = 0; i < 200000; i++){
-		enttinydragon = addEntityRPOINT("cube2");
+		enttinydragon = entity_addRPOINT("cube2");
 		enttinydragon->type = 2;
 		enttinydragon->pos[0] = (rand()/(double)RAND_MAX -0.5) * 16384.0;
 		enttinydragon->pos[2] = (rand()/(double)RAND_MAX -0.5) * 16384.0;
@@ -285,7 +321,7 @@ int initGameCodeSystem(void){
 		recalcEntBBox(enttinydragon); // needed because this is added to the world before the gamecode runs
 
 		addEntityToWorld(enttinydragon->myid);
-		deleteEntity(enttinydragon->myid);
+		entity_delete(enttinydragon->myid);
 
 	}
 
@@ -297,7 +333,7 @@ int initGameCodeSystem(void){
 	loadWorld("world2");
 
 
-	pruneEntityList();
+	entity_pruneList();
 
 
 	gamecodeOK = TRUE;
@@ -332,7 +368,7 @@ int recalcEntBBox(entity_t * e){
 int calcEntAttachMat(entity_t * e){ //return value is weather e->mat got changed
 	if(!e->type) return FALSE;
 	if(e->attachmentid){
-		entity_t * attacher = returnEntityById(e->attachmentid);
+		entity_t * attacher = entity_returnById(e->attachmentid);
 		if(!attacher){
 			 e->attachmentid = 0;
 		}

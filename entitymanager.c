@@ -22,33 +22,33 @@ int entity_init(void){
 	entity_list = 0;
 //	entity_list = malloc(entity_count * sizeof(entity_t));
 //	if(!entity_list) memset(entity_list, 0 , entity_count * sizeof(entity_t));
-	addEntityRINT("default");
+	entity_addRINT("default");
 	entity_ok = TRUE;
 	return TRUE; // todo error check
 }
-entitylistpoint_t findEntitiesByNameRPOINT(char * name){
+entitylistpoint_t entity_findAllByNameRPOINT(const char * name){
 	entitylistpoint_t ret;
 	int hash = getHash(name);
 	hashbucket_t * hb = &entityhashtable[hash];
 	if(!hb->name) return ret;
         for(; hb; hb = hb->next){
 		if(strcmp(hb->name, name)==0){
-//			return returnEntityById(hb->id);
+//			return entity_returnById(hb->id);
 			ret.count++;
 			ret.list = realloc(ret.list, ret.count * sizeof(entity_t *));
-			ret.list[ret.count-1] = returnEntityById(hb->id);
+			ret.list[ret.count-1] = entity_returnById(hb->id);
 		}
         }
 	return ret;
 }
-entitylistint_t findEntitiesByNameRINT(char * name){
+entitylistint_t entity_findAllByNameRINT(const char * name){
 	entitylistint_t ret;
 	int hash = getHash(name);
 	hashbucket_t * hb = &entityhashtable[hash];
 	if(!hb->name) return ret;
         for(; hb; hb = hb->next){
 		if(strcmp(hb->name, name)==0){
-//			return returnEntityById(hb->id);
+//			return entity_returnById(hb->id);
 			ret.count++;
 			ret.list = realloc(ret.list, ret.count * sizeof(int));
 			ret.list[ret.count-1] = hb->id;
@@ -57,14 +57,14 @@ entitylistint_t findEntitiesByNameRINT(char * name){
 	return ret;
 }
 
-entity_t * findEntityByNameRPOINT(char * name){ //todo write a function that can find ALL entities with name
-	return returnEntityById(findByNameRINT(name, entityhashtable));
+entity_t * entity_findByNameRPOINT(const char * name){ //todo write a function that can find ALL entities with name
+	return entity_returnById(findByNameRINT(name, entityhashtable));
 }
-int findEntityByNameRINT(char * name){
+int entity_findByNameRINT(const char * name){
 	return findByNameRINT(name, entityhashtable);
 }
 
-int deleteEntity(const int id){
+int entity_delete(const int id){
 	int entityindex = (id & 0xFFFF);
 	entity_t * ent = &entity_list[entityindex];
 	if(ent->myid != id) return FALSE;
@@ -80,7 +80,7 @@ int deleteEntity(const int id){
 	for(; entity_arraylasttaken > 0 && !entity_list[entity_arraylasttaken].type; entity_arraylasttaken--);
 	return TRUE;
 }
-entity_t * returnEntityById(const int id){
+entity_t * entity_returnById(const int id){
 //	int entityspawncount = (id >> 16);
 	int entityindex = (id & 0xFFFF);
 	entity_t * ent = &entity_list[entityindex];
@@ -88,7 +88,7 @@ entity_t * returnEntityById(const int id){
 	if(ent->myid == id) return ent;
 	return FALSE;
 }
-entity_t createEntity(char * name){
+entity_t createEntity(const char * name){
 	entity_t newent;
 	memset(&newent, 0, sizeof(entity_t));
 	newent.type = 1;
@@ -121,7 +121,7 @@ entity_t createEntity(char * name){
 
 
 
-int addEntityRINT(char * name){
+int entity_addRINT(const char * name){
 	entity_count++;
 	for(; entity_arrayfirstopen < entity_arraysize && entity_list[entity_arrayfirstopen].type; entity_arrayfirstopen++);
 	if(entity_arrayfirstopen == entity_arraysize){	//resize
@@ -136,7 +136,7 @@ int addEntityRINT(char * name){
 	if(entity_arraylasttaken < entity_arrayfirstopen) entity_arraylasttaken = entity_arrayfirstopen; //todo redo
 	return returnid;
 }
-entity_t * addEntityRPOINT(char * name){
+entity_t * entity_addRPOINT(const char * name){
 	entity_count++;
 	for(; entity_arrayfirstopen < entity_arraysize && entity_list[entity_arrayfirstopen].type; entity_arrayfirstopen++);
 	if(entity_arrayfirstopen == entity_arraysize){	//resize
@@ -156,7 +156,7 @@ entity_t * addEntityRPOINT(char * name){
 	return &entity_list[entity_arrayfirstopen];
 
 }
-void pruneEntityList(void){
+void entity_pruneList(void){
 	if(entity_arraysize == entity_arraylasttaken+1) return;
 	entity_arraysize = entity_arraylasttaken+1;
 	entity_list = realloc(entity_list, entity_arraysize * sizeof(entity_t));

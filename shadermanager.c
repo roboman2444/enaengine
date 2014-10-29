@@ -18,7 +18,7 @@ int shadercount = 0;
 int shaderArrayFirstOpen = 0;
 int shaderArrayLastTaken = -1;
 int shaderArraySize = 0;
-int shadersOK = 0;
+int shader_ok = 0;
 
 shaderprogram_t *shaderlist;
 
@@ -27,7 +27,7 @@ shaderpermutation_t * shaderCurrentBound = 0;
 
 hashbucket_t shaderhashtable[MAXHASHBUCKETS];
 
-int initShaderSystem(void){
+int shader_init(void){
 	memset(shaderhashtable, 0, MAXHASHBUCKETS * sizeof(hashbucket_t));
 
 //	shaderprogram_t none = {"default", 0, 0, 0};
@@ -36,7 +36,7 @@ int initShaderSystem(void){
 //	shaderlist = malloc(0 * sizeof(shaderprogram_t));
 //	defaultShader = addProgramToList(none);
 	shaderCurrentBound = 0;
-	shadersOK = TRUE;
+	shader_ok = TRUE;
 	return TRUE; // todo error check
 }
 
@@ -433,7 +433,7 @@ int readyShader(shaderprogram_t * shader){
 
 	char * vertname = malloc(strlen(name)+6);
 	sprintf(vertname, "%s.vert", name);
-	loadFileString(vertname, &shader->vertstring, &shader->vertlength, 1);
+	file_loadString(vertname, &shader->vertstring, &shader->vertlength, 1);
 	free(vertname);
 	if(shader->vertlength == 0){
 		//todo
@@ -444,7 +444,7 @@ int readyShader(shaderprogram_t * shader){
 	char * fragname = malloc(strlen(name)+6);
 	sprintf(fragname, "%s.frag", name);
 //	strcpy(vertname, name);strcat(vertname, ".frag");
-	loadFileString(fragname, &shader->fragstring, &shader->fraglength, 1);
+	file_loadString(fragname, &shader->fragstring, &shader->fraglength, 1);
 	free(fragname);
 	if(shader->fraglength == 0){
 		//todo
@@ -458,7 +458,7 @@ int readyShader(shaderprogram_t * shader){
 
 	char * geomname = malloc(strlen(name)+6);
 	sprintf(geomname, "%s.geom", name);
-	loadFileString(geomname, &shader->geomstring, &shader->geomlength, 0);
+	file_loadString(geomname, &shader->geomstring, &shader->geomlength, 0);
 	free(geomname);
 	if(shader->geomlength < 1){
 		if(shader->geomstring){

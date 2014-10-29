@@ -15,7 +15,7 @@ int lightcount = 0;
 int lightArrayFirstOpen = 0;
 int lightArrayLastTaken = -1;
 int lightArraySize = 0;
-int lightsOK = 0;
+int light_ok = 0;
 light_t *lightlist;
 hashbucket_t lighthashtable[MAXHASHBUCKETS];
 
@@ -38,7 +38,7 @@ int lightLoop(void){
 	int count = 0, i;
 	for(i = 0; i <= lightArrayLastTaken; i++){
 		light_t *l = &lightlist[i];
-		entity_t *e = returnEntityById(l->attachmentid);
+		entity_t *e = entity_returnById(l->attachmentid);
 		if(e){
 			//todo something for non point lights to check and set angle as well
 //			vec3_t tvec;
@@ -66,7 +66,7 @@ int lightLoop(void){
 }
 
 
-int initLightSystem(void){
+int light_init(void){
 	memset(lighthashtable, 0, MAXHASHBUCKETS * sizeof(hashbucket_t));
 	if(lightlist) free(lightlist);
 	lightlist = 0;
@@ -76,7 +76,7 @@ int initLightSystem(void){
 	//todo make this useful, gonna need a large list to put the lights in viewport into, then sort front to back and remove back ones
 	maxVisLights = 50;
 	maxShadowLights = 20;
-	lightsOK = TRUE;
+	light_ok = TRUE;
 	return TRUE; // todo error check
 }
 lightlistpoint_t findLightsByNameRPOINT(char * name){
