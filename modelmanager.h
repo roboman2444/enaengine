@@ -40,28 +40,27 @@ int model_ok;
 int modelnumber;
 
 
-model_t * modellist;
-int modelcount;
-int modelArraySize;
-int modelArrayLastTaken;
+model_t * model_list;
+int model_count;
+int model_arraySize;
+int model_arrayLastTaken;
 
 int model_init(void);
 
-model_t * findModelByNameRPOINT(char * name);
-int findModelByNameRINT(char * name);
+model_t * model_findByNameRPOINT(const char * name);
+int model_findByNameRINT(const char * name);
 
-model_t * returnModelById(const int id);
+model_t * model_returnById(const int id);
 
-model_t * addModelRPOINT(model_t mod);
-int addModelRINT(model_t mod);
-int deleteModel(const int id);
-int deleteAllModels(void);
-void pruneModelList(void);
+model_t * model_addRPOINT(model_t mod);
+int model_addRINT(model_t mod);
+int model_delete(const int id);
+int model_deleteAll(void);
+void model_pruneList(void);
 
 
-model_t * createAndAddModelRPOINT(char * name);
-int createAndAddModelRINT(char * name);
-//int makeCubeModel(void);
+model_t * model_createAndAddRPOINT(const char * name);
+int model_createAndAddRINT(const char * name);
 
 #endif
 

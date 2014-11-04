@@ -22,15 +22,41 @@
 #include "stringlib.h"
 #include "gamecodeincludes.h"
 
+#include <dlfcn.h> //todo move to sys
+
 int gamecodeOK;
 int tGameTime = 0;
 
-gcallheader_t gc;
+gcallheader_t *gc = 0;
+static void * game_lib;
+ecallheader_t ec;
+
+void sys_unloadGameAPI(void){ // todo move to sys
+	if(game_lib)dlclose(game_lib);
+	game_lib = 0;
+}
+
+gcallheader_t * sys_getGameAPI(ecallheader_t *ec){ //todo move to sys
+	if(game_lib){ console_printf("Error: game DLL still open, cant reload\n"); return FALSE;}
+
+
+	//todo search for it, cvar it, etc
+	game_lib = dlopen("./gamecode.so", RTLD_NOW);
+
+	if(!game_lib){ console_printf("Error opening gamecode.so, file not found\n"); return FALSE;}
+	void *(*dllSetupCallbacks) (void*);
+	dllSetupCallbacks = (void *) dlsym (game_lib, "setupGameCodeCallbacks");
+	if(!dllSetupCallbacks){
+		console_printf("Error opening gamecode.so\n");
+		sys_unloadGameAPI();
+		return FALSE;
+	}
+	return dllSetupCallbacks(ec);
+}
 
 
 
 int setupGameCodeCallbacks(void){
-	ecallheader_t ec;
 	ec.console_printf = console_printf;
 	ec.console_nprintf = console_nprintf;
 
@@ -55,7 +81,32 @@ int setupGameCodeCallbacks(void){
 	ec.file_loadString = file_loadString;
 	ec.file_loadStringNoLength = file_loadStringNoLength;
 
+	ec.light_addRINT = light_addRINT;
+	ec.light_addRPOINT = light_addRPOINT;
+
+	ec.shader_createAndAddRINT = shader_createAndAddRINT;
+
 	ec.string_toVec = string_toVec;
+
+	ec.texture_createAndAddGroupRINT = texture_createAndAddGroupRINT;
+
+	ec.model_createAndAddRINT = model_createAndAddRINT;
+
+
+	gc = sys_getGameAPI(&ec);
+	if(!gc){
+		console_printf("Error: could not load game code\n");
+		return FALSE;
+	}
+	//todo implement a new api checking formula, maybe ranges of compatible
+	if(gc->apiver != GAMECODEINCLUDEVERSION){
+		console_printf("Error: Gamecode version is %i, engine version is %i, not compatible\n", gc->apiver, GAMECODEINCLUDEVERSION);
+		return FALSE;
+	}
+	if(!gc->initgame){
+		console_printf("Error: Gamecode does not have an initgame function\n");
+		return FALSE;
+	}
 	//todo
 	return TRUE;
 }
@@ -68,279 +119,22 @@ int initGameCodeSystem(void){
 		gamecodeOK = FALSE;
 		return FALSE;
 	}
-	setupGameCodeCallbacks();
-
-//#define RESAVEWORLD
-//#define EXTRALIGHTS
-#ifdef RESAVEWORLD
-	entity_t * entdragon = entity_addRPOINT("dragon");
-		entdragon->type = 2;
-		entdragon->modelid = createAndAddModelRINT("dragon");
-		entdragon->texturegroupid = 0;
-		entdragon->shaderid = createAndAddShaderRINT("deferredmodel");
-		entdragon->shaderperm = 0;
-		entdragon->flags = 1;
-
-		calcEntAttachMat(entdragon); // needed because i add it to the world, and the mat needs to be updated beforehand
-		recalcEntBBox(entdragon); // needed because this is added to the world before the gamecode runs
-
-		addEntityToWorld(entdragon->myid);
-		entity_delete(entdragon->myid);
-	entity_t *entteapot = entity_addRPOINT("teapot");
-		entteapot->type = 2;
-		entteapot->pos[0] = 10.0f;
-		entteapot->needsmatupdate = TRUE;
-		entteapot->modelid = createAndAddModelRINT("teapot");
-		entteapot->shaderid = createAndAddShaderRINT("deferredmodel");
-		entteapot->texturegroupid = 0;
-		entteapot->flags = 1;
-
-		calcEntAttachMat(entteapot); // needed because i add it to the world, and the mat needs to be updated beforehand
-		recalcEntBBox(entteapot); // needed because this is added to the world before the gamecode runs
-
-		addEntityToWorld(entteapot->myid);
-		entity_delete(entteapot->myid);
-
-
-	entity_t * entfloor = entity_addRPOINT("floor");
-		entfloor->type = 2;
-		entfloor->modelid = createAndAddModelRINT("cube2");
-		entteapot->needsmatupdate = TRUE;
-		entfloor->shaderid = createAndAddShaderRINT("deferredmodel");
-		entfloor->flags = 1;
-
-		entfloor->pos[1] = -100.0f;
-		entfloor->scale = 100.0f;
-
-		calcEntAttachMat(entfloor); // needed because i add it to the world, and the mat needs to be updated beforehand
-		recalcEntBBox(entfloor); // needed because this is added to the world before the gamecode runs
-
-		addEntityToWorld(entfloor->myid);
-		entity_delete(entfloor->myid);
-
-
-
-	saveWorld("world");
-	deleteWorld();
-#endif
-
-	entity_t * entcampointer = entity_addRPOINT("campointer");
-		entcampointer->type = 2;
-		entcampointer->modelid = createAndAddModelRINT("coil");
-		entcampointer->shaderid = createAndAddShaderRINT("deferredmodel");
-		entcampointer->texturegroupid = createAndAddTexturegroupRINT("coil");
-		entcampointer->shaderperm = 7;
-		entcampointer->flags = 1;
-		entcampointer->angle[0] = 30;
-
-		entcampointer->scale = 1.0;
-		entcampointer->needsmatupdate = TRUE;
-
-
-
-
-
-	entity_t * enthat = entity_addRPOINT("hat");
-		enthat->type = 2;
-		enthat->pos[1] = 8.7;
-		enthat->pos[0] = -2.5;
-		enthat->scale = .5;
-		enthat->angle[1] = -45.0;
-		enthat->anglevel[0] = 45.0;
-		enthat->needsmatupdate = TRUE;
-		enthat->modelid = createAndAddModelRINT("teapot");
-//		enthat->modelid = createAndAddModelRINT("coil");
-		enthat->shaderid = createAndAddShaderRINT("deferredmodel");
-		enthat->texturegroupid = 0;
-	entity_t * entcoil = entity_addRPOINT("coil");
-		entcoil->type = 2;
-		entcoil->pos[2] = 10.0;
-		entcoil->anglevel[2] = 360.0;
-		entcoil->needsmatupdate = TRUE;
-		entcoil->shaderid = createAndAddShaderRINT("deferredmodel");
-		entcoil->modelid = createAndAddModelRINT("bunny");
-//		entcoil->scale = 0.1;
-		entcoil->modelid = createAndAddModelRINT("coil");
-		entcoil->texturegroupid = createAndAddTexturegroupRINT("coil");
-//		entcoil->texturegroupid = createAndAddTexturegroupRINT("bunny");
-		entcoil->attachmentid = entity_findByNameRINT("hat");
-		entcoil->shaderperm = 1;
-
-	int tempid = entcoil->myid;
-
-	entity_t * entlightoffset = entity_addRPOINT("lightoffset");
-		entlightoffset->pos[2] = 3.0f;
-		entlightoffset->pos[1] = 3.0f;
-		entlightoffset->needsmatupdate = TRUE;
-		entlightoffset->type = 1;
-		entlightoffset->attachmentid = tempid;
-	tempid = entlightoffset->myid;
-
-	light_t * light = addLightRPOINT("light");
-		light->type = 1;
-		light->attachmentid = tempid;
-		light->needsupdate = 1;
-		light->scale = 20.0f;
-
-	entity_t * enttinydragon = entity_addRPOINT("tinydragon");
-		enttinydragon->type = 2;
-		enttinydragon->pos[1] = 3.0f;
-		enttinydragon->scale = 0.2f;
-		enttinydragon->needsmatupdate = TRUE;
-		enttinydragon->modelid = createAndAddModelRINT("dragon");
-//		enttinydragon->modelid = createAndAddModelRINT("coil");
-		enttinydragon->shaderid = createAndAddShaderRINT("deferredmodel");
-		enttinydragon->texturegroupid = 0;//findtexturegroupidByName("coil");
-		enttinydragon->attachmentid = entity_findByNameRINT("coil");
-
-	enttinydragon = entity_addRPOINT("tinydragon");
-		enttinydragon->type = 2;
-		enttinydragon->pos[1] = -3.0f;
-		enttinydragon->angle[2] = 180.0f;
-		enttinydragon->scale = 0.2f;
-		enttinydragon->needsmatupdate = TRUE;
-		enttinydragon->shaderid = createAndAddShaderRINT("deferredmodel");
-		enttinydragon->modelid = createAndAddModelRINT("dragon");
-//		enttinydragon->modelid = createAndAddModelRINT("coil");
-		enttinydragon->texturegroupid = 0;//findtexturegroupidByName("coil");
-		enttinydragon->attachmentid = entity_findByNameRINT("coil");
-		enttinydragon->texturegroupid = 1;
-
-	enttinydragon = entity_addRPOINT("tinydragon");
-		enttinydragon->type = 2;
-		enttinydragon->pos[2] = 3.0f;
-		enttinydragon->angle[2] = 90.0f;
-		enttinydragon->scale = 0.2f;
-		enttinydragon->needsmatupdate = TRUE;
-		enttinydragon->shaderid = createAndAddShaderRINT("deferredmodel");
-//		enttinydragon->modelid = createAndAddModelRINT("coil");
-		enttinydragon->modelid = createAndAddModelRINT("dragon");
-		enttinydragon->texturegroupid = 0;//findtexturegroupidByName("coil");
-		enttinydragon->attachmentid = entity_findByNameRINT("coil");
-		enttinydragon->shaderperm = 0;
-
-	enttinydragon = entity_addRPOINT("tinydragon");
-		enttinydragon->type = 2;
-		enttinydragon->pos[2] = -3.0f;
-		enttinydragon->angle[2] = -90.0f;
-		enttinydragon->scale = 0.2f;
-		enttinydragon->needsmatupdate = TRUE;
-		enttinydragon->modelid = createAndAddModelRINT("dragon");
-//		enttinydragon->modelid = createAndAddModelRINT("coil");
-		enttinydragon->shaderid = createAndAddShaderRINT("deferredmodel");
-		enttinydragon->texturegroupid = 0;//findtexturegroupidByName("coil");
-		enttinydragon->attachmentid = entity_findByNameRINT("coil");
-		enttinydragon->shaderperm = 0;
-
-	int i;
-	tempid = 0;
-	for(i = 0; i < 100; i++){
-		enttinydragon = entity_addRPOINT("bunny");
-		enttinydragon->type = 2;
-		enttinydragon->pos[0] = 5.0f;
-		enttinydragon->pos[2] = -2.0f;
-		enttinydragon->anglevel[1] = 20.0f;
-		enttinydragon->scale = 1.0f;
-		enttinydragon->needsmatupdate = TRUE;
-		enttinydragon->modelid = createAndAddModelRINT("cube2");
-//		enttinydragon->modelid = createAndAddModelRINT("bunny2");
-//		enttinydragon->modelid = createAndAddModelRINT("coil");
-		enttinydragon->shaderid = createAndAddShaderRINT("deferredmodel");
-		enttinydragon->texturegroupid = createAndAddTexturegroupRINT("bunny");
-		enttinydragon->shaderperm = 1;
-		enttinydragon->attachmentid = tempid;
-		tempid = enttinydragon->myid;
-
-
-	light_t * light = addLightRPOINT("light");
-		light->type = 1;
-		light->attachmentid = enttinydragon->myid;
-		light->needsupdate = 1;
-		light->scale = 5.0f;
-
-	}
-#ifdef EXTRALIGHTS
-	srand(103010);
-	for(i = 0; i < 2000; i++){
-		light = addLightRPOINT("light");
-		light->type = 1;
-		light->needsupdate = 1;
-		light->scale = 50.0f;
-
-		light->pos[0] = (rand()/(double)RAND_MAX -0.5) * 1000.0;
-		light->pos[1] = 5.0;
-		light->pos[2] = (rand()/(double)RAND_MAX -0.5) * 1000.0;
-	}
-#endif
-
-
-#ifdef RESAVEWORLD
-
-	srand(103010);
-	for(i = 0; i < 200000; i++){
-		enttinydragon = entity_addRPOINT("cube");
-		enttinydragon->type = 2;
-		enttinydragon->pos[0] = (rand()/(double)RAND_MAX -0.5) * 16384.0;
-		enttinydragon->pos[2] = (rand()/(double)RAND_MAX -0.5) * 16384.0;
-		enttinydragon->angle[1] = 90.0f;
-
-		enttinydragon->scale = (rand()/(double)RAND_MAX) * 2.0;
-//		enttinydragon->scale = 20.0f;
-//		enttinydragon->scale = (rand()/(double)RAND_MAX) * vec3length(enttinydragon->pos);
-//		enttinydragon->scale *= vec3length(enttinydragon->pos);
-		enttinydragon->needsmatupdate = TRUE;
-		enttinydragon->modelid = createAndAddModelRINT("coil");
-		enttinydragon->shaderid = createAndAddShaderRINT("deferredmodel");
-		enttinydragon->texturegroupid = createAndAddTexturegroupRINT("coil");
-		enttinydragon->shaderperm = 7;
-		enttinydragon->flags = 1;
-
-
-		calcEntAttachMat(enttinydragon); // needed because i add it to the world, and the mat needs to be updated beforehand
-		recalcEntBBox(enttinydragon); // needed because this is added to the world before the gamecode runs
-
-		addEntityToWorld(enttinydragon->myid);
-		entity_delete(enttinydragon->myid);
-
-	}
-	for(i = 0; i < 200000; i++){
-		enttinydragon = entity_addRPOINT("cube2");
-		enttinydragon->type = 2;
-		enttinydragon->pos[0] = (rand()/(double)RAND_MAX -0.5) * 16384.0;
-		enttinydragon->pos[2] = (rand()/(double)RAND_MAX -0.5) * 16384.0;
-
-		enttinydragon->scale = (rand()/(double)RAND_MAX) * 4.0;
-//		enttinydragon->scale =  20.0f;
-		enttinydragon->needsmatupdate = TRUE;
-		enttinydragon->modelid = createAndAddModelRINT("cube2");
-		enttinydragon->shaderid = createAndAddShaderRINT("deferredmodel");
-		enttinydragon->flags = 1;
-
-
-		calcEntAttachMat(enttinydragon); // needed because i add it to the world, and the mat needs to be updated beforehand
-		recalcEntBBox(enttinydragon); // needed because this is added to the world before the gamecode runs
-
-		addEntityToWorld(enttinydragon->myid);
-		entity_delete(enttinydragon->myid);
-
+	if(!setupGameCodeCallbacks()){
+		gamecodeOK = FALSE;
+		return FALSE; //todo something
 	}
 
-	saveWorld("world2");
-	deleteWorld();
-
-#endif
 	loadWorld("world");
 	loadWorld("world2");
 
+	gc->initgame();
 
 	entity_pruneList();
-
-
 	gamecodeOK = TRUE;
 	return TRUE; // todo error check
 }
 int recalcEntBBox(entity_t * e){
-	model_t * m = returnModelById(e->modelid);
+	model_t * m = model_returnById(e->modelid);
 	if(!m) return FALSE;
 	int i;
 	e->bbox[0] = -3.4028e+38;

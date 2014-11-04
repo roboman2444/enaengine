@@ -38,6 +38,9 @@ int main(int argc, char *argv[]){
 	initGameCodeSystem();
 	if(gamecodeOK){
 		console_printf("gamecode has initailized correctly\n");
+	} else {
+		//todo
+		console_printf("gamecode has failed to load\n");
 	}
 //	printConsoleBackwards();
 	to = SDL_GetTicks();
@@ -45,7 +48,7 @@ int main(int argc, char *argv[]){
 
 	unsigned int timesincelastfpsupdate = 0;
 	unsigned int accum = 0;
-	while(TRUE){//glorious for loop master race
+	while(TRUE){
 		t = SDL_GetTicks();
 		unsigned int delta = t-to;
 		to = t;

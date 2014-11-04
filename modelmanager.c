@@ -16,12 +16,12 @@
 #include "animmanager.h"
 #include "glstates.h"
 
-int modelcount = 0;
-int modelArrayFirstOpen = 0;
-int modelArrayLastTaken = -1;
-int modelArraySize = 0;
+int model_count = 0;
+int model_arrayFirstOpen = 0;
+int model_arrayLastTaken = -1;
+int model_arraySize = 0;
 int model_ok = 0;
-model_t *modellist;
+model_t *model_list;
 
 hashbucket_t modelhashtable[MAXHASHBUCKETS];
 //hashbucket_t * modelhashtable;
@@ -113,7 +113,7 @@ int makeCubeModel(void){
 //	m.numfaces = 12;
 //	m.numverts = 8;
 
-	return addModelRINT(m);
+	return model_addRINT(m);
 }
 int makeFSQuadModel(void){
 	model_t m;// = malloc(sizeof(model_T));
@@ -148,7 +148,7 @@ int makeFSQuadModel(void){
 	states_bindBuffer(GL_ELEMENT_ARRAY_BUFFER,myvbo->indicesid);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6 *sizeof(GLuint), tris, GL_STATIC_DRAW);
 	myvbo->numfaces = 2;
-	return addModelRINT(m);
+	return model_addRINT(m);
 }
 int makeCubeModel2(void){
 	model_t m;// = malloc(sizeof(model_T));
@@ -267,18 +267,18 @@ int makeCubeModel2(void){
 //	m.numverts = 24;
 	//m.stride = 8; //todo
 
-	return addModelRINT(m);
+	return model_addRINT(m);
 }
 
 int model_init(void){
 //	modelhashtable = malloc(MAXHASHBUCKETS * 2* sizeof(hashbucket_t));
 	memset(modelhashtable, 0, MAXHASHBUCKETS *sizeof(hashbucket_t));
 //	model_t none = {"default", findTextureGroupByName("default"), 0, 0};
-	if(modellist) free(modellist);
-	modellist = 0;
-//	modellist = malloc(modelnumber * sizeof(model_t));
-//	if(!modellist) memset(modellist, 0 , modelnumber * sizeof(model_t));
-//	addModelRINT("default");
+	if(model_list) free(model_list);
+	model_list = 0;
+//	model_list = malloc(modelnumber * sizeof(model_t));
+//	if(!model_list) memset(model_list, 0 , modelnumber * sizeof(model_t));
+//	model_addRINT("default");
 //	defaultModel = addModelToList(none);
 
 	makeCubeModel(); //todo check these
@@ -288,16 +288,16 @@ int model_init(void){
 	return TRUE;
 }
 
-model_t * findModelByNameRPOINT(char * name){
-	return returnModelById(findByNameRINT(name, modelhashtable));
+model_t * model_findByNameRPOINT(const char * name){
+	return model_returnById(findByNameRINT(name, modelhashtable));
 }
-int findModelByNameRINT(char * name){ //todo global
+int model_findByNameRINT(const char * name){ //todo global
 	return findByNameRINT(name, modelhashtable);
 }
 
-int deleteModel(const int id){
+int model_delete(const int id){
 	int modelindex = (id & 0xFFFF);
-	model_t * m = &modellist[modelindex];
+	model_t * m = &model_list[modelindex];
 	if(m->myid != id) return FALSE;
 	if(!m->name) return FALSE;
 	deleteFromHashTable(m->name, id, modelhashtable);
@@ -307,32 +307,32 @@ int deleteModel(const int id){
 	if(v) deleteVBO(v->myid);
 
 	memset(m, 0, sizeof(model_t));
-	if(modelindex < modelArrayFirstOpen) modelArrayFirstOpen = modelindex;
-	for(; modelArrayLastTaken > 0 && !modellist[modelArrayLastTaken].type; modelArrayLastTaken--);
+	if(modelindex < model_arrayFirstOpen) model_arrayFirstOpen = modelindex;
+	for(; model_arrayLastTaken > 0 && !model_list[model_arrayLastTaken].type; model_arrayLastTaken--);
 	return TRUE;
 }
 
-int deleteAllModels(void){
+int model_deleteAll(void){
 	int i, count = 0;
-	for(i = 0; i < modelArrayLastTaken; i++){
-		model_t *m = &modellist[i];
-		count += deleteModel(m->myid);
+	for(i = 0; i < model_arrayLastTaken; i++){
+		model_t *m = &model_list[i];
+		count += model_delete(m->myid);
 	}
 	memset(modelhashtable, 0, MAXHASHBUCKETS *sizeof(hashbucket_t));
 //	model_t none = {"default", findTextureGroupByName("default"), 0, 0};
-	if(modellist) free(modellist);
-	modellist = 0;
-	modelcount = 0;
-	modelArrayFirstOpen = 0;
-	modelArrayLastTaken = -1;
-	modelArraySize = 0;
+	if(model_list) free(model_list);
+	model_list = 0;
+	model_count = 0;
+	model_arrayFirstOpen = 0;
+	model_arrayLastTaken = -1;
+	model_arraySize = 0;
 
 	return count;
 }
 
-model_t * returnModelById(const int id){
+model_t * model_returnById(const int id){
 	int modelindex = (id & 0xFFFF);
-	model_t * mod = &modellist[modelindex];
+	model_t * mod = &model_list[modelindex];
 	if(!mod->type) return FALSE;
 	if(mod->myid == id) return mod;
 	return FALSE;
@@ -1107,7 +1107,7 @@ int loadModelOBJ(model_t * m, char * filename){//todo flags
 	//todo curse more at obj for being stupid
 	return TRUE;
 }
-model_t createAndLoadModel(char * name){
+model_t createAndLoadModel(const char * name){
 	model_t m;
 	m.type = 0; // error
 	m.name = malloc(strlen(name)+1);
@@ -1193,57 +1193,57 @@ model_t createAndLoadTypeModel(char * name, char type){
 
 
 
-int addModelRINT(model_t mod){
-	modelcount++;
-	for(; modelArrayFirstOpen < modelArraySize && modellist[modelArrayFirstOpen].type; modelArrayFirstOpen++);
-	if(modelArrayFirstOpen == modelArraySize){	//resize
-		modelArraySize++;
-		modellist = realloc(modellist, modelArraySize * sizeof(model_t));
+int model_addRINT(model_t mod){
+	model_count++;
+	for(; model_arrayFirstOpen < model_arraySize && model_list[model_arrayFirstOpen].type; model_arrayFirstOpen++);
+	if(model_arrayFirstOpen == model_arraySize){	//resize
+		model_arraySize++;
+		model_list = realloc(model_list, model_arraySize * sizeof(model_t));
 	}
-	modellist[modelArrayFirstOpen] = mod;
-	int returnid = (modelcount << 16) | modelArrayFirstOpen;
-	modellist[modelArrayFirstOpen].myid = returnid;
+	model_list[model_arrayFirstOpen] = mod;
+	int returnid = (model_count << 16) | model_arrayFirstOpen;
+	model_list[model_arrayFirstOpen].myid = returnid;
 
-	addToHashTable(modellist[modelArrayFirstOpen].name, returnid, modelhashtable);
-	if(modelArrayLastTaken < modelArrayFirstOpen) modelArrayLastTaken = modelArrayFirstOpen; //todo redo
+	addToHashTable(model_list[model_arrayFirstOpen].name, returnid, modelhashtable);
+	if(model_arrayLastTaken < model_arrayFirstOpen) model_arrayLastTaken = model_arrayFirstOpen; //todo redo
 	return returnid;
 }
-model_t * addModelRPOINT(model_t mod){
-	modelcount++;
-	for(; modelArrayFirstOpen < modelArraySize && modellist[modelArrayFirstOpen].type; modelArrayFirstOpen++);
-	if(modelArrayFirstOpen == modelArraySize){	//resize
-		modelArraySize++;
-		modellist = realloc(modellist, modelArraySize * sizeof(model_t));
+model_t * model_addRPOINT(model_t mod){
+	model_count++;
+	for(; model_arrayFirstOpen < model_arraySize && model_list[model_arrayFirstOpen].type; model_arrayFirstOpen++);
+	if(model_arrayFirstOpen == model_arraySize){	//resize
+		model_arraySize++;
+		model_list = realloc(model_list, model_arraySize * sizeof(model_t));
 	}
-	modellist[modelArrayFirstOpen] = mod;
-	int returnid = (modelcount << 16) | modelArrayFirstOpen;
-	modellist[modelArrayFirstOpen].myid = returnid;
+	model_list[model_arrayFirstOpen] = mod;
+	int returnid = (model_count << 16) | model_arrayFirstOpen;
+	model_list[model_arrayFirstOpen].myid = returnid;
 
-	addToHashTable(modellist[modelArrayFirstOpen].name, returnid, modelhashtable);
+	addToHashTable(model_list[model_arrayFirstOpen].name, returnid, modelhashtable);
 	//todo maybe have model have a hash variable, so i dont have to calculate it again if i want to delete... maybe
-	if(modelArrayLastTaken < modelArrayFirstOpen) modelArrayLastTaken = modelArrayFirstOpen;
-//	printf("modelarraysize = %i\n", modelArraySize);
-//	printf("modelcount = %i\n", modelcount);
+	if(model_arrayLastTaken < model_arrayFirstOpen) model_arrayLastTaken = model_arrayFirstOpen;
+//	printf("model_arraySize = %i\n", model_arraySize);
+//	printf("model_count = %i\n", model_count);
 
-	return &modellist[modelArrayFirstOpen];
+	return &model_list[model_arrayFirstOpen];
 
 }
-void pruneModelList(void){
-	if(modelArraySize == modelArrayLastTaken+1) return;
-	modelArraySize = modelArrayLastTaken+1;
-	modellist = realloc(modellist, modelArraySize * sizeof(model_t));
+void model_pruneList(void){
+	if(model_arraySize == model_arrayLastTaken+1) return;
+	model_arraySize = model_arrayLastTaken+1;
+	model_list = realloc(model_list, model_arraySize * sizeof(model_t));
 }
 
-int createAndAddModelRINT(char * name){
-	int m = findModelByNameRINT(name);
+int model_createAndAddRINT(const char * name){
+	int m = model_findByNameRINT(name);
 	if(m) return m;
-	return addModelRINT(createAndLoadModel(name));
-//	return &modellist[addModelToList(createAndLoadModel(name))];
+	return model_addRINT(createAndLoadModel(name));
+//	return &model_list[addModelToList(createAndLoadModel(name))];
 }
-model_t * createAndAddModelRPOINT(char * name){
-	model_t * m = findModelByNameRPOINT(name);
+model_t * model_createAndAddRPOINT(const char * name){
+	model_t * m = model_findByNameRPOINT(name);
 	if(m) return m;
-	return addModelRPOINT(createAndLoadModel(name));
-//	return &modellist[addModelToList(createAndLoadModel(name))];
+	return model_addRPOINT(createAndLoadModel(name));
+//	return &model_list[addModelToList(createAndLoadModel(name))];
 }
 

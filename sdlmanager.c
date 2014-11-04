@@ -6,7 +6,7 @@
 
 
 //temporary
-extern int reloadAllShaderPrograms(void);
+extern int shader_reloadAllPrograms(void);
 
 //local vars
 SDL_Surface *surface;
@@ -117,7 +117,7 @@ int sdlCheckEvent(void){
 						console_displayneedsupdate = 1;
 		                	break;
 					case SDLK_s:
-						reloadAllShaderPrograms();
+						shader_reloadAllPrograms();
 					break;
 					default:
 					break;

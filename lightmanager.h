@@ -82,16 +82,16 @@ int maxVisLights;
 int maxShadowLights;
 
 //returns first light it finds with name
-light_t * findLightByNameRPOINT(char * nam);
-int findLightByNameRINT(char * name);
+light_t * findLightByNameRPOINT(const char * nam);
+int findLightByNameRINT(const char * name);
 //returns a list of all entities with name
-lightlistpoint_t findLightsByNameRPOINT(char * nam);
-lightlistint_t findLightsByNameRINT(char * name);
+lightlistpoint_t findLightsByNameRPOINT(const char * nam);
+lightlistint_t findLightsByNameRINT(const char * name);
 //returns pointer by light id
 light_t * returnLightById(const int id);
 //creates and adds light to listwith name
-light_t * addLightRPOINT(char * name);
-int addLightRINT(char * name);
+light_t * light_addRPOINT(const char * name);
+int light_addRINT(const char * name);
 //deletes light, only id is accepted
 int deleteLight(const int id);
 void pruneLightList(void);
@@ -99,5 +99,5 @@ void pruneLightList(void);
 
 int lightLoop(void);
 
-lightrenderout_t readyLightsForRender(viewport_t *v, unsigned int max, unsigned int maxshadowed);
+lightrenderout_t readyLightsForRender(viewport_t *v, const unsigned int max, const unsigned int maxshadowed);
 #endif

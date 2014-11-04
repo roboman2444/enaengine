@@ -47,44 +47,44 @@ typedef struct shaderprogram_s
 //shaderpermutation_t * shaderCurrentBound;
 
 int shader_ok;
-int programnumber;
+//int shader_programnumber;
 
-shaderprogram_t * shaderlist;
-int shadercount;
-int shaderArraySize;
-int shaderArrayLastTaken;
+shaderprogram_t * shader_list;
+int shader_count;
+int shader_arraySize;
+int shader_arrayLastTaken;
 
 int shader_init(void);
 
-shaderprogram_t * findShaderByNameRPOINT(char * name);
-int findShaderByNameRINT(char * name);
+shaderprogram_t * shader_findByNameRPOINT(const char * name);
+int shader_findByNameRINT(const char * name);
 
-shaderprogram_t * returnShaderById(const int id);
+shaderprogram_t * shader_returnById(const int id);
 
-shaderprogram_t * addShaderRPOINT(shaderprogram_t shader);
-int addShaderRINT(shaderprogram_t shader);
+shaderprogram_t * shader_addRPOINT(shaderprogram_t shader);
+int shader_addRINT(shaderprogram_t shader);
 
-int deleteShaderPermutation(shaderprogram_t * shader, const unsigned int permutation);
-int deleteShaderProgram(const int id);
-int deleteAllShaderPrograms(void);
-
-
-int reloadShaderProgram(const int id);
-int reloadAllShaderPrograms(void);
-
-shaderprogram_t * createAndAddShaderRPOINT(char * name);
-int createAndAddShaderRINT(char * name);
-
-void pruneShaderList(void);
+int shader_deletePermutation(shaderprogram_t * shader, const unsigned int permutation);
+int shader_deleteProgram(const int id);
+int shader_deleteAllPrograms(void);
 
 
+int shader_reloadProgram(const int id);
+int shader_reloadAllPrograms(void);
 
-int printProgramLogStatus(const int id);
-int getProgramLogStatus(const int id, char ** output);
-shaderpermutation_t * findShaderPermutation(shaderprogram_t * shader, unsigned int permutation);
-shaderpermutation_t * addPermutationToShader(shaderprogram_t * shader, unsigned int permutation);
+shaderprogram_t * shader_createAndAddRPOINT(const char * name);
+int shader_createAndAddRINT(const char * name);
+
+void shader_pruneList(void);
+
+
+
+int shader_printProgramLogStatus(const int id);
+int shader_getProgramLogStatus(const int id, char ** output);
+shaderpermutation_t * shader_findPermutation(shaderprogram_t * shader, unsigned int permutation);
+shaderpermutation_t * shader_addPermutationToProgram(shaderprogram_t * shader, unsigned int permutation);
 
 
 //int shaderUseProgram(const GLuint program);
-char bindShaderPerm(shaderpermutation_t * perm);
+char shader_bindPerm(shaderpermutation_t * perm);
 #endif

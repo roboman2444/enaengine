@@ -113,7 +113,7 @@ typedef struct renderTileCallbackData_s {
 void drawTileCallback(renderlistitem_t *ilist, unsigned int count){
 	renderTileCallbackData_t *d = ilist->data;
 	shaderpermutation_t * perm = d->perm;
-	if(bindShaderPerm(perm) == 2){
+	if(shader_bindPerm(perm) == 2){
 	//TODODODODODO
 		viewport_t *v = d->v;
 		//also have to set some basic uniforms?
@@ -134,7 +134,7 @@ void drawTileCallback(renderlistitem_t *ilist, unsigned int count){
 		if(numsamples) glUniform1i(perm->uniint0, numsamples);
 	}
 
-	model_t *m = returnModelById(d->modelid);
+	model_t *m = model_returnById(d->modelid);
 	vbo_t *v = returnVBOById(m->vbo);
 
 //	states_bindVertexArray(v->vaoid);

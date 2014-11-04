@@ -215,16 +215,16 @@ int glInit(void){
 	screenWidth = 800;
 	screenHeight = 600;
 
-	lightshaderid = createAndAddShaderRINT("deferredlight");
+	lightshaderid = shader_createAndAddRINT("deferredlight");
 	glGenBuffers(1, &instancevbo);
 	glGenBuffers(1, &instancevbo2);
 
 	//temporary
 	vbo_t * tvbo = createAndAddVBORPOINT("text", 2);
 	textvbo = tvbo->myid;
-	textshaderid = createAndAddShaderRINT("text");
-	cubeModel = findModelByNameRINT("cube");
-	fsquadmodel = findModelByNameRINT("fsquad");
+	textshaderid = shader_createAndAddRINT("text");
+	cubeModel = model_findByNameRINT("cube");
+	fsquadmodel = model_findByNameRINT("fsquad");
 
 	readyRenderQueueBuffers();
 
@@ -260,7 +260,7 @@ void drawModelSetMax(void){
 void drawModelCallback(renderlistitem_t * ilist, unsigned int count){
 
 	renderModelCallbackData_t *d = ilist->data;
-	model_t *m = returnModelById(d->modelid);
+	model_t *m = model_returnById(d->modelid);
 	vbo_t *v = returnVBOById(m->vbo);
 	unsigned int mysize = (count * sizeof(modelUBOStruct_t));
 	glstate_t s = {STATESENABLEDEPTH|STATESENABLECULLFACE, GL_ONE, GL_ONE, GL_LESS, GL_BACK, GL_TRUE, GL_LESS, 0.0, v->vaoid, renderqueueuboid, GL_UNIFORM_BUFFER, 0, d->ubodataoffset, mysize, d->shaderprogram};
@@ -348,9 +348,9 @@ void addObjectToRenderqueue(const worldobject_t *o, renderqueue_t * q, const vie
 	renderModelCallbackData_t d;
 	d.shaderperm = shaderperm;
 	d.shaderid = shaderid;
-	shaderprogram_t *s = returnShaderById(shaderid);
+	shaderprogram_t *s = shader_returnById(shaderid);
 //	shaderpermutation_t * sp = findShaderPermutation(s, d->shaderperm);
-	shaderpermutation_t * sp = addPermutationToShader(s, shaderperm);
+	shaderpermutation_t * sp = shader_addPermutationToProgram(s, shaderperm);
 	d.shaderprogram = sp->id;
 
 	d.modelid = modelid;
@@ -505,10 +505,10 @@ void addEntityToRenderqueue(const entity_t *e, renderqueue_t * q, const viewport
 	d.modelid = modelid;
 	d.texturegroupid = texturegroupid;
 	d.ubodataoffset = 0;
-	shaderprogram_t *s = returnShaderById(shaderid);
+	shaderprogram_t *s = shader_returnById(shaderid);
 //	shaderpermutation_t * sp = findShaderPermutation(s, d->shaderperm);
 //	printf("%i, %i, %i\n", shaderperm, shaderid, s);
-	shaderpermutation_t * sp = addPermutationToShader(s, shaderperm);
+	shaderpermutation_t * sp = shader_addPermutationToProgram(s, shaderperm);
 	d.shaderprogram = sp->id;
 
 	Matrix4x4_Concat(&d.mvp, &v->viewproj, &e->mat);
@@ -624,7 +624,7 @@ int loadEntitiesIntoQueueDeferred(renderqueue_t * queue, viewport_t * v){
 }
 //deprecated
 void glDrawFSQuad(void){
-	model_t * m = returnModelById(fsquadmodel);
+	model_t * m = model_returnById(fsquadmodel);
 	vbo_t * tvbo = returnVBOById(m->vbo);
 	states_bindVertexArray(tvbo->vaoid);
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
@@ -669,7 +669,7 @@ void drawPLightOCallback(renderlistitem_t * ilist, unsigned int count){
 
 	renderPLightCallbackData_t *d = ilist->data;
 	shaderpermutation_t * perm = d->perm;
-	if(bindShaderPerm(perm) == 2){
+	if(shader_bindPerm(perm) == 2){
 	//TODODODODODO
 		viewport_t *v = d->v;
 		//also have to set some basic uniforms?
@@ -689,7 +689,7 @@ void drawPLightOCallback(renderlistitem_t * ilist, unsigned int count){
 		if(numsamples) glUniform1i(perm->uniint0, numsamples);
 	}
 
-	model_t *m = returnModelById(d->modelid);
+	model_t *m = model_returnById(d->modelid);
 	vbo_t *v = returnVBOById(m->vbo);
 
 //	states_bindVertexArray(v->vaoid);
@@ -732,7 +732,7 @@ void setupPLightOCallback(renderlistitem_t * ilist, unsigned int count){
 void drawPLightICallback(renderlistitem_t * ilist, unsigned int count){
 	renderPLightCallbackData_t *d = ilist->data;
 	shaderpermutation_t * perm = d->perm;
-	if(bindShaderPerm(perm) == 2){
+	if(shader_bindPerm(perm) == 2){
 	//TODODODODODO
 		viewport_t *v = d->v;
 		//also have to set some basic uniforms?
@@ -752,7 +752,7 @@ void drawPLightICallback(renderlistitem_t * ilist, unsigned int count){
 		if(numsamples) glUniform1i(perm->uniint0, numsamples);
 	}
 
-	model_t *m = returnModelById(d->modelid);
+	model_t *m = model_returnById(d->modelid);
 	vbo_t *v = returnVBOById(m->vbo);
 
 //	states_bindVertexArray(v->vaoid);
@@ -795,7 +795,7 @@ void setupPLightICallback(renderlistitem_t * ilist, unsigned int count){
 }
 
 int glAddLightsToQueue(viewport_t *v, renderqueue_t * q, unsigned int numsamples){
-	shaderprogram_t * shader = returnShaderById(lightshaderid);
+	shaderprogram_t * shader = shader_returnById(lightshaderid);
 	unsigned int permutation = 0;
 	shaderpermutation_t * perm;
 
@@ -811,7 +811,7 @@ int glAddLightsToQueue(viewport_t *v, renderqueue_t * q, unsigned int numsamples
 //		resolveMultisampleFramebufferSpecify(df, 4);
 		permutation = 2;
 	}
-	perm = addPermutationToShader(shader, permutation);
+	perm = shader_addPermutationToProgram(shader, permutation);
 
 	lightrenderout_t out = readyLightsForRender(v, 50, 0);
 	if(!out.lin.count && !out.lout.count) return FALSE;
@@ -930,18 +930,18 @@ int glDrawLights(viewport_t *v){
 	framebuffer_t *of = returnFramebufferById(v->outfbid);
 //	vbo_t * lvbo = returnVBOById(lightvbo); //todo
 	if(!df || !of) return FALSE;
-	shaderprogram_t * shader = returnShaderById(lightshaderid);
+	shaderprogram_t * shader = shader_returnById(lightshaderid);
 	shaderpermutation_t * perm;
 	unsigned int numsamples = df->rbflags & FRAMEBUFFERRBFLAGSMSCOUNT;
 	if(numsamples){
 		numsamples = 1<<numsamples;
 		resolveMultisampleFramebuffer(df); //only resolves if multisampled
 //		resolveMultisampleFramebufferSpecify(df, 4);
-		perm = addPermutationToShader(shader, 2);
+		perm = shader_addPermutationToProgram(shader, 2);
 	} else {
-		perm = addPermutationToShader(shader, 0);
+		perm = shader_addPermutationToProgram(shader, 0);
 	}
-	if(!bindShaderPerm(perm)) return FALSE;
+	if(!shader_bindPerm(perm)) return FALSE;
 
 
 	//glBindFramebuffer(GL_FRAMEBUFFER, of->id);
@@ -969,7 +969,7 @@ int glDrawLights(viewport_t *v){
 
 	states_enable(GL_BLEND);
 	states_blendFunc(GL_ONE,GL_ONE);
-	model_t * cuber = returnModelById(cubeModel);
+	model_t * cuber = model_returnById(cubeModel);
 	vbo_t * cvbo = returnVBOById(cuber->vbo);
 	if(!cvbo) return FALSE;
 
@@ -1134,9 +1134,9 @@ int glDrawViewport(viewport_t *v){
 
 
 	//todo actually redo this sorta stuffs
-	shaderprogram_t * shader = returnShaderById(textshaderid);
-	shaderpermutation_t * perm = addPermutationToShader(shader, 0);
-	model_t * m = returnModelById(fsquadmodel);
+	shaderprogram_t * shader = shader_returnById(textshaderid);
+	shaderpermutation_t * perm = shader_addPermutationToProgram(shader, 0);
+	model_t * m = model_returnById(fsquadmodel);
 	vbo_t * tvbo = returnVBOById(m->vbo);
 
 	glstate_t s = {STATESENABLEBLEND, GL_ONE, GL_ONE_MINUS_SRC_ALPHA, GL_LESS, GL_BACK, GL_FALSE, GL_LESS, 0.0, tvbo->vaoid, renderqueueuboid, GL_UNIFORM_BUFFER, 0, 0, 0, perm->id};
@@ -1208,8 +1208,8 @@ int updateConsoleVBO(unsigned int offset){
 int glDrawConsole(void){
 	if(console_displayneedsupdate)updateConsoleVBO(console_offset);
 
-	shaderprogram_t * shader = returnShaderById(textshaderid);
-	shaderpermutation_t * perm = addPermutationToShader(shader, 0);
+	shaderprogram_t * shader = shader_returnById(textshaderid);
+	shaderpermutation_t * perm = shader_addPermutationToProgram(shader, 0);
 	glstate_t s = {STATESENABLEBLEND, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_LESS, GL_BACK, GL_FALSE, GL_LESS, 0.0, consoleVBO->vaoid, 0, GL_UNIFORM_BUFFER, 0, 0, 0, perm->id};
 	states_setState(s);
 	states_activeTexture(0);

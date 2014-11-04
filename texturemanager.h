@@ -47,35 +47,35 @@ typedef struct texturegroup_s{
 	int myid;
 }texturegroup_t;
 
-int textureCurrentBound;
+int texture_currentBound;
 
 int texture_ok;
-int texturegroupnumber;
+int texture_groupnumber;
 
-texturegroup_t *texturegrouplist;
-int texturegroupcount;
-int texturegroupArraySize;
-int texturegroupArrayLastTaken;
+texturegroup_t *texture_grouplist;
+int texture_groupcount;
+int texture_groupArraySize;
+int texture_groupArrayLastTaken;
 
-texturegroup_t createTexturegroup(char * name, const int num);
+texturegroup_t createTexturegroup(const char * name, const int num);
 
 texturegroup_t * addTexturegroupRPOINT(texturegroup_t texgroup);
 int addTexturegroupRINT(texturegroup_t texgroup);
 
 int texture_init(void);
 
-texturegroup_t * findTexturegroupByNameRPOINT(char * name);
-int findTexturegroupByNameRINT(char * name);
+texturegroup_t * findTexturegroupByNameRPOINT(const char * name);
+int findTexturegroupByNameRINT(const char * name);
 
 int deleteTexturegroup(const int id);
 
 
-texture_t loadTexture(char *filepath, char type);
-texturegroup_t createAndLoadTexturegroup(char *name);
+texture_t loadTexture(const char *filepath, char type);
+texturegroup_t createAndLoadTexturegroup(const char * name);
 
 
-texturegroup_t * createAndAddTexturegroupRPOINT(char * name);
-int createAndAddTexturegroupRINT(char * name);
+texturegroup_t * texture_createAndAddGroupRPOINT(const char * name);
+int texture_createAndAddGroupRINT(const char * name);
 
 texturegroup_t * returnTexturegroupById(const int id);
 

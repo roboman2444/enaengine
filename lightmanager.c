@@ -72,14 +72,14 @@ int light_init(void){
 	lightlist = 0;
 //	lightlist = malloc(lightcount * sizeof(light_t));
 //	if(!lightlist) memset(lightlist, 0 , lightcount * sizeof(light_t));
-//	addLightRINT("default");
+//	light_addRINT("default");
 	//todo make this useful, gonna need a large list to put the lights in viewport into, then sort front to back and remove back ones
 	maxVisLights = 50;
 	maxShadowLights = 20;
 	light_ok = TRUE;
 	return TRUE; // todo error check
 }
-lightlistpoint_t findLightsByNameRPOINT(char * name){
+lightlistpoint_t findLightsByNameRPOINT(const char * name){
 	lightlistpoint_t ret;
 	int hash = getHash(name);
 	hashbucket_t * hb = &lighthashtable[hash];
@@ -94,7 +94,7 @@ lightlistpoint_t findLightsByNameRPOINT(char * name){
         }
 	return ret;
 }
-lightlistint_t findLightsByNameRINT(char * name){
+lightlistint_t findLightsByNameRINT(const char * name){
 	lightlistint_t ret;
 	int hash = getHash(name);
 	hashbucket_t * hb = &lighthashtable[hash];
@@ -110,10 +110,10 @@ lightlistint_t findLightsByNameRINT(char * name){
 	return ret;
 }
 
-light_t * findLightByNameRPOINT(char * name){ //todo write a function that can find ALL entities with name
+light_t * findLightByNameRPOINT(const char * name){ //todo write a function that can find ALL entities with name
 	return returnLightById(findByNameRINT(name, lighthashtable));
 }
-int findLightByNameRINT(char * name){
+int findLightByNameRINT(const char * name){
 	return findByNameRINT(name, lighthashtable);
 }
 
@@ -141,7 +141,7 @@ light_t * returnLightById(const int id){
 	if(ent->myid == id) return ent;
 	return FALSE;
 }
-light_t createLight(char * name){
+light_t createLight(const char * name){
 	light_t newlight;
 	memset(&newlight, 0, sizeof(light_t));
 	newlight.type = 1;
@@ -155,7 +155,7 @@ light_t createLight(char * name){
 
 
 
-int addLightRINT(char * name){
+int light_addRINT(const char * name){
 	lightcount++;
 	for(; lightArrayFirstOpen < lightArraySize && lightlist[lightArrayFirstOpen].type; lightArrayFirstOpen++);
 	if(lightArrayFirstOpen == lightArraySize){	//resize
@@ -170,7 +170,7 @@ int addLightRINT(char * name){
 	if(lightArrayLastTaken < lightArrayFirstOpen) lightArrayLastTaken = lightArrayFirstOpen; //todo redo
 	return returnid;
 }
-light_t * addLightRPOINT(char * name){
+light_t * light_addRPOINT(const char * name){
 	lightcount++;
 	for(; lightArrayFirstOpen < lightArraySize && lightlist[lightArrayFirstOpen].type; lightArrayFirstOpen++);
 	if(lightArrayFirstOpen == lightArraySize){	//resize
@@ -253,7 +253,7 @@ typedef struct lightbuckethead_s {
 	struct lightbucket_s *tail;
 } lightbuckethead_t;
 
-void lightHashSortPrune(lightlistdist_t * list, vec_t lmaxdist, unsigned int max){
+void lightHashSortPrune(lightlistdist_t * list, const vec_t lmaxdist, const unsigned int max){
 	unsigned int count = list->count;
 	unsigned int bucketcount = (count / 10) +1;
 //	console_printf("bucketcount is %i\n", bucketcount);
@@ -362,7 +362,7 @@ void lightHashSortPrune(lightlistdist_t * list, vec_t lmaxdist, unsigned int max
 //if i do happen to do something that "caches" shadowmaps.
 // maybe have some sort of feature that there is a max updated shadowmaps per render, and a max total shadowed lights per render.
 //that way, shadowmaps can be "streamed in" much like unreal 3's crappy texture streaming
-lightrenderout_t readyLightsForRender(viewport_t *v, unsigned int max, unsigned int maxshadowed){
+lightrenderout_t readyLightsForRender(viewport_t *v, const unsigned int max, const unsigned int maxshadowed){
 
 	vec_t lmaxdist = 0;
 //	vec_t lmaxshadowdist = 0;

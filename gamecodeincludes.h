@@ -1,6 +1,9 @@
 #ifndef GAMECODEINCLUDESHEADER
 #define GAMECODEINCLUDESHEADER
 
+
+#define GAMECODEINCLUDEVERSION 1
+
 	typedef struct ecallheader_s {
 		//console
 		int (*console_printf)(const char *fmt, ...);
@@ -17,7 +20,7 @@
 		cvar_t * (*cvar_findByNameRPOINT)(char * name);
 
 		//entity
-		entity_t *(*entity_findByNameRPOINT)(const char *name);
+		entity_t * (*entity_findByNameRPOINT)(const char *name);
 		entitylistpoint_t (*entity_findAllByNameRPOINT)(const char *name);
 		entitylistint_t (*entity_findAllByNameRINT)(const char *name);
 		entity_t * (* entity_returnById)(const int id);
@@ -30,14 +33,29 @@
 		int (*file_loadString)(const char * filename, char ** output, int * length, const int debugmode);
 		int (*file_loadStringNoLength)(const char * filename, char ** output, const int debugmode);
 
+		//light
+		int (*light_addRINT)(const char * name);
+		light_t * (*light_addRPOINT)(const char * name);
+
+		//shader
+		int (*shader_createAndAddRINT)(const char * name);
+
 		//stringlib
 		unsigned int (*string_toVec)(const char *s, vec_t *c, const unsigned int maxdem);
 
+		//texture
+		int (*texture_createAndAddGroupRINT)(const char * name);
+
+		//model
+		int (*model_createAndAddRINT)(const char * name);
 
 		//todo
 	} ecallheader_t;
 
 	typedef struct gcallheader_s {
+		unsigned int apiver;
+
+		int (*initgame)(void);
 		//todo
 	} gcallheader_t;
 

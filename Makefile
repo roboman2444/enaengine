@@ -1,5 +1,5 @@
 CC = gcc
-LDFLAGS = -lGL -lGLU -lGLEW `sdl-config --libs` -lm -lSDL_ttf
+LDFLAGS = -lGL -lGLU -lGLEW `sdl-config --libs` -lm -lSDL_ttf -ldl
 CFLAGS = -Wall -O3 `sdl-config --cflags` -fstrict-aliasing -fprofile-use
 OBJECTS = enaengine.o matrixlib.o shadermanager.o filemanager.o glmanager.o sdlmanager.o particlemanager.o framebuffermanager.o texturemanager.o modelmanager.o vbomanager.o console.o viewportmanager.o entitymanager.o gamecodemanager.o hashtables.o renderqueue.o worldmanager.o mathlib.o lightmanager.o textmanager.o ubomanager.o glstates.o animmanager.o cvarmanager.o stringlib.o lighttile.o
 
@@ -8,13 +8,17 @@ OBJECTS = enaengine.o matrixlib.o shadermanager.o filemanager.o glmanager.o sdlm
 
 enaengine: $(OBJECTS)
 	$(CC) $(CFLAGS) $(OBJECTS) -o $@ $(LDFLAGS)
+	cd testgcdll && $(MAKE)
+
 debug:	CFLAGS= -Wall -O0 -g `sdl-config --cflags` -fstrict-aliasing
 debug: 	$(OBJECTS)
 	$(CC) $(CFLAGS) $(OBJECTS) -o enaengine-$@ $(LDFLAGS)
+	cd testgcdll && $(MAKE) debug
 
 valgrind:	CFLAGS= -Wall -O0 -g `sdl-config --cflags` -fstrict-aliasing -D DEBUGTIMESTEP
 valgrind: 	$(OBJECTS)
 	$(CC) $(CFLAGS) $(OBJECTS) -o enaengine-$@ $(LDFLAGS)
+	cd testgcdll && $(MAKE) valgrind
 clean:
 	@echo cleaning oop
 	@rm -f $(OBJECTS)

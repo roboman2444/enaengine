@@ -14,13 +14,13 @@
 
 #include "glstates.h" //for useProgram
 
-int shadercount = 0;
-int shaderArrayFirstOpen = 0;
-int shaderArrayLastTaken = -1;
-int shaderArraySize = 0;
+int shader_count = 0;
+int shader_arrayFirstOpen = 0;
+int shader_arrayLastTaken = -1;
+int shader_arraySize = 0;
 int shader_ok = 0;
 
-shaderprogram_t *shaderlist;
+shaderprogram_t *shader_list;
 
 shaderpermutation_t * shaderCurrentBound = 0;
 //GLuint currentprogram = 0;
@@ -31,23 +31,23 @@ int shader_init(void){
 	memset(shaderhashtable, 0, MAXHASHBUCKETS * sizeof(hashbucket_t));
 
 //	shaderprogram_t none = {"default", 0, 0, 0};
-	if(shaderlist) free(shaderlist);
-	shaderlist = 0;
-//	shaderlist = malloc(0 * sizeof(shaderprogram_t));
+	if(shader_list) free(shader_list);
+	shader_list = 0;
+//	shader_list = malloc(0 * sizeof(shaderprogram_t));
 //	defaultShader = addProgramToList(none);
 	shaderCurrentBound = 0;
 	shader_ok = TRUE;
 	return TRUE; // todo error check
 }
 
-shaderprogram_t * findShaderByNameRPOINT(char * name){
-	return returnShaderById(findByNameRINT(name, shaderhashtable));
+shaderprogram_t * shader_findByNameRPOINT(const char * name){
+	return shader_returnById(findByNameRINT(name, shaderhashtable));
 }
-int findShaderByNameRINT(char * name){
+int shader_findByNameRINT(const char * name){
 	return findByNameRINT(name, shaderhashtable);
 }
 
-int deleteShaderPermutation(shaderprogram_t * s, unsigned int permutation){
+int shader_deletePermutation(shaderprogram_t * s, unsigned int permutation){
 	if(!s) return FALSE;
 	unsigned int hashindex = (permutation * 0x1021) & (PERMHASHSIZE - 1);
 	shaderpermutation_t *p, *j = 0;
@@ -71,9 +71,9 @@ int deleteShaderPermutation(shaderprogram_t * s, unsigned int permutation){
 }
 
 
-int deleteShaderProgram(const int id){
+int shader_deleteProgram(const int id){
 	int shaderindex = (id & 0xFFFF);
-	shaderprogram_t * shader = &shaderlist[shaderindex];
+	shaderprogram_t * shader = &shader_list[shaderindex];
 	if(shader->myid != id) return FALSE;
 	if(!shader->name) return FALSE;
 	deleteFromHashTable(shader->name, id, shaderhashtable);
@@ -110,66 +110,66 @@ int deleteShaderProgram(const int id){
 
 
 	memset(shader, 0, sizeof(shaderprogram_t));
-	if(shaderindex < shaderArrayFirstOpen) shaderArrayFirstOpen = shaderindex;
-	for(; shaderArrayLastTaken > 0 && !shaderlist[shaderArrayLastTaken].type; shaderArrayLastTaken--);
+	if(shaderindex < shader_arrayFirstOpen) shader_arrayFirstOpen = shaderindex;
+	for(; shader_arrayLastTaken > 0 && !shader_list[shader_arrayLastTaken].type; shader_arrayLastTaken--);
 	return TRUE;
 }
 
 int deleteAllShaderPrograms(void){
 	int count = 0;
 	int i;
-	for(i = 0; i <= shaderArrayLastTaken; i++){
-		if(shaderlist[i].type){
-			deleteShaderProgram(shaderlist[i].myid);
+	for(i = 0; i <= shader_arrayLastTaken; i++){
+		if(shader_list[i].type){
+			shader_deleteProgram(shader_list[i].myid);
 			count++;
 		}
 	}
 	return count;
 }
 
-shaderprogram_t * returnShaderById(const int id){
+shaderprogram_t * shader_returnById(const int id){
 	int shaderindex = (id & 0xFFFF);
-	shaderprogram_t * shader = &shaderlist[shaderindex];
+	shaderprogram_t * shader = &shader_list[shaderindex];
 	if(!shader->type) return FALSE;
 	if(shader->myid == id) return shader;
 	return FALSE;
 }
 
-int addShaderRINT(shaderprogram_t shader){
-	shadercount++;
-	for(; shaderArrayFirstOpen < shaderArraySize && shaderlist[shaderArrayFirstOpen].type; shaderArrayFirstOpen++);
-	if(shaderArrayFirstOpen == shaderArraySize){	//resize
-		shaderArraySize++;
-		shaderlist = realloc(shaderlist, shaderArraySize * sizeof(shaderprogram_t));
+int shader_addRINT(shaderprogram_t shader){
+	shader_count++;
+	for(; shader_arrayFirstOpen < shader_arraySize && shader_list[shader_arrayFirstOpen].type; shader_arrayFirstOpen++);
+	if(shader_arrayFirstOpen == shader_arraySize){	//resize
+		shader_arraySize++;
+		shader_list = realloc(shader_list, shader_arraySize * sizeof(shaderprogram_t));
 	}
-	shaderlist[shaderArrayFirstOpen] = shader;
-	int returnid = (shadercount << 16) | shaderArrayFirstOpen;
-	shaderlist[shaderArrayFirstOpen].myid = returnid;
+	shader_list[shader_arrayFirstOpen] = shader;
+	int returnid = (shader_count << 16) | shader_arrayFirstOpen;
+	shader_list[shader_arrayFirstOpen].myid = returnid;
 
-	addToHashTable(shaderlist[shaderArrayFirstOpen].name, returnid, shaderhashtable);
-	if(shaderArrayLastTaken < shaderArrayFirstOpen) shaderArrayLastTaken = shaderArrayFirstOpen; //todo redo
+	addToHashTable(shader_list[shader_arrayFirstOpen].name, returnid, shaderhashtable);
+	if(shader_arrayLastTaken < shader_arrayFirstOpen) shader_arrayLastTaken = shader_arrayFirstOpen; //todo redo
 	return returnid;
 }
-shaderprogram_t * addShaderRPOINT(shaderprogram_t shader){
-	shadercount++;
-	for(; shaderArrayFirstOpen < shaderArraySize && shaderlist[shaderArrayFirstOpen].type; shaderArrayFirstOpen++);
-	if(shaderArrayFirstOpen == shaderArraySize){	//resize
-		shaderArraySize++;
-		shaderlist = realloc(shaderlist, shaderArraySize * sizeof(shaderprogram_t));
+shaderprogram_t * shader_addRPOINT(shaderprogram_t shader){
+	shader_count++;
+	for(; shader_arrayFirstOpen < shader_arraySize && shader_list[shader_arrayFirstOpen].type; shader_arrayFirstOpen++);
+	if(shader_arrayFirstOpen == shader_arraySize){	//resize
+		shader_arraySize++;
+		shader_list = realloc(shader_list, shader_arraySize * sizeof(shaderprogram_t));
 	}
-	shaderlist[shaderArrayFirstOpen] = shader;
-	int returnid = (shadercount << 16) | shaderArrayFirstOpen;
-	shaderlist[shaderArrayFirstOpen].myid = returnid;
+	shader_list[shader_arrayFirstOpen] = shader;
+	int returnid = (shader_count << 16) | shader_arrayFirstOpen;
+	shader_list[shader_arrayFirstOpen].myid = returnid;
 
-	addToHashTable(shaderlist[shaderArrayFirstOpen].name, returnid, shaderhashtable);
-	if(shaderArrayLastTaken < shaderArrayFirstOpen) shaderArrayLastTaken = shaderArrayFirstOpen;
-	return &shaderlist[shaderArrayFirstOpen];
+	addToHashTable(shader_list[shader_arrayFirstOpen].name, returnid, shaderhashtable);
+	if(shader_arrayLastTaken < shader_arrayFirstOpen) shader_arrayLastTaken = shader_arrayFirstOpen;
+	return &shader_list[shader_arrayFirstOpen];
 }
 
-void pruneShaderList(void){
-	if(shaderArraySize == shaderArrayLastTaken+1) return;
-	shaderArraySize = shaderArrayLastTaken+1;
-	shaderlist = realloc(shaderlist, shaderArraySize * sizeof(shaderprogram_t));
+void shader_pruneList(void){
+	if(shader_arraySize == shader_arrayLastTaken+1) return;
+	shader_arraySize = shader_arrayLastTaken+1;
+	shader_list = realloc(shader_list, shader_arraySize * sizeof(shaderprogram_t));
 }
 
 
@@ -296,7 +296,7 @@ shaderpermutation_t createPermutation(shaderprogram_t * shader, unsigned int per
 			fail = 1;
 	}
 
-	if(printProgramLogStatus(programid) || fail){
+	if(shader_printProgramLogStatus(programid) || fail){
 		fail = TRUE;
 //		if(shader->type & 1){
 			char * error = malloc((100*linebounce) + 100);
@@ -473,7 +473,7 @@ int readyShader(shaderprogram_t * shader){
 }
 
 
-shaderprogram_t createAndReadyShader(char * name){
+shaderprogram_t createAndReadyShader(const char * name){
 	shaderprogram_t shader;
 	memset(&shader, 0, sizeof(shaderprogram_t));
 	//todo debugmodes
@@ -485,7 +485,7 @@ shaderprogram_t createAndReadyShader(char * name){
 	return shader;
 }
 
-int printProgramLogStatus(const int id){
+int shader_printProgramLogStatus(const int id){
 	GLint blen = 0;
 	glGetProgramiv(id, GL_INFO_LOG_LENGTH, &blen);
 	if(blen > 1){
@@ -498,7 +498,7 @@ int printProgramLogStatus(const int id){
 	return FALSE;
 }
 //UNTESTED
-int getProgramLogStatus(const int id, char ** output){
+int shader_getProgramLogStatus(const int id, char ** output){
 	GLint length = 0;
 	glGetProgramiv(id, GL_INFO_LOG_LENGTH, &length);
 	if(length > 1){
@@ -508,17 +508,17 @@ int getProgramLogStatus(const int id, char ** output){
 	return length;
 }
 
-int createAndAddShaderRINT(char * name){
-	int s = findShaderByNameRINT(name);
+int shader_createAndAddRINT(const char * name){
+	int s = shader_findByNameRINT(name);
 	if(s) return s;
-	return addShaderRINT(createAndReadyShader(name));
+	return shader_addRINT(createAndReadyShader(name));
 }
-shaderprogram_t * createAndAddShaderRPOINT(char * name){
-	shaderprogram_t * s = findShaderByNameRPOINT(name);
+shaderprogram_t * shader_createAndAddRPOINT(const char * name){
+	shaderprogram_t * s = shader_findByNameRPOINT(name);
 	if(s) return s;
-	return addShaderRPOINT(createAndReadyShader(name));
+	return shader_addRPOINT(createAndReadyShader(name));
 }
-shaderpermutation_t * addPermutationToShader(shaderprogram_t * shader, unsigned int permutation){
+shaderpermutation_t * shader_addPermutationToProgram(shaderprogram_t * shader, unsigned int permutation){
 	if(!shader) return FALSE;
 	unsigned int hashindex = (permutation * 0x1021) & (PERMHASHSIZE - 1);
 	if(!shader->permhashtable[hashindex].compiled){
@@ -539,7 +539,7 @@ shaderpermutation_t * addPermutationToShader(shaderprogram_t * shader, unsigned 
 	return newp;
 }
 
-shaderpermutation_t * findShaderPermutation(shaderprogram_t * shader, unsigned int permutation){
+shaderpermutation_t * shader_findPermutation(shaderprogram_t * shader, unsigned int permutation){
 	if(!shader) return FALSE;
 	unsigned int hashindex = (permutation * 0x1021) & (PERMHASHSIZE - 1);
 	shaderpermutation_t *p;
@@ -566,7 +566,7 @@ int shaderUseProgram(const GLuint program){
 }
 */
 
-char bindShaderPerm(shaderpermutation_t * perm){
+char shader_bindPerm(shaderpermutation_t * perm){
 	if(!perm) return FALSE;
 	if(perm->compiled < 2) return FALSE;
 	GLuint program = perm->id;
@@ -580,9 +580,9 @@ char bindShaderPerm(shaderpermutation_t * perm){
 	return states_useProgram(program);
 }
 
-int reloadShaderProgram(const int id){
+int shader_reloadProgram(const int id){
 	int shaderindex = (id & 0xFFFF);
-	shaderprogram_t * shader = &shaderlist[shaderindex];
+	shaderprogram_t * shader = &shader_list[shaderindex];
 	if(shader->myid != id) return FALSE;
 	if(!shader->name) return FALSE;
 
@@ -626,12 +626,12 @@ int reloadShaderProgram(const int id){
 	return TRUE;
 
 }
-int reloadAllShaderPrograms(void){
+int shader_reloadAllPrograms(void){
 	int count = 0;
 	int i;
-	for(i = 0; i <= shaderArrayLastTaken; i++){
-		if(shaderlist[i].type){
-			reloadShaderProgram(shaderlist[i].myid);
+	for(i = 0; i <= shader_arrayLastTaken; i++){
+		if(shader_list[i].type){
+			shader_reloadProgram(shader_list[i].myid);
 			count++;
 		}
 	}

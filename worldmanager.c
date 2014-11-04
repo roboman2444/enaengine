@@ -178,7 +178,7 @@ int saveWorld(char * filename){
 	char *textureliststring = 0;
 
 	for(i = 0; i < header.modellistcount; i++){
-		model_t * m = returnModelById(modellist[i]);
+		model_t * m = model_returnById(modellist[i]);
 		if(!m) continue;
 		int jlen, tlen = header.modellistlength;
 		header.modellistlength += strlen(m->name)+1;
@@ -213,7 +213,7 @@ int saveWorld(char * filename){
 
 	}
 	for(i = 0; i < header.shaderlistcount; i++){
-		shaderprogram_t * s = returnShaderById(shaderlist[i]);
+		shaderprogram_t * s = shader_returnById(shaderlist[i]);
 		if(!s) continue;
 		int jlen, tlen = header.shaderlistlength;
 		header.shaderlistlength += strlen(s->name)+1;
@@ -250,7 +250,7 @@ int saveWorld(char * filename){
 	return header.filesize;
 }
 int recalcObjBBox(worldobject_t *o){
-	model_t * m = returnModelById(o->modelid);
+	model_t * m = model_returnById(o->modelid);
 	if(!m) return FALSE;
 	int i;
 	o->bbox[0] = -3.4028e+38;
@@ -356,11 +356,11 @@ int loadWorld(char * filename){
 		if(shaderindice > header.shaderlistcount)continue;
 
 		if(!modelindice) obj->modelid = 0;
-		else obj->modelid = createAndAddModelRINT(modelnamelist[modelindice-1]);
+		else obj->modelid = model_createAndAddRINT(modelnamelist[modelindice-1]);
 		if(!textureindice) obj->texturegroupid = 0;
-		else obj->texturegroupid = createAndAddTexturegroupRINT(texturenamelist[textureindice-1]);
+		else obj->texturegroupid = texture_createAndAddGroupRINT(texturenamelist[textureindice-1]);
 		if(!shaderindice) obj->shaderid = 0;
-		else obj->shaderid = createAndAddShaderRINT(shadernamelist[shaderindice-1]);
+		else obj->shaderid = shader_createAndAddRINT(shadernamelist[shaderindice-1]);
 		obj->shaderperm = objbuf[i].shaderperm;
 		recalcObjBBox(obj);
 		obj->flags = objbuf[i].flags;
@@ -589,7 +589,7 @@ int walkAndAddObject(worldobject_t * o, worldleaf_t * l){
 	return FALSE; // should never hit
 }
 int addObjectToWorld(worldobject_t * o){
-	model_t * m = returnModelById(o->modelid);
+	model_t * m = model_returnById(o->modelid);
 	if(!m) return FALSE;
 	if(!m->vbo) return FALSE;
 //	int vertcount = m->numverts;
@@ -601,7 +601,7 @@ int addEntityToWorld(int entityid){
 	entity_t *e = entity_returnById(entityid);
 	if(!e) return FALSE;
 
-	model_t *m = returnModelById(e->modelid);
+	model_t *m = model_returnById(e->modelid);
 	if(!m) return FALSE;
 	if(!m->vbo) return FALSE;
 //	if(!m->interleaveddata) return FALSE;
