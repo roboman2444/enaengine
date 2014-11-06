@@ -36,6 +36,8 @@ typedef struct worldFileHeader_s {
 	unsigned int shaderlistlength; // bytes
 	unsigned int shaderlistcount;  // count
 	unsigned int objectlistcount; // count
+//	unsigned int entitylistcount; // count
+//	unsigned int lightlistcount; // count
 }worldFileHeader_t;
 typedef struct worldFileObject_s {
 	matrix4x4_t mat;
@@ -45,6 +47,24 @@ typedef struct worldFileObject_s {
 	int shaderperm;
 	char flags;
 }worldFileObject_t;
+typedef struct worldFileEntity_s {
+//	matrix4x4_t mat;
+//	unsigned int modelindice;
+//	unsigned int textureindice;
+///	unsigned int shaderindice;
+//	int shaderperm;
+//	char flags;
+	//todo
+}worldFileEntity_t;
+typedef struct worldFileLight_s {
+//	matrix4x4_t mat;
+//	unsigned int modelindice;
+//	unsigned int textureindice;
+///	unsigned int shaderindice;
+//	int shaderperm;
+//	char flags;
+	//todo
+}worldFileLight_t;
 
 int saveWorldPopList(int * count, worldobject_t ** list, worldleaf_t * leaf){
 
@@ -423,13 +443,22 @@ int walkAndDeleteObject(worldleaf_t * l, worldobject_t * o){
 		int yspace = FALSE;
 		if(o->pos[0] > l->center[0]) xspace = TRUE;
 		if(o->pos[2] > l->center[1]) yspace = TRUE;
+//		worldleaf_t * children = &l->children[0];
 		worldleaf_t * child = l->children[xspace + 2*yspace];
 		if(!child) return FALSE;
 		int r = walkAndDeleteObject(child, o);
-		if(!child->numobjects){
+		char tflags = l->myincludes;
+		//have to check all 4 chillun here
+		if(l->children[0])tflags |= l->children[0]->includes;
+		if(l->children[1])tflags |= l->children[1]->includes;
+		if(l->children[2])tflags |= l->children[2]->includes;
+		if(l->children[3])tflags |= l->children[3]->includes;
+		l->includes = tflags;
+		if(!child->numobjects){ //todo make sure to only have this if the ents and lights are good
 			int c;
 			for(c = 0; c < 4 && child->children[c]; c++); // make sure all are null
 			if(c == 4) free(child); //easier than doing the normal delete
+			//todo possible segfault cause here
 		}
 		if(r>1){
 			r = 0;
@@ -461,6 +490,7 @@ int walkAndDeleteObject(worldleaf_t * l, worldobject_t * o){
 			if(o->bbox[i] == l->bbox[i]) r |= 2<<i;
 		}
 		l->numobjects--;
+		//todo check include flags here
 		*listobj = l->list[l->numobjects]; // replace it with the one at the end
 		l->list = realloc(l->list, l->numobjects * sizeof(worldobject_t)); //resize array
 		if(r){
@@ -541,23 +571,27 @@ int addObjectToLeaf(worldobject_t * o, worldleaf_t *l){
 	l->numobjects++;
 	l->list = realloc(l->list, l->numobjects * sizeof(worldobject_t));
 	l->list[l->numobjects-1] = *o;
+	l->myincludes = l->myincludes | WORLDTREEOBJECT;
 	worldNumObjects++;
 //	free(o);
 	return TRUE;
 }
 
 int walkAndAddObject(worldobject_t * o, worldleaf_t * l){
+	l->includes = l->includes | WORLDTREEOBJECT;
 	char xspace = 0;
 	char yspace = 0;
 	char nofits = 0;
 	if(l->treedepth >= WORLDTREEDEPTH) nofits = TRUE;
+	if(!nofits){ //possible optimization? might remove
 	//find possible space
-	if(o->bbox[0] > l->center[0]) xspace = TRUE;
-	if(o->bbox[4] > l->center[1]) yspace = TRUE;
+		if(o->bbox[0] > l->center[0]) xspace = TRUE;
+		if(o->bbox[4] > l->center[1]) yspace = TRUE;
 
-	//now check the other bounds, make sure its the same as the origional
-	if((o->bbox[1] > l->center[0]) != xspace) nofits = TRUE;
-	if((o->bbox[5] > l->center[1]) != yspace) nofits = TRUE;
+		//now check the other bounds, make sure its the same as the origional
+		if((o->bbox[1] > l->center[0]) != xspace) nofits = TRUE;
+		if((o->bbox[5] > l->center[1]) != yspace) nofits = TRUE;
+	}
 	if(nofits){
 		//todo
 		addObjectToLeaf(o, l);
@@ -574,12 +608,8 @@ int walkAndAddObject(worldobject_t * o, worldleaf_t * l){
 			walkAndAddObject(o, l->children[intspace]);
 		}
 		//should figure out top and bottom bounds now...
-//		if(l->bbox[0] < l->children[intspace]->bbox[0]) l->bbox[0] = l->children[intspace]->bbox[0];
-//		if(l->bbox[1] > l->children[intspace]->bbox[1]) l->bbox[1] = l->children[intspace]->bbox[1];
 		if(l->bbox[2] < l->children[intspace]->bbox[2]) l->bbox[2] = l->children[intspace]->bbox[2];
 		if(l->bbox[3] > l->children[intspace]->bbox[3]) l->bbox[3] = l->children[intspace]->bbox[3];
-//		if(l->bbox[4] < l->children[intspace]->bbox[4]) l->bbox[4] = l->children[intspace]->bbox[4];
-//		if(l->bbox[5] > l->children[intspace]->bbox[5]) l->bbox[5] = l->children[intspace]->bbox[5];
 		//should recalc bboxp now
 		getBBoxPFromBBox(l->bbox, l->bboxp);
 		//todo i can make a more efficient way of doing this, only updating the y values of the points
@@ -592,20 +622,17 @@ int addObjectToWorld(worldobject_t * o){
 	model_t * m = model_returnById(o->modelid);
 	if(!m) return FALSE;
 	if(!m->vbo) return FALSE;
-//	int vertcount = m->numverts;
-//	if(!vertcount)return FALSE;
 	//walk tree and add
 	return walkAndAddObject(o, worldroot);
 }
-int addEntityToWorld(int entityid){
+//todo i really should rename this to avoid confusion...
+int addEntityToWorldOBJ(int entityid){
 	entity_t *e = entity_returnById(entityid);
 	if(!e) return FALSE;
 
 	model_t *m = model_returnById(e->modelid);
 	if(!m) return FALSE;
 	if(!m->vbo) return FALSE;
-//	if(!m->interleaveddata) return FALSE;
-//	if(!m->numverts) return FALSE;
 
 	worldobject_t * obj = malloc(sizeof(worldobject_t));
 	memset(obj, 0 , sizeof(worldobject_t));

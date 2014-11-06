@@ -7,6 +7,10 @@
 //works out to be about smallest quadtree size is 64 meters by 64meters
 #define WORLDTREEDEPTH 8
 
+#define WORLDTREEOBJECT 1
+#define WORLDTREEENTITY 2
+#define WORLDTREELIGHT  4
+
 typedef struct worldobject_s{
 //	int myid;
 	matrix4x4_t mat;
@@ -26,7 +30,6 @@ typedef struct worldobject_s{
 //	GLuint vertstart; //useful for moving
 //	GLuint facestart; //useful for moving
 } worldobject_t;
-
 typedef struct worldleaf_s{
 	vec2_t center;
 	struct worldleaf_s *children[4];
@@ -36,8 +39,15 @@ typedef struct worldleaf_s{
 	vec_t bbox[6];
 	vec_t bboxp[24];
 	int numobjects;
+	int numents;
+	int numlights;
 	worldobject_t * list;
+	int * entlist;
+	int * lightlist; //may change to pointer (void)
 	float size; // ease
+
+	char includes;
+	char myincludes;
 } worldleaf_t;
 
 int worldOK;
@@ -50,7 +60,7 @@ int generateWorldObject(int modelid, int texturegroupid, matrix4x4_t mat);
 
 int addObjectToWorld(worldobject_t * obj);
 
-int addEntityToWorld(int entityid); //ease of use function
+int addEntityToWorldOBJ(int entityid); //ease of use function
 
 int saveWorld(char * filename);
 int loadWorld(char * filename);
