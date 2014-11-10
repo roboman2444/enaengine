@@ -15,6 +15,7 @@ Console
 World
 	Disable depth testing to see weather or not my little ordering method helps
 		-attempted, not enough of a change to tell
+	Redo quadtree system...
 Deferred
 	add tiled defferred lighting (see tiled deferred section)
 	finish directional light shading
@@ -27,7 +28,7 @@ Entities
 	change quadtree check algorithm to add all entities if the entire quadtree bbox checks out, dont bother checking ent bboxes
 		-maybe
 Gamecode
-	Figure it out
+	Finish Figuring it out
 States
 	have states track framebuffers, different masks, and do a glclear thing
 Tiled Deferred

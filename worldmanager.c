@@ -12,9 +12,12 @@
 #include "texturemanager.h"
 #include "shadermanager.h"
 
+#define WORLDFILEVERSION 2
+
 int worldOK = 0;
 worldleaf_t * worldroot;
 unsigned int worldNumObjects = 0;
+unsigned int world_numEnts = 0;
 /* file structure description
 	header
 	model list
@@ -28,16 +31,16 @@ unsigned int worldNumObjects = 0;
 */
 typedef struct worldFileHeader_s {
 	unsigned int version;
-	unsigned int filesize;
-	unsigned int modellistlength;  // bytes
-	unsigned int modellistcount;   // count
-	unsigned int texturelistlength;// bytes
-	unsigned int texturelistcount; // count
-	unsigned int shaderlistlength; // bytes
-	unsigned int shaderlistcount;  // count
-	unsigned int objectlistcount; // count
-//	unsigned int entitylistcount; // count
-//	unsigned int lightlistcount; // count
+	unsigned int filesize;		//bytes
+	unsigned int modellistlength;	// bytes
+	unsigned int modellistcount;	// count
+	unsigned int texturelistlength;	// bytes
+	unsigned int texturelistcount;	// count
+	unsigned int shaderlistlength;	// bytes
+	unsigned int shaderlistcount;	// count
+	unsigned int objectlistcount;	// count
+//	unsigned int entitylistcount;	// count
+//	unsigned int lightlistcount;	// count
 }worldFileHeader_t;
 typedef struct worldFileObject_s {
 	matrix4x4_t mat;
@@ -335,7 +338,7 @@ int loadWorld(char * filename){
 	char *buf = 0;
 
 	if(fread(&header, 1, sizeof(header), f) != sizeof(header))goto error;
-	if(header.version != 2)goto error; //todo different version handles
+	if(header.version != WORLDFILEVERSION)goto error; //todo different version handles
 	if(header.shaderlistlength + header.modellistlength + header.texturelistlength + (header.objectlistcount * sizeof(worldFileObject_t)) != header.filesize) goto error;
 
 	buf = malloc(header.filesize);
@@ -414,15 +417,11 @@ worldleaf_t * createWorldLeaf(int depth, vec2_t center){
 	leaf->center[0] = center[0];
 	leaf->center[1] = center[1];
 	leaf->size = (float)WORLDMAXSIZE / (float)(2<<depth);
-//	leaf->bbox[0] = center[0];
-//	leaf->bbox[1] = center[0];
-//	leaf->bbox[4] = center[1];
-//	leaf->bbox[5] = center[1];
 	leaf->bbox[0] = center[0] + leaf->size;
 	leaf->bbox[1] = center[0] - leaf->size;
 	leaf->bbox[4] = center[1] + leaf->size;
 	leaf->bbox[5] = center[1] - leaf->size;
-	leaf->bbox[2] = 0.0;
+	leaf->bbox[2] = 0.0; // redundant because of the memset
 	leaf->bbox[3] = 0.0;
 	getBBoxPFromBBox(leaf->bbox, leaf->bboxp);
 	//todo
@@ -437,6 +436,7 @@ int initWorldSystem(void){
 	worldOK = TRUE;
 	return TRUE;
 }
+/*
 int walkAndDeleteObject(worldleaf_t * l, worldobject_t * o){
 	if(o->treedepth > l->treedepth){
 		int xspace = FALSE;
@@ -504,11 +504,14 @@ int walkAndDeleteObject(worldleaf_t * l, worldobject_t * o){
 	}
 	return FALSE;
 }
+*/ //going to redo
+/*
 int deleteObject(worldobject_t * o){
 	if(!o) return FALSE;
 	return walkAndDeleteObject(worldroot, o);
 }
-
+*/ //going to redo
+/*
 worldleaf_t * walkAndFindObject(worldleaf_t * l, worldobject_t * o){
 	if(o->treedepth > l->treedepth){
 		int xspace = FALSE;
@@ -528,7 +531,8 @@ worldleaf_t * walkAndFindObject(worldleaf_t * l, worldobject_t * o){
 worldleaf_t * findObject(worldobject_t * o){
 	if(!o) return FALSE;
 	return walkAndFindObject(worldroot, o);
-}
+}*/ //going to redo
+//going to redo as well
 int deleteLeaf(worldleaf_t *l){
 	if(!l) return FALSE;
 	int i, count = 1;
@@ -540,6 +544,7 @@ int deleteLeaf(worldleaf_t *l){
 	free(l);
 	return(count);
 }
+
 int deleteWorld(void){
 	int leafcount = deleteLeaf(worldroot);
 	worldroot = 0;
@@ -547,27 +552,21 @@ int deleteWorld(void){
 	if(!initWorldSystem())return FALSE;
 	return leafcount;
 }
+//going to redo
 int addObjectToLeaf(worldobject_t * o, worldleaf_t *l){
 	//todo
 	//if first object in, set anyway
 	if(!l->numobjects){
-//		l->bbox[0] = o->bbox[0];
-//		l->bbox[1] = o->bbox[1];
 		l->bbox[2] = o->bbox[2];
 		l->bbox[3] = o->bbox[3];
-//		l->bbox[4] = o->bbox[4];
-//		l->bbox[5] = o->bbox[5];
 	} else {
-//		if(o->bbox[0] > l->bbox[0])l->bbox[0] = o->bbox[0];
-//		if(o->bbox[1] < l->bbox[1])l->bbox[1] = o->bbox[1];
 		if(o->bbox[2] > l->bbox[2])l->bbox[2] = o->bbox[2];
 		if(o->bbox[3] < l->bbox[3])l->bbox[3] = o->bbox[3];
-//		if(o->bbox[4] > l->bbox[4])l->bbox[4] = o->bbox[4];
-//		if(o->bbox[5] < l->bbox[5])l->bbox[5] = o->bbox[5];
 	}
-	getBBoxPFromBBox(l->bbox, l->bboxp);
+	getBBoxPFromBBox(l->bbox, l->bboxp);	//todo i can optimize this maybe
 	o->treedepth = l->treedepth;
 	o->leafpos = l->numobjects;
+	o->leaf = l;
 	l->numobjects++;
 	l->list = realloc(l->list, l->numobjects * sizeof(worldobject_t));
 	l->list[l->numobjects-1] = *o;
@@ -576,7 +575,7 @@ int addObjectToLeaf(worldobject_t * o, worldleaf_t *l){
 //	free(o);
 	return TRUE;
 }
-
+//going to redo
 int walkAndAddObject(worldobject_t * o, worldleaf_t * l){
 	l->includes = l->includes | WORLDTREEOBJECT;
 	char xspace = 0;
@@ -613,11 +612,11 @@ int walkAndAddObject(worldobject_t * o, worldleaf_t * l){
 		//should recalc bboxp now
 		getBBoxPFromBBox(l->bbox, l->bboxp);
 		//todo i can make a more efficient way of doing this, only updating the y values of the points
-
 		return 2;
 	}
 	return FALSE; // should never hit
 }
+//going to redo
 int addObjectToWorld(worldobject_t * o){
 	model_t * m = model_returnById(o->modelid);
 	if(!m) return FALSE;
@@ -625,8 +624,86 @@ int addObjectToWorld(worldobject_t * o){
 	//walk tree and add
 	return walkAndAddObject(o, worldroot);
 }
+//going to redo
+int addEntityToLeaf(entity_t * e, worldleaf_t *l){
+	//todo
+	//if first object in, set anyway
+	if(!l->numobjects){
+		l->bbox[2] = e->bbox[2];
+		l->bbox[3] = e->bbox[3];
+	} else {
+		if(e->bbox[2] > l->bbox[2])l->bbox[2] = e->bbox[2];
+		if(e->bbox[3] < l->bbox[3])l->bbox[3] = e->bbox[3];
+	}
+	getBBoxPFromBBox(l->bbox, l->bboxp);
+	e->treedepth = l->treedepth;
+	e->leafpos = l->numents;
+	e->leaf = l;
+	l->numents++;
+	l->entlist = realloc(l->list, l->numents * sizeof(int));
+	l->entlist[l->numents-1] = e->myid;
+	l->myincludes = l->myincludes | WORLDTREEENTITY;
+	world_numEnts++;
+//	free(o);
+	return TRUE;
+}
+//going to redo
+int walkAndAddEntity(entity_t * e, worldleaf_t * l){
+	l->includes = l->includes | WORLDTREEENTITY;
+	char xspace = 0;
+	char yspace = 0;
+	char nofits = 0;
+	if(l->treedepth >= WORLDTREEDEPTH) nofits = TRUE;
+	if(!nofits){ //possible optimization? might remove
+	//find possible space
+		if(e->bbox[0] > l->center[0]) xspace = TRUE;
+		if(e->bbox[4] > l->center[1]) yspace = TRUE;
+
+		//now check the other bounds, make sure its the same as the origional
+		if((e->bbox[1] > l->center[0]) != xspace) nofits = TRUE;
+		if((e->bbox[5] > l->center[1]) != yspace) nofits = TRUE;
+	}
+	if(nofits){
+		//todo
+		addEntityToLeaf(e, l);
+		return TRUE;
+	} else {
+		int intspace = xspace + 2*yspace;
+		if(!l->children[intspace]){
+			vec2_t newcenter;
+			newcenter[0] = l->center[0] + ((float)xspace-0.5)*l->size;
+			newcenter[1] = l->center[1] + ((float)yspace-0.5)*l->size;
+			l->children[intspace] = createWorldLeaf(l->treedepth + 1, newcenter);
+			walkAndAddEntity(e, l->children[intspace]);
+		} else {
+			walkAndAddEntity(e, l->children[intspace]);
+		}
+		//should figure out top and bottom bounds now...
+		if(l->bbox[2] < l->children[intspace]->bbox[2]) l->bbox[2] = l->children[intspace]->bbox[2];
+		if(l->bbox[3] > l->children[intspace]->bbox[3]) l->bbox[3] = l->children[intspace]->bbox[3];
+		//should recalc bboxp now
+		getBBoxPFromBBox(l->bbox, l->bboxp);
+		//todo i can make a more efficient way of doing this, only updating the y values of the points
+		return 2;
+	}
+	return FALSE; // should never hit
+}
+int addEntityToWorldPOINT(entity_t * e){
+//	model_t * m = entity_returnById(o->modelid);
+//	if(!m) return FALSE;
+//	if(!m->vbo) return FALSE;
+	//walk tree and add
+	return walkAndAddEntity(e, worldroot);
+}
+int addEntityToWorldINT(const int e){
+//	model_t * m = entity_returnById(o->modelid);
+//	if(!m) return FALSE;
+//	if(!m->vbo) return FALSE;
+	//walk tree and add
+	return walkAndAddEntity(entity_returnById(e), worldroot);
+}
 //todo i really should rename this to avoid confusion...
-int addEntityToWorldOBJ(int entityid){
+int addEntityToWorldOBJ(const int entityid){
 	entity_t *e = entity_returnById(entityid);
 	if(!e) return FALSE;
 

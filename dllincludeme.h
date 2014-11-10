@@ -85,6 +85,10 @@ typedef struct entity_s {
 	vec_t bbox[6];
 	char flags;
 
+	unsigned char treedepth;
+	unsigned int leafpos;
+	void * leaf;
+
 //	vec3_t maxs; //worldspace bounding box
 //	vec3_t mins;
 } entity_t;

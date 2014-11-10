@@ -20,7 +20,7 @@ typedef struct entity_s {
 	void (*spawn)(struct entity_s * e);
 	void (*remove)(struct entity_s * e);
 	void (*think)(struct entity_s * e);
-	void (*touch)(struct entity_s *e, int touchid); //should be entity_t * toucher
+	void (*touch)(struct entity_s *e, int touchid); //should be entity_t * toucher maybe
 	int parentid;
 	int attachmentid;
 
@@ -34,6 +34,10 @@ typedef struct entity_s {
 	vec_t bboxp[24];
 	vec_t bbox[6];
 	char flags;
+
+	unsigned char treedepth;
+	unsigned int leafpos;
+	void * leaf;
 
 //	vec3_t maxs; //worldspace bounding box
 //	vec3_t mins;
