@@ -454,7 +454,7 @@ int loadLeafIntoQueues(worldleaf_t * l, renderqueue_t * forwardqueue, renderqueu
 	return mynum;
 }
 int loadWorldIntoQueues(renderqueue_t * forwardqueue, renderqueue_t * deferredqueue, viewport_t *v){
-	if(!worldroot ||  !worldNumObjects) return FALSE;
+	if(!worldroot ||  !world_numObjects) return FALSE;
 	return loadLeafIntoQueues(worldroot, forwardqueue, deferredqueue, v);
 }
 int loadLeafIntoQueue(worldleaf_t * l, renderqueue_t * queue, viewport_t *v){
@@ -490,7 +490,7 @@ int loadLeafIntoQueue(worldleaf_t * l, renderqueue_t * queue, viewport_t *v){
 	return mynum;
 }
 int loadWorldIntoQueue(renderqueue_t * queue, viewport_t *v){
-	if(!worldroot ||  !worldNumObjects) return FALSE;
+	if(!worldroot ||  !world_numObjects) return FALSE;
 	return loadLeafIntoQueue(worldroot, queue, v);
 }
 void addEntityToRenderqueue(const entity_t *e, renderqueue_t * q, const viewport_t * v){

@@ -49,8 +49,9 @@ typedef struct worldleaf_s{
 } worldleaf_t;
 
 int worldOK;
-unsigned int worldNumObjects;
+unsigned int world_numObjects;
 unsigned int world_numEnts;
+unsigned int world_numLights;
 worldleaf_t * worldroot;
 
 int initWorldSystem(void);

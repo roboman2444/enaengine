@@ -16,6 +16,7 @@ World
 	Disable depth testing to see weather or not my little ordering method helps
 		-attempted, not enough of a change to tell
 	Redo quadtree system...
+	Basic AABB collision detection
 Deferred
 	add tiled defferred lighting (see tiled deferred section)
 	finish directional light shading
