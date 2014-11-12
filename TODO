@@ -15,8 +15,10 @@ Console
 World
 	Disable depth testing to see weather or not my little ordering method helps
 		-attempted, not enough of a change to tell
-	Redo quadtree system...
-	Basic AABB collision detection
+	Redo quadtree system... Use linked lists instead of arrays for storing items per leaf?
+	Basic AABB->AABB collision detection
+	Basic SPHERE->AABB collision detection
+	Basic SPHERE->SPHERE collision detection
 Deferred
 	add tiled defferred lighting (see tiled deferred section)
 	finish directional light shading
@@ -39,7 +41,8 @@ Tiled Deferred
 		frustums
 		Sphere projection method
 Models
-	Add basic sphere models
+	Add basic sphere models (of multiple types... icosphere, normalized tesselated cube, etc)
+	Be able to generate lower LOD meshes
 Animations
 	Figure it out
 Textures

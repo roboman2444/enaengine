@@ -20,6 +20,7 @@ int resizeWindow(int width, int height, int bpp, int debugmode){
 	if(height<1) height = 1;
 	if(width<1) width = 1;
 	surface = SDL_SetVideoMode(width, height, bpp, videoFlags);
+//	surface = SDL_CreateWindow("ENAENGINE", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, videoFlags);
 	//todo resize any framebuffers
 	if(!surface){
 //		fprintf(stderr, "ERROR -- SDL video resize failed: %s \n", SDL_GetError());

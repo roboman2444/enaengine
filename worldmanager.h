@@ -40,8 +40,8 @@ typedef struct worldleaf_s{
 	int numents;
 	int numlights;
 	worldobject_t * list;
-	int * entlist;
-	int * lightlist; //may change to pointer (void)
+	void  ** entlist;
+	void  ** lightlist; //may change to int (id)
 	float size; // ease
 
 	char includes;

@@ -51,6 +51,9 @@ typedef struct light_s {
 
 	vec_t bboxp[24];
 	vec_t bbox[6];
+	unsigned char treedepth;
+	unsigned int leafpos;
+	void * leaf;
 
 } light_t;
 

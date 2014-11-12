@@ -51,7 +51,7 @@ typedef struct worldFileObject_s {
 	int shaderperm;
 	char flags;
 }worldFileObject_t;
-typedef struct worldFileEntity_s {
+//typedef struct worldFileEntity_s {
 //	matrix4x4_t mat;
 //	unsigned int modelindice;
 //	unsigned int textureindice;
@@ -59,8 +59,8 @@ typedef struct worldFileEntity_s {
 //	int shaderperm;
 //	char flags;
 	//todo
-}worldFileEntity_t;
-typedef struct worldFileLight_s {
+//}worldFileEntity_t;
+//typedef struct worldFileLight_s {
 //	matrix4x4_t mat;
 //	unsigned int modelindice;
 //	unsigned int textureindice;
@@ -68,7 +68,7 @@ typedef struct worldFileLight_s {
 //	int shaderperm;
 //	char flags;
 	//todo
-}worldFileLight_t;
+//}worldFileLight_t;
 
 int saveWorldPopList(int * count, worldobject_t ** list, worldleaf_t * leaf){
 
@@ -638,8 +638,10 @@ int addEntityToLeaf(entity_t * e, worldleaf_t *l){
 	e->leafpos = l->numents;
 	e->leaf = l;
 	l->numents++;
-	l->entlist = realloc(l->list, l->numents * sizeof(int));
-	l->entlist[l->numents-1] = e->myid;
+//	l->entlist = realloc(l->list, l->numents * sizeof(int));
+	l->entlist = realloc(l->list, l->numents * sizeof(void *));
+//	l->entlist[l->numents-1] = e->myid;
+	l->entlist[l->numents-1] = e;
 	l->myincludes = l->myincludes | WORLDTREEENTITY;
 	world_numEnts++;
 	return TRUE;
