@@ -70,19 +70,27 @@ typedef struct worldFileObject_s {
 	//todo
 //}worldFileLight_t;
 
-int saveWorldPopList(int * count, worldobject_t ** list, worldleaf_t * leaf){
+//todo gotta fix the list gettin!
+int saveWorldPopList(int * count, worldobject_t ** outlist, worldleaf_t * leaf){
 
 	if(!leaf) return FALSE;
 //	console_printf("count: %i\n", *count);
 
+
+	//WARNING: revisions untested!
 	int i;
-	for(i = 0; i < leaf->numobjects && *count < world_numObjects; i++){
-		if(!leaf->list[i].modelid)continue;
-		list[*count] = &leaf->list[i];
-		*count = *count+1;
+	if(leaf->numobjects){
+		int myarraysize = leaf->objectarraysize;
+		worldobject_t * list = leaf->list;
+		for(i = 0; i < myarraysize && *count < world_numObjects; i++){
+//			if(!list[i].modelid)continue; //had to remove because of "invisible" objects
+			if(!list[i].leaf)continue; //had to remove because of "invisible" objects
+			outlist[*count] = &list[i];
+			*count = *count+1;
+		}
 	}
 	for(i = 0; i < 4; i++){
-		saveWorldPopList(count, list, leaf->children[i]);
+		saveWorldPopList(count, outlist, leaf->children[i]);
 	}
 	return TRUE;
 }
@@ -439,6 +447,10 @@ worldleaf_t * createWorldLeaf(int depth, vec2_t center){
 	leaf->bbox[5] = center[1] - leaf->size;
 	leaf->bbox[2] = 0.0; // redundant because of the memset
 	leaf->bbox[3] = 0.0;
+	leaf->objectarraylasttaken = -1;
+	leaf->entityarraylasttaken = -1;
+	leaf->lightarraylasttaken = -1;
+
 	getBBoxPFromBBox(leaf->bbox, leaf->bboxp);
 	//todo
 	return leaf;
@@ -534,9 +546,12 @@ int deleteLeaf(worldleaf_t *l){
 	for(i = 0; i < 4; i++){
 		count += deleteLeaf(l->children[i]);
 	}
-	if(l->numobjects && l->list)free(l->list);
-	if(l->numents && l->entlist) free(l->entlist);
-	if(l->numlights && l->lightlist) free(l->lightlist);
+//	if(l->numobjects && l->list)free(l->list);
+//	if(l->numents && l->entlist) free(l->entlist);
+//	if(l->numlights && l->lightlist) free(l->lightlist);
+	if(l->list)free(l->list);
+	if(l->entlist) free(l->entlist);
+	if(l->lightlist) free(l->lightlist);
 	world_numObjects -= l->numobjects;
 	world_numEnts -= l->numents;
 	world_numLights -= l->numlights;
@@ -567,8 +582,21 @@ int addObjectToLeaf(worldobject_t * o, worldleaf_t *l){
 	o->leafpos = l->numobjects;
 	o->leaf = l;
 	l->numobjects++;
-	l->list = realloc(l->list, l->numobjects * sizeof(worldobject_t));
-	l->list[l->numobjects-1] = *o;
+
+	worldobject_t * list = l->list;
+	int myarrayfo = l->objectarrayfirstopen;
+	int myarraysize = l->objectarraysize;
+	for(; myarrayfo < myarraysize  && list[myarrayfo].leaf; myarrayfo++);
+	l->objectarrayfirstopen = myarrayfo;
+	if(myarrayfo == myarraysize){ //resize
+		l->objectarraysize = ++myarraysize;
+		l->list = list = realloc(list, myarraysize * sizeof(worldobject_t));
+	}
+	list[myarrayfo] = *o;
+
+
+//	l->list = realloc(l->list, l->numobjects * sizeof(worldobject_t));
+//	l->list[l->numobjects-1] = *o;
 	l->myincludes = l->myincludes | WORLDTREEOBJECT;
 	world_numObjects++;
 	return TRUE;
@@ -638,10 +666,25 @@ int addEntityToLeaf(entity_t * e, worldleaf_t *l){
 	e->leafpos = l->numents;
 	e->leaf = l;
 	l->numents++;
-//	l->entlist = realloc(l->list, l->numents * sizeof(int));
-	l->entlist = realloc(l->list, l->numents * sizeof(void *));
-//	l->entlist[l->numents-1] = e->myid;
-	l->entlist[l->numents-1] = e;
+
+
+
+	void ** list = l->entlist;
+	int myarrayfo = l->entityarrayfirstopen;
+	int myarraysize = l->entityarraysize;
+	for(; myarrayfo < myarraysize  && list[myarrayfo]; myarrayfo++);
+	l->entityarrayfirstopen = myarrayfo;
+	if(myarrayfo == myarraysize){ //resize
+		l->entityarraysize = ++myarraysize;
+		l->entlist = list = realloc(list, myarraysize * sizeof(void *));
+	}
+	list[myarrayfo] = e;
+
+
+
+
+//	l->entlist = realloc(l->list, l->numents * sizeof(void *));
+//	l->entlist[l->numents-1] = e;
 	l->myincludes = l->myincludes | WORLDTREEENTITY;
 	world_numEnts++;
 	return TRUE;

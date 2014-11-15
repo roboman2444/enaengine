@@ -23,6 +23,7 @@ typedef struct worldobject_s{
 	char status;
 	unsigned char treedepth;
 	unsigned int leafpos;
+	//note, i use this as a flag, if set to 0, it means "empty cell, able to be written over"
 	struct worldleaf_s * leaf;
 
 	char flags;
@@ -36,12 +37,21 @@ typedef struct worldleaf_s{
 	int treedepth;
 	vec_t bbox[6];
 	vec_t bboxp[24];
-	int numobjects;
-	int numents;
-	int numlights;
 	worldobject_t * list;
 	void  ** entlist;
 	void  ** lightlist; //may change to int (id)
+	int numobjects;
+	int numents;
+	int numlights;
+	int objectarraysize;
+	int entityarraysize;
+	int lightarraysize;
+	int objectarrayfirstopen;
+	int entityarrayfirstopen;
+	int lightarrayfirstopen;
+	int objectarraylasttaken;
+	int entityarraylasttaken;
+	int lightarraylasttaken;
 	float size; // ease
 
 	char includes;
