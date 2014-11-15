@@ -383,11 +383,12 @@ void addObjectToRenderqueue(const worldobject_t *o, renderqueue_t * q, const vie
 }
 
 int addAllChildrenLeafIntoQueues(worldleaf_t *l, renderqueue_t * forwardqueue, renderqueue_t * deferredqueue, viewport_t *v){
-	int num = l->numobjects;
+	int num = l->objectarraylasttaken + 1;
 	worldobject_t * list = l->list;
 	int mynum = 0;
 	int i;
 	for(i = 0; i < num; i++){
+		if(!list[i].leaf) continue;
 		if(list[i].flags & DEFERREDFLAG)
 			addObjectToRenderqueue(&list[i], deferredqueue, v);
 		if(list[i].flags & FORWARDFLAG)
@@ -406,11 +407,12 @@ int addAllChildrenLeafIntoQueues(worldleaf_t *l, renderqueue_t * forwardqueue, r
 	return mynum;
 }
 int loadLeafIntoQueues(worldleaf_t * l, renderqueue_t * forwardqueue, renderqueue_t * deferredqueue, viewport_t *v){
-	unsigned int num = l->numobjects;
+	unsigned int num = l->objectarraylasttaken + 1;
 	unsigned int mynum = 0;
 	worldobject_t * list = l->list;
 	unsigned int i;
 	for(i = 0; i < num; i++){
+		if(!list[i].leaf) continue;
 //		if(checkBBoxPInBBox(list[i].bbox, v->bboxp)){
 		if(testBBoxPInFrustum(v, list[i].bboxp)){
 			if(list[i].flags & DEFERREDFLAG)
@@ -458,11 +460,12 @@ int loadWorldIntoQueues(renderqueue_t * forwardqueue, renderqueue_t * deferredqu
 	return loadLeafIntoQueues(worldroot, forwardqueue, deferredqueue, v);
 }
 int loadLeafIntoQueue(worldleaf_t * l, renderqueue_t * queue, viewport_t *v){
-	int num = l->numobjects;
+	int num = l->objectarraylasttaken + 1;
 	int mynum=0;
 	worldobject_t * list = l->list;
 	int i;
 	for(i = 0; i < num; i++){
+		if(!list[i].leaf) continue;
 		if(testBBoxPInFrustum(v, list[i].bboxp)){
 //		if(checkBBoxPInBBox(list[i].bbox, v->bboxp)){
 			addObjectToRenderqueue(&list[i], queue, v);
@@ -541,7 +544,8 @@ int loadEntitiesIntoQueue(renderqueue_t * queue, viewport_t * v){
 	int i;
 	int count = 0;
 	int cullcount = 0;
-	for(i =0; i <= entity_arraylasttaken; i++){
+	int num = entity_arraylasttaken + 1;
+	for(i =0; i < num; i++){
 		entity_t *e = &entity_list[i];
 		if(e->type < 2)continue;
 		if(!e->modelid)continue;
@@ -561,7 +565,8 @@ int loadEntitiesIntoQueues(renderqueue_t * forwardqueue, renderqueue_t * deferre
 	int i;
 	int count = 0;
 	int cullcount = 0;
-	for(i =0; i <= entity_arraylasttaken; i++){
+	int num = entity_arraylasttaken + 1;
+	for(i =0; i < num; i++){
 		entity_t *e = &entity_list[i];
 		if(e->type < 2)continue;
 		if(!e->modelid)continue;
@@ -584,7 +589,8 @@ int loadEntitiesIntoQueueForward(renderqueue_t * queue, viewport_t * v){
 	int i;
 	int count = 0;
 	int cullcount = 0;
-	for(i =0; i <= entity_arraylasttaken; i++){
+	int num = entity_arraylasttaken + 1;
+	for(i =0; i < num; i++){
 		entity_t *e = &entity_list[i];
 		if(e->type < 2)continue;
 		if(!(e->flags & FORWARDFLAG))continue;
@@ -605,7 +611,8 @@ int loadEntitiesIntoQueueDeferred(renderqueue_t * queue, viewport_t * v){
 	int i;
 	int count = 0;
 	int cullcount = 0;
-	for(i =0; i <= entity_arraylasttaken; i++){
+	int num = entity_arraylasttaken + 1;
+	for(i =0; i < num; i++){
 		entity_t *e = &entity_list[i];
 		if(e->type < 2)continue;
 		if(!(e->flags & DEFERREDFLAG))continue; //test if its "deferred" flag is set

@@ -593,6 +593,7 @@ int addObjectToLeaf(worldobject_t * o, worldleaf_t *l){
 		l->list = list = realloc(list, myarraysize * sizeof(worldobject_t));
 	}
 	list[myarrayfo] = *o;
+	if(l->objectarraylasttaken < myarrayfo) l->objectarraylasttaken = myarrayfo;
 
 
 //	l->list = realloc(l->list, l->numobjects * sizeof(worldobject_t));
