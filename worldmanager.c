@@ -651,6 +651,18 @@ int addObjectToWorld(worldobject_t * o){
 	//walk tree and add
 	return walkAndAddObject(o, worldroot);
 }
+int moveEntInWorld(entity_t * e){
+	//store current leaf in 1
+	//walk up till entity fits in leaf
+	//walk down till entity only fits in leaf and not children, or reach lowest branch.
+		//add leafs if needed
+		//store leaf  in 2
+	//move entity to new leaf
+	//update flags if needed, from 1 up
+	//update flags if needed, from 2 up
+		//delete old leaf(1) if needed
+	return TRUE;
+}
 //maybe going to redo
 int addEntityToLeaf(entity_t * e, worldleaf_t *l){
 	//todo

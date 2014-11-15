@@ -190,7 +190,7 @@ int glInit(void){
 	states_cullFace(GL_BACK);
 //	states_depthMask(GL_TRUE);
 
-	int maxSamples, maxIntSamples, maxColorTextureSamples, maxDepthTextureSamples;
+	int maxSamples = 0, maxIntSamples = 0, maxColorTextureSamples = 0, maxDepthTextureSamples = 0;
 	glGetIntegerv(GL_MAX_SAMPLES, &maxSamples);
 	glGetIntegerv(GL_MAX_INTEGER_SAMPLES, &maxIntSamples);
 	glGetIntegerv(GL_MAX_COLOR_TEXTURE_SAMPLES, &maxColorTextureSamples);
@@ -383,43 +383,46 @@ void addObjectToRenderqueue(const worldobject_t *o, renderqueue_t * q, const vie
 }
 
 int addAllChildrenLeafIntoQueues(worldleaf_t *l, renderqueue_t * forwardqueue, renderqueue_t * deferredqueue, viewport_t *v){
-	int num = l->objectarraylasttaken + 1;
-	worldobject_t * list = l->list;
-	int mynum = 0;
-	int i;
-	for(i = 0; i < num; i++){
-		if(!list[i].leaf) continue;
-		if(list[i].flags & DEFERREDFLAG)
-			addObjectToRenderqueue(&list[i], deferredqueue, v);
-		if(list[i].flags & FORWARDFLAG)
-			addObjectToRenderqueue(&list[i], forwardqueue, v);
-		mynum++;
+	unsigned int mynum = 0;
+	if(l->myincludes & WORLDTREEOBJECT){
+		unsigned int num = l->objectarraylasttaken + 1;
+		worldobject_t * list = l->list;
+		unsigned int i;
+		for(i = 0; i < num; i++){
+			if(!list[i].leaf) continue;
+			if(list[i].flags & DEFERREDFLAG)
+				addObjectToRenderqueue(&list[i], deferredqueue, v);
+			if(list[i].flags & FORWARDFLAG)
+				addObjectToRenderqueue(&list[i], forwardqueue, v);
+			mynum++;
+		}
 	}
-
 	worldleaf_t **children = l->children;
 
 	int j;
 	for(j = 0; j < 4; j++){
-		if(children[j]){
+		if(children[j] && children[j]->includes & WORLDTREEOBJECT){
 			mynum+= addAllChildrenLeafIntoQueues(children[j], forwardqueue, deferredqueue, v);
 		}
 	}
 	return mynum;
 }
 int loadLeafIntoQueues(worldleaf_t * l, renderqueue_t * forwardqueue, renderqueue_t * deferredqueue, viewport_t *v){
-	unsigned int num = l->objectarraylasttaken + 1;
-	unsigned int mynum = 0;
-	worldobject_t * list = l->list;
 	unsigned int i;
-	for(i = 0; i < num; i++){
-		if(!list[i].leaf) continue;
-//		if(checkBBoxPInBBox(list[i].bbox, v->bboxp)){
-		if(testBBoxPInFrustum(v, list[i].bboxp)){
-			if(list[i].flags & DEFERREDFLAG)
-				addObjectToRenderqueue(&list[i], deferredqueue, v);
-			if(list[i].flags & FORWARDFLAG)
-				addObjectToRenderqueue(&list[i], forwardqueue, v);
-			mynum++;
+	unsigned int mynum = 0;
+	if(l->myincludes & WORLDTREEOBJECT){
+		unsigned int num = l->objectarraylasttaken + 1;
+		worldobject_t * list = l->list;
+		for(i = 0; i < num; i++){
+			if(!list[i].leaf) continue;
+	//		if(checkBBoxPInBBox(list[i].bbox, v->bboxp)){
+			if(testBBoxPInFrustum(v, list[i].bboxp)){
+				if(list[i].flags & DEFERREDFLAG)
+					addObjectToRenderqueue(&list[i], deferredqueue, v);
+				if(list[i].flags & FORWARDFLAG)
+					addObjectToRenderqueue(&list[i], forwardqueue, v);
+				mynum++;
+			}
 		}
 	}
 	//todo cull these out
@@ -446,7 +449,7 @@ int loadLeafIntoQueues(worldleaf_t * l, renderqueue_t * forwardqueue, renderqueu
 		}
 */
 
-		if(children[i] && testBBoxPInFrustum(v, children[i]->bboxp)){
+		if(children[i] && children[i]->includes & WORLDTREEOBJECT && testBBoxPInFrustum(v, children[i]->bboxp)){
 //		if(children[i] && checkBBoxPInBBox(children[i]->bbox, v->bboxp)){
 			mynum+= loadLeafIntoQueues(children[i], forwardqueue, deferredqueue, v);
 		}
@@ -460,16 +463,18 @@ int loadWorldIntoQueues(renderqueue_t * forwardqueue, renderqueue_t * deferredqu
 	return loadLeafIntoQueues(worldroot, forwardqueue, deferredqueue, v);
 }
 int loadLeafIntoQueue(worldleaf_t * l, renderqueue_t * queue, viewport_t *v){
-	int num = l->objectarraylasttaken + 1;
-	int mynum=0;
-	worldobject_t * list = l->list;
-	int i;
-	for(i = 0; i < num; i++){
-		if(!list[i].leaf) continue;
-		if(testBBoxPInFrustum(v, list[i].bboxp)){
-//		if(checkBBoxPInBBox(list[i].bbox, v->bboxp)){
-			addObjectToRenderqueue(&list[i], queue, v);
-			mynum++;
+	unsigned int i;
+	unsigned int mynum = 0;
+	if(l->myincludes & WORLDTREEOBJECT){
+		unsigned int num = l->objectarraylasttaken + 1;
+		worldobject_t * list = l->list;
+		for(i = 0; i < num; i++){
+			if(!list[i].leaf) continue;
+			if(testBBoxPInFrustum(v, list[i].bboxp)){
+	//		if(checkBBoxPInBBox(list[i].bbox, v->bboxp)){
+				addObjectToRenderqueue(&list[i], queue, v);
+				mynum++;
+			}
 		}
 	}
 	//todo cull these out
@@ -484,7 +489,7 @@ int loadLeafIntoQueue(worldleaf_t * l, renderqueue_t * queue, viewport_t *v){
 	int j;
 	for(j = 0; j < 4; j++){
 		i = v->dir[j];
-		if(children[i] && testBBoxPInFrustum(v, children[i]->bboxp)){
+		if(children[i] && children[i]->includes & WORLDTREEOBJECT && testBBoxPInFrustum(v, children[i]->bboxp)){
 //		if(children[i] && checkBBoxPInBBox(children[i]->bbox, v->bboxp)){
 			mynum+= loadLeafIntoQueue(children[i], queue, v);
 		}
