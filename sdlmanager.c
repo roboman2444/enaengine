@@ -13,6 +13,11 @@ SDL_Surface *surface;
 const SDL_VideoInfo *videoInfo;
 int videoFlags;
 
+/*
+SDL_Window *screen;
+SDL_Renderer *renderer;
+SDL_GLContext glcontext;
+*/
 //functions
 extern int glResizeViewports(int width, int height);
 int resizeWindow(int width, int height, int bpp, int debugmode){
@@ -73,6 +78,7 @@ int sdlInit(int width, int height, int bpp, int debugmode){
 		console_printf("ERROR -- SDL video init failed: %s \n", SDL_GetError());
 		return FALSE;
 	}
+
 	videoInfo = SDL_GetVideoInfo();
 	videoFlags = SDL_OPENGL;
 	videoFlags |= SDL_GL_DOUBLEBUFFER;
@@ -82,11 +88,18 @@ int sdlInit(int width, int height, int bpp, int debugmode){
 	else			    videoFlags |= SDL_SWSURFACE;
 	if(videoInfo->blit_hw) 	    videoFlags |= SDL_HWACCEL;
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+/*	videoFlags = SDL_WINDOW_RESIZABLE | SDL_WINDOW_INPUT_FOCUS | SDL_WINDOW_MOUSE_FOCUS | SDL_WINDOW_OPENGL;
+//	SDL_CreateWindowAndRenderer(0, 0, videoFlags, &screen, &renderer);
+	screen = SDL_CreateWindow("enaengine", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, videoFlags);
+	glcontext = SDL_GL_CreateContext(screen);
+//	renderer = SDL_CreateRenderer(screen, -1, 0);
+*/
 //	setMSAA(16);
 	return resizeWindow(width, height, bpp, debugmode);
 }
 void swapBuffers(void){
 	SDL_GL_SwapBuffers();
+//	SDL_GL_SwapWindow(screen);
 }
 int sdlCheckEvent(void){
 	char queueresizedo = 0;

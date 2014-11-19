@@ -1,15 +1,18 @@
 #include <GL/glew.h> //may be unneeded
 #include <GL/gl.h>
+#include "glstates.h"
 #include <sys/stat.h> //todo filesys
 
 
 #include "globaldefs.h"
 #include "textmanager.h"
 
-#include "SDL_ttf.h"
-#include "SDL.h"
 #include "hashtables.h"
 #include "console.h"
+
+
+#define STB_TRUETYPE_IMPLEMENTATION  // force following include to generate implementation
+#include "stb_truetype.h"
 int text_ok = 0;
 int textcount = 0;
 int textArrayFirstOpen = 0;
@@ -21,17 +24,17 @@ int fontArrayLastTaken = -1;
 int fontArraySize = 0;
 
 
-hashbucket_t texthashtable[MAXHASHBUCKETS];
+//hashbucket_t texthashtable[MAXHASHBUCKETS];
 hashbucket_t fonthashtable[MAXHASHBUCKETS];
 
-text_t *textlist;
+//text_t *textlist;
 font_t *fontlist;
 
 int text_init(void){
-	memset(texthashtable, 0, MAXHASHBUCKETS * sizeof(hashbucket_t));
-	if(textlist) free(textlist);
-	textlist = malloc(sizeof(text_t));
-	memset(textlist, 0 , sizeof(text_t));
+//	memset(texthashtable, 0, MAXHASHBUCKETS * sizeof(hashbucket_t));
+//	if(textlist) free(textlist);
+//	textlist = malloc(sizeof(text_t));
+//	memset(textlist, 0 , sizeof(text_t));
 	memset(fonthashtable, 0, MAXHASHBUCKETS * sizeof(hashbucket_t));
 	if(fontlist) free(fontlist);
 	fontlist = malloc(sizeof(font_t));
@@ -41,23 +44,23 @@ int text_init(void){
 //	defaulttext = addtextToList(createtext("default", 0));
 	//todo error checking
 
-	if(TTF_Init() == -1){
-		return FALSE;
-	}
+//	if(TTF_Init() == -1){
+//		return FALSE;
+//	}
 	text_ok = TRUE;
 	return TRUE;
 }
-
-text_t * findTextByNameRPOINT(char * name){
+/*
+text_t * findTextByNameRPOINT(const char * name){
 //	console_printf("text id:%i\n", findByNameRINT(name, texthashtable));
 //	if(!textlist) return FALSE;
 	return returnTextById(findByNameRINT(name, texthashtable));
 }
-int findTextByNameRINT(char * name){
+int findTextByNameRINT(const char * name){
 //	if(!textlist) return FALSE;
 	return findByNameRINT(name, texthashtable);
 }
-textlistpoint_t findTextsByNameRPOINT(char * name){
+textlistpoint_t findTextsByNameRPOINT(const char * name){
 	textlistpoint_t ret;
 	int hash = getHash(name);
 	hashbucket_t * hb = &texthashtable[hash];
@@ -71,7 +74,7 @@ textlistpoint_t findTextsByNameRPOINT(char * name){
 	}
 	return ret;
 }
-textlistint_t findTextsByNameRINT(char * name){
+textlistint_t findTextsByNameRINT(const char * name){
 	textlistint_t ret;
 	int hash = getHash(name);
 	hashbucket_t * hb = &texthashtable[hash];
@@ -86,19 +89,19 @@ textlistint_t findTextsByNameRINT(char * name){
 	return ret;
 }
 
-
-font_t * findFontByNameRPOINT(char * name){
+*/
+font_t * findFontByNameRPOINT(const char * name){
 	if(!fontlist) return FALSE;
 	return returnFontById(findByNameRINT(name, fonthashtable));
 }
-int findFontByNameRINT(char * name){
+int findFontByNameRINT(const char * name){
 	if(!fontlist) return FALSE;
 	return findByNameRINT(name, fonthashtable);
 }
-fontlistpoint_t findFontsByNameRPOINT(char * name){
+fontlistpoint_t findFontsByNameRPOINT(const char * name){
 	fontlistpoint_t ret;
 	int hash = getHash(name);
-	hashbucket_t * hb = &texthashtable[hash];
+	hashbucket_t * hb = &fonthashtable[hash];
 	if(!hb->name) return ret;
 	for(; hb; hb = hb->next){
 		if(strcmp(hb->name, name)==0){
@@ -109,10 +112,10 @@ fontlistpoint_t findFontsByNameRPOINT(char * name){
 	}
 	return ret;
 }
-fontlistint_t findFontsByNameRINT(char * name){
+fontlistint_t findFontsByNameRINT(const char * name){
 	fontlistint_t ret;
 	int hash = getHash(name);
-	hashbucket_t * hb = &texthashtable[hash];
+	hashbucket_t * hb = &fonthashtable[hash];
 	if(!hb->name) return ret;
 	for(; hb; hb = hb->next){
 		if(strcmp(hb->name, name)==0){
@@ -123,35 +126,7 @@ fontlistint_t findFontsByNameRINT(char * name){
 	}
 	return ret;
 }
-
-font_t * findFontByNameSizeRPOINT(char * name, unsigned short size){
-//	if(!fontlist) return FALSE;
-	int hash = getHash(name);
-	hashbucket_t *hb = &fonthashtable[hash];
-	if(!hb->name) return FALSE;
-	for(; hb; hb = hb->next){
-		if(strcmp(hb->name, name)==0){
-			font_t * ret = returnFontById(hb->id);
-			if(ret->size == size) return ret;
-		}
-	}
-	return FALSE;
-}
-int findFontByNameSizeRINT(char * name, unsigned short size){
-//	if(!fontlist) return FALSE;
-	int hash = getHash(name);
-	hashbucket_t *hb = &fonthashtable[hash];
-	if(!hb->name) return FALSE;
-	for(; hb; hb = hb->next){
-		if(strcmp(hb->name, name)==0){
-			font_t * ret = returnFontById(hb->id);
-			if(ret->size == size) return ret->myid;
-		}
-	}
-	return FALSE;
-}
-
-
+/*
 int deleteText(const int id){
 	int textindex = (id & 0xFFFF);
 	text_t * tex = &textlist[textindex];
@@ -165,6 +140,7 @@ int deleteText(const int id){
 	for(; textArrayLastTaken > 0 && !textlist[textArrayLastTaken].type; textArrayLastTaken--);
 	return TRUE;
 }
+
 int deleteUnmarkedText(void){
 	unsigned int count = 0, i;
 	for(i = 0; i < textArrayLastTaken; i++){
@@ -176,19 +152,23 @@ int deleteUnmarkedText(void){
 	}
 	return count;
 }
+*/
 int deleteFont(const int id){
 	int fontindex = (id & 0xFFFF);
 	font_t * tex = &fontlist[fontindex];
 	if(tex->myid != id) return FALSE;
 	if(!tex->filename) return FALSE;
-	if(tex->font) TTF_CloseFont((TTF_Font *)tex->font);
+	if(tex->ttfdata) free(tex->ttfdata);
 	deleteFromHashTable(tex->filename, id, fonthashtable);
 	free(tex->filename);
-	memset(tex, 0, sizeof(text_t));
+	if(tex->cdata) free(tex->cdata);
+	memset(tex, 0, sizeof(font_t));
 	if(fontindex < fontArrayFirstOpen) fontArrayFirstOpen = fontindex;
 	for(; fontArrayLastTaken > 0 && !fontlist[fontArrayLastTaken].type; fontArrayLastTaken--);
+	//todo maybe look up all texts that use this font and delete em?
 	return TRUE;
 }
+/*
 text_t * returnTextById(const int id){
 	int textindex = (id & 0xFFFF);
 	text_t * tex = &textlist[textindex];
@@ -196,6 +176,7 @@ text_t * returnTextById(const int id){
 	if(tex->myid == id) return tex;
 	return FALSE;
 }
+*/
 font_t * returnFontById(const int id){
 	int fontindex = (id & 0xFFFF);
 	font_t * tex = &fontlist[fontindex];
@@ -203,15 +184,15 @@ font_t * returnFontById(const int id){
 	if(tex->myid == id) return tex;
 	return FALSE;
 }
-text_t createAndRenderTextFindFont(char * name, char * fontname, unsigned short size, char style, char fgcolor[3]){
-	int f = createAndAddFontRINT(fontname, size);
-	return createAndRenderText(name, f, style, fgcolor);
+/*
+text_t createAndRenderTextFindFont(const char * name, const char * fontname, const unsigned int x, const unsigned int y, const float fontsize){
+	int f = createAndAddFontRINT(fontname);
+	return createAndRenderText(name, f, x, y, fontsize);
 }
+
 //todo font size, style, color, and text either blended or shaded (for alpha blended/tested or no transparency)
 //todo font is only a fontid, font lookup by name and size will be done with a helper function for speed
-text_t createAndRenderText(char * name, int font, char style, char fgcolor[3]){
-	//todo bgcolor
-	//todo bold italic etc
+text_t createAndRenderText(const char * name, const int font, const unsigned int x, const unsigned int y, const float fontsize){
 	text_t tex;
 	tex.type = 1;
 	tex.numchars = strlen(name);
@@ -222,65 +203,24 @@ text_t createAndRenderText(char * name, int font, char style, char fgcolor[3]){
 	font_t *f = returnFontById(font);
 
 	if(!f)return tex;
-	if(!f->font || f->type < 2) return tex;
-	SDL_Surface * s;
-	SDL_Color textColor;// = fgcolor;
-	textColor.r = fgcolor[0];
-	textColor.g = fgcolor[1];
-	textColor.b = fgcolor[2];
-//	SDL_Color textColor = {255, 128, 128};
-	SDL_Color backColor = {0, 0, 0};
-	//blended does argb
-	if(style & TEXT_FORMAT_ALPHA) s = TTF_RenderText_Blended((TTF_Font*)f->font, name, textColor);
-	else s = TTF_RenderText_Shaded((TTF_Font*)f->font, name, textColor, backColor);
-//	s = TTF_RenderText_Solid((TTF_Font*)f->font, name, textColor);
-	if(!s) return tex;
-	tex.width = s->w;
-	tex.height = s->h;
-
-//flips the image vertically
-	int  y, posy, multwidth;
-	char * newdata;
-	if(style & TEXT_FORMAT_ALPHA){
-		newdata = malloc(tex.width * tex.height * 4);
-		multwidth = tex.width *4;
-		for(posy = tex.height-1, y = 0; y < tex.height; posy--, y++){
-			memcpy(newdata + y*multwidth, s->pixels + posy*multwidth, multwidth);
-		}
-	} else {
-	/*
-		newdata = malloc(tex.width * tex.height * 3);
-		multwidth = tex.width * 3;
-		for(posy = tex.height-1, y = 0; y < tex.height; posy--, y++){
-			int x;
-			for(x = 0; x < tex.width; x++)
-			((char *)newdata)[(y*multwidth)+(x*3)+0] = ((char *)s->pixels)[(posy*tex.width)+x] * fgcolor[0];
-			((char *)newdata)[(y*multwidth)+(x*3)+1] = ((char *)s->pixels)[(posy*tex.width)+x] * fgcolor[1];
-			((char *)newdata)[(y*multwidth)+(x*3)+2] = ((char *)s->pixels)[(posy*tex.width)+x] * fgcolor[2];
-//			memcpy(newdata + y*multwidth, s->pixels + posy*multwidth, multwidth);
-		}
-	*/
-	//todo fix
-		newdata = malloc(tex.width * tex.height);
-		for(posy = tex.height-1, y = 0; y < tex.height; posy--, y++){
-			memcpy(newdata + y*tex.width, s->pixels + posy*tex.width, tex.width);
-		}
-
-	}
+	if(!f->ttfdata || f->type < 2) return tex;
 
 
+
+	void * data = malloc(x * y);
+	tex.width = x;
+	tex.height = y;
+	tex.fontsize = fontsize;
 	//find mipmap level
 	unsigned char level;
 	for(level = 0; level < 255; level++){
 		if(1<<level > tex.width && 1<<level > tex.height) break;
 	}
+	stbtt_BakeFontBitmap(f->ttfdata, 0, fontsize, data, x, y, 32, tex.numchars, tex.name); // no guarantee this fits
 
 	glGenTextures(1, &tex.textureid);
 	glBindTexture(GL_TEXTURE_2D, tex.textureid);
-//	glTexImage2D(GL_TEXTURE_2D, 0 , GL_RGBA, s->w, s->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, s->pixels);
-	if(style & TEXT_FORMAT_ALPHA) glTexImage2D(GL_TEXTURE_2D, 0 , GL_RGBA, tex.width, tex.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, newdata);
-//	else glTexImage2D(GL_TEXTURE_2D, 0 , GL_RGB, tex.width, tex.height, 0, GL_RGB, GL_UNSIGNED_BYTE, newdata);
-	else glTexImage2D(GL_TEXTURE_2D, 0 , GL_RED, tex.width, tex.height, 0, GL_RED, GL_UNSIGNED_BYTE, newdata);
+	glTexImage2D(GL_TEXTURE_2D, 0 , GL_ALPHA, tex.width, tex.height, 0, GL_ALPHA, GL_UNSIGNED_BYTE, data);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -288,31 +228,65 @@ text_t createAndRenderText(char * name, int font, char style, char fgcolor[3]){
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, level);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, 16);//Anisotropic Filtering Attempt
 	glGenerateMipmap(GL_TEXTURE_2D);
-	free(newdata);
-	SDL_FreeSurface(s);
-
+	free(data);
 	tex.type = 2;
-	tex.style = style;
-	tex.color[0] = fgcolor[0];
-	tex.color[1] = fgcolor[1];
-	tex.color[2] = fgcolor[2];
-//	console_printf("rendered text \"%s\" with font %s\n", name, f->filename );
-//	printf("rendered text \"%s\" with font %s\n", name, f->filename );
 	return tex;
 }
+*/
 //todo font size
-font_t createAndLoadFont(char * filename ,unsigned short size){
+font_t createAndLoadFont(const char * filename){
 	font_t font;
 	font.type = 1;
-	font.size = size;
+//	font.size = size;
 	font.filename = malloc(strlen(filename)+1);
 	strcpy(font.filename, filename);
-	font.font = TTF_OpenFont(font.filename, size); //todo size
-	if(!font.font) return font;
+
+	FILE * pFile; //todo filesys
+	pFile = fopen (font.filename , "rb" );
+	if(!pFile){
+		console_printf("Error loading font %s, File does not exist!\n", font.filename);
+		return font;
+	}
+	fseek(pFile, 0, SEEK_END);
+	font.datasize = ftell(pFile);
+	rewind(pFile);
+	font.ttfdata = malloc(font.datasize);
+	fread(font.ttfdata, 1, font.datasize, pFile);
+	fclose(pFile);
+//	font.font = TTF_OpenFont(font.filename, size); //todo size
+	if(!font.ttfdata) return font;
+	font.height = 512;
+	font.width = 512;
+	float fontsize = 32.0;
+
+
+
+	void * data = malloc(font.height * font.width);
+	//find mipmap level
+	unsigned char level;
+	for(level = 0; level < 255; level++){
+		if(1<<level > font.width && 1<<level > font.height) break;
+	}
+	font.cdata = malloc(96 * sizeof(stbtt_bakedchar));
+
+	stbtt_BakeFontBitmap(font.ttfdata, 0, fontsize, data, font.width, font.height, 32, 96, font.cdata); // no guarantee this fits
+	glGenTextures(1, &font.textureid);
+	states_bindTexture(GL_TEXTURE_2D, font.textureid);
+	glTexImage2D(GL_TEXTURE_2D, 0 , GL_ALPHA, font.width, font.height, 0, GL_ALPHA, GL_UNSIGNED_BYTE, data);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, level);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, 16);//Anisotropic Filtering Attempt
+	glGenerateMipmap(GL_TEXTURE_2D);
+	free(data);
+
 	font.type = 2;
-	console_printf("loaded font %s with size %i\n", filename, size);
+	console_printf("loaded font %s with size %i\n", filename, font.datasize);
 	return font;
 }
+/*
 int deleteAllText(void){
 	int i;
 	for(i = 0; i < textnumber; i++){
@@ -323,16 +297,18 @@ int deleteAllText(void){
 	textnumber = 0;
 	return i; //todo useful returns
 }
+*/
 int deleteAllFont(void){
 	int i;
 	for(i = 0; i < fontnumber; i++){
-		deleteFont(textlist[i].myid); // if texgroup is unused/deleted, the num will be 0 anyway
+		deleteFont(fontlist[i].myid); // if texgroup is unused/deleted, the num will be 0 anyway
 	}
 	free(fontlist);
 	fontlist = 0;
 	fontnumber = 0;
 	return i; //todo useful returns
 }
+/*
 int addTextRINT(text_t tex){
 	textcount++;
 	for(; textArrayFirstOpen < textArraySize && textlist[textArrayFirstOpen].type; textArrayFirstOpen++);
@@ -368,6 +344,7 @@ text_t * addTextRPOINT(text_t tex){
 	return &textlist[textArrayFirstOpen];
 
 }
+*/
 int addFontRINT(font_t tex){
 	fontcount++;
 	for(; fontArrayFirstOpen < fontArraySize && fontlist[fontArrayFirstOpen].type; fontArrayFirstOpen++);
@@ -403,47 +380,50 @@ font_t * addFontRPOINT(font_t tex){
 	return &fontlist[fontArrayFirstOpen];
 
 }
-int createAndAddTextFindFontRINT(char * name, char * fontname, unsigned short size, char style, char fgcolor[3]){
+/*
+int createAndAddTextFindFontRINT(const char * name, const char * fontname, const unsigned int x, const unsigned int y, const float fontsize){
 	int m = findTextByNameRINT(name); //todo list and make sure that is is same font/size
 //	console_printf("text id: %i\n", m);
 	if(m) return m; //todo instead of return single, return LIST and check that its the same size and font
-	return addTextRINT(createAndRenderTextFindFont(name, fontname, size, style, fgcolor));
-//	return &textlist[addtextToList(createAndLoadtext(name))];
-}
-text_t * createAndAddTextFindFontRPOINT(char * name, char * fontname, unsigned short size, char style, char fgcolor[3]){
-	text_t * m = findTextByNameRPOINT(name);
-//	if(m) console_printf("text id: %i\n", m->myid);
-	if(m) return m; //todo instead of return single, return LIST and check that its the same size and font
-	return addTextRPOINT(createAndRenderTextFindFont(name, fontname, size, style, fgcolor));
+	return addTextRINT(createAndRenderTextFindFont(name, fontname, x, y, fontsize));
 //	return &textlist[addtextToList(createAndLoadtext(name))];
 }
 
-int createAndAddTextRINT(char * name, int font, char style, char fgcolor[3]){
+text_t * createAndAddTextFindFontRPOINT(const char * name, const char * fontname, const unsigned int x, const unsigned int y, const float fontsize){
+	text_t * m = findTextByNameRPOINT(name);
+//	if(m) console_printf("text id: %i\n", m->myid);
+	if(m) return m; //todo instead of return single, return LIST and check that its the same size and font
+	return addTextRPOINT(createAndRenderTextFindFont(name, fontname, x, y, fontsize));
+//	return &textlist[addtextToList(createAndLoadtext(name))];
+}
+
+int createAndAddTextRINT(const char * name,const int font, const unsigned int x, const unsigned int y, const float fontsize){
 	int m = findTextByNameRINT(name); //todo list and make sure that is is same font/size
 //	console_printf("text id: %i\n", m);
 	if(m) return m; //todo instead of return single, return LIST and check that its the same size and font
-	return addTextRINT(createAndRenderText(name, font, style, fgcolor));
-//	return &textlist[addtextToList(createAndLoadtext(name))];
-}
-text_t * createAndAddTextRPOINT(char * name, int font, char style, char fgcolor[3]){
-	text_t * m = findTextByNameRPOINT(name);
-//	if(m) console_printf("text id: %i\n", m->myid);
-	if(m) return m; //todo instead of return single, return LIST and check that its the same size and font
-	return addTextRPOINT(createAndRenderText(name, font, style, fgcolor));
+	return addTextRINT(createAndRenderText(name, font, x, y, fontsize));
 //	return &textlist[addtextToList(createAndLoadtext(name))];
 }
 
-int createAndAddFontRINT(char * name, unsigned short size){
-	int m = findFontByNameSizeRINT(name, size);
+text_t * createAndAddTextRPOINT(const char * name, const int font, const unsigned int x, const unsigned int y, const float fontsize){
+	text_t * m = findTextByNameRPOINT(name);
+//	if(m) console_printf("text id: %i\n", m->myid);
+	if(m) return m; //todo instead of return single, return LIST and check that its the same size and font
+	return addTextRPOINT(createAndRenderText(name, font, x, y, fontsize));
+//	return &textlist[addtextToList(createAndLoadtext(name))];
+}
+*/
+int createAndAddFontRINT(const char * name){
+	int m = findFontByNameRINT(name);
 //	console_printf("font id: %i\n", m);
 	if(m) return m;
-	return addFontRINT(createAndLoadFont(name, size));
+	return addFontRINT(createAndLoadFont(name));
 //	return &fontlist[addFontToList(createAndLoadFont(name))];
 }
-font_t * createAndAddFontRPOINT(char * name, unsigned short size){
-	font_t * m = findFontByNameSizeRPOINT(name, size);
+font_t * createAndAddFontRPOINT(const char * name){
+	font_t * m = findFontByNameRPOINT(name);
 //	if(m) console_printf("font id: %i\n", m->myid);
 	if(m) return m;
-	return addFontRPOINT(createAndLoadFont(name, size));
+	return addFontRPOINT(createAndLoadFont(name));
 //	return &fontlist[addFontToList(createAndLoadFont(name))];
 }

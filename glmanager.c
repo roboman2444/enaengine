@@ -41,6 +41,7 @@ GLuint instancevbo = 0;
 GLuint instancevbo2 = 0;
 int textvbo = 0; //temporary
 int textshaderid = 0; // temporary
+int fsblendshaderid = 0; // temporary
 int cubeModel = 0; // todo move this as well as the other primitives into modelmanager
 unsigned int currentflags = 0;
 //GLfloat fsquadpoints[12] = {-1.0, -1.0, 	1.0, -1.0, 	 1.0, 1.0,
@@ -223,6 +224,7 @@ int glInit(void){
 	vbo_t * tvbo = createAndAddVBORPOINT("text", 2);
 	textvbo = tvbo->myid;
 	textshaderid = shader_createAndAddRINT("text");
+	fsblendshaderid = shader_createAndAddRINT("fsblend");
 	cubeModel = model_findByNameRINT("cube");
 	fsquadmodel = model_findByNameRINT("fsquad");
 
@@ -1146,7 +1148,7 @@ int glDrawViewport(viewport_t *v){
 
 
 	//todo actually redo this sorta stuffs
-	shaderprogram_t * shader = shader_returnById(textshaderid);
+	shaderprogram_t * shader = shader_returnById(fsblendshaderid);
 	shaderpermutation_t * perm = shader_addPermutationToProgram(shader, 0);
 	model_t * m = model_returnById(fsquadmodel);
 	vbo_t * tvbo = returnVBOById(m->vbo);
@@ -1160,6 +1162,7 @@ int glDrawViewport(viewport_t *v){
 
 	return TRUE;
 }
+/*
 int updateConsoleVBO(unsigned int offset){
 	console_updateText(offset);
 	if(!consoleVBO){
@@ -1217,15 +1220,38 @@ int updateConsoleVBO(unsigned int offset){
 
 	return TRUE;
 }
+*/
 int glDrawConsole(void){
-	if(console_displayneedsupdate)updateConsoleVBO(console_offset);
+	if(console_displayneedsupdate){
+		console_updateText(console_offset, screenWidth, screenHeight);
+		if(!consoleVBO){
+			consoleVBO = createAndAddVBORPOINT("console", 2);
+			states_bindVertexArray(consoleVBO->vaoid);
+			states_bindBuffer(GL_ARRAY_BUFFER, consoleVBO->vboid);
+	                glEnableVertexAttribArray(POSATTRIBLOC);
+	                glVertexAttribPointer(POSATTRIBLOC, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), 0);
+	                glEnableVertexAttribArray(TCATTRIBLOC);
+	                glVertexAttribPointer(TCATTRIBLOC, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (void*)(3*sizeof(GLfloat)));
+		}
 
+		states_bindVertexArray(consoleVBO->vaoid);
+		states_bindBuffer(GL_ARRAY_BUFFER, consoleVBO->vboid);
+		glBufferData(GL_ARRAY_BUFFER, console_texttracker.count * 20 * sizeof(GLfloat), console_texttracker.verts, GL_STATIC_DRAW); // change to stream?
+		states_bindBuffer(GL_ELEMENT_ARRAY_BUFFER, consoleVBO->indicesid);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6 *console_texttracker.count * sizeof(GLuint), console_texttracker.faces, GL_STATIC_DRAW);
+	}
 	shaderprogram_t * shader = shader_returnById(textshaderid);
 	shaderpermutation_t * perm = shader_addPermutationToProgram(shader, 0);
+
+
 	glstate_t s = {STATESENABLEBLEND, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_LESS, GL_BACK, GL_FALSE, GL_LESS, 0.0, consoleVBO->vaoid, 0, GL_UNIFORM_BUFFER, 0, 0, 0, perm->id};
 	states_setState(s);
-	states_activeTexture(0);
 
+	states_bindActiveTexture(0, GL_TEXTURE_2D, console_texttracker.textureid);
+
+	glDrawElements(GL_TRIANGLES, 6 * console_texttracker.count, GL_UNSIGNED_INT, 0);
+//	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+/*
 //	printf("consoledraw = %i\n", console_drawlines);
 	int i;
 	for(i =0; i < console_drawlines; i++){
@@ -1233,6 +1259,12 @@ int glDrawConsole(void){
 		states_bindTexture(GL_TEXTURE_2D, console_texttracker[i].textureid);
 		glDrawRangeElements(GL_TRIANGLES, i*4, (i*4)+4, 6, GL_UNSIGNED_INT,  (void*)(i*6*sizeof(GLuint)));
 	}
+*/
+
+
+
+
+
 	return TRUE;
 }
 int glMainDraw(void){

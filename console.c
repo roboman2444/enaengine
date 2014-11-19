@@ -33,6 +33,7 @@ char currentconsoletexttrackerflag;
 
 
 char * consolefont = "FreeMono.ttf";
+int consolefonti = 0;
 
 
 
@@ -42,61 +43,145 @@ int consolewidth = 64;
 //a flag system to delete text not drawn in the past x frames
 //todo
 
-consoleTextTracker_t * console_texttracker;
+consoleTextTracker_t console_texttracker;
 unsigned int console_drawlines;
 
 cvar_t cvar_console_Height = {CVAR_SAVEABLE, "console_Height", "sets the consoles display height", "20"};
 
 //int consoleVBO;
-
-int console_updateText(unsigned int offset){
+typedef struct {
+	unsigned short x0, y0, x1, y1;
+	float xoff, yoff, xadvance;
+} stbtt_bakedchar;
+int console_updateText(unsigned int offset, const unsigned int width, const unsigned int height){
 	int consoleheight = cvar_console_Height.valueint;
 
 	if(offset > consolestringsprinted - consoleheight) offset = consolestringsprinted - consoleheight;
 	currentconsoletexttrackerflag = !currentconsoletexttrackerflag;
-/*
-	if(!consoleVBO){
-		consoleVBO= createAndAddVBORPOINT("console", 2);
-		states_bindVertexArray(consoleVBO->vaoid);
-		glEnableVertexAttribArray(POSATTRIBLOC);
-		glVertexAttribPointer(POSATTRIBLOC, 2, GL_FLOAT, GL_FALSE, 4* sizeof(GLfloat), 0);
-		glEnableVertexAttribArray(TCATTRIBLOC);
-		glVertexAttribPointer(TCATTRIBLOC, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (void*)(2*sizeof(GLfloat)));
-	}
-*/
-	if(!console_texttracker){
-		console_texttracker = malloc(consoleheight * sizeof(consoleTextTracker_t));
-		memset(console_texttracker, 0, consoleheight * sizeof(consoleTextTracker_t));
-	}
+//	if(!console_texttracker){
+//		console_texttracker = malloc(consoleheight * sizeof(consoleTextTracker_t));
+//		memset(console_texttracker, 0, consoleheight * sizeof(consoleTextTracker_t));
+//	}
 	console_drawlines= consolestringsprinted;
 	if(console_drawlines > consoleheight) console_drawlines = consoleheight;
 
+	font_t * consolefontp;
+
+	if(!consolefonti){
+		consolefontp = createAndAddFontRPOINT(consolefont);
+		consolefonti = consolefontp->myid;
+		console_texttracker.textureid = consolefontp->textureid;
+	} else {
+		consolefontp = returnFontById(consolefonti);
+	}
+	console_texttracker.count = 0;
+	unsigned int curplace = 0;
 	int n, p = consolecirclebufferplace - console_drawlines - offset;
+
+
+	float charwidth = (float) 12 / height;
+	float charheight= (float) 24 / width;
+	float charsizeh = (float)24 / (height * 32);
+	float charsizew = (float)24 / (width * 32);
+	float cury = 1.0f - charheight;
 	for(n = 0; n < console_drawlines; n++){
-//		printf("p = %i\n",p);
-		char fg[3] = {255, 255, 255};
-		text_t *t = createAndAddTextFindFontRPOINT(consoleoutputbuffer[p], consolefont, 10, 1, fg);
-		console_texttracker[n].flag = currentconsoletexttrackerflag;
-		console_texttracker[n].textid = t->myid;
-		console_texttracker[n].textureid = t->textureid;
-		console_texttracker[n].width = t->width;
-		console_texttracker[n].height = t->height;
-//		printf("texttracker: %i, %ix%i\n", t->textureid, t->width, t->height);
+		unsigned int mycount = strlen(consoleoutputbuffer[p]);
+		console_texttracker.count += mycount;
+		if(console_texttracker.count > console_texttracker.maxc){
+			//resize it
+			console_texttracker.verts = realloc(console_texttracker.verts, 20 * console_texttracker.count * sizeof(float));
+			console_texttracker.faces = realloc(console_texttracker.faces, 6 * console_texttracker.count * sizeof(unsigned int));
+			for(; console_texttracker.maxc < console_texttracker.count; console_texttracker.maxc++){
+				float * verts = &console_texttracker.verts[console_texttracker.maxc * 20];
+				verts[2] = 0.0f;
+				verts[7] = 0.0f;
+				verts[12] = 0.0f;
+				verts[17] = 0.0f;//z
+
+				unsigned int * faces = &console_texttracker.faces[console_texttracker.maxc * 6];
+				unsigned int mymaxc = console_texttracker.maxc * 4;
+				faces[0] = mymaxc;
+				faces[1] = mymaxc+1;
+				faces[2] = mymaxc+2;
+				faces[3] = mymaxc;
+				faces[4] = mymaxc+2;
+				faces[5] = mymaxc+3;
+			}
+		}
+		GLfloat curx = -1.0f;
+		int i;
+		//RUN THOUGH EACH CHAR AND PUTTER HERE
+		for(i = 0; i < mycount; i++){
+			if(consoleoutputbuffer[p][i] == ' '){
+				curx += charwidth;
+			} else if(consoleoutputbuffer[p][i] == '\t'){
+				curx += charwidth * 8.0f;
+			} else if(consoleoutputbuffer[p][i] == '\n'){
+				curx = -1.0f;
+				cury -= charheight;
+			} else if(consoleoutputbuffer[p][i] >= 32 && consoleoutputbuffer[p][i] < 128){
+				stbtt_bakedchar *b = consoleoutputbuffer[p][i] + ((stbtt_bakedchar *)consolefontp->cdata) - 32;
+				if(curx >= 1.0f){
+					curx = -1.0f;
+					cury -= charheight;
+				}
+				float ch =  (float)(b->y1 - b->y0) * charsizeh;
+				float cw =  (float)(b->x1 - b->x0) * charsizew;
+				/*
+				float x = curx;
+				float y = cury;
+				float topx = x + charwidth;
+				float topy = y + charheight;
+				*/
+				float x = curx + b->xoff * charsizew;
+				float y = cury + charsizeh;
+				float topx = x + cw;
+				float topy = y + ch;
+
+
+				float * verts = &console_texttracker.verts[curplace * 20];
+
+
+				float bu = (float)b->x0/consolefontp->width;
+				float tv = (float)b->y0/consolefontp->height;
+				float tu = (float)b->x1/consolefontp->width;
+				float bv = (float)b->y1/consolefontp->height;
+				verts[0] = x;
+				verts[1] = y;
+				verts[3] = bu;
+				verts[4] = bv;
+
+				verts[5] = topx;
+				verts[6] = y;
+				verts[8] = tu;
+				verts[9] = bv;
+
+				verts[10] = topx;
+				verts[11] = topy;
+				verts[13] = tu;
+				verts[14] = tv;
+
+				verts[15] = x;
+				verts[16] = topy;
+				verts[18] = bu;
+				verts[19] = tv;
+
+//				curx += charwidth;
+				curx += cw;
+				curplace++;
+			}
+		}
 		p = (p+1) % maxconsolebufferlines;
 	}
+	console_texttracker.count = curplace;
+	console_displayneedsupdate = FALSE;
 
 
 	return TRUE;
 
 
-/*
-	int i;
-	for(i = 0; i < consoleheight; i++;){
-		//delete old crap
-		if(texttracker[i].flag
-	}
-*/
 }
+
 /*
 consolechar_t generateCharacter(float offsetx, float offsety, float scalex, float scaley, char c){
 	consolechar_t output;
