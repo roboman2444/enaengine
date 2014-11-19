@@ -6,4 +6,5 @@ By the way, this engine is primarily focused on outdoor areas, and will perform 
 uses stb_image.h
 
 
-Requires sdl1.2(will be changed to sdl2), sdl_ttf(will be changed), glew (might be changed to glloadgen soon), and a working opengl 3.3 environment.
+Requires sdl1.2(will be changed to sdl2), glew (might be changed to glloadgen soon), and a working opengl 3.3 environment.
+Has some weird shader compilation bugs on certian intel GPUs.
