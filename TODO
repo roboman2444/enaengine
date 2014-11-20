@@ -1,6 +1,5 @@
 Text
 	Manage old text and remove it
-	Implement a glyph based system (alternative to sentance based system, for fast changing small stuff like fps counter)
 	Make a dynamic fps/object/draw call counter (like crysis)
 Lights
 	Non point lights
@@ -9,7 +8,6 @@ Lights
 	Global lights (rendered as FSquad/alltiles no matter what). For sun or whatever.
 	Maybe put into quadtree (more info in entities section)
 Console
-	get it rendering text better
 	get it rendering text with the renderqueue system
 	make it not shitty
 World
@@ -48,6 +46,7 @@ Animations
 Textures
 	Experiment with packing whole texturegroups into one texturearray
 		-most textures in a texturegroup are gonna be same size anyway
+		- or experiment with packing texturegroups of the same size into texture arrays
 	Add basic procedural texture functions
 	Add basic texture manipulation functions (mirror, scale, invert, combine, etc)
 Multithread

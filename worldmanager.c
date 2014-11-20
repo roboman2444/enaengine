@@ -651,18 +651,6 @@ int addObjectToWorld(worldobject_t * o){
 	//walk tree and add
 	return walkAndAddObject(o, worldroot);
 }
-int moveEntInWorld(entity_t * e){
-	//store current leaf in 1
-	//walk up till entity fits in leaf
-	//walk down till entity only fits in leaf and not children, or reach lowest branch.
-		//add leafs if needed
-		//store leaf  in 2
-	//move entity to new leaf
-	//update flags if needed, from 1 up
-	//update flags if needed, from 2 up
-		//delete old leaf(1) if needed
-	return TRUE;
-}
 //maybe going to redo
 int addEntityToLeaf(entity_t * e, worldleaf_t *l){
 	//todo
@@ -682,16 +670,16 @@ int addEntityToLeaf(entity_t * e, worldleaf_t *l){
 
 
 
-	void ** list = l->entlist;
+	int * list = l->entlist;
 	int myarrayfo = l->entityarrayfirstopen;
 	int myarraysize = l->entityarraysize;
 	for(; myarrayfo < myarraysize  && list[myarrayfo]; myarrayfo++);
 	l->entityarrayfirstopen = myarrayfo;
 	if(myarrayfo == myarraysize){ //resize
 		l->entityarraysize = ++myarraysize;
-		l->entlist = list = realloc(list, myarraysize * sizeof(void *));
+		l->entlist = list = realloc(list, myarraysize * sizeof(int));
 	}
-	list[myarrayfo] = e;
+	list[myarrayfo] = e->myid;
 
 
 
@@ -742,8 +730,8 @@ int walkAndAddEntity(entity_t * e, worldleaf_t * l){
 	}
 	return FALSE; // should never hit
 }
-int addEntityToWorld(entity_t * e){
-	return walkAndAddEntity(e, worldroot);
+int addEntityToWorld(void * e){
+	return walkAndAddEntity((entity_t *)e, worldroot);
 }
 //todo i really should rename this to avoid confusion...
 int addEntityToWorldOBJ(const int entityid){
@@ -773,3 +761,91 @@ int addEntityToWorldOBJ(const int entityid){
 //	return TRUE;
 }
 
+
+
+//will returns 0 if not moved, currently doesn
+int moveEntInWorld(void * ep){
+	entity_t * e = (entity_t *) ep;
+	worldleaf_t *l1 = e->leaf;
+	worldleaf_t *l = l1;
+	char REMOVEENTMASK = ~WORLDTREEENTITY;
+	if(e->bbox[0] < l->bbox[0] && e->bbox[1] > l->bbox[1] && e->bbox[4] < l->bbox[4] && e->bbox[5] > l->bbox[5]){
+		//entity still fits within
+		//TODO OPTIMIZE THIS SHIT
+		//I DONT NEED TO REMOVE THE ENT IF IT DOESNT MOVE DOWN, BUT IM A LAZY FUCK AND CANT BE BOTHERED RIGHT NOW
+		unsigned int leafpos = e->leafpos;
+		//check to make sure entity is the same one
+		int * list = l->entlist;
+		if(list[leafpos] != e->myid) return -1; //DAMN WE FUKED UP
+		//remove entity from list
+		list[leafpos] = 0;
+		//fix up bound info for list
+		if(leafpos < l->entityarrayfirstopen) l->entityarrayfirstopen = leafpos;
+		int entityarraylasttaken = l->entityarraylasttaken;
+		for(; entityarraylasttaken > 0 && !list[entityarraylasttaken]; entityarraylasttaken--);
+		l->entityarraylasttaken = entityarraylasttaken;
+		l->numents--;
+		walkAndAddEntity(e, l);
+		if(l->numents < 1) l->myincludes = l->myincludes & REMOVEENTMASK;
+	} else {
+		//entity does not fit within bbox anymore
+		unsigned int leafpos = e->leafpos;
+		//check to make sure entity is the same one
+		int * list = l->entlist;
+		if(list[leafpos] != e->myid) return 0; //DAMN WE FUKED UP
+		//remove entity from list
+		list[leafpos] = 0;
+		//fix up bound info for list
+		if(leafpos < l->entityarrayfirstopen) l->entityarrayfirstopen = leafpos;
+		int entityarraylasttaken = l->entityarraylasttaken;
+		for(; entityarraylasttaken > 0 && !list[entityarraylasttaken]; entityarraylasttaken--);
+		l->entityarraylasttaken = entityarraylasttaken;
+		l->numents--;
+		//update my flags
+		if(l->numents < 1){
+			l->myincludes = l->myincludes & REMOVEENTMASK;
+			l->includes = l->myincludes;
+			if(l->children[0])l->includes |= l->children[0]->includes;
+			if(l->children[1])l->includes |= l->children[1]->includes;
+			if(l->children[2])l->includes |= l->children[2]->includes;
+			if(l->children[3])l->includes |= l->children[3]->includes;
+		}
+		//TODO CHECK IF I NEED TO DELETE THIS LEAF
+
+		//pop up till ent fits
+		for(l = l->parent; l; l = l->parent){
+			if(e->bbox[0] < l->bbox[0] && e->bbox[1] > l->bbox[1] && e->bbox[4] < l->bbox[4] && e->bbox[5] > l->bbox[5]) break;
+		}
+		if(!l){
+			e->leaf = 0;
+			return 0;
+		}
+		//recursively add to new leaf
+		walkAndAddEntity(e, l);
+
+		//walk up and fix flags
+		//TODO DELETE HERE AS WELL
+		if(l1->numents < 1 && !(l->includes & WORLDTREEENTITY)){
+			for(l = l1->parent; l; l = l->parent){
+				if(l->myincludes & WORLDTREEENTITY) break;
+				l->includes = l->myincludes;
+				if(l->children[0])l->includes |= l->children[0]->includes;
+				if(l->children[1])l->includes |= l->children[1]->includes;
+				if(l->children[2])l->includes |= l->children[2]->includes;
+				if(l->children[3])l->includes |= l->children[3]->includes;
+			}
+		}
+	}
+	//TODO RECALC BBOX
+
+	//store current leaf in 1
+	//walk up till entity fits in leaf
+	//walk down till entity only fits in leaf and not children, or reach lowest branch.
+		//add leafs if needed
+		//store leaf  in 2
+	//move entity to new leaf
+	//update flags if needed, from 1 up
+	//update flags if needed, from 2 up
+		//delete old leaf(1) if needed, walk up and continue deleting
+	return TRUE;
+}

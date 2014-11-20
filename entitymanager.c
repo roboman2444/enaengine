@@ -134,6 +134,7 @@ int entity_addRINT(const char * name){
 
 	addToHashTable(entity_list[entity_arrayfirstopen].name, returnid, entityhashtable);
 	if(entity_arraylasttaken < entity_arrayfirstopen) entity_arraylasttaken = entity_arrayfirstopen; //todo redo
+	if(returnid == 0) printf("yes, i can\n");
 	return returnid;
 }
 entity_t * entity_addRPOINT(const char * name){
@@ -152,6 +153,7 @@ entity_t * entity_addRPOINT(const char * name){
 	if(entity_arraylasttaken < entity_arrayfirstopen) entity_arraylasttaken = entity_arrayfirstopen;
 //	printf("entity_arraysize = %i\n", entity_arraysize);
 //	printf("entity_count = %i\n", entity_count);
+	if(entity_list[entity_arrayfirstopen].myid == 0) printf("yes, i can\n");
 
 	return &entity_list[entity_arrayfirstopen];
 

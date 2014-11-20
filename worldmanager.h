@@ -38,8 +38,8 @@ typedef struct worldleaf_s{
 	vec_t bbox[6];
 	vec_t bboxp[24];
 	worldobject_t * list;
-	void  ** entlist;
-	void  ** lightlist; //may change to int (id)
+	int * entlist;
+	int * lightlist;
 	int numobjects;
 	int numents;
 	int numlights;
@@ -84,5 +84,8 @@ worldleaf_t * findObject(worldobject_t * o);
 
 int deleteLeaf(worldleaf_t *l);
 int deleteWorld(void);
+
+int moveEntInWorld(void * ep);
+int addEntityToWorld(void * e);
 
 #endif

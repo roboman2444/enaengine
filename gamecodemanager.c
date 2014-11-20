@@ -156,6 +156,10 @@ int recalcEntBBox(entity_t * e){
 		else if(e->bboxp[oneplace+2] < e->bbox[5]) e->bbox[5] = e->bboxp[oneplace+2];
 	}
 	e->needsbboxupdate = FALSE;
+
+
+	if(!e->leaf) addEntityToWorld(e);
+	else moveEntInWorld(e);
 	return TRUE;
 }
 
