@@ -570,7 +570,7 @@ int deleteWorld(void){
 int addObjectToLeaf(worldobject_t * o, worldleaf_t *l){
 	//todo
 	//if first object in, set anyway
-	if(!l->numobjects){
+	if(!l->numobjects && !l->numents){
 		l->bbox[2] = o->bbox[2];
 		l->bbox[3] = o->bbox[3];
 	} else {
@@ -629,6 +629,7 @@ int walkAndAddObject(worldobject_t * o, worldleaf_t * l){
 			newcenter[0] = l->center[0] + ((float)xspace-0.5)*l->size;
 			newcenter[1] = l->center[1] + ((float)yspace-0.5)*l->size;
 			l->children[intspace] = createWorldLeaf(l->treedepth + 1, newcenter);
+			l->children[intspace]->parent = l;
 			walkAndAddObject(o, l->children[intspace]);
 		} else {
 			walkAndAddObject(o, l->children[intspace]);
@@ -655,7 +656,7 @@ int addObjectToWorld(worldobject_t * o){
 int addEntityToLeaf(entity_t * e, worldleaf_t *l){
 	//todo
 	//if first object in, set anyway
-	if(!l->numobjects){
+	if(!l->numobjects && !l->numents){
 		l->bbox[2] = e->bbox[2];
 		l->bbox[3] = e->bbox[3];
 	} else {
@@ -680,6 +681,7 @@ int addEntityToLeaf(entity_t * e, worldleaf_t *l){
 		l->entlist = list = realloc(list, myarraysize * sizeof(int));
 	}
 	list[myarrayfo] = e->myid;
+	if(l->entityarraylasttaken < myarrayfo) l->entityarraylasttaken = myarrayfo;
 
 
 
@@ -687,6 +689,7 @@ int addEntityToLeaf(entity_t * e, worldleaf_t *l){
 //	l->entlist = realloc(l->list, l->numents * sizeof(void *));
 //	l->entlist[l->numents-1] = e;
 	l->myincludes = l->myincludes | WORLDTREEENTITY;
+//	l->includes = l->includes | WORLDTREEENTITY;
 	world_numEnts++;
 	return TRUE;
 }
@@ -716,6 +719,7 @@ int walkAndAddEntity(entity_t * e, worldleaf_t * l){
 			newcenter[0] = l->center[0] + ((float)xspace-0.5)*l->size;
 			newcenter[1] = l->center[1] + ((float)yspace-0.5)*l->size;
 			l->children[intspace] = createWorldLeaf(l->treedepth + 1, newcenter);
+			l->children[intspace]->parent = l;
 			walkAndAddEntity(e, l->children[intspace]);
 		} else {
 			walkAndAddEntity(e, l->children[intspace]);
@@ -770,6 +774,7 @@ int moveEntInWorld(void * ep){
 	worldleaf_t *l = l1;
 	char REMOVEENTMASK = ~WORLDTREEENTITY;
 	if(e->bbox[0] < l->bbox[0] && e->bbox[1] > l->bbox[1] && e->bbox[4] < l->bbox[4] && e->bbox[5] > l->bbox[5]){
+//	if(e->bbox[0] > l->bbox[0] && e->bbox[1] < l->bbox[1] && e->bbox[4] > l->bbox[4] && e->bbox[5] < l->bbox[5]){
 		//entity still fits within
 		//TODO OPTIMIZE THIS SHIT
 		//I DONT NEED TO REMOVE THE ENT IF IT DOESNT MOVE DOWN, BUT IM A LAZY FUCK AND CANT BE BOTHERED RIGHT NOW
@@ -802,6 +807,7 @@ int moveEntInWorld(void * ep){
 		l->entityarraylasttaken = entityarraylasttaken;
 		l->numents--;
 		//update my flags
+
 		if(l->numents < 1){
 			l->myincludes = l->myincludes & REMOVEENTMASK;
 			l->includes = l->myincludes;
@@ -810,21 +816,24 @@ int moveEntInWorld(void * ep){
 			if(l->children[2])l->includes |= l->children[2]->includes;
 			if(l->children[3])l->includes |= l->children[3]->includes;
 		}
+
 		//TODO CHECK IF I NEED TO DELETE THIS LEAF
 
 		//pop up till ent fits
 		for(l = l->parent; l; l = l->parent){
 			if(e->bbox[0] < l->bbox[0] && e->bbox[1] > l->bbox[1] && e->bbox[4] < l->bbox[4] && e->bbox[5] > l->bbox[5]) break;
+//			if(e->bbox[0] > l->bbox[0] && e->bbox[1] < l->bbox[1] && e->bbox[4] > l->bbox[4] && e->bbox[5] < l->bbox[5]) break;
 		}
 		if(!l){
 			e->leaf = 0;
+			console_printf("out of bounds ent!\n");
 			return 0;
 		}
 		//recursively add to new leaf
 		walkAndAddEntity(e, l);
-
 		//walk up and fix flags
 		//TODO DELETE HERE AS WELL
+
 		if(l1->numents < 1 && !(l->includes & WORLDTREEENTITY)){
 			for(l = l1->parent; l; l = l->parent){
 				if(l->myincludes & WORLDTREEENTITY) break;
@@ -835,6 +844,7 @@ int moveEntInWorld(void * ep){
 				if(l->children[3])l->includes |= l->children[3]->includes;
 			}
 		}
+
 	}
 	//TODO RECALC BBOX
 
