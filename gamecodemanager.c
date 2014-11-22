@@ -208,6 +208,79 @@ int calcEntAttachMat(entity_t * e){ //return value is weather e->mat got changed
 	return FALSE;
 }
 
+void entityCollideBBoxL(entity_t * e, worldleaf_t *l){
+		int * elist = l->entlist;
+		int max = l->entityarraylasttaken+1;
+		int i;
+		for(i = 0; i < max; i++){
+			int cei = elist[i];
+			if(!cei) continue;
+			entity_t * ce = entity_returnById(cei);
+			//check if they collide
+			if(testBBoxInBBox(e->bbox, ce->bbox)){
+				//run collide function
+				e->touch(e, cei);
+//				e->touch(e, ce);
+			}
+		}
+		worldleaf_t ** children = l->children;
+		int j;
+		for(j = 0; j < 4; j++){
+			if(children[j] && (children[j]->includes & WORLDTREEENTITY) && testBBoxInBBox(e->bbox, children[j]->bbox))
+				entityCollideBBoxL(e, children[j]);
+		}
+}
+//same as entityCollideBBoxL, but it checks to make sure it doesnt collide against itself
+void entityCollideBBoxSL(entity_t * e, worldleaf_t *l){
+		int myid = e->myid;
+		int * elist = l->entlist;
+		int max = l->entityarraylasttaken+1;
+		int i;
+		for(i = 0; i < max; i++){
+			int cei = elist[i];
+			if(!cei || cei == myid) continue;
+			entity_t * ce = entity_returnById(cei);
+			//check if they collide
+			if(testBBoxInBBox(e->bbox, ce->bbox)){
+				//run collide function
+				e->touch(e, cei);
+//				e->touch(e, ce);
+			}
+		}
+		worldleaf_t ** children = l->children;
+		int j;
+		for(j = 0; j < 4; j++){
+			if(children[j] && (children[j]->includes & WORLDTREEENTITY) && testBBoxInBBox(e->bbox, children[j]->bbox))
+				entityCollideBBoxL(e, children[j]);
+		}
+}
+
+void entityCollideBBox(entity_t *e){
+	//caller of this function should make sure e has a ontouch func defined
+	worldleaf_t * l = e->leaf;
+	worldleaf_t * upleaf;
+	//entity will always collide with all its parent leafs, so test them all
+	for(upleaf = l->parent; upleaf; upleaf = upleaf->parent){
+		if(!(upleaf->myincludes & WORLDTREEENTITY))continue; // may be unnecisary
+		int * elist = upleaf->entlist;
+		int max = upleaf->entityarraylasttaken+1;
+		int i;
+		for(i = 0; i < max; i++){
+			int cei = elist[i];
+			if(!cei) continue;
+			entity_t * ce = entity_returnById(cei);
+			//check if they collide
+			if(testBBoxInBBox(e->bbox, ce->bbox)){
+				//run collide function
+				e->touch(e, cei);
+//				e->touch(e, ce);
+			}
+		}
+	}
+	//now check children leafs
+	entityCollideBBoxSL(e, l);
+}
+
 void gameCodeTick(void){ //todo maybe change to float in seconds
 	tGameTime+=GCTIMESTEP;
 	int i;

@@ -77,6 +77,10 @@
 #define vec4comp(a,b) ((a)[0] == (b)[0] && (a)[1] == (b)[1] && (a)[2] == (b)[2] && (a)[3] == (b)[3])
 
 
+//check if bboxes collide
+#define testBBoxInBBox(a,b) ( (a)[1] < (b)[0] && (b)[1] < (a)[0] && (a)[3] < (b)[2] && (b)[3] < (a)[2] && (a)[5] < (b)[4] && (b)[5] < (a)[4] )
+
+
 //todo should i inline these?
 void getBBoxPFromBBox(const vec_t * bbox, vec_t *bboxp);
 // distance from one vector to another (dist between points)

@@ -774,7 +774,6 @@ int moveEntInWorld(void * ep){
 	worldleaf_t *l = l1;
 	char REMOVEENTMASK = ~WORLDTREEENTITY;
 	if(e->bbox[0] < l->bbox[0] && e->bbox[1] > l->bbox[1] && e->bbox[4] < l->bbox[4] && e->bbox[5] > l->bbox[5]){
-//	if(e->bbox[0] > l->bbox[0] && e->bbox[1] < l->bbox[1] && e->bbox[4] > l->bbox[4] && e->bbox[5] < l->bbox[5]){
 		//entity still fits within
 		//TODO OPTIMIZE THIS SHIT
 		//I DONT NEED TO REMOVE THE ENT IF IT DOESNT MOVE DOWN, BUT IM A LAZY FUCK AND CANT BE BOTHERED RIGHT NOW
@@ -820,10 +819,7 @@ int moveEntInWorld(void * ep){
 		//TODO CHECK IF I NEED TO DELETE THIS LEAF
 
 		//pop up till ent fits
-		for(l = l->parent; l; l = l->parent){
-			if(e->bbox[0] < l->bbox[0] && e->bbox[1] > l->bbox[1] && e->bbox[4] < l->bbox[4] && e->bbox[5] > l->bbox[5]) break;
-//			if(e->bbox[0] > l->bbox[0] && e->bbox[1] < l->bbox[1] && e->bbox[4] > l->bbox[4] && e->bbox[5] < l->bbox[5]) break;
-		}
+		for(l = l->parent; l; l = l->parent) if(e->bbox[0] < l->bbox[0] && e->bbox[1] > l->bbox[1] && e->bbox[4] < l->bbox[4] && e->bbox[5] > l->bbox[5]) break;
 		if(!l){
 			e->leaf = 0;
 			console_printf("out of bounds ent!\n");
@@ -847,6 +843,14 @@ int moveEntInWorld(void * ep){
 
 	}
 	//TODO RECALC BBOX
+
+
+	//TODO WALK UP, WALK DOWN, CHECK IF RESULTING LEAF IS DIFFERENT THAN STARTING LEAF.
+	//IF IT IS, MOVE ENT
+		// RECALC BBOX IN NEW ONE
+		// THEN RECALC BBOX IN OLD ONE
+//	ELSE
+	// recalc bbox in old one
 
 	//store current leaf in 1
 	//walk up till entity fits in leaf

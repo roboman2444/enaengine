@@ -32,6 +32,12 @@ unsigned char checkVertsInBBox(const vec_t *bbox, const vec_t *verts, const unsi
 	for(j = 2; j < max; j+=3){ if(verts[j] > bbox[5]) break;} if(j> max)return FALSE;
 	return TRUE;
 }
+/* changed to a #define
+unsigned char checkBBoxInBBox(const vec_t * bboxa, const vec_t * bboxb){
+	if(bboxa[1] < bboxb[0] && bboxb[1] < bboxa[0] && bboxa[3] < bboxb[2] && bboxb[3] < bboxa[2] && bboxa[5] < bboxb[4] && bboxb[5] < bboxa[4]) return TRUE;
+	return FALSE;
+}
+*/
 vec_t vec3distvec(const vec3_t b, const vec3_t c){
 	vec3_t math;
 	vec3subvec(math, b, c);
