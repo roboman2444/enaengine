@@ -163,7 +163,7 @@ int createAndAddViewportRINT(char * name, char type){
 
 
 vec3_t stockv_forward = { 0.0, 0.0, 1.0 };
-vec3_t stockv_up = { 0.0, 1.0, 1.0 };
+vec3_t stockv_up = { 0.0, 1.0, 0.0 };
 vec3_t stockv_right = { 1.0, 0.0, 0.0 };
 
 
@@ -179,7 +179,7 @@ void recalcViewMatrix(viewport_t * v){
 }
 void recalcProjectionMatrix(viewport_t * v){
 	double sine, cotangent, deltaZ;
-	double radians = v->fov / 2 * M_PI / 180;
+	double radians = v->fov / 2.0 * M_PI / 180.0;
 
 	deltaZ = v->far - v->near;
 	sine = sin(radians);
@@ -193,8 +193,8 @@ void recalcProjectionMatrix(viewport_t * v){
 	v->projection.m[1][1] = cotangent;
 	v->projection.m[2][2] = -(v->far + v->near) / deltaZ;
 //	v->projection.m[2][2] = -nudge;
-	v->projection.m[2][3] = -1;
-	v->projection.m[3][2] = -2 * v->near * v->far / deltaZ;
+	v->projection.m[2][3] = -1.0;
+	v->projection.m[3][2] = -2.0 * v->near * v->far / deltaZ;
 //	v->projection.m[3][2] = -2 * v->near * nudge;
 	v->projection.m[3][3] = 0;
 
@@ -510,6 +510,7 @@ int recalcViewport(viewport_t * v, vec3_t pos, vec3_t angle, float fov, float as
 		recalcFrustum(v);
 		recalcFrustumBBoxP(v);
 	}
+	//TODO change this to projchanged and viewchanged and reset em!
 	getDir(v);
 	return v->viewchanged;
 }

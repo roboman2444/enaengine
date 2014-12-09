@@ -91,7 +91,6 @@ char resizeTexture(texture_t *t, unsigned int width, unsigned int height){
 	if(!width || !height) return FALSE;
 	if(t->width == width && t->height == height) return FALSE;
 
-	//todo make use of a state manager for texture binds
 	states_bindTexture(GL_TEXTURE_2D, t->id);
 
 	char componentflags = t->flags & 3;

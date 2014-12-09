@@ -744,7 +744,7 @@ void drawPLightOCallback(renderlistitem_t * ilist, unsigned int count){
 	//	framebuffer_t *df = returnFramebufferById(v->dfbid);
 		framebuffer_t *of = returnFramebufferById(v->outfbid);
 
-		GLfloat mout[16];
+		GLfloat mout[16];	//todo calc MOUT per viewport in viewport update
 		Matrix4x4_ToArrayFloatGL(&v->viewproj, mout);
 		glUniformMatrix4fv(perm->unimat40, 1, GL_FALSE, mout);
 		Matrix4x4_ToArrayFloatGL(&v->view, mout);

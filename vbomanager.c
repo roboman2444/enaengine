@@ -151,7 +151,7 @@ int setUpVBOStride(vbo_t * vbo, unsigned char posstride, unsigned char normstrid
 	if(blendwstride){
 		glEnableVertexAttribArray(BLENDWATTRIBLOC);
 		glVertexAttribPointer(BLENDWATTRIBLOC, blendwstride, GL_UNSIGNED_BYTE, GL_TRUE, totalstridesize, (void*)curstride);
-		curstride += blendwstride * sizeof(GLfloat);
+		curstride += blendwstride * sizeof(GLfloat);//todo GLFloat?
 	}
 	vbo->setup = TRUE;
 	vbo->posstride = posstride;
