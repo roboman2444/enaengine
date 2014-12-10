@@ -13,7 +13,6 @@ Console
 World
 	Disable depth testing to see weather or not my little ordering method helps
 		-attempted, not enough of a change to tell
-	Redo quadtree system... Use linked lists instead of arrays for storing items per leaf?
 	Basic AABB->AABB collision detection
 	Basic SPHERE->AABB collision detection
 	Basic SPHERE->SPHERE collision detection

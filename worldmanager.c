@@ -693,6 +693,34 @@ int addEntityToLeaf(entity_t * e, worldleaf_t *l){
 	world_numEnts++;
 	return TRUE;
 }
+//probably not gonna use this func... here anyway
+worldleaf_t * walkDown(vec_t b[6], worldleaf_t *l){
+	char xspace = 0;
+	char yspace = 0;
+	char nofits = 0;
+	if(l->treedepth >= WORLDTREEDEPTH) nofits = TRUE;
+	if(!nofits){ //possible optimization? might remove
+		//find possible space
+		if(b[0] > l->center[0]) xspace = TRUE;
+		if(b[4] > l->center[1]) yspace = TRUE;
+
+		//now check the other bounds, make sure its the same as the origional
+		if((b[1] > l->center[0]) != xspace) nofits = TRUE;
+		if((b[5] > l->center[1]) != yspace) nofits = TRUE;
+	}
+	if(!nofits){
+		int intspace = xspace + 2*yspace;
+		if(!l->children[intspace]){
+			vec2_t newcenter;
+			newcenter[0] = l->center[0] + ((float)xspace-0.5)*l->size;
+			newcenter[1] = l->center[1] + ((float)yspace-0.5)*l->size;
+			l->children[intspace] = createWorldLeaf(l->treedepth + 1, newcenter);
+			l->children[intspace]->parent = l;
+		}
+		return walkDown(b, l->children[intspace]);
+	}
+	return l;
+}
 //maybe going to redo
 int walkAndAddEntity(entity_t * e, worldleaf_t * l){
 	l->includes = l->includes | WORLDTREEENTITY;
@@ -773,26 +801,45 @@ int moveEntInWorld(void * ep){
 	worldleaf_t *l1 = e->leaf;
 	worldleaf_t *l = l1;
 	char REMOVEENTMASK = ~WORLDTREEENTITY;
+
+
 	if(e->bbox[0] < l->bbox[0] && e->bbox[1] > l->bbox[1] && e->bbox[4] < l->bbox[4] && e->bbox[5] > l->bbox[5]){
-		//entity still fits within
-		//TODO OPTIMIZE THIS SHIT
-		//I DONT NEED TO REMOVE THE ENT IF IT DOESNT MOVE DOWN, BUT IM A LAZY FUCK AND CANT BE BOTHERED RIGHT NOW
-		unsigned int leafpos = e->leafpos;
-		//check to make sure entity is the same one
-		int * list = l->entlist;
-		if(list[leafpos] != e->myid) return -1; //DAMN WE FUKED UP
-		//remove entity from list
-		list[leafpos] = 0;
-		//fix up bound info for list
-		if(leafpos < l->entityarrayfirstopen) l->entityarrayfirstopen = leafpos;
-		int entityarraylasttaken = l->entityarraylasttaken;
-		for(; entityarraylasttaken > 0 && !list[entityarraylasttaken]; entityarraylasttaken--);
-		l->entityarraylasttaken = entityarraylasttaken;
-		l->numents--;
-		walkAndAddEntity(e, l);
-		if(l->numents < 1) l->myincludes = l->myincludes & REMOVEENTMASK;
+		char nofits = FALSE;
+		if(l->treedepth >= WORLDTREEDEPTH) nofits = TRUE; //cant move any lower anyway...
+		//check if i can move any lower
+		//find possible space
+		if(!nofits){
+			char xspace = FALSE;
+			char yspace = FALSE;
+			if(e->bbox[0] > l->center[0]) xspace = TRUE;
+			if(e->bbox[4] > l->center[1]) yspace = TRUE;
+			//now check the other bounds, make sure its the same as the origional
+			if((e->bbox[1] > l->center[0]) != xspace) nofits = TRUE;
+			if((e->bbox[5] > l->center[1]) != yspace) nofits = TRUE;
+		}
+		if(!nofits){
+			//the entity can further move down in the tree
+			unsigned int leafpos = e->leafpos;
+			//check to make sure entity is the same one
+			int * list = l->entlist;
+			if(list[leafpos] != e->myid) return -1; //DAMN WE FUKED UP
+			//remove entity from list
+			list[leafpos] = 0;
+			//fix up bound info for list
+			if(leafpos < l->entityarrayfirstopen) l->entityarrayfirstopen = leafpos;
+			int entityarraylasttaken = l->entityarraylasttaken;
+			for(; entityarraylasttaken > 0 && !list[entityarraylasttaken]; entityarraylasttaken--);
+			l->entityarraylasttaken = entityarraylasttaken;
+			l->numents--;
+			//walk and add ent
+			walkAndAddEntity(e, l);
+			if(l->numents < 1) l->myincludes = l->myincludes & REMOVEENTMASK;
+		} else {
+			// i need to manually fix the bbox for this leaf
+			//todo
+		}
 	} else {
-		//entity does not fit within bbox anymore
+		//entity does not fit within bbox anymore, delete it
 		unsigned int leafpos = e->leafpos;
 		//check to make sure entity is the same one
 		int * list = l->entlist;
@@ -842,7 +889,7 @@ int moveEntInWorld(void * ep){
 		}
 
 	}
-	//TODO RECALC BBOX
+	//TODO RECALC BBOXES, WALK UP FROM L AND L1
 
 
 	//TODO WALK UP, WALK DOWN, CHECK IF RESULTING LEAF IS DIFFERENT THAN STARTING LEAF.
