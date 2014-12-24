@@ -100,7 +100,7 @@ void main(){
 
 
 
-
+//#define VOLUMETRIC
 #ifdef VOLUMETRIC
 
 		//if(lightdist > lsize)

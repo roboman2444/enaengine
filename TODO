@@ -11,6 +11,7 @@ Console
 	get it rendering text with the renderqueue system
 	make it not shitty
 World
+	Use a queue system to figure out of tree leafs need bbox recalculation
 	Disable depth testing to see weather or not my little ordering method helps
 		-attempted, not enough of a change to tell
 	Basic AABB->AABB collision detection
@@ -22,9 +23,6 @@ Deferred
 Forward
 	add forward pipeline
 Entities
-	Add into a SEPERATE quadtree... or maybe the same
-		the world quadtree would have a bitmask for stuff in each leaf/children leafs. Just AND the bitmask as you walk up the quadtree.
-	walk all quadtrees together, only deviate when paths diverge
 	change quadtree check algorithm to add all entities if the entire quadtree bbox checks out, dont bother checking ent bboxes
 		-maybe
 Gamecode

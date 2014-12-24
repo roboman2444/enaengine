@@ -1216,65 +1216,6 @@ int glDrawViewport(viewport_t *v){
 
 	return TRUE;
 }
-/*
-int updateConsoleVBO(unsigned int offset){
-	console_updateText(offset);
-	if(!consoleVBO){
-		consoleVBO = createAndAddVBORPOINT("console", 2);
-		states_bindVertexArray(consoleVBO->vaoid);
-		states_bindBuffer(GL_ARRAY_BUFFER, consoleVBO->vboid);
-                glEnableVertexAttribArray(POSATTRIBLOC);
-                glVertexAttribPointer(POSATTRIBLOC, 2, GL_FLOAT, GL_FALSE, 4* sizeof(GLfloat), 0);
-                glEnableVertexAttribArray(TCATTRIBLOC);
-                glVertexAttribPointer(TCATTRIBLOC, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (void*)(2*sizeof(GLfloat)));
-	}
-
-	GLfloat * points = malloc(16 * console_drawlines * sizeof(GLfloat));
-//	memset(points, 0.0 , 16* console_drawlines * sizeof(GLfloat));
-	GLuint * indices = malloc(6 * console_drawlines * sizeof(GLuint));
-
-	unsigned int currentheight = 0;
-	int i;
-	for(i = 0; i < console_drawlines; i++){
-		int k;
-		for(k = 0; k <6; k++) indices[(i*6)+k] = rectangleindices[k] + 4*i;
-//		indices[0+i*6] = 0 + 4*i;
-//		indices[1+i*6] = 1 + 4*i;
-//		indices[2+i*6] = 2 + 4*i;
-//		indices[3+i*6] = 0 + 4*i;
-//		indices[4+i*6] = 1 + 4*i;
-//		indices[5+i*6] = 2 + 4*i;
-		for(k = 0; k <16; k++) points[(i*16)+k] = fsquadpoints[k];
-//		memcpy(&points[i*16], fsquadpoints, 16 * sizeof(GLfloat));
-		points[i*16 +13] = 1.0 - 2.0*((float)currentheight/(float)screenHeight);
-		points[i*16 +9] = 1.0 - 2.0*((float)currentheight/(float)screenHeight);
-		currentheight += console_texttracker[i].height;
-//		currentheight += 10;
-//		currentheight = i*10 +10;
-		points[i*16 +5] = 1.0 - 2.0*((float)currentheight/(float)screenHeight);
-		points[i*16 +1] = 1.0 - 2.0*((float)currentheight/(float)screenHeight);
-
-		points[i*16+4] = 2.0*((float)console_texttracker[i].width/(float)screenWidth) -1.0;
-//		points[i*16+4] = 1.0-2.0*((float)console_texttracker[i].width/(float)screenWidth);
-		points[i*16+8] = 2.0*((float)console_texttracker[i].width/(float)screenWidth) - 1.0;
-
-//		points[i*16+0] = -0.9;
-//		points[i*16+12] = -0.9;
-	}
-	states_bindVertexArray(consoleVBO->vaoid);
-	states_bindBuffer(GL_ARRAY_BUFFER, consoleVBO->vboid);
-	glBufferData(GL_ARRAY_BUFFER, 16 * console_drawlines * sizeof(GLfloat), points, GL_STATIC_DRAW); // change to stream?
-	states_bindBuffer(GL_ELEMENT_ARRAY_BUFFER, consoleVBO->indicesid);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6 *console_drawlines* sizeof(GLuint), indices, GL_STATIC_DRAW);
-	free(points);
-	free(indices);
-	consoleVBO->numfaces = 2*console_drawlines;
-	consoleVBO->numverts = 4*console_drawlines;
-	console_displayneedsupdate = 0;
-
-	return TRUE;
-}
-*/
 int glDrawConsole(void){
 	if(console_displayneedsupdate){
 		console_updateText(console_offset, screenWidth, screenHeight);

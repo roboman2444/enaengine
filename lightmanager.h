@@ -42,7 +42,6 @@ typedef struct lightbatches_s {
 } lightbatches_t;
 */
 
-/// might not do a quadtree for lights... too slow to dynamically recreate
 typedef struct lightleaf_s {
 	vec2_t center;
 	struct lightleaf_s *children[4];

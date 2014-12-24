@@ -12,7 +12,7 @@
 #include "texturemanager.h"
 #include "shadermanager.h"
 
-#define WORLDFILEVERSION 2
+#define WORLDFILEVERSION 3
 
 int worldOK = 0;
 worldleaf_t * worldroot;
@@ -40,9 +40,20 @@ typedef struct worldFileHeader_s {
 	unsigned int shaderlistlength;	// bytes
 	unsigned int shaderlistcount;	// count
 	unsigned int objectlistcount;	// count
-//	unsigned int entitylistcount;	// count
-//	unsigned int lightlistcount;	// count
+	unsigned int entitylistcount;	// count
+	unsigned int lightlistcount;	// count
 }worldFileHeader_t;
+typedef struct worldFileHeaderv2_s {
+	unsigned int version;
+	unsigned int filesize;		//bytes
+	unsigned int modellistlength;	// bytes
+	unsigned int modellistcount;	// count
+	unsigned int texturelistlength;	// bytes
+	unsigned int texturelistcount;	// count
+	unsigned int shaderlistlength;	// bytes
+	unsigned int shaderlistcount;	// count
+	unsigned int objectlistcount;	// count
+}worldFileHeaderv2_t;
 typedef struct worldFileObject_s {
 	matrix4x4_t mat;
 	unsigned int modelindice;
@@ -51,24 +62,24 @@ typedef struct worldFileObject_s {
 	int shaderperm;
 	char flags;
 }worldFileObject_t;
-//typedef struct worldFileEntity_s {
-//	matrix4x4_t mat;
-//	unsigned int modelindice;
-//	unsigned int textureindice;
-///	unsigned int shaderindice;
-//	int shaderperm;
-//	char flags;
+typedef struct worldFileEntity_s {
+	matrix4x4_t mat;
+	unsigned int modelindice;
+	unsigned int textureindice;
+	unsigned int shaderindice;
+	int shaderperm;
+	char flags;
 	//todo
-//}worldFileEntity_t;
-//typedef struct worldFileLight_s {
-//	matrix4x4_t mat;
-//	unsigned int modelindice;
-//	unsigned int textureindice;
-///	unsigned int shaderindice;
-//	int shaderperm;
-//	char flags;
+}worldFileEntity_t;
+typedef struct worldFileLight_s {
+	matrix4x4_t mat;
+	unsigned int modelindice;
+	unsigned int textureindice;
+	unsigned int shaderindice;
+	int shaderperm;
+	char flags;
 	//todo
-//}worldFileLight_t;
+}worldFileLight_t;
 
 //todo gotta fix the list gettin!
 int saveWorldPopList(int * count, worldobject_t ** outlist, worldleaf_t * leaf){
@@ -357,9 +368,26 @@ int loadWorld(char * filename){
 	char **shadernamelist = 0;
 	char *buf = 0;
 
-	if(fread(&header, 1, sizeof(header), f) != sizeof(header))goto error;
-	if(header.version != WORLDFILEVERSION)goto error; //todo different version handles
-	if(header.shaderlistlength + header.modellistlength + header.texturelistlength + (header.objectlistcount * sizeof(worldFileObject_t))/*+ (header.entitylistcount * sizeof(worldFileEntity_t))+ (header.lightlistcount * sizeof(worldFileLight_t))*/ != header.filesize) goto error;
+
+	unsigned int version = 0;
+	if(fread(&version, 1, sizeof(version), f)!= sizeof(int)) goto error;
+	rewind(f);
+	switch(version){
+		default: goto error;
+		case 2:
+			if(fread(&header, 1, sizeof(worldFileHeaderv2_t), f) != sizeof(worldFileHeaderv2_t))goto error;
+			header.entitylistcount = 0;
+			header.lightlistcount = 0;
+			break;
+		case 3:
+			if(fread(&header, 1, sizeof(worldFileHeader_t), f) != sizeof(worldFileHeader_t))goto error;
+			break;
+	}
+
+//	if(header.version != WORLDFILEVERSION)goto error; //todo different version handles
+	if(header.shaderlistlength + header.modellistlength + header.texturelistlength + (header.objectlistcount * sizeof(worldFileObject_t)) + (header.entitylistcount * sizeof(worldFileEntity_t))+ (header.lightlistcount * sizeof(worldFileLight_t)) != header.filesize) goto error;
+
+
 
 	buf = malloc(header.filesize);
 	if(fread(buf, 1, header.filesize, f) != header.filesize) goto error;
@@ -385,6 +413,7 @@ int loadWorld(char * filename){
 //todo copy this for lights and entities
 	worldFileObject_t * objbuf = (worldFileObject_t *)newbuf;
 	worldobject_t * obj = malloc(sizeof(worldobject_t));
+	//todo different version handling here
 
 	int i;
 	for(i = 0; i < header.objectlistcount; i++){
