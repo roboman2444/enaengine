@@ -132,17 +132,17 @@ int saveWorld(char * filename){
 		return FALSE;
 	}
 	//populate the list
-	int count = 0;
-	saveWorldPopList(&count, worldlist, worldroot);
+	int objcount = 0;
+	saveWorldPopList(&objcount, worldlist, worldroot);
 	if(count != world_numObjects){
 		free(worldlist);
 		console_printf("ERROR: leaflist prop failed\n");
 		return FALSE;
 	}
-	worldFileObject_t * objlist = malloc(count*sizeof(worldFileObject_t));
+	worldFileObject_t * objlist = malloc(objcount*sizeof(worldFileObject_t));
 //	worldFileEntity_t * entlist = malloc(entity_count*sizeof(worldFileEntity_t));
 //	worldFileLight_t * lightlist = malloc(light_count*sizeof(worldFileLight_t));
-	memset(objlist, 0, count * sizeof(worldFileObject_t));
+	memset(objlist, 0, objcount * sizeof(worldFileObject_t));
 //	memset(entlist, 0, entity_count * sizeof(worldFileEntity_t));
 //	memset(lightlist, 0, light_count * sizeof(worldFileLight_t));
 
@@ -154,8 +154,8 @@ int saveWorld(char * filename){
 	int *texturelist = 0;
 	int i = 0;
 	//todo copy this for lights and entities as well
-	for(i = 0; i < count; i++){
-//		console_printf("count: %i i: %i\n", count, i);
+	for(i = 0; i < objcount; i++){
+//		console_printf("objcount: %i i: %i\n", objcount, i);
 
 		worldobject_t * testobj = worldlist[i];
 		objlist[i].mat = testobj->mat;
@@ -217,7 +217,7 @@ int saveWorld(char * filename){
 	}
 	free(worldlist); // dont need anymore
 
-	header.objectlistcount = count;
+	header.objectlistcount = objcount;
 	header.modellistcount = modelcount;
 	header.texturelistcount = texturecount;
 	header.shaderlistcount = shadercount;
@@ -493,81 +493,6 @@ int initWorldSystem(void){
 	worldOK = TRUE;
 	return TRUE;
 }
-/* gonna redo
-int walkAndDeleteObject(worldleaf_t * l, worldobject_t * o){
-	if(o->treedepth > l->treedepth){
-		int xspace = FALSE;
-		int yspace = FALSE;
-		if(o->pos[0] > l->center[0]) xspace = TRUE;
-		if(o->pos[2] > l->center[1]) yspace = TRUE;
-//		worldleaf_t * children = &l->children[0];
-		worldleaf_t * child = l->children[xspace + 2*yspace];
-		if(!child) return FALSE;
-		int r = walkAndDeleteObject(child, o);
-		char tflags = l->myincludes;
-		//have to check all 4 chillun here
-		if(l->children[0])tflags |= l->children[0]->includes;
-		if(l->children[1])tflags |= l->children[1]->includes;
-		if(l->children[2])tflags |= l->children[2]->includes;
-		if(l->children[3])tflags |= l->children[3]->includes;
-		l->includes = tflags;
-		if(!child->numobjects){ //todo make sure to only have this if the ents and lights are good
-			int c;
-			for(c = 0; c < 4 && child->children[c]; c++); // make sure all are null
-			if(c == 4) free(child); //easier than doing the normal delete
-			//todo possible segfault cause here
-		}
-		if(r>1){
-			r = 0;
-			int i;
-			for(i = 0; i < 6; i++){
-				if(child->bbox[i] == l->bbox[i]) r |= 2<<i;
-			}
-			if(r){
-				//todo
-				//recalc bbox
-				return r;
-			} else {
-				return TRUE;
-			}
-		}
-		return r;
-	} else if(o->treedepth == l->treedepth){
-		int arraypos = o->leafpos;
-		if(arraypos >= l->numobjects) return FALSE;
-		worldobject_t * listobj = &l->list[arraypos];
-		//check to make sure they match, either if the pointers are the same, or if the data match
-		if(o != listobj && memcmp(o, listobj, sizeof(worldobject_t))){
-			return FALSE;
-		}
-		// in leaf containing object
-		int i, r = 0;
-		//check if this object is the edge of the bbox
-		for(i = 0; i < 6; i++){
-			if(o->bbox[i] == l->bbox[i]) r |= 2<<i;
-		}
-		l->numobjects--;
-		//todo check include flags here
-		*listobj = l->list[l->numobjects]; // replace it with the one at the end
-		l->list = realloc(l->list, l->numobjects * sizeof(worldobject_t)); //resize array
-		if(r){
-			//todo
-			// recalc bbox
-		}
-		world_numObjects--;
-		return r;
-
-	//todo
-	}
-	return FALSE;
-}
-*/ //going to redo
-/*
-int deleteObject(worldobject_t * o){
-	if(!o) return FALSE;
-	return walkAndDeleteObject(worldroot, o);
-}
-*/ //going to redo
 //going to redo as well
 int deleteLeaf(worldleaf_t *l){
 	if(!l) return FALSE;
@@ -824,7 +749,8 @@ int addEntityToWorldOBJ(const int entityid){
 
 
 
-//will returns 0 if not moved, currently doesn
+//will return 0 if not moved, currently doesn't
+//NOT FULLY FINISHED
 int moveEntInWorld(void * ep){
 	entity_t * e = (entity_t *) ep;
 	worldleaf_t *l1 = e->leaf;
@@ -863,9 +789,6 @@ int moveEntInWorld(void * ep){
 			//walk and add ent
 			walkAndAddEntity(e, l);
 			if(l->numents < 1) l->myincludes = l->myincludes & REMOVEENTMASK;
-		} else {
-			// i need to manually fix the bbox for this leaf
-			//todo
 		}
 	} else {
 		//entity does not fit within bbox anymore, delete it
@@ -903,7 +826,7 @@ int moveEntInWorld(void * ep){
 		}
 		//recursively add to new leaf
 		walkAndAddEntity(e, l);
-		//walk up and fix flags
+		//climb up and fix flags
 		//TODO DELETE HERE AS WELL
 
 		if(l1->numents < 1 && !(l->includes & WORLDTREEENTITY)){
@@ -918,24 +841,14 @@ int moveEntInWorld(void * ep){
 		}
 
 	}
-	//TODO RECALC BBOXES, WALK UP FROM L AND L1
+	//TODO RECALC BBOXES, CLIMB UP FROM L AND L1
+	//entity that is "removed" from a leaf can only get smaller (and parent leafs too)
+		//l1 and all parents have the possibility of getting smaller
+	//entity that is added to a leaf can only get bigger	(and parent leafs too)
+		//l and all parents have the possibility of getting bigger
 
 
-	//TODO WALK UP, WALK DOWN, CHECK IF RESULTING LEAF IS DIFFERENT THAN STARTING LEAF.
-	//IF IT IS, MOVE ENT
-		// RECALC BBOX IN NEW ONE
-		// THEN RECALC BBOX IN OLD ONE
-//	ELSE
-	// recalc bbox in old one
-
-	//store current leaf in 1
-	//walk up till entity fits in leaf
-	//walk down till entity only fits in leaf and not children, or reach lowest branch.
-		//add leafs if needed
-		//store leaf  in 2
-	//move entity to new leaf
-	//update flags if needed, from 1 up
-	//update flags if needed, from 2 up
-		//delete old leaf(1) if needed, walk up and continue deleting
+	//have some check for l1 == l so i dont try to climb up twice...
+	//todo put into some sorta queue for speed
 	return TRUE;
 }
