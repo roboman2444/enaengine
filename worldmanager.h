@@ -66,20 +66,20 @@ worldleaf_t * worldroot;
 
 int initWorldSystem(void);
 
-int generateWorldObject(int modelid, int texturegroupid, matrix4x4_t mat);
+int generateWorldObject(const int modelid, const int texturegroupid, const matrix4x4_t mat);
 
 int addObjectToWorld(worldobject_t * obj);
 
-int addEntityToWorldOBJ(int entityid); //ease of use function
+int addEntityToWorldOBJ(const int entityid); //ease of use function
 
-int saveWorld(char * filename);
-int loadWorld(char * filename);
+int saveWorld(const char * filename);
+int loadWorld(const char * filename);
 
 int deleteObject(worldobject_t *o);
 int walkAndDeleteObject(worldleaf_t * l, worldobject_t *o);
 
 worldleaf_t * walkAndFindObject(worldleaf_t * l, worldobject_t * o);
-worldleaf_t * findObject(worldobject_t * o);
+worldleaf_t * findObject(const worldobject_t * o);
 
 
 int deleteLeaf(worldleaf_t *l);

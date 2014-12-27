@@ -82,14 +82,14 @@ typedef struct worldFileLight_s {
 }worldFileLight_t;
 
 //todo gotta fix the list gettin!
-int saveWorldPopList(int * count, worldobject_t ** outlist, worldleaf_t * leaf){
+int saveWorldPopList(unsigned int * count, worldobject_t ** outlist, const worldleaf_t * leaf){
 
 	if(!leaf) return FALSE;
 //	console_printf("count: %i\n", *count);
 
 
 	//WARNING: revisions untested!
-	int i;
+	unsigned int i;
 	if(leaf->numobjects){
 		int myarraysize = leaf->objectarraysize;
 		worldobject_t * list = leaf->list;
@@ -106,7 +106,7 @@ int saveWorldPopList(int * count, worldobject_t ** outlist, worldleaf_t * leaf){
 	return TRUE;
 }
 
-int saveWorld(char * filename){
+int saveWorld(const char * filename){
 	console_printf("Saving %i objects to %s\n", world_numObjects, filename);
 	if(!worldroot){
 		console_printf("ERROR: No root world to save!\n");
@@ -132,9 +132,9 @@ int saveWorld(char * filename){
 		return FALSE;
 	}
 	//populate the list
-	int objcount = 0;
+	unsigned int objcount = 0;
 	saveWorldPopList(&objcount, worldlist, worldroot);
-	if(count != world_numObjects){
+	if(objcount != world_numObjects){
 		free(worldlist);
 		console_printf("ERROR: leaflist prop failed\n");
 		return FALSE;
@@ -146,13 +146,13 @@ int saveWorld(char * filename){
 //	memset(entlist, 0, entity_count * sizeof(worldFileEntity_t));
 //	memset(lightlist, 0, light_count * sizeof(worldFileLight_t));
 
-	int modelcount = 0;
-	int texturecount = 0;
-	int shadercount = 0;
-	int *modellist = 0;
-	int *shaderlist = 0;
-	int *texturelist = 0;
-	int i = 0;
+	unsigned int modelcount = 0;
+	unsigned int texturecount = 0;
+	unsigned int shadercount = 0;
+	unsigned int *modellist = 0;
+	unsigned int *shaderlist = 0;
+	unsigned int *texturelist = 0;
+	unsigned int i = 0;
 	//todo copy this for lights and entities as well
 	for(i = 0; i < objcount; i++){
 //		console_printf("objcount: %i i: %i\n", objcount, i);
@@ -161,7 +161,7 @@ int saveWorld(char * filename){
 		objlist[i].mat = testobj->mat;
 		//do model texture indice stuff here
 		if(testobj->modelid){
-			int j;
+			unsigned int j;
 			for(j = 0; j < modelcount; j++){
 				if(testobj->modelid == modellist[j]){
 					objlist[i].modelindice = j+1;
@@ -178,7 +178,7 @@ int saveWorld(char * filename){
 			objlist[i].modelindice = 0;
 		}
 		if(testobj->texturegroupid){
-			int j;
+			unsigned int j;
 			for(j = 0; j < texturecount; j++){
 				if(testobj->texturegroupid == texturelist[j]){
 					objlist[i].textureindice = j+1;
@@ -195,7 +195,7 @@ int saveWorld(char * filename){
 			objlist[i].textureindice = 0;
 		}
 		if(testobj->shaderid){
-			int j;
+			unsigned int j;
 			for(j = 0; j < shadercount; j++){
 				if(testobj->shaderid == shaderlist[j]){
 					objlist[i].shaderindice = j+1;
@@ -232,7 +232,7 @@ int saveWorld(char * filename){
 	for(i = 0; i < header.modellistcount; i++){
 		model_t * m = model_returnById(modellist[i]);
 		if(!m) continue;
-		int jlen, tlen = header.modellistlength;
+		unsigned int jlen, tlen = header.modellistlength;
 		header.modellistlength += strlen(m->name)+1;
 		modelliststring = realloc(modelliststring, header.modellistlength);
 		if(i){
@@ -249,7 +249,7 @@ int saveWorld(char * filename){
 	for(i = 0; i < header.texturelistcount; i++){
 		texturegroup_t * t = returnTexturegroupById(texturelist[i]);
 		if(!t) continue;
-		int jlen, tlen = header.texturelistlength;
+		unsigned int jlen, tlen = header.texturelistlength;
 		header.texturelistlength += strlen(t->name)+1;
 		textureliststring = realloc(textureliststring, header.texturelistlength);
 		if(i){
@@ -267,7 +267,7 @@ int saveWorld(char * filename){
 	for(i = 0; i < header.shaderlistcount; i++){
 		shaderprogram_t * s = shader_returnById(shaderlist[i]);
 		if(!s) continue;
-		int jlen, tlen = header.shaderlistlength;
+		unsigned int jlen, tlen = header.shaderlistlength;
 		header.shaderlistlength += strlen(s->name)+1;
 		shaderliststring = realloc(shaderliststring, header.shaderlistlength);
 		if(i){
@@ -308,7 +308,7 @@ int saveWorld(char * filename){
 int recalcObjBBox(worldobject_t *o){
 	model_t * m = model_returnById(o->modelid);
 	if(!m) return FALSE;
-	int i;
+	unsigned int i;
 	o->bbox[0] = -3.4028e+38;
 	o->bbox[1] = 3.4028e+38;
 	o->bbox[2] = -3.4028e+38;
@@ -330,7 +330,7 @@ int recalcObjBBox(worldobject_t *o){
 
 
 
-char **loadWorldNameList(char *buf, unsigned int bc, unsigned int nc){
+char **loadWorldNameList(char *buf, const unsigned int bc, const unsigned int nc){
 	char  **namelist = malloc(nc * sizeof(char *));
 	unsigned int namei, bytei = 0;
 	for(namei = 0; namei < nc; namei++){
@@ -355,7 +355,7 @@ char **loadWorldNameList(char *buf, unsigned int bc, unsigned int nc){
 	}
 	return namelist;
 }
-int loadWorld(char * filename){
+int loadWorld(const char * filename){
 	FILE *f = fopen(filename, "rb");
 	if(!f){
 		console_printf("opening file:%s failed\n", filename);
@@ -383,8 +383,6 @@ int loadWorld(char * filename){
 			if(fread(&header, 1, sizeof(worldFileHeader_t), f) != sizeof(worldFileHeader_t))goto error;
 			break;
 	}
-
-//	if(header.version != WORLDFILEVERSION)goto error; //todo different version handles
 	if(header.shaderlistlength + header.modellistlength + header.texturelistlength + (header.objectlistcount * sizeof(worldFileObject_t)) + (header.entitylistcount * sizeof(worldFileEntity_t))+ (header.lightlistcount * sizeof(worldFileLight_t)) != header.filesize) goto error;
 
 
@@ -406,16 +404,13 @@ int loadWorld(char * filename){
 	newbuf += header.shaderlistlength;
 
 	//newbuf is now the start of the actual object list
-	//todo parse it out
 
-
-
-//todo copy this for lights and entities
+	//todo copy this for lights and entities
 	worldFileObject_t * objbuf = (worldFileObject_t *)newbuf;
 	worldobject_t * obj = malloc(sizeof(worldobject_t));
 	//todo different version handling here
 
-	int i;
+	unsigned int i;
 	for(i = 0; i < header.objectlistcount; i++){
 		obj->mat = objbuf[i].mat;
 		Matrix4x4_OriginFromMatrix(&obj->mat, obj->pos);
@@ -463,7 +458,7 @@ int loadWorld(char * filename){
 		console_printf("%s: error while loading world\n", filename);
 	return FALSE;
 }
-worldleaf_t * createWorldLeaf(int depth, vec2_t center){
+worldleaf_t * createWorldLeaf(const int depth, const vec2_t center){
 	worldleaf_t * leaf = malloc(sizeof(worldleaf_t));
 	memset(leaf, 0 , sizeof(worldleaf_t));
 	leaf->treedepth = depth;
@@ -481,12 +476,12 @@ worldleaf_t * createWorldLeaf(int depth, vec2_t center){
 	leaf->lightarraylasttaken = -1;
 
 	getBBoxPFromBBox(leaf->bbox, leaf->bboxp);
-	//todo
+	//todo?
 	return leaf;
 }
 
 int initWorldSystem(void){
-//todo
+//todo?
 	vec2_t center = {0.0, 0.0};
 	worldroot = createWorldLeaf(0, center);
 	if(!worldroot) return FALSE;
@@ -522,7 +517,7 @@ int deleteWorld(void){
 }
 //maybe going to redo
 int addObjectToLeaf(worldobject_t * o, worldleaf_t *l){
-	//todo
+	//todo?
 	//if first object in, set anyway
 	if(!l->numobjects && !l->numents){
 		l->bbox[2] = o->bbox[2];
@@ -531,7 +526,7 @@ int addObjectToLeaf(worldobject_t * o, worldleaf_t *l){
 		if(o->bbox[2] > l->bbox[2])l->bbox[2] = o->bbox[2];
 		if(o->bbox[3] < l->bbox[3])l->bbox[3] = o->bbox[3];
 	}
-	getBBoxPFromBBox(l->bbox, l->bboxp);	//todo i can optimize this maybe
+	getBBoxPFromBBox(l->bbox, l->bboxp);	//todo i can optimize this... only gotta update corner verticals... put into the if up there
 	o->treedepth = l->treedepth;
 	o->leafpos = l->numobjects;
 	o->leaf = l;
@@ -593,14 +588,14 @@ int walkAndAddObject(worldobject_t * o, worldleaf_t * l){
 		if(l->bbox[3] > l->children[intspace]->bbox[3]) l->bbox[3] = l->children[intspace]->bbox[3];
 		//should recalc bboxp now
 		getBBoxPFromBBox(l->bbox, l->bboxp);
-		//todo i can make a more efficient way of doing this, only updating the y values of the points
+		//todo i can make a more efficient way of doing this, only updating the y values of the points. put it in the if above
 		return 2;
 	}
 	return FALSE; // should never hit
 }
 //maybe going to redo
 int addObjectToWorld(worldobject_t * o){
-	model_t * m = model_returnById(o->modelid); //todo maybe i should remove the need for VBOs so i can add "empty" objects
+	model_t * m = model_returnById(o->modelid); //todo maybe i should remove the need for VBOs so i can add "empty" objects... only for collision
 	if(!m) return FALSE;
 	if(!m->vbo) return FALSE;
 	//walk tree and add
@@ -648,7 +643,7 @@ int addEntityToLeaf(entity_t * e, worldleaf_t *l){
 	return TRUE;
 }
 //probably not gonna use this func... here anyway
-worldleaf_t * walkDown(vec_t b[6], worldleaf_t *l){
+worldleaf_t * walkDown(const vec_t b[6], worldleaf_t *l){
 	char xspace = 0;
 	char yspace = 0;
 	char nofits = 0;
@@ -827,7 +822,7 @@ int moveEntInWorld(void * ep){
 		//recursively add to new leaf
 		walkAndAddEntity(e, l);
 		//climb up and fix flags
-		//TODO DELETE HERE AS WELL
+		//TODO CHECK IF I NEED TO DELETE HERE AS WELL
 
 		if(l1->numents < 1 && !(l->includes & WORLDTREEENTITY)){
 			for(l = l1->parent; l; l = l->parent){
@@ -841,14 +836,36 @@ int moveEntInWorld(void * ep){
 		}
 
 	}
+
+
+
 	//TODO RECALC BBOXES, CLIMB UP FROM L AND L1
 	//entity that is "removed" from a leaf can only get smaller (and parent leafs too)
 		//l1 and all parents have the possibility of getting smaller
 	//entity that is added to a leaf can only get bigger	(and parent leafs too)
 		//l and all parents have the possibility of getting bigger
 
+	//climb up from l as long as you make bigger
 
-	//have some check for l1 == l so i dont try to climb up twice...
+	worldleaf_t *boxxer;
+	for(boxxer = l; boxxer; boxxer = boxxer->parent){
+		int nofits = 0;
+		if(e->bbox[2] > boxxer->bbox[2]){ boxxer->bbox[2] = e->bbox[2]; nofits = TRUE;}
+		if(e->bbox[3] < boxxer->bbox[3]){ boxxer->bbox[3] = e->bbox[3]; nofits = TRUE;}
+		if(!nofits) break;
+	}
+
+	//climb up from l1 as long as you make smaller
+	for(boxxer = l1; boxxer; boxxer = boxxer->parent){
+		int smaller = 0;
+		//TODO
+		//todo
+		if(!smaller) break;
+	}
+
+
+
+	//todo have some check for l1 == l so i dont try to climb up twice...
 	//todo put into some sorta queue for speed
 	return TRUE;
 }

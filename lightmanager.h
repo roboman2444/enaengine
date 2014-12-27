@@ -8,14 +8,16 @@ typedef struct light_s {
 
 	// 0 is NA
 	vec3_t pos;
-	vec3_t angle;
+	vec3_t angle; // point lights dont use this
 	//float spotangle
 	float scale;
 	float difbright;
 	float specbright;
 	vec3_t color;
-	//int needsmatupdate;
+	//int needsmatupdate; // redundant because of needsupdate?
+	//todo figure out weather i put a viewport here or just a lot of matricies/fov
 //	matrix4x4_t mat;
+//	matrix4x4_t shadowmat;
 	int attachmentid;
 
 	int needsupdate;

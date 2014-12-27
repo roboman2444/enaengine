@@ -156,6 +156,10 @@ void drawTileCallback(renderlistitem_t *ilist, unsigned int count){
 
 //you need the same list here to make sure you have light data proper and all
 void lighttile_addToRenderQueue(const unsigned int width, const unsigned int height, const lightlistpoint_t list){
+	//stupidly simple test... one tile covers entire screen
+	//todo
+
+
 	unsigned int lx, ly;
 	for(ly = 0; ly < height; ly++){
 //		lighttile_t * start = &lighttile_list[ly * width];
