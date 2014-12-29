@@ -155,9 +155,11 @@ void drawTileCallback(renderlistitem_t *ilist, unsigned int count){
 }
 
 //you need the same list here to make sure you have light data proper and all
-void lighttile_addToRenderQueue(const unsigned int width, const unsigned int height, const lightlistpoint_t list){
-	//stupidly simple test... one tile covers entire screen
+void lighttile_addToRenderQueue(const viewport_t *v, const unsigned int width, const unsigned int height, const lightlistpoint_t list){
 	//todo
+	//set up texture stuff for states
+//	GLuint textureunitid[STATESTEXTUREUNITCOUNT];
+//	framebuffer_t *of = returnFramebufferById(v->outfbid);
 
 
 	unsigned int lx, ly;
@@ -165,7 +167,11 @@ void lighttile_addToRenderQueue(const unsigned int width, const unsigned int hei
 //		lighttile_t * start = &lighttile_list[ly * width];
 		for(lx = 0; lx < width;  lx++){
 //			renderlistitem_t r;
+//			unsigned int shaderperm = 0;
+//			unsigned int shaderid = 0;//todo
 			///heavy todo
+			//REALLY HEAVY TODO
 		}
 	}
+
 }

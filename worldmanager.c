@@ -784,6 +784,9 @@ int moveEntInWorld(void * ep){
 			//walk and add ent
 			walkAndAddEntity(e, l);
 			if(l->numents < 1) l->myincludes = l->myincludes & REMOVEENTMASK;
+			//TODO i gotta get L proper?
+			//for now, fix is this
+			l = e->leaf;
 		}
 	} else {
 		//entity does not fit within bbox anymore, delete it
@@ -799,19 +802,39 @@ int moveEntInWorld(void * ep){
 		for(; entityarraylasttaken > 0 && !list[entityarraylasttaken]; entityarraylasttaken--);
 		l->entityarraylasttaken = entityarraylasttaken;
 		l->numents--;
-		//update my flags
+		//update my flags, recursively go up till flags no longer need updatin
+		//also check if i need to delete the leaf
+		worldleaf_t * dl;
+		for(dl = l; dl->numents < 1; dl = dl->parent){
+			dl->myincludes = dl->myincludes & REMOVEENTMASK;
+			dl->includes = dl->myincludes;
+			if(dl->children[0])dl->includes |= dl->children[0]->includes;
+			if(dl->children[1])dl->includes |= dl->children[1]->includes;
+			if(dl->children[2])dl->includes |= dl->children[2]->includes;
+			if(dl->children[3])dl->includes |= dl->children[3]->includes;
 
-		if(l->numents < 1){
-			l->myincludes = l->myincludes & REMOVEENTMASK;
-			l->includes = l->myincludes;
-			if(l->children[0])l->includes |= l->children[0]->includes;
-			if(l->children[1])l->includes |= l->children[1]->includes;
-			if(l->children[2])l->includes |= l->children[2]->includes;
-			if(l->children[3])l->includes |= l->children[3]->includes;
+			//check if need to delete leaf
+			if(!dl->includes){
+				//do an extra check if this leaf still has kids... should not, but do it anyway for now
+				//likely will remove when i am sure it works
+				if(dl->children[0] || dl->children[1] || dl->children[2] || dl->children[3]) console_printf("Leaf removal error: Children exist!\n");
+				else {
+
+					worldleaf_t *dll = dl->parent;
+					int dli;
+					//match up
+					//todo can i optimize this (with a goto?)
+					for(dli=0; dli < 4 && dll->children[dli] != dl; dli++);
+					if(dli ==4) console_printf("Leaf removal error: child to delete not found!\n");
+					else {
+						//all matched up
+//						printf("deleted leaf\n");
+						free(dl);
+						dll->children[dli] = 0;
+					}
+				}
+			}
 		}
-
-		//TODO CHECK IF I NEED TO DELETE THIS LEAF
-
 		//pop up till ent fits
 		for(l = l->parent; l; l = l->parent) if(e->bbox[0] < l->bbox[0] && e->bbox[1] > l->bbox[1] && e->bbox[4] < l->bbox[4] && e->bbox[5] > l->bbox[5]) break;
 		if(!l){
@@ -821,20 +844,9 @@ int moveEntInWorld(void * ep){
 		}
 		//recursively add to new leaf
 		walkAndAddEntity(e, l);
-		//climb up and fix flags
-		//TODO CHECK IF I NEED TO DELETE HERE AS WELL
-
-		if(l1->numents < 1 && !(l->includes & WORLDTREEENTITY)){
-			for(l = l1->parent; l; l = l->parent){
-				if(l->myincludes & WORLDTREEENTITY) break;
-				l->includes = l->myincludes;
-				if(l->children[0])l->includes |= l->children[0]->includes;
-				if(l->children[1])l->includes |= l->children[1]->includes;
-				if(l->children[2])l->includes |= l->children[2]->includes;
-				if(l->children[3])l->includes |= l->children[3]->includes;
-			}
-		}
-
+		//TODO i gotta get L proper?
+		//for now, fix is this
+		l = e->leaf;
 	}
 
 
@@ -853,19 +865,30 @@ int moveEntInWorld(void * ep){
 		if(e->bbox[2] > boxxer->bbox[2]){ boxxer->bbox[2] = e->bbox[2]; nofits = TRUE;}
 		if(e->bbox[3] < boxxer->bbox[3]){ boxxer->bbox[3] = e->bbox[3]; nofits = TRUE;}
 		if(!nofits) break;
+		printf("^");
+		//todo debug this... with no smallering/deleting happening, this should eventually reach a place where it makes no leafs bigger
+		//unsure of if it does or not
 	}
+	if(boxxer !=l)printf("\n");
 
+/*
 	//climb up from l1 as long as you make smaller
 	for(boxxer = l1; boxxer; boxxer = boxxer->parent){
-		int smaller = 0;
+		int smaller = TRUE;
+		if(e->bbox[2] == boxxer->bbox[2])smaller = FALSE;
+		if(e->bbox[3] == boxxer->bbox[3])smaller = FALSE;
+
 		//TODO
 		//todo
 		if(!smaller) break;
+		printf("v");
 	}
+	if(boxxer !=l)printf("\n");
+*/
 
-
-
+	//todo keep track of individual bbox for ents, lights, objects, so its easier to check
 	//todo have some check for l1 == l so i dont try to climb up twice...
 	//todo put into some sorta queue for speed
+	//todo sort for speed?
 	return TRUE;
 }
