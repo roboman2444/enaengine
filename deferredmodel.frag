@@ -1,5 +1,3 @@
-#version 150
-
 in vec3 fragnormal;
 in vec3 fragposition;
 in vec2 fragtexCoord;

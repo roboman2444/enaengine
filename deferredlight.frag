@@ -1,5 +1,3 @@
-#version 150
-
 //#define VOLUMETRIC
 
 //uniform mat4 unimat40;

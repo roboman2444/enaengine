@@ -1,5 +1,3 @@
-#version 150
-
 in vec3 posattrib;
 in vec2 tcattrib;
 out vec2 fragposition;

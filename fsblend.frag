@@ -1,5 +1,3 @@
-#version 150
-
 in vec2 fragposition;
 in vec2 fragtexcoord;
 uniform sampler2D texture0;

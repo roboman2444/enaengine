@@ -1,5 +1,3 @@
-#version 150
-
 //uniform mat4 unimat40;
 
 in vec3 fragnormal;

@@ -20,6 +20,8 @@ int shader_arrayLastTaken = -1;
 int shader_arraySize = 0;
 int shader_ok = 0;
 
+static char * shaderversion = "#version 150\n";
+
 shaderprogram_t *shader_list;
 
 shaderpermutation_t * shaderCurrentBound = 0;
@@ -186,11 +188,13 @@ shaderpermutation_t createPermutation(shaderprogram_t * shader, unsigned int per
 	GLuint fragid = glCreateShader(GL_FRAGMENT_SHADER);
 
 	unsigned char linebounce = 0;
-	unsigned char arraysize = shader->numdefines + 3;
+	unsigned char arraysize = shader->numdefines + 4;
 	//todo errorcheck
 
-	char ** shaderstring = malloc((arraysize) * sizeof(char *)); // if it has no defines, it will be 1 so its ok anyway
-	memset(shaderstring, 0, (arraysize) * sizeof(char *));
+	char ** sstring = malloc((arraysize) * sizeof(char *)); // if it has no defines, it will be 1 so its ok anyway
+	memset(sstring, 0, (arraysize) * sizeof(char *));
+	sstring[0] = shaderversion;
+	char ** shaderstring = &sstring[1];
 	int i = 0;
 	if(shader->type & 1){
 		for(i = 0; i < shader->numdefines; i++){
@@ -229,11 +233,10 @@ shaderpermutation_t createPermutation(shaderprogram_t * shader, unsigned int per
 			strcpy(shaderstring[i], "\0");
 		}
 		i++;
-
-	shaderstring[arraysize-1] = shader->vertstring;
-	glShaderSource(vertid, arraysize, (const GLchar **) shaderstring, 0);
-	shaderstring[arraysize-1] = shader->fragstring;
-	glShaderSource(fragid, arraysize, (const GLchar **) shaderstring, 0);
+	sstring[arraysize-1] = shader->vertstring;
+	glShaderSource(vertid, arraysize, (const GLchar **) sstring, 0);
+	sstring[arraysize-1] = shader->fragstring;
+	glShaderSource(fragid, arraysize, (const GLchar **) sstring, 0);
 	//if i set shadersource length to null, it does it by null char looking
 	//todo geom shader
 
@@ -241,7 +244,7 @@ shaderpermutation_t createPermutation(shaderprogram_t * shader, unsigned int per
 //		int i;
 		for(i = 0; i < shader->numdefines+2; i++) if(shaderstring[i]) free(shaderstring[i]); // doesnt free the vertstring or fragstring
 	}
-	free(shaderstring);
+	free(sstring);
 
 	perm.compiled = 1;
 	glCompileShader(vertid);

@@ -1,4 +1,3 @@
-#version 150
 //todo put something in shadermanager to handle this
 //something like a define instancesize 16, then have the shadermanager put in a define that does the devide?
 
