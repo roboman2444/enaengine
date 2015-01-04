@@ -412,6 +412,7 @@ lightrenderout_t readyLightsForRender(viewport_t *v, const unsigned int max, con
 
 	//set things up for shadowmap updates?
 
+	//TODO cache this so i dont have to free every time!
 	lightrenderout_t out = {{0, 0}, 	{0, 0}, 	{0, 0}, 	{0, 0}};
 	if(ltcount){
 		//first	 making them be able to fit ALL of the possible lights, then later going to realloc them to size

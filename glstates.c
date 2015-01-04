@@ -200,7 +200,7 @@ void states_setState(const glstate_t s){
 			}
 		}
 	}
-
+	//todo set up callbacks for if each thing changes... useful for shaders, viewports/framebuffers, etc
 }
 
 

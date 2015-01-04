@@ -43,7 +43,7 @@ typedef struct lightbatches_s {
 	lightbatch_t noshadowin;
 } lightbatches_t;
 */
-
+/*
 typedef struct lightleaf_s {
 	vec2_t center;
 	struct lightleaf_s *children[4];
@@ -54,7 +54,7 @@ typedef struct lightleaf_s {
 	light_t *list; // maybe set to a jumping adjust instead of dynamic... or linked list
 	float size;
 } lightleaf_t;
-
+*/
 typedef struct lightlistpoint_s {
 	//gotta use this stuff after you use it
 	light_t **list;

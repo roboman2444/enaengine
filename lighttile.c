@@ -7,7 +7,6 @@
 #include "mathlib.h"
 #include "viewportmanager.h"
 #include "lightmanager.h"
-#include "lighttile.h"
 #include "renderqueue.h"
 #include "shadermanager.h"
 #include "texturemanager.h"
@@ -18,8 +17,24 @@
 #include "console.h"
 #include "glmanager.h"
 
+#include "lighttile.h"
+
 unsigned int lighttile_count = 0;
 lighttile_t * lighttile_list;
+
+int lighttile_ok = 0;
+
+unsigned int lighttileshaderid;
+unsigned int lighttilemodelid;
+
+
+int lighttile_init(void){
+	lighttileshaderid = shader_createAndAddRINT("tilelight");
+	lighttilemodelid = model_findByNameRINT("qsquadtr");
+	lighttile_ok = TRUE;
+	//todo errorcheck
+	return TRUE;
+}
 
 void addLightToTile(const unsigned int l, lighttile_t *t){
 	unsigned int mycount = t->count;
@@ -38,7 +53,6 @@ void lighttile_tileLights(const viewport_t *v, const unsigned int width, const u
 	for(k = 0; k < kmax; k++){
 		lighttile_list[k].count = 0;
 	}
-	if(!l.count) return;
 	//resize tilelist if needed
 	if(mycount > lighttile_count){
 		lighttile_list = realloc(lighttile_list, mycount * sizeof(lighttile_t));
@@ -46,6 +60,8 @@ void lighttile_tileLights(const viewport_t *v, const unsigned int width, const u
 		lighttile_count = mycount;
 	}
 	//loop through lights, add to tiles
+	if(!l.count) return;
+
 	unsigned int i;
 	for(i = 0; i < l.count; i++){
 		light_t *mylight = l.list[i];
@@ -88,8 +104,12 @@ typedef struct pLightUBOStruct_s {
 	GLfloat size;
 } pLightUBOStruct_t;
 typedef struct tileUBOStruct_s {
-	unsigned int x; //can probably change to something smaller, such as an unsigned char
-	unsigned int y;
+//	unsigned int x; //can probably change to something smaller, such as an unsigned char
+//	unsigned int y;
+	GLfloat x; //todo look into different methods for this
+	GLfloat y;
+//	unsigned int numx;
+//	unsigned int numy; //carried out by univec2
 	unsigned int lcount;	//can probably make to an unsigned char
 //	unsigned int lights[PERTILEMAXLIGHTS]; //can probably make to a 16 bit int/unsigned char
 	pLightUBOStruct_t lights [PERTILEMAXLIGHTS];
@@ -104,15 +124,46 @@ typedef struct renderTileCallbackData_s {
 	unsigned int ubodataoffset;
 	unsigned int ubodataoffset2;
 	viewport_t *v;
-	tileUBOStruct_t deta;
-	unsigned int totalwidth;
-	unsigned int totalheight;
+	tileUBOStruct_t data;
+//	unsigned int totalwidth;
+//	unsigned int totalheight;
+	GLfloat totalwidth;
+	GLfloat totalheight;
 } renderTileCallbackData_t;
+
+void setupTileCallback(renderlistitem_t *ilist, unsigned int count){
+	if(count > 1){
+		tileUBOStruct_t ubodata[MAXINSTANCESIZE];
+		unsigned int i = 0;
+		while(i < count){
+			renderTileCallbackData_t *d = ilist[i].data;
+			unsigned int counter = 0;
+			ubodata[0] = d[0].data;
+			unsigned int max = count-i;
+			if(max > MAXINSTANCESIZE) max = MAXINSTANCESIZE;
+			for(counter = 1; counter < max; counter++){
+				ubodata[counter] = d[counter].data;
+			}
+			int t = pushDataToUBOCache(counter * sizeof(tileUBOStruct_t), ubodata);
+			d->ubodataoffset = t;
+			ilist[i].counter = counter; // reset counter, likely wont be needed in this case;
+			i+=counter;
+		}
+	} else if(count == 1){
+		renderTileCallbackData_t *d = ilist->data;
+		int t = pushDataToUBOCache(sizeof(tileUBOStruct_t), &d->data);
+		d->ubodataoffset = t;
+	} else {
+		console_printf("ERROR: TILE SETUP CALLBACK WITH 0 AS COUNT!\n");
+	}
+}
 
 
 void drawTileCallback(renderlistitem_t *ilist, unsigned int count){
+	//printf("Got here!\n");
 	renderTileCallbackData_t *d = ilist->data;
 	shaderpermutation_t * perm = d->perm;
+	//todo check if the viewport changed as well
 	if(shader_bindPerm(perm) == 2){
 	//TODODODODODO
 		viewport_t *v = d->v;
@@ -129,6 +180,7 @@ void drawTileCallback(renderlistitem_t *ilist, unsigned int count){
 		float far = v->far;
 		float near = v->near;
 		glUniform2f(perm->uniscreentodepth, far/(far-near),far*near/(near-far));
+//		glUniform2i(perm->univec20, d->totalwidth, d->totalheight);
 		glUniform2f(perm->univec20, d->totalwidth, d->totalheight);
 		unsigned char numsamples = d->numsamples;
 		if(numsamples) glUniform1i(perm->uniint0, numsamples);
@@ -140,7 +192,7 @@ void drawTileCallback(renderlistitem_t *ilist, unsigned int count){
 //	states_bindVertexArray(v->vaoid);
 	unsigned int mysize = ((count * sizeof(tileUBOStruct_t)));
 //	states_bindBufferRange(GL_UNIFORM_BUFFER, 0, renderqueueuboid, d->ubodataoffset, mysize);
-	glstate_t s = {STATESENABLECULLFACE | STATESENABLEBLEND, GL_ONE, GL_ONE, GL_LESS, GL_FRONT, GL_FALSE, GL_LESS, 0.0, v->vaoid, renderqueueuboid, GL_UNIFORM_BUFFER, 0, d->ubodataoffset, mysize, perm->id};
+	glstate_t s = {STATESENABLECULLFACE | STATESENABLEBLEND, GL_ONE, GL_ONE, GL_LESS, GL_BACK, GL_FALSE, GL_LESS, 0.0, v->vaoid, renderqueueuboid, GL_UNIFORM_BUFFER, 0, d->ubodataoffset, mysize, perm->id};
 	states_setState(s);
 	//states_cullFace(GL_FRONT);
 	CHECKGLERROR
@@ -155,23 +207,73 @@ void drawTileCallback(renderlistitem_t *ilist, unsigned int count){
 }
 
 //you need the same list here to make sure you have light data proper and all
-void lighttile_addToRenderQueue(const viewport_t *v, const unsigned int width, const unsigned int height, const lightlistpoint_t list){
+int lighttile_addToRenderQueue(viewport_t *v, renderqueue_t *q, const unsigned int width, const unsigned int height){
+	lightrenderout_t out = readyLightsForRender(v,50,0);
+	if(!out.lin.count && !out.lout.count) return FALSE;
+
+	lightlistpoint_t list = out.lin;
+//	printf("got here! %i\n", out.lout.count);
+	lighttile_tileLights(v, width, height, list);
+
 	//todo
 	//set up texture stuff for states
 //	GLuint textureunitid[STATESTEXTUREUNITCOUNT];
 //	framebuffer_t *of = returnFramebufferById(v->outfbid);
+	shaderprogram_t *s = shader_returnById(lighttileshaderid);
+	shaderpermutation_t *sp = shader_addPermutationToProgram(s, 0);
+	renderlistitem_t r = {0};
+	r.setup = setupTileCallback;
+	r.draw = drawTileCallback;
+	r.datasize = sizeof(renderTileCallbackData_t);
+//	r.flags = 2|4; //copyable, instanceable
+	r.flags = 2; //copyable, instanceable
+
 
 
 	unsigned int lx, ly;
+	GLfloat xwidth = 2.0f/width;
+	GLfloat xheight = 2.0f/height;
 	for(ly = 0; ly < height; ly++){
-//		lighttile_t * start = &lighttile_list[ly * width];
-		for(lx = 0; lx < width;  lx++){
-//			renderlistitem_t r;
-//			unsigned int shaderperm = 0;
-//			unsigned int shaderid = 0;//todo
-			///heavy todo
-			//REALLY HEAVY TODO
+		for(lx = 0; lx < width; lx++){
+			lighttile_t * ltile = &lighttile_list[(ly * width) + lx];
+			unsigned int tcount = ltile->count;
+			unsigned int i = 0;
+			while(tcount > 0){
+//				printf("got here!\n");
+				renderTileCallbackData_t d = {0};
+				d.shaderid = lighttileshaderid;
+				d.shaderperm = 0;
+				d.perm = sp;
+				d.modelid = lighttilemodelid;
+				d.v = v;
+				d.totalwidth = xwidth;
+				d.totalheight = xheight;
+//unneeded		d.shaderprogram =
+//				d.data.x = (lx*2)-width;
+//				d.data.y = (ly*2)-height;
+				d.data.x = (lx*xwidth)-1.0f;
+				d.data.y = (ly*xheight)-1.0f;
+				d.data.lcount = tcount > PERTILEMAXLIGHTS ? tcount : PERTILEMAXLIGHTS;
+
+				int j;
+
+				for(j = 0; j < PERTILEMAXLIGHTS && tcount > 0; j++, i++, tcount--){
+					pLightUBOStruct_t * dl = &d.data.lights[j];
+					light_t * ll = list.list[ltile->list[i]];
+					dl->pos[0] = ll->pos[0];
+					dl->pos[1] = ll->pos[1];
+					dl->pos[2] = ll->pos[2];
+					dl->size = ll->scale;
+				}
+
+				r.data = &d;
+				addRenderlistitem(q,r);
+
+			}
 		}
 	}
+	if(out.lin.list) free(out.lin.list);
+	if(out.lout.list) free(out.lout.list);
 
+	return TRUE;
 }

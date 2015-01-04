@@ -169,6 +169,11 @@ int glInit(void){
 		//todo call some sort of shutdown of everything
 		return FALSE;
 	}
+	lighttile_init();
+	if(!lighttile_ok){
+		//todo call some sort of shutdown of everything
+		return FALSE;
+	}
 	viewport_init();
 	if(!viewport_ok){
 		//todo call some sort of shutdown of everything
@@ -418,7 +423,7 @@ void addEntityToRenderqueue(const entity_t *e, renderqueue_t * q, const viewport
 
 
 	r.datasize = sizeof(renderModelCallbackData_t);
-	r.flags = 2 | 4; //copyable, freeable
+	r.flags = 2 | 4; //copyable, instanceable
 //	r.flags = 1; //freeable
 //	r.data = malloc(r.datasize);
 //	memcpy(r.data, &d, r.datasize);
@@ -953,6 +958,9 @@ int glAddLightsToQueue(viewport_t *v, renderqueue_t * q, unsigned int numsamples
 //	lighttile_tileLights(v, 10, 10, out.lout);
 
 	//todo
+	//gotta free the list!
+	if(out.lout.list) free(out.lout.list);
+	if(out.lin.list) free(out.lin.list);
 	return TRUE;
 }
 int glDeferredLighting(viewport_t *v, renderqueue_t * q){
@@ -983,6 +991,8 @@ int glDeferredLighting(viewport_t *v, renderqueue_t * q){
 		states_bindActiveTexture(2, GL_TEXTURE_2D, df->textures[2].id);
 	}
 	glAddLightsToQueue(v, q, numsamples);
+//	lighttile_addToRenderQueue(v, q, 16, 16);
+//	lighttile_addToRenderQueue(v, q, 2, 2);
 	renderqueueRadixSort(q);
 	renderqueueSetup(q);
 	renderqueueDraw(q);

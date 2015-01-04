@@ -865,11 +865,11 @@ int moveEntInWorld(void * ep){
 		if(e->bbox[2] > boxxer->bbox[2]){ boxxer->bbox[2] = e->bbox[2]; nofits = TRUE;}
 		if(e->bbox[3] < boxxer->bbox[3]){ boxxer->bbox[3] = e->bbox[3]; nofits = TRUE;}
 		if(!nofits) break;
-		printf("^");
+//		printf("^");
 		//todo debug this... with no smallering/deleting happening, this should eventually reach a place where it makes no leafs bigger
 		//unsure of if it does or not
 	}
-	if(boxxer !=l)printf("\n");
+//	if(boxxer !=l)printf("\n");
 
 /*
 	//climb up from l1 as long as you make smaller
