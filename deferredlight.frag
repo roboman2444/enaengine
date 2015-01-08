@@ -2,7 +2,7 @@
 
 //uniform mat4 unimat40;
 //vec2(Far / (Far - Near), Far * Near / (Near - Far));
-uniform vec2 uniscreentodepth;
+//uniform vec2 uniscreentodepth;
 in vec3 mvpos;
 #ifdef DIRECTIONAL
 in vec3 lightnormal;
@@ -80,6 +80,7 @@ void main(){
 
 		fragColor.rgb += ((clamp(dot(surfnormal, lightnormal), 0.0f, 1.0f) * diffuse)
 		 + vec3(clamp(pow(dot(surfnormal,vhalf), gloss.y), 0.0f, 1.0f) * gloss.x) )* attenuation;
+//		fragColor.rgb = pos/16.0;
 
 
 	#ifdef MULTISAMPLE

@@ -42,6 +42,7 @@ void main(){
 
 	fragColor = vec4(dcolor, scolor.r);
 	normColor = vec4(ncolor.rg, depth, scolor.g);
+	
 
 
 
@@ -53,9 +54,9 @@ void main(){
 	//usually a fog/distance darkening would be done in another pass, so you dont have any problems against stuff that isnt drawn, but this is an example to what can be done
 	//another good use for this might be a cubemap reflection shader, subsurface scattering, etc
 	vec3 add = 0.1*dcolor.rgb; // ambient
-	float alpha = 1.0-clamp((500.0+depth)/(500.0-10.0),0.0, 1.0);
+	float alpha = 1.0-clamp((500.0+depth)/(500.0-10.0), 0.0, 1.0);
 //	add *=(1.0-alpha); //needs the premult here, since i dont do it later
 //	add += alpha;
 	specColor = vec4(add, alpha);
-//	specColor = vec4(add, 0.1);
+//	specColor = vec4(0.0, add), 0.1);
 }

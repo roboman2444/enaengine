@@ -197,7 +197,6 @@ void recalcProjectionMatrix(viewport_t * v){
 	v->projection.m[3][2] = -2.0 * v->near * v->far / deltaZ;
 //	v->projection.m[3][2] = -2 * v->near * nudge;
 	v->projection.m[3][3] = 0;
-
 }
 vec_t distPointFromNear(viewport_t *v, vec_t * p){
 	vec_t * n = v->frustum[5].norm;
@@ -563,3 +562,22 @@ int resizeViewport(viewport_t *v, int width, int height){
 
 	return resizeFramebuffer(outfb, width, height);
 }
+
+/*
+//used tesserract as a reference
+vec4_t viewport_calcSphereScissor(viewport_t *v, vec3_t *spherecenter, float spheresize){
+	vec4_t out;
+	vec3_t e;
+	Matrix4x4_Transform(&v->viewproj, spherecenter, &e);
+	if(e.z > 2.0f*spheresize){
+		out[0] = 1.0f;
+		out[1] = 1.0f;
+		out[2] = -1.0f;
+		out[3] = -1.0f;
+		return out;
+	}
+//	float zzrr = e[2]*e[2] - size*size, dx = e[0]*e[0] + zzrr, dy = e[1]*e[1] + zzrr;//, focaldist = 1.0f/tan(fovy*0.5f
+	//todo
+	return out;
+}
+*/

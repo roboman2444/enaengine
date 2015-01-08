@@ -19,9 +19,7 @@
 
 #include "lighttile.h"
 
-unsigned int lighttile_count = 0;
-lighttile_t * lighttile_list;
-
+lighttilebuffer_t maintilebuff= {0};
 int lighttile_ok = 0;
 
 unsigned int lighttileshaderid;
@@ -36,35 +34,68 @@ int lighttile_init(void){
 	return TRUE;
 }
 
-void addLightToTile(const unsigned int l, lighttile_t *t){
-	unsigned int mycount = t->count;
-	t->count++;
-	if(t->count > t->size){
-		t->list = realloc(t->list, t->count * sizeof(unsigned int));
-		t->size = t->count;
+void addPLightToTile(vec3_t pos, float size, lighttile_t *t){
+	t->plcount++;
+	if(t->plcount > t->plsize*PERTILEMAXLIGHTS){
+		t->plsize++;
+		t->pllist = realloc(t->pllist, t->plsize * sizeof(tileUBOStruct_t));
+		//mcount shoooould be 0 at this time
 	}
-	t->list[mycount] = l;
+	unsigned int mplace = (t->plcount-1)/PERTILEMAXLIGHTS;
+	unsigned int mcount = (t->plcount-1)%PERTILEMAXLIGHTS;
+	if(!mcount){
+		//GLfloat tx = t->x;
+		t->pllist[mplace].offset[0]=t->x;
+		t->pllist[mplace].offset[1]=t->y;
+	}
+	pTileLightUBOStruct_t *plst = &t->pllist[mplace].lights[mcount];
+	t->pllist[mplace].lcount = mcount+1;
+	plst->pos[0] = pos[0];
+	plst->pos[1] = pos[1];
+	plst->pos[2] = pos[2];
+	plst->size = size;
 }
 
-void lighttile_tileLights(const viewport_t *v, const unsigned int width, const unsigned int height, const lightlistpoint_t l){
+unsigned int lighttile_tileLights(lighttilebuffer_t *b, const viewport_t *v, const unsigned int width, const unsigned int height, const lightlistpoint_t l){
 	unsigned int mycount = width * height;
-	unsigned int k, kmax = (mycount > lighttile_count) ? lighttile_count : mycount;
-	//reset
-	for(k = 0; k < kmax; k++){
-		lighttile_list[k].count = 0;
-	}
+//	unsigned int k, kmax = (mycount > b->count) ? b->count : mycount;
 	//resize tilelist if needed
-	if(mycount > lighttile_count){
-		lighttile_list = realloc(lighttile_list, mycount * sizeof(lighttile_t));
-		memset(lighttile_list + (lighttile_count * sizeof(lighttile_t)), 0, (mycount - lighttile_count) * sizeof(lighttile_t));
-		lighttile_count = mycount;
+	if(mycount > b->count){
+		unsigned int start = b->count;
+		unsigned int size = mycount - start;
+		b->list = realloc(b->list, mycount * sizeof(lighttile_t));
+		b->count = mycount;
+		memset(&b->list[start], 0, size * sizeof(lighttile_t));
 	}
-	//loop through lights, add to tiles
-	if(!l.count) return;
+	lighttile_t *list = b->list;
 
+	GLfloat xwidth = 2.0f/(GLfloat)width;
+	GLfloat xheight = 2.0f/(GLfloat)height;
+	unsigned int x, y;
+	//reset tile lightcounts and fix x/y
+	for(y = 0; y < height; y++){
+		GLfloat passy = ((GLfloat)y *xheight)-1.0f;
+		for(x = 0; x < width; x++){
+			lighttile_t *t = &list[y * width + x];
+			GLfloat passx = ((GLfloat)x *xwidth)-1.0f;
+			t->plcount = 0;
+			t->slcount = 0;
+			t->x = passx;
+			t->y = passy;
+		}
+	}
+	if(!l.count) return FALSE;
+
+	unsigned int retval = 0;
+	//loop through lights, add to tiles
 	unsigned int i;
-	for(i = 0; i < l.count; i++){
+//	for(i = 0; i < l.count; i++){
+	for(i=0; i < 1; i++){
 		light_t *mylight = l.list[i];
+		//get light in viewspace
+		vec3_t vspace;
+		Matrix4x4_Transform(&v->view, mylight->pos, vspace);
+
 		//transform light bboxp to screen, then get scissor rect
 		float maxx = -1.0;
 		float maxy = -1.0;
@@ -82,7 +113,7 @@ void lighttile_tileLights(const viewport_t *v, const unsigned int width, const u
 		//find bounds
 		unsigned int loopmaxx = (int)(((maxx+1.0)/2.0) * width) + 1;
 		if(loopmaxx > width) loopmaxx = width;
-		unsigned int loopmaxy = (int)(((maxy+1.0)/2.0) * height)+ 1;
+		unsigned int loopmaxy = (int)(((maxy+1.0)/2.0) * height) + 1;
 		if(loopmaxy > height) loopmaxy = height;
 		unsigned int loopminx = (int)(((minx+1.0)/2.0) * width);
 		if(loopminx < 0) loopminx = 0;
@@ -90,31 +121,17 @@ void lighttile_tileLights(const viewport_t *v, const unsigned int width, const u
 		if(loopminy < 0) loopminy = 0;
 		//use bounds and rectangle insert into tiles
 		unsigned int lx, ly;
-		for(ly = loopminy; ly < loopmaxy; ly++){
-//			lighttile_t * start = &lighttile_list[ly * width];
-			for(lx = loopminx; lx < loopmaxx; lx++){
-//				addLightToTile(i, &start[lx]);
-				addLightToTile(i, &lighttile_list[ly*width + lx]);
+//		for(ly = loopminy; ly < loopmaxy; ly++){
+		for(ly = 0; ly < height; ly++){
+//			for(lx = loopminx; lx < loopmaxx; lx++){
+			for(lx = 0; lx < width; lx++){
+				retval++; // i can move this outside of loop with some nice math
+				addPLightToTile(vspace, mylight->scale,&list[ly*width + lx]);
 			}
 		}
 	}
+	return retval;
 }
-#define PERTILEMAXLIGHTS 8
-typedef struct pLightUBOStruct_s {
-	GLfloat pos[3];
-	GLfloat size;
-} pLightUBOStruct_t;
-typedef struct tileUBOStruct_s {
-//	unsigned int x; //can probably change to something smaller, such as an unsigned char
-//	unsigned int y;
-	GLfloat x; //todo look into different methods for this
-	GLfloat y;
-//	unsigned int numx;
-//	unsigned int numy; //carried out by univec2
-	unsigned int lcount;	//can probably make to an unsigned char
-//	unsigned int lights[PERTILEMAXLIGHTS]; //can probably make to a 16 bit int/unsigned char
-	pLightUBOStruct_t lights [PERTILEMAXLIGHTS];
-} tileUBOStruct_t;
 typedef struct renderTileCallbackData_s {
 	GLuint shaderprogram;
 	unsigned int shaderperm;
@@ -123,11 +140,9 @@ typedef struct renderTileCallbackData_s {
 	unsigned char numsamples;
 	unsigned int modelid;
 	unsigned int ubodataoffset;
-	unsigned int ubodataoffset2;
+//	unsigned int ubodataoffset2;
 	viewport_t *v;
 	tileUBOStruct_t data;
-//	unsigned int totalwidth;
-//	unsigned int totalheight;
 	GLfloat totalwidth;
 	GLfloat totalheight;
 } renderTileCallbackData_t;
@@ -178,6 +193,7 @@ void drawTileCallback(renderlistitem_t *ilist, unsigned int count){
 		Matrix4x4_ToArrayFloatGL(&v->view, mout);
 		glUniformMatrix4fv(perm->unimat41, 1, GL_FALSE, mout);
 		glUniform2f(perm->uniscreensizefix, 1.0/of->width, 1.0/of->height);
+		glUniform2f(perm->univec21, v->projection.m[0][0], v->projection.m[1][1]);
 		float far = v->far;
 		float near = v->near;
 		glUniform2f(perm->uniscreentodepth, far/(far-near),far*near/(near-far));
@@ -191,7 +207,7 @@ void drawTileCallback(renderlistitem_t *ilist, unsigned int count){
 	vbo_t *v = returnVBOById(m->vbo);
 
 //	states_bindVertexArray(v->vaoid);
-	unsigned int mysize = ((count * sizeof(tileUBOStruct_t)));
+	unsigned int mysize = (count * sizeof(tileUBOStruct_t));
 //	states_bindBufferRange(GL_UNIFORM_BUFFER, 0, renderqueueuboid, d->ubodataoffset, mysize);
 	glstate_t s = {STATESENABLECULLFACE | STATESENABLEBLEND, GL_ONE, GL_ONE, GL_LESS, GL_BACK, GL_FALSE, GL_LESS, 0.0, v->vaoid, renderqueueuboid, GL_UNIFORM_BUFFER, 0, d->ubodataoffset, mysize, perm->id};
 	states_setState(s);
@@ -208,13 +224,15 @@ void drawTileCallback(renderlistitem_t *ilist, unsigned int count){
 }
 
 //you need the same list here to make sure you have light data proper and all
-int lighttile_addToRenderQueue(viewport_t *v, renderqueue_t *q, const unsigned int width, const unsigned int height){
+unsigned int lighttile_addToRenderQueue(viewport_t *v, renderqueue_t *q, const unsigned int width, const unsigned int height){
 	lightrenderout_t out = readyLightsForRender(v,50,0);
 	if(!out.lin.count && !out.lout.count) return FALSE;
 
-	lightlistpoint_t list = out.lin;
 //	printf("got here! %i\n", out.lout.count);
-	lighttile_tileLights(v, width, height, list);
+	unsigned int retval = lighttile_tileLights(&maintilebuff, v, width, height, out.lin);
+	if(!retval) return FALSE;
+	lighttile_t *list = maintilebuff.list;
+	unsigned int mysize = width * height;
 
 	//todo
 	//set up texture stuff for states
@@ -227,11 +245,10 @@ int lighttile_addToRenderQueue(viewport_t *v, renderqueue_t *q, const unsigned i
 	r.draw = drawTileCallback;
 	r.datasize = sizeof(renderTileCallbackData_t);
 //	r.flags = 2|4; //copyable, instanceable
-	r.flags = 2; //copyable, instanceable
+	r.flags = 2; //copyable
 
 
 
-	unsigned int lx, ly;
 	GLfloat xwidth = 2.0f/width;
 	GLfloat xheight = 2.0f/height;
 	renderTileCallbackData_t d = {0};
@@ -243,38 +260,34 @@ int lighttile_addToRenderQueue(viewport_t *v, renderqueue_t *q, const unsigned i
 	d.totalwidth = xwidth;
 	d.totalheight = xheight;
 	r.data = &d;
-	for(ly = 0; ly < height; ly++){
-		for(lx = 0; lx < width; lx++){
-			lighttile_t * ltile = &lighttile_list[(ly * width) + lx];
-			unsigned int tcount = ltile->count;
-			unsigned int i = 0;
-			while(tcount > 0){
-//				printf("got here!\n");
-//unneeded		d.shaderprogram =
-//				d.data.x = (lx*2)-width;
-//				d.data.y = (ly*2)-height;
-				d.data.x = (lx*xwidth)-1.0f;
-				d.data.y = (ly*xheight)-1.0f;
-				d.data.lcount = tcount > PERTILEMAXLIGHTS ? tcount : PERTILEMAXLIGHTS;
-
-				int j;
-
-				for(j = 0; j < PERTILEMAXLIGHTS && tcount > 0; j++, i++, tcount--){
-					pLightUBOStruct_t * dl = &d.data.lights[j];
-					light_t * ll = list.list[ltile->list[i]];
-					dl->pos[0] = ll->pos[0];
-					dl->pos[1] = ll->pos[1];
-					dl->pos[2] = ll->pos[2];
-					dl->size = ll->scale;
-				}
-				//copies, so i shouldnt need to re-write every time
-				addRenderlistitem(q,r);
-
-			}
+	unsigned int i;
+	for(i = 0; i < mysize; i++){
+		lighttile_t * ltile = &list[i];
+		unsigned int plcount = ltile->plcount;
+		unsigned int slcount = ltile->slcount;
+		int j, k;
+		for(k = j = 0; j < plcount; j+= PERTILEMAXLIGHTS, k++){
+			d.data = ltile->pllist[k];
+			addRenderlistitem(q,r);
+		}
+		for(k = j = 0; j < slcount; j+= PERTILEMAXLIGHTS, k++){
+			d.data = ltile->sllist[k]; //todo probably gonna have a different "r"
+			addRenderlistitem(q,r);
 		}
 	}
 	if(out.lin.list) free(out.lin.list);
 	if(out.lout.list) free(out.lout.list);
 
-	return TRUE;
+	return retval;
 }
+
+
+
+//REDOOOOO
+
+
+//recieve light list
+//allocate lighttilebuffer if needed
+//get bbox of each light, add to tilebuffer
+//loop through lighttilebuffer, add tiles to queue
+//render tiles

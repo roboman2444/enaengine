@@ -187,7 +187,7 @@ shaderpermutation_t createPermutation(shaderprogram_t * shader, unsigned int per
 	GLuint vertid = glCreateShader(GL_VERTEX_SHADER);
 	GLuint fragid = glCreateShader(GL_FRAGMENT_SHADER);
 
-	unsigned char linebounce = 0;
+	unsigned char linebounce = 1;
 	unsigned char arraysize = shader->numdefines + 4;
 	//todo errorcheck
 
@@ -246,7 +246,6 @@ shaderpermutation_t createPermutation(shaderprogram_t * shader, unsigned int per
 	}
 	free(sstring);
 
-	perm.compiled = 1;
 	glCompileShader(vertid);
 	glCompileShader(fragid);
 	int fail = 0;
@@ -254,12 +253,12 @@ shaderpermutation_t createPermutation(shaderprogram_t * shader, unsigned int per
 
 	glGetShaderiv(fragid, GL_COMPILE_STATUS, &status);
 	if(status == GL_FALSE){
-//			console_printf("Shader %s compile failed\n", shader->name);
+			console_printf("Shader %s vertex shader compile failed\n", shader->name);
 			fail = 1;
 	}
 	glGetShaderiv(vertid, GL_COMPILE_STATUS, &status);
 	if(status == GL_FALSE){
-//			console_printf("Shader %s compile failed\n", shader->name);
+			console_printf("Shader %s fragment shader compile failed\n", shader->name);
 			fail = 1;
 	}
 
@@ -271,6 +270,7 @@ shaderpermutation_t createPermutation(shaderprogram_t * shader, unsigned int per
 	glBindFragDataLocation(programid, 0, "fragColor"); //todo move this
 	glBindFragDataLocation(programid, 1, "normColor"); //todo move this
 	glBindFragDataLocation(programid, 2, "specColor"); //todo move this
+	glBindFragDataLocation(programid, 3, "posColor"); //todo move this
 
 
 	glBindAttribLocation(programid, POSATTRIBLOC, "posattrib");
@@ -346,6 +346,7 @@ shaderpermutation_t createPermutation(shaderprogram_t * shader, unsigned int per
 	perm.univec40 = glGetUniformLocation(programid, "univec40");
 	perm.univec30 = glGetUniformLocation(programid, "univec30");
 	perm.univec20 = glGetUniformLocation(programid, "univec20");
+	perm.univec21 = glGetUniformLocation(programid, "univec21");
 	perm.uniint0 = glGetUniformLocation(programid, "uniint0");
 	perm.uniscreensizefix = glGetUniformLocation(programid, "uniscreensizefix");
 	perm.uniscreentodepth = glGetUniformLocation(programid, "uniscreentodepth");

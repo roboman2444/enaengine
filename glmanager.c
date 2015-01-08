@@ -294,7 +294,6 @@ void drawModelCallback(renderlistitem_t * ilist, unsigned int count){
 	CHECKGLERROR
 
 	glDrawElementsInstanced(GL_TRIANGLES, v->numfaces * 3, GL_UNSIGNED_INT, 0, count);
-	CHECKGLERROR
 //	printf("Rendered %i\n", count);
 }
 void setupModelCallback(renderlistitem_t * ilist, unsigned int count){
@@ -955,7 +954,6 @@ int glAddLightsToQueue(viewport_t *v, renderqueue_t * q, unsigned int numsamples
 		r.data = &pl;
 		addRenderlistitem(q, r);
 	}
-//	lighttile_tileLights(v, 10, 10, out.lout);
 
 	//todo
 	//gotta free the list!

@@ -1,21 +1,38 @@
 #ifndef LIGHTTILEHEADER
 #define LIGHTTILEHEADER
+#define PERTILEMAXLIGHTS 8
+typedef struct pTileLightUBOStruct_s {
+	GLfloat pos[3];
+	GLfloat size;
+} pTileLightUBOStruct_t;
+typedef struct tileUBOStruct_s {
+	GLfloat offset[2];
+	int lcount;
+	pTileLightUBOStruct_t lights[PERTILEMAXLIGHTS];
+} tileUBOStruct_t;
 
 
 typedef struct lighttile_s {
-	unsigned int size;
-	unsigned int count;
-	unsigned int * list; //list of indices
-//	light_t ** list;
+	GLfloat x;
+	GLfloat y;
+	unsigned int plsize;
+	unsigned int plcount;
+	tileUBOStruct_t * pllist;
+
+	unsigned int slsize;
+	unsigned int slcount;
+	tileUBOStruct_t * sllist;
 } lighttile_t;
 
-unsigned int lighttile_count;
-lighttile_t * lighttile_list;
+typedef struct lighttilebuffer_s {
+	unsigned int count;
+	lighttile_t *list;
+} lighttilebuffer_t;
+
 int lighttile_ok;
 
 int lighttile_init(void);
-void lighttile_tileLights(const viewport_t *v, const unsigned int width, const unsigned int height, const lightlistpoint_t l);
-int lighttile_addToRenderQueue(viewport_t *v, renderqueue_t *q, const unsigned int width, const unsigned int height);
+unsigned int lighttile_addToRenderQueue(viewport_t *v, renderqueue_t *q, const unsigned int width, const unsigned int height);
 
 
 #endif
