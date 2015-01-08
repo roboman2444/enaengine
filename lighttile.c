@@ -91,9 +91,10 @@ void lighttile_tileLights(const viewport_t *v, const unsigned int width, const u
 		//use bounds and rectangle insert into tiles
 		unsigned int lx, ly;
 		for(ly = loopminy; ly < loopmaxy; ly++){
-			lighttile_t * start = &lighttile_list[ly * width];
+//			lighttile_t * start = &lighttile_list[ly * width];
 			for(lx = loopminx; lx < loopmaxx; lx++){
-				addLightToTile(i, &start[lx]);
+//				addLightToTile(i, &start[lx]);
+				addLightToTile(i, &lighttile_list[ly*width + lx]);
 			}
 		}
 	}
@@ -233,6 +234,15 @@ int lighttile_addToRenderQueue(viewport_t *v, renderqueue_t *q, const unsigned i
 	unsigned int lx, ly;
 	GLfloat xwidth = 2.0f/width;
 	GLfloat xheight = 2.0f/height;
+	renderTileCallbackData_t d = {0};
+	d.shaderid = lighttileshaderid;
+	d.shaderperm = 0;
+	d.perm = sp;
+	d.modelid = lighttilemodelid;
+	d.v = v;
+	d.totalwidth = xwidth;
+	d.totalheight = xheight;
+	r.data = &d;
 	for(ly = 0; ly < height; ly++){
 		for(lx = 0; lx < width; lx++){
 			lighttile_t * ltile = &lighttile_list[(ly * width) + lx];
@@ -240,14 +250,6 @@ int lighttile_addToRenderQueue(viewport_t *v, renderqueue_t *q, const unsigned i
 			unsigned int i = 0;
 			while(tcount > 0){
 //				printf("got here!\n");
-				renderTileCallbackData_t d = {0};
-				d.shaderid = lighttileshaderid;
-				d.shaderperm = 0;
-				d.perm = sp;
-				d.modelid = lighttilemodelid;
-				d.v = v;
-				d.totalwidth = xwidth;
-				d.totalheight = xheight;
 //unneeded		d.shaderprogram =
 //				d.data.x = (lx*2)-width;
 //				d.data.y = (ly*2)-height;
@@ -265,8 +267,7 @@ int lighttile_addToRenderQueue(viewport_t *v, renderqueue_t *q, const unsigned i
 					dl->pos[2] = ll->pos[2];
 					dl->size = ll->scale;
 				}
-
-				r.data = &d;
+				//copies, so i shouldnt need to re-write every time
 				addRenderlistitem(q,r);
 
 			}
