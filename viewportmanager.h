@@ -80,4 +80,7 @@ int testBBoxPInFrustumNearPlane(viewport_t *v, vec_t *points);
 
 int resizeViewport(viewport_t *v, int width, int height);
 int deleteViewport(const int id);
+
+
+void viewport_calcBBoxPScissor(const viewport_t *v, const vec_t *bbox, vec4_t scissor);
 #endif

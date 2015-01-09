@@ -563,12 +563,36 @@ int resizeViewport(viewport_t *v, int width, int height){
 	return resizeFramebuffer(outfb, width, height);
 }
 
+void viewport_calcBBoxPScissor(const viewport_t *v, const vec_t *bboxp, vec4_t scissor){
+	vec4_t out;
+	vec3_t tvec;
+	Matrix4x4_Transform(&v->viewproj, bboxp, tvec);
+	out[0] = tvec[0]; //minx
+	out[2] = tvec[0]; //maxx
+	out[1] = tvec[1]; //miny
+	out[3] = tvec[1]; //maxy
+
+	unsigned int i;
+	for(i = 1; i < 8; i++){
+		Matrix4x4_Transform(&v->viewproj, &bboxp[i*3], tvec);
+		if(tvec[0] < out[0]) out[0] = tvec[0]; //minx
+		if(tvec[0] > out[2]) out[2] = tvec[0]; //maxx
+		if(tvec[1] < out[1]) out[1] = tvec[1]; //miny
+		if(tvec[1] > out[3]) out[3] = tvec[1]; //maxy
+	}
+	scissor[0] = (out[0] +1.0f)/2.0f;
+	scissor[1] = (out[1] +1.0f)/2.0f;
+	scissor[2] = (out[2] +1.0f)/2.0f;
+	scissor[3] = (out[3] +1.0f)/2.0f;
+}
+
 /*
 //used tesserract as a reference
 vec4_t viewport_calcSphereScissor(viewport_t *v, vec3_t *spherecenter, float spheresize){
 	vec4_t out;
 	vec3_t e;
 	Matrix4x4_Transform(&v->viewproj, spherecenter, &e);
+	float radians = v->fov / 2.0 * M_PI / 180.0;
 	if(e.z > 2.0f*spheresize){
 		out[0] = 1.0f;
 		out[1] = 1.0f;
@@ -576,7 +600,14 @@ vec4_t viewport_calcSphereScissor(viewport_t *v, vec3_t *spherecenter, float sph
 		out[3] = -1.0f;
 		return out;
 	}
-//	float zzrr = e[2]*e[2] - size*size, dx = e[0]*e[0] + zzrr, dy = e[1]*e[1] + zzrr;//, focaldist = 1.0f/tan(fovy*0.5f
+	float zzrr = e[2]*e[2] - size*size, dx = e[0]*e[0] + zzrr, dy = e[1]*e[1] + zzrr, focaldist = 1.0f/tan(radians);
+	out[0] = out[1] = -1.0f;
+	out[2] = out[3] = 1.0f;
+	#define CHECKPLANE(c, dir, focaldist, low, high) \
+	    do { \  
+	float nzc = (cz*cz + 1) / (cz dir drt) - cz, \
+	         pz = (d##c)/(nzc*e.c - e.z); \
+	
 	//todo
 	return out;
 }

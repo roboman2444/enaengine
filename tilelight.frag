@@ -30,8 +30,9 @@ in vec2 tc;
 out vec4 fragColor;
 
 void main(){
-//	fragColor = vec4(0.1f, 0.1f, 0.1f, 1.0f);
-	fragColor = vec4(0.0f, 0.0f, 0.0f, 1.0f);
+//	fragColor = vec4(0.05f, 0.05f, 0.05f, 1.0f) * ddata.lcount;
+//	fragColor = vec4(0.0f, 0.0f, 0.0f, 1.0f);
+	fragColor = abs(vec4(ddata.offset.x, ddata.offset.y, 0.0f, 1.0f)) * 0.1;
 //	fragColor = (vec4(0.1) * ddata.lcount) + vec4(0.1, 0.0, 0.0, 0.0);
 	//calculate viewspace pixel pos
 	vec4 difftex = texture(texture0, tc);

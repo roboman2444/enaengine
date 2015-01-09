@@ -887,6 +887,8 @@ int glAddLightsToQueue(viewport_t *v, renderqueue_t * q, unsigned int numsamples
 
 	lightrenderout_t out = readyLightsForRender(v, 50, 0);
 	if(!out.lin.count && !out.lout.count) return FALSE;
+	out.lout.count = 0;
+	if(out.lin.count) out.lin.count = 1;
 	int i;
 	for(i = 0; i < out.lin.count; i++){
 		renderPLightCallbackData_t pl;
@@ -988,8 +990,9 @@ int glDeferredLighting(viewport_t *v, renderqueue_t * q){
 		states_bindActiveTexture(1, GL_TEXTURE_2D, df->textures[1].id);
 		states_bindActiveTexture(2, GL_TEXTURE_2D, df->textures[2].id);
 	}
+	lighttile_addToRenderQueue(v, q, 16, 16);
 	glAddLightsToQueue(v, q, numsamples);
-//	lighttile_addToRenderQueue(v, q, 16, 16);
+//	lighttile_addToRenderQueue(v, q, 64, 64);
 //	lighttile_addToRenderQueue(v, q, 2, 2);
 	renderqueueRadixSort(q);
 	renderqueueSetup(q);

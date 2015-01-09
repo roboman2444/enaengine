@@ -71,13 +71,13 @@ unsigned int lighttile_tileLights(lighttilebuffer_t *b, const viewport_t *v, con
 
 	GLfloat xwidth = 2.0f/(GLfloat)width;
 	GLfloat xheight = 2.0f/(GLfloat)height;
-	unsigned int x, y;
+	int lx, ly;
 	//reset tile lightcounts and fix x/y
-	for(y = 0; y < height; y++){
-		GLfloat passy = ((GLfloat)y *xheight)-1.0f;
-		for(x = 0; x < width; x++){
-			lighttile_t *t = &list[y * width + x];
-			GLfloat passx = ((GLfloat)x *xwidth)-1.0f;
+	for(ly = 0; ly < height; ly++){
+		GLfloat passy = ((GLfloat)ly *xheight)-1.0f;
+		for(lx = 0; lx < width; lx++){
+			lighttile_t *t = &list[ly * width + lx];
+			GLfloat passx = ((GLfloat)lx *xwidth)-1.0f;
 			t->plcount = 0;
 			t->slcount = 0;
 			t->x = passx;
@@ -89,40 +89,34 @@ unsigned int lighttile_tileLights(lighttilebuffer_t *b, const viewport_t *v, con
 	unsigned int retval = 0;
 	//loop through lights, add to tiles
 	unsigned int i;
-	for(i = 0; i < l.count; i++){
-//	for(i=0; i < 1; i++){
+	float widthf = (float)width;
+	float heightf = (float)height;
+//	for(i = 0; i < l.count; i++){
+	for(i=0; i < 1; i++){
 		light_t *mylight = l.list[i];
 		//get light in viewspace
 		vec3_t vspace;
 		Matrix4x4_Transform(&v->view, mylight->pos, vspace);
-
-		//transform light bboxp to screen, then get scissor rect
-		vec2_t mins = {1.0f};
-		vec2_t maxs = {-1.0f};
-		vec3_t tvec;
-		unsigned int j;
-		for(j = 0; j < 8; j++){
-			Matrix4x4_Transform(&v->viewproj, &mylight->bboxp[j*3], tvec);
-			if(tvec[0] > maxs[0]) maxs[0] = tvec[0];
-			if(tvec[0] < mins[0]) mins[0] = tvec[0];
-			if(tvec[1] > maxs[1]) maxs[1] = tvec[1];
-			if(tvec[1] < mins[1]) mins[1] = tvec[1];
-		}
+		//get scissor r3kd
+		vec4_t scissor;
+		viewport_calcBBoxPScissor(v, mylight->bboxp, scissor);
 		//find tiles that it overlaps
-		int loopmaxx = (int)(((maxs[0]+1.0)/2.0) * width) + 1;
-		if(loopmaxx > width) loopmaxx = width;
-		int loopmaxy = (int)(((maxs[1]+1.0)/2.0) * height) + 1;
-		if(loopmaxy > height) loopmaxy = height;
-		int loopminx = (int)(((mins[0]+1.0)/2.0) * width);
-		if(loopminx < 0) loopminx = 0;
-		int loopminy = (int)(((mins[1]+1.0)/2.0) * height);
-		if(loopminy < 0) loopminy = 0;
+		int lx = (int)(scissor[0]*widthf);
+		lx = lx < 0 ? 0 : lx;
+		int ly = (int)(scissor[1]*heightf);
+		ly = ly < 0 ? 0 : ly;
+		int loopmaxx = (int)(scissor[2]*widthf)+1;
+		loopmaxx = loopmaxx > width ? width : loopmaxx;
+		int loopmaxy = (int)(scissor[3]*heightf)+1;
+		loopmaxy = loopmaxy > height ? height : loopmaxy;
 		//use bounds and rectangle insert into tiles
-		unsigned int lx, ly;
-//		for(ly = loopminy; ly < loopmaxy; ly++){
-		for(ly = 0; ly < height; ly++){
-//			for(lx = loopminx; lx < loopmaxx; lx++){
-			for(lx = 0; lx < width; lx++){
+			printf("scissor is %f,%f | %f,%f\n", scissor[0],scissor[1], scissor[2], scissor[3]);
+			printf("other   is %i,%i | %i,%i\n", lx, ly, loopmaxx, loopmaxy);
+
+		for(; ly < loopmaxy; ly++){
+//		for(ly = 0; ly < height; ly++){
+			for(; lx < loopmaxx; lx++){
+//			for(lx = 0; lx < width; lx++){
 				retval++; // i can move this outside of loop with some nice math
 				addPLightToTile(vspace, mylight->scale, &list[ly*width + lx]);
 
@@ -243,8 +237,8 @@ unsigned int lighttile_addToRenderQueue(viewport_t *v, renderqueue_t *q, const u
 	r.setup = setupTileCallback;
 	r.draw = drawTileCallback;
 	r.datasize = sizeof(renderTileCallbackData_t);
-	r.flags = 2|4; //copyable, instanceable
-//	r.flags = 2; //copyable
+//	r.flags = 2|4; //copyable, instanceable
+	r.flags = 2; //copyable
 
 
 
