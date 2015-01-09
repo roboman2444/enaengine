@@ -8,6 +8,7 @@ typedef struct pTileLightUBOStruct_s {
 typedef struct tileUBOStruct_s {
 	GLfloat offset[2];
 	int lcount;
+	int other;
 	pTileLightUBOStruct_t lights[PERTILEMAXLIGHTS];
 } tileUBOStruct_t;
 

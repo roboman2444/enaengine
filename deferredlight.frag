@@ -44,24 +44,26 @@ void main(){
 		//get the geometry information (depth, normal, etc)
 		#ifdef MULTISAMPLE
 			vec4 normaldist = texelFetch(texture1, tc, i);
-//			vec2 gloss = texelFetch(texture2, tc, i).rg;
-			vec4 difftex = texelFetch(texture0, tc, i);
 		#else
 			vec4 normaldist = texture(texture1, tc);
-//			vec2 gloss = texture(texture2, tc).rg;
-			vec4 difftex = texture(texture0, tc);
 		#endif
-		vec3 diffuse = difftex.rgb;
-		vec2 gloss = vec2(difftex.a, normaldist.a);
 		vec3 pos;
 		pos.z = normaldist.b;
 		pos.xy = mvpos.xy * (pos.z / mvpos.z);
-		vec3 eyenormal = -normalize(pos);
 		#ifndef DIRECTIONAL
 			vec3 lightdelta = lpos-pos;
 			float lightdist = length(lightdelta);
+			if(lightdist > lsize) discard;
 			vec3 lightnormal = lightdelta/lightdist;
 		#endif
+		#ifdef MULTISAMPLE
+			vec4 difftex = texelFetch(texture0, tc, i);
+		#else
+			vec4 difftex = texture(texture0, tc);
+		#endif
+		vec3 eyenormal = -normalize(pos);
+		vec3 diffuse = difftex.rgb;
+		vec2 gloss = vec2(difftex.a, normaldist.a);
 		//vec3 surfnormal = normalize(normaldist.rgb);
 		vec3 surfnormal = vec3(normaldist.rg, sqrt(1.0f-dot(normaldist.rg, normaldist.rg)));
 		vec3 vhalf = normalize(lightnormal+eyenormal);

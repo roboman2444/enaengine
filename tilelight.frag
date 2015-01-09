@@ -5,6 +5,7 @@ struct lightdata {
 struct tiledata {
 	vec2 offset;
 	int lcount;
+	int other;
 	lightdata ldata[8];
 };
 
@@ -29,7 +30,8 @@ in vec2 tc;
 out vec4 fragColor;
 
 void main(){
-	fragColor = vec4(0.1f, 0.1f, 0.1f, 1.0f);
+//	fragColor = vec4(0.1f, 0.1f, 0.1f, 1.0f);
+	fragColor = vec4(0.0f, 0.0f, 0.0f, 1.0f);
 //	fragColor = (vec4(0.1) * ddata.lcount) + vec4(0.1, 0.0, 0.0, 0.0);
 	//calculate viewspace pixel pos
 	vec4 difftex = texture(texture0, tc);
@@ -46,6 +48,7 @@ void main(){
 	for(int i = 0; i < ddata.lcount; i++){
 		vec3 lightdelta = ddata.ldata[i].pos - pos;
 		float lightdist = length(lightdelta);
+		if(lightdist > ddata.ldata[i].size) continue;
 		vec3 lightnormal = lightdelta / lightdist;
 		vec3 vhalf = normalize(lightnormal + eyenormal);
 		float attenuation = clamp(1.0f - lightdist * lightdist /(ddata.ldata[i].size * ddata.ldata[i].size), 0.0f, 1.0f); attenuation *= attenuation;

@@ -8,6 +8,7 @@ struct lightdata {
 struct tiledata {
 	vec2 offset;
 	int lcount;
+	int other;
 	lightdata ldata[8];
 };
 
