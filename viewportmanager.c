@@ -564,13 +564,15 @@ int resizeViewport(viewport_t *v, int width, int height){
 }
 
 void viewport_calcBBoxPScissor(const viewport_t *v, const vec_t *bboxp, vec4_t scissor){
-	//todo OPTIMIZE THIS SHEIT
+	//todo optimize this?
 	vec4_t out;
 	vec4_t tvec;
-	vec4_t tvec2;
-	Matrix4x4_Transform(&v->view, bboxp, tvec2);
-	tvec2[3] = 1.0f;
-	Matrix4x4_Transform4(&v->projection, tvec2, tvec);
+	vec4_t invec;
+	invec[0] = bboxp[0];
+	invec[1] = bboxp[1];
+	invec[2] = bboxp[2];
+	invec[3] = 1.0f;
+	Matrix4x4_Transform4(&v->viewproj, invec, tvec);
 	float iw = 1.0f / tvec[3];
 	tvec[0] *= iw;
 	tvec[1] *= iw;
@@ -582,10 +584,12 @@ void viewport_calcBBoxPScissor(const viewport_t *v, const vec_t *bboxp, vec4_t s
 //	printf("firstbboxp is %f,%f,%f\n", bboxp[0], bboxp[1], bboxp[2]);
 	unsigned int i;
 	for(i = 1; i < 8; i++){
-		Matrix4x4_Transform(&v->view, &bboxp[i*3], tvec2);
-		tvec2[3] = 1.0f;
-		Matrix4x4_Transform4(&v->projection, tvec2, tvec);
-	//	float iw = 1.0f / tvec[3];
+		invec[0] = bboxp[i*3];
+		invec[1] = bboxp[i*3+1];
+		invec[2] = bboxp[i*3+2];
+		invec[3] = 1.0f;
+		Matrix4x4_Transform4(&v->viewproj, invec, tvec);
+		float iw = 1.0f / tvec[3];
 		tvec[0] *= iw;
 		tvec[1] *= iw;
 		if(tvec[0] < out[0]) out[0] = tvec[0]; //minx
@@ -598,30 +602,3 @@ void viewport_calcBBoxPScissor(const viewport_t *v, const vec_t *bboxp, vec4_t s
 	scissor[2] = (out[2] +1.0f)/2.0f;
 	scissor[3] = (out[3] +1.0f)/2.0f;
 }
-
-/*
-//used tesserract as a reference
-vec4_t viewport_calcSphereScissor(viewport_t *v, vec3_t *spherecenter, float spheresize){
-	vec4_t out;
-	vec3_t e;
-	Matrix4x4_Transform(&v->viewproj, spherecenter, &e);
-	float radians = v->fov / 2.0 * M_PI / 180.0;
-	if(e.z > 2.0f*spheresize){
-		out[0] = 1.0f;
-		out[1] = 1.0f;
-		out[2] = -1.0f;
-		out[3] = -1.0f;
-		return out;
-	}
-	float zzrr = e[2]*e[2] - size*size, dx = e[0]*e[0] + zzrr, dy = e[1]*e[1] + zzrr, focaldist = 1.0f/tan(radians);
-	out[0] = out[1] = -1.0f;
-	out[2] = out[3] = 1.0f;
-	#define CHECKPLANE(c, dir, focaldist, low, high) \
-	    do { \  
-	float nzc = (cz*cz + 1) / (cz dir drt) - cz, \
-	         pz = (d##c)/(nzc*e.c - e.z); \
-	
-	//todo
-	return out;
-}
-*/

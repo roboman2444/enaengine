@@ -30,10 +30,7 @@ in vec2 tc;
 out vec4 fragColor;
 
 void main(){
-//	fragColor = vec4(0.05f, 0.05f, 0.05f, 1.0f) * ddata.lcount;
-//	fragColor = vec4(0.0f, 0.0f, 0.0f, 1.0f);
-	fragColor = abs(vec4(ddata.offset.x, ddata.offset.y, ddata.lcount, 1.0f)) * 0.1;
-//	fragColor = (vec4(0.1) * ddata.lcount) + vec4(0.1, 0.0, 0.0, 0.0);
+//	fragColor = vec4(abs(ddata.offset), ddata.lcount, 1.0f)) * 0.1;
 	//calculate viewspace pixel pos
 	vec4 normaldist = texture(texture1, tc);
 	float gloss = normaldist.a;
@@ -68,9 +65,6 @@ void main(){
 	vec4 difftex = texture(texture0, tc);
 	vec3 diffuse = difftex.rgb;
 	float specmap = difftex.a;
-//	fragColor.rgb += (specout * specmap) + (diffout * diffuse);
-//	fragColor.rgb = pos /16.0;
-
-//	fragColor.xyz = diffuse;
+	fragColor.rgb += (specout * specmap) + (diffout * diffuse);
 
 }

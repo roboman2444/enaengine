@@ -6,7 +6,6 @@
 
 gcallheader_t gc;
 ecallheader_t *ec;
-
 int initgame(void){
 
 	entity_t * entcampointer = ec->entity_addRPOINT("campointer");

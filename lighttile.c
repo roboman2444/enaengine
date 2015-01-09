@@ -224,7 +224,6 @@ unsigned int lighttile_addToRenderQueue(viewport_t *v, renderqueue_t *q, const u
 	lightrenderout_t out = readyLightsForRender(v,50,0);
 	if(!out.lin.count && !out.lout.count) return FALSE;
 
-//	printf("got here! %i\n", out.lout.count);
 	lighttile_resetLights(&maintilebuff, width, height);
 	unsigned int retval = lighttile_tileLights(&maintilebuff, v, width, height, out.lin);
 	retval += lighttile_tileLights(&maintilebuff, v, width, height, out.lout);

@@ -990,8 +990,8 @@ int glDeferredLighting(viewport_t *v, renderqueue_t * q){
 		states_bindActiveTexture(1, GL_TEXTURE_2D, df->textures[1].id);
 		states_bindActiveTexture(2, GL_TEXTURE_2D, df->textures[2].id);
 	}
-	lighttile_addToRenderQueue(v, q, 16, 16);
-//	glAddLightsToQueue(v, q, numsamples);
+//	lighttile_addToRenderQueue(v, q, 16, 16);
+	glAddLightsToQueue(v, q, numsamples);
 //	lighttile_addToRenderQueue(v, q, 64, 64);
 //	lighttile_addToRenderQueue(v, q, 800, 600);
 //	lighttile_addToRenderQueue(v, q, 2, 2);
