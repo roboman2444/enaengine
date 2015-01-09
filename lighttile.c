@@ -55,8 +55,7 @@ void addPLightToTile(vec3_t pos, float size, lighttile_t *t){
 	plst->pos[2] = pos[2];
 	plst->size = size;
 }
-
-unsigned int lighttile_tileLights(lighttilebuffer_t *b, const viewport_t *v, const unsigned int width, const unsigned int height, const lightlistpoint_t l){
+void lighttile_resetLights(lighttilebuffer_t *b, const unsigned int width, const unsigned int height){
 	unsigned int mycount = width * height;
 //	unsigned int k, kmax = (mycount > b->count) ? b->count : mycount;
 	//resize tilelist if needed
@@ -68,7 +67,6 @@ unsigned int lighttile_tileLights(lighttilebuffer_t *b, const viewport_t *v, con
 		memset(&b->list[start], 0, size * sizeof(lighttile_t));
 	}
 	lighttile_t *list = b->list;
-
 	GLfloat xwidth = 2.0f/(GLfloat)width;
 	GLfloat xheight = 2.0f/(GLfloat)height;
 	int lx, ly;
@@ -84,6 +82,11 @@ unsigned int lighttile_tileLights(lighttilebuffer_t *b, const viewport_t *v, con
 			t->y = passy;
 		}
 	}
+
+}
+unsigned int lighttile_tileLights(lighttilebuffer_t *b, const viewport_t *v, const unsigned int width, const unsigned int height, const lightlistpoint_t l){
+	lighttile_t *list = b->list;
+
 	if(!l.count) return FALSE;
 
 	unsigned int retval = 0;
@@ -91,8 +94,8 @@ unsigned int lighttile_tileLights(lighttilebuffer_t *b, const viewport_t *v, con
 	unsigned int i;
 	float widthf = (float)width;
 	float heightf = (float)height;
-//	for(i = 0; i < l.count; i++){
-	for(i=0; i < 1; i++){
+	for(i = 0; i < l.count; i++){
+//	for(i=0; i < 1; i++){
 		light_t *mylight = l.list[i];
 		//get light in viewspace
 		vec3_t vspace;
@@ -101,25 +104,25 @@ unsigned int lighttile_tileLights(lighttilebuffer_t *b, const viewport_t *v, con
 		vec4_t scissor;
 		viewport_calcBBoxPScissor(v, mylight->bboxp, scissor);
 		//find tiles that it overlaps
-		int lx = (int)(scissor[0]*widthf);
-		lx = lx < 0 ? 0 : lx;
-		int ly = (int)(scissor[1]*heightf);
-		ly = ly < 0 ? 0 : ly;
+		int loopminx = (int)(scissor[0]*widthf);
+		loopminx = loopminx < 0 ? 0 : loopminx;
+		int loopminy = (int)(scissor[1]*heightf);
+		loopminy = loopminy < 0 ? 0 : loopminy;
 		int loopmaxx = (int)(scissor[2]*widthf)+1;
 		loopmaxx = loopmaxx > width ? width : loopmaxx;
 		int loopmaxy = (int)(scissor[3]*heightf)+1;
 		loopmaxy = loopmaxy > height ? height : loopmaxy;
 		//use bounds and rectangle insert into tiles
-			printf("scissor is %f,%f | %f,%f\n", scissor[0],scissor[1], scissor[2], scissor[3]);
-			printf("other   is %i,%i | %i,%i\n", lx, ly, loopmaxx, loopmaxy);
+//			printf("scissor is %f,%f | %f,%f\n", scissor[0],scissor[1], scissor[2], scissor[3]);
+//			printf("other   is %i,%i | %i,%i\n", loopminx, loopminy, loopmaxx, loopmaxy);
 
-		for(; ly < loopmaxy; ly++){
+		int lx, ly;
+		for(ly = loopminy; ly < loopmaxy; ly++){
 //		for(ly = 0; ly < height; ly++){
-			for(; lx < loopmaxx; lx++){
+			for(lx = loopminx; lx < loopmaxx; lx++){
 //			for(lx = 0; lx < width; lx++){
 				retval++; // i can move this outside of loop with some nice math
 				addPLightToTile(vspace, mylight->scale, &list[ly*width + lx]);
-
 			}
 		}
 	}
@@ -222,7 +225,9 @@ unsigned int lighttile_addToRenderQueue(viewport_t *v, renderqueue_t *q, const u
 	if(!out.lin.count && !out.lout.count) return FALSE;
 
 //	printf("got here! %i\n", out.lout.count);
+	lighttile_resetLights(&maintilebuff, width, height);
 	unsigned int retval = lighttile_tileLights(&maintilebuff, v, width, height, out.lin);
+	retval += lighttile_tileLights(&maintilebuff, v, width, height, out.lout);
 	if(!retval) return FALSE;
 	lighttile_t *list = maintilebuff.list;
 	unsigned int mysize = width * height;

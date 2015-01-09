@@ -564,17 +564,30 @@ int resizeViewport(viewport_t *v, int width, int height){
 }
 
 void viewport_calcBBoxPScissor(const viewport_t *v, const vec_t *bboxp, vec4_t scissor){
+	//todo OPTIMIZE THIS SHEIT
 	vec4_t out;
-	vec3_t tvec;
-	Matrix4x4_Transform(&v->viewproj, bboxp, tvec);
+	vec4_t tvec;
+	vec4_t tvec2;
+	Matrix4x4_Transform(&v->view, bboxp, tvec2);
+	tvec2[3] = 1.0f;
+	Matrix4x4_Transform4(&v->projection, tvec2, tvec);
+	float iw = 1.0f / tvec[3];
+	tvec[0] *= iw;
+	tvec[1] *= iw;
 	out[0] = tvec[0]; //minx
 	out[2] = tvec[0]; //maxx
 	out[1] = tvec[1]; //miny
 	out[3] = tvec[1]; //maxy
-
+//	printf("firstpoint is %f,%f,%f\n", tvec[0], tvec[1], tvec[2]);
+//	printf("firstbboxp is %f,%f,%f\n", bboxp[0], bboxp[1], bboxp[2]);
 	unsigned int i;
 	for(i = 1; i < 8; i++){
-		Matrix4x4_Transform(&v->viewproj, &bboxp[i*3], tvec);
+		Matrix4x4_Transform(&v->view, &bboxp[i*3], tvec2);
+		tvec2[3] = 1.0f;
+		Matrix4x4_Transform4(&v->projection, tvec2, tvec);
+	//	float iw = 1.0f / tvec[3];
+		tvec[0] *= iw;
+		tvec[1] *= iw;
 		if(tvec[0] < out[0]) out[0] = tvec[0]; //minx
 		if(tvec[0] > out[2]) out[2] = tvec[0]; //maxx
 		if(tvec[1] < out[1]) out[1] = tvec[1]; //miny
