@@ -252,12 +252,12 @@ shaderpermutation_t createPermutation(shaderprogram_t * shader, unsigned int per
 	int status;
 
 	glGetShaderiv(fragid, GL_COMPILE_STATUS, &status);
-	if(status == GL_FALSE){
+	if(shader_printShaderLogStatus(fragid) || status == GL_FALSE){
 			console_printf("Shader %s vertex shader compile failed\n", shader->name);
 			fail = 1;
 	}
 	glGetShaderiv(vertid, GL_COMPILE_STATUS, &status);
-	if(status == GL_FALSE){
+	if(shader_printShaderLogStatus(vertid) || status == GL_FALSE){
 			console_printf("Shader %s fragment shader compile failed\n", shader->name);
 			fail = 1;
 	}
@@ -501,6 +501,18 @@ int shader_printProgramLogStatus(const int id){
 	}
 	return FALSE;
 }
+int shader_printShaderLogStatus(const int id){
+	GLint blen = 0;
+	glGetShaderiv(id, GL_INFO_LOG_LENGTH, &blen);
+	if(blen > 1){
+		GLchar *log = (GLchar *) malloc(blen);
+		glGetShaderInfoLog(id, blen, 0, log);
+		console_nprintf(blen + 16, "shader log: %s \n", log); //too much for the console
+		free(log);
+		return blen;
+	}
+	return FALSE;
+}
 //UNTESTED
 int shader_getProgramLogStatus(const int id, char ** output){
 	GLint length = 0;
@@ -508,6 +520,15 @@ int shader_getProgramLogStatus(const int id, char ** output){
 	if(length > 1){
 		*output = malloc(length);
 		glGetProgramInfoLog(id, length, 0, *output);
+	}
+	return length;
+}
+int shader_getShaderLogStatus(const int id, char ** output){
+	GLint length = 0;
+	glGetShaderiv(id, GL_INFO_LOG_LENGTH, &length);
+	if(length > 1){
+		*output = malloc(length);
+		glGetShaderInfoLog(id, length, 0, *output);
 	}
 	return length;
 }

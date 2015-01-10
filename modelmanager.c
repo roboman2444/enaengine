@@ -439,15 +439,16 @@ float getSphereFromInterleavedMesh(GLfloat * interleavedbuffer, GLuint vertcount
 int getBBoxFromInterleavedMesh(GLfloat * interleavedbuffer, GLuint vertcount, int stride, vec_t * bbox){
 	if(stride < 5) return 0;
 
-	bbox[0] = -3.4028e+38;
-	bbox[1] = 3.4028e+38;
-	bbox[2] = -3.4028e+38;
-	bbox[3] = 3.4028e+38;
-	bbox[4] = -3.4028e+38;
-	bbox[5] = 3.4028e+38;
+
+	bbox[0] = interleavedbuffer[0];
+	bbox[1] = interleavedbuffer[0];
+	bbox[2] = interleavedbuffer[1];
+	bbox[3] = interleavedbuffer[1];
+	bbox[4] = interleavedbuffer[2];
+	bbox[5] = interleavedbuffer[2];
 
 	int i;
-	for(i = 0; i < vertcount; i++){
+	for(i = 1; i < vertcount; i++){
 		float * vert = &interleavedbuffer[(i*stride)];
 		if(vert[0] > bbox[0]) bbox[0] = vert[0];
 		else if(vert[0] < bbox[1]) bbox[1] = vert[0];
@@ -836,7 +837,8 @@ int loadModelIQM(model_t *m, char * filename){
 		if(!loadiqmanimscenes(a, hdr, buf)) goto error;
 		if(!loadiqmposes(a, hdr, buf)) goto error;
 	}
-	if(!loadiqmbboxes(m)) goto error;
+//	if(!loadiqmbboxes(m)) goto error;
+	loadiqmbboxes(m);
 	if(m->interleaveddata) free(m->interleaveddata);
 	m->interleaveddata = 0;
 

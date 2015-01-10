@@ -37,24 +37,37 @@ typedef struct light_s {
 
 	// 0 is NA
 	vec3_t pos;
-	vec3_t angle;
+	//todo offset/rotation from attachments
+	vec3_t angle; // point lights dont use this
 	//float spotangle
 	float scale;
 	float difbright;
 	float specbright;
 	vec3_t color;
-	//int needsmatupdate;
-//	matrix4x4_t mat;
+	//int needsmatupdate; // redundant because of needsupdate?
+	//todo figure out weather i put a viewport here or just a lot of matricies/fov
+//	viewport_t *lvp;
 	int attachmentid;
-
 	int needsupdate;
 
 	vec_t bboxp[24];
 	vec_t bbox[6];
+
 	unsigned char treedepth;
 	unsigned int leafpos;
 	void * leaf;
-
+	float fovx;
+	float fovy;
+	float near;
+	float far;
+	plane_t frustum[6];
+	matrix4x4_t projection;
+	matrix4x4_t view;
+	matrix4x4_t viewproj;
+	matrix4x4_t cam; //essentially same as an entity's matrix
+	matrix4x4_t fixproj;
+	matrix4x4_t camproj; //used for transferring a unit cube(or unit cylinder) to the shape of the light
+	matrix4x4_t samplemat;
 } light_t;
 
 //ent

@@ -43,6 +43,7 @@ int textvbo = 0; //temporary
 int textshaderid = 0; // temporary
 int fsblendshaderid = 0; // temporary
 int cubeModel = 0; // todo move this as well as the other primitives into modelmanager
+int sphereModel = 0; //todo move this
 unsigned int currentflags = 0;
 //GLfloat fsquadpoints[12] = {-1.0, -1.0, 	1.0, -1.0, 	 1.0, 1.0,
 //			    -1.0, -1.0, 	1.0,  1.0, 	-1.0, 1.0};
@@ -231,6 +232,7 @@ int glInit(void){
 	textshaderid = shader_createAndAddRINT("text");
 	fsblendshaderid = shader_createAndAddRINT("fsblend");
 	cubeModel = model_findByNameRINT("cube");
+	sphereModel = model_createAndAddRINT("sphere");
 	fsquadmodel = model_findByNameRINT("fsquad");
 
 	readyRenderQueueBuffers();
@@ -896,7 +898,7 @@ int glAddLightsToQueue(viewport_t *v, renderqueue_t * q, unsigned int numsamples
 		pl.light.pos[0] = out.lin.list[i]->pos[0];
 		pl.light.pos[1] = out.lin.list[i]->pos[1];
 		pl.light.pos[2] = out.lin.list[i]->pos[2];
-		pl.modelid = cubeModel;
+		pl.modelid = sphereModel;
 		pl.shaderid = lightshaderid;
 		pl.shaderperm = permutation;
 		pl.perm = perm;
@@ -928,7 +930,7 @@ int glAddLightsToQueue(viewport_t *v, renderqueue_t * q, unsigned int numsamples
 		pl.light.pos[0] = out.lout.list[i]->pos[0];
 		pl.light.pos[1] = out.lout.list[i]->pos[1];
 		pl.light.pos[2] = out.lout.list[i]->pos[2];
-		pl.modelid = cubeModel;
+		pl.modelid = sphereModel;
 		pl.shaderid = lightshaderid;
 		pl.shaderperm = permutation;
 		pl.perm = perm;

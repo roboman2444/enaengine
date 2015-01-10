@@ -2,8 +2,7 @@
 //something like a define instancesize 16, then have the shadermanager put in a define that does the devide?
 
 struct lightdata {
-	vec3 pos;
-	float size;
+	vec4 pos;
 };
 struct tiledata {
 	vec2 offset;
@@ -27,16 +26,17 @@ uniform vec2 univec21; //for calc worldpos stuff
 
 
 in vec3 posattrib;
-flat out tiledata ddata;
-
+//flat out tiledata ddata;
+flat out int instid;
 out vec2 screenpos;
 out vec2 tc;
 
 void main(){
 	tiledata instanceattrib = uniblock0_t.tdata[gl_InstanceID];
+	instid = gl_InstanceID;
 	gl_Position.xy = (posattrib.xy * univec20)+instanceattrib.offset;
 //	gl_Position.zw = vec2(0.0);
 	screenpos = gl_Position.xy;
 	tc = (gl_Position.xy +1.0)/2.0;
-	ddata = instanceattrib;
+//	ddata = instanceattrib;
 }

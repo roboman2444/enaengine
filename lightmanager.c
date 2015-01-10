@@ -1,6 +1,7 @@
 //global includes
 #include <GL/glew.h> //may be unneeded
 #include <GL/gl.h>
+#include <tgmath.h>
 //local includes
 #include "globaldefs.h"
 #include "hashtables.h"
@@ -10,6 +11,7 @@
 #include "viewportmanager.h"
 #include "lightmanager.h"
 #include "console.h"
+#include "mathlib.h"
 
 int lightcount = 0;
 int lightArrayFirstOpen = 0;
@@ -19,20 +21,95 @@ int light_ok = 0;
 light_t *lightlist;
 hashbucket_t lighthashtable[MAXHASHBUCKETS];
 
-int recalcLightBBox(light_t *l){
-	//todo calculate some special thing for non-point lights...
-	float scale = l->scale;
-	l->bbox[0] = l->pos[0] - scale;
-	l->bbox[1] = l->pos[0] + scale;
-	l->bbox[2] = l->pos[1] - scale;
-	l->bbox[3] = l->pos[1] + scale;
-	l->bbox[4] = l->pos[2] - scale;
-	l->bbox[5] = l->pos[2] + scale;
-	getBBoxPFromBBox(l->bbox, l->bboxp);
-	return TRUE;
+vec_t unitbox[24] = {
+	-1.0, -1.0, -1.0,	1.0, -1.0, -1.0,	-1.0, 1.0, -1.0,	1.0, 1.0, -1.0,
+	-1.0, -1.0, 1.0,	1.0, -1.0, 1.0,		-1.0, 1.0, 1.0,		1.0, 1.0, 1.0 };
+
+void recalcLightBBox(light_t *l){
+	//spot light
+	if(l->type == 2){
+		vec3_t t;
+		Matrix4x4_Transform(&l->camproj, unitbox, t);
+		l->bboxp[0] = t[0];
+		l->bboxp[1] = t[1];
+		l->bboxp[2] = t[2];
+		l->bbox[0] = t[0];
+		l->bbox[1] = t[0];
+		l->bbox[2] = t[1];
+		l->bbox[3] = t[1];
+		l->bbox[4] = t[2];
+		l->bbox[5] = t[2];
+		int i;
+		for(i = 1; i < 8; i++){
+			Matrix4x4_Transform(&l->camproj, &unitbox[i*3], t);
+			l->bboxp[i*3+0] = t[0];
+			l->bboxp[i*3+1] = t[1];
+			l->bboxp[i*3+2] = t[2];
+			if(t[0] < l->bbox[0]) l->bbox[0] = t[0];
+			else if(t[0] > l->bbox[1]) l->bbox[1] = t[0];
+			if(t[1] < l->bbox[2]) l->bbox[2] = t[1];
+			else if(t[1] > l->bbox[3]) l->bbox[3] = t[1];
+			if(t[2] < l->bbox[4]) l->bbox[4] = t[2];
+			else if(t[2] > l->bbox[5]) l->bbox[5] = t[2];
+		}
+	} else {
+
+		float scale = l->scale;
+		l->bbox[0] = l->pos[0] - scale;
+		l->bbox[1] = l->pos[0] + scale;
+		l->bbox[2] = l->pos[1] - scale;
+		l->bbox[3] = l->pos[1] + scale;
+		l->bbox[4] = l->pos[2] - scale;
+		l->bbox[5] = l->pos[2] + scale;
+		getBBoxPFromBBox(l->bbox, l->bboxp);
+	}
 }
 int recheckLightLeaf(light_t *l){
+	//todo
 	return TRUE;
+}
+void recalcLightViewMats(light_t *l){
+	Matrix4x4_CreateRotate(&l->view, l->angle[2], 0.0f, 0.0f, 1.0f);
+	Matrix4x4_ConcatRotate(&l->view, l->angle[0], 1.0f, 0.0f, 0.0f);
+	Matrix4x4_ConcatRotate(&l->view, l->angle[1], 0.0f, 1.0f, 0.0f);
+	Matrix4x4_ConcatTranslate(&l->view, -l->pos[0], -l->pos[1], -l->pos[2]);
+	Matrix4x4_CreateFromQuakeEntity(&l->cam, l->pos[0], l->pos[1], l->pos[2], l->angle[2], l->angle[1], l->angle[0], 1.0);
+}
+void recalcLightProjMats(light_t *l){
+	//todo do i really need the whole seperate x and y cotangent radians sines, etc?
+	double sinex, siney, cotangentx, cotangenty, deltaZ;
+	double radiansx = l->fovx / 2.0 * M_PI / 180.0;
+	double radiansy = l->fovy / 2.0 * M_PI / 180.0;
+
+	deltaZ = l->far - l->near;
+	sinex = sin(radiansx);
+	siney = sin(radiansy);
+	if ((deltaZ == 0) || (sinex == 0) || (siney == 0) || (l->fovy == 0) || (l->fovx == 0)) {
+		return;
+	}
+	cotangentx = cos(radiansx) / sinex;
+	cotangenty = cos(radiansy) / siney;
+
+	l->projection.m[0][0] = cotangentx;
+	l->projection.m[1][1] = cotangenty;
+	l->projection.m[2][2] = -(l->far + l->near) / deltaZ;
+	l->projection.m[2][3] = -1.0;
+	l->projection.m[3][2] = -2.0 * l->near * l->far / deltaZ;
+	l->projection.m[3][3] = 0;
+
+	l->fixproj.m[0][0] = 1.0/cotangentx;
+	l->fixproj.m[1][1] = 1.0/cotangenty;
+	l->fixproj.m[2][2] = 1.0/l->projection.m[2][2];
+	l->fixproj.m[2][3] = -1.0;
+	l->fixproj.m[3][2] = 1.0/l->projection.m[3][2];
+	l->fixproj.m[3][3] = 0;
+	//todo for fixproj?
+}
+void recalcLightMats(light_t *l){
+	if(l->needsupdate & 1)recalcLightViewMats(l);
+	if(l->needsupdate & 2)recalcLightProjMats(l);
+	Matrix4x4_Concat(&l->viewproj, &l->projection, &l->view);
+	Matrix4x4_Concat(&l->camproj, &l->cam, &l->fixproj);
 }
 int lightLoop(void){
 	int count = 0, i;
@@ -49,6 +126,7 @@ int lightLoop(void){
 //				l->pos[1] = tvec[1];
 //				l->pos[2] = tvec[2];
 				Matrix4x4_OriginFromMatrix(&e->mat, l->pos);
+				//recalcLightMats(l);
 				recalcLightBBox(l);
 				recheckLightLeaf(l);
 				count++;
@@ -56,6 +134,7 @@ int lightLoop(void){
 //	console_printf("updated light\n");
 			}
 		} else if(l->needsupdate){
+				//recalcLightMats(l);
 				recalcLightBBox(l);
 				recheckLightLeaf(l);
 				count++;
@@ -148,7 +227,11 @@ light_t createLight(const char * name){
 	newlight.name = malloc(strlen(name)+1); // todo maybe put this somewhere else...
 	strcpy(newlight.name, name);
 	newlight.scale = 1.0;
-//	Matrix4x4_CreateFromQuakeEntity(&newlight.mat, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0);
+//	Matrix4x4_CreateIdentity(&newlight.view);
+	Matrix4x4_CreateIdentity(&newlight.projection);
+//	Matrix4x4_CreateIdentity(&newlight.cam);
+//	Matrix4x4_CreateIdentity(&newlight.fixproj);
+	newlight.needsupdate = 3;
 	return newlight;
 //todo
 }

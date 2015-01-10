@@ -1,6 +1,5 @@
 struct lightdata {
-	vec3 pos;
-	float size;
+	vec4 pos;
 };
 struct tiledata {
 	vec2 offset;
@@ -21,10 +20,16 @@ uniform sampler2D texture1;
 uniform sampler2D texture2;
 
 
-flat in tiledata ddata;
+//flat in tiledata ddata;
 in vec2 screenpos;
 in vec2 tc;
+flat in int instid;
 
+
+#define N 256
+layout (std140) uniform uniblock0 {
+	tiledata tdata[N]; //todo
+} uniblock0_t;
 
 
 out vec4 fragColor;
@@ -32,6 +37,7 @@ out vec4 fragColor;
 void main(){
 //	fragColor = vec4(abs(ddata.offset), ddata.lcount, 1.0f)) * 0.1;
 	//calculate viewspace pixel pos
+	tiledata ddata = uniblock0_t.tdata[instid];
 	vec4 normaldist = texture(texture1, tc);
 	float gloss = normaldist.a;
 
@@ -44,13 +50,13 @@ void main(){
 	vec3 specout = vec3(0.0);
 	int j = 0;
 	for(int i = 0; i < ddata.lcount; i++){
-		vec3 lightdelta = ddata.ldata[i].pos - pos;
+		vec3 lightdelta = ddata.ldata[i].pos.rgb - pos;
 		float lightdist = length(lightdelta);
-		if(lightdist > ddata.ldata[i].size) continue;
+		if(lightdist > ddata.ldata[i].pos.a) continue;
 		j++;
 		vec3 lightnormal = lightdelta / lightdist;
 		vec3 vhalf = normalize(lightnormal + eyenormal);
-		float attenuation = clamp(1.0f - lightdist * lightdist /(ddata.ldata[i].size * ddata.ldata[i].size), 0.0f, 1.0f); attenuation *= attenuation;
+		float attenuation = clamp(1.0f - lightdist * lightdist /(ddata.ldata[i].pos.a * ddata.ldata[i].pos.a), 0.0f, 1.0f); attenuation *= attenuation;
 
 //		fragColor.rgb += ((clamp(dot(surfnormal, lightnormal), 0.0f, 1.0f) * diffuse)
 //		 + vec3(clamp(pow(dot(surfnormal,vhalf), gloss.y), 0.0f, 1.0f) * gloss.x) )* attenuation;
@@ -65,6 +71,6 @@ void main(){
 	vec4 difftex = texture(texture0, tc);
 	vec3 diffuse = difftex.rgb;
 	float specmap = difftex.a;
-	fragColor.rgb += (specout * specmap) + (diffout * diffuse);
-
+	fragColor.rgb = (specout * specmap) + (diffout * diffuse);
+	fragColor.a = 0.0;
 }

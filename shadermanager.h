@@ -80,8 +80,10 @@ void shader_pruneList(void);
 
 
 
+int shader_printShaderLogStatus(const int id);
 int shader_printProgramLogStatus(const int id);
 int shader_getProgramLogStatus(const int id, char ** output);
+int shader_getShaderLogStatus(const int id, char ** output);
 shaderpermutation_t * shader_findPermutation(shaderprogram_t * shader, unsigned int permutation);
 shaderpermutation_t * shader_addPermutationToProgram(shaderprogram_t * shader, unsigned int permutation);
 

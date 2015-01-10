@@ -108,10 +108,10 @@ viewport_t createViewport (char * name, const char type){
 	}
  	v.name = malloc(strlen(name)+1);
 	strcpy(v.name, name);
-	Matrix4x4_CreateIdentity(&v.view);
-	Matrix4x4_CreateIdentity(&v.cam);
+//	Matrix4x4_CreateIdentity(&v.view);
+//	Matrix4x4_CreateIdentity(&v.cam);
 	Matrix4x4_CreateIdentity(&v.projection);
-	Matrix4x4_CreateIdentity(&v.viewproj);
+//	Matrix4x4_CreateIdentity(&v.viewproj);
 	v.type = type;
 	return v;
 //todo
@@ -593,9 +593,9 @@ void viewport_calcBBoxPScissor(const viewport_t *v, const vec_t *bboxp, vec4_t s
 		tvec[0] *= iw;
 		tvec[1] *= iw;
 		if(tvec[0] < out[0]) out[0] = tvec[0]; //minx
-		if(tvec[0] > out[2]) out[2] = tvec[0]; //maxx
+		else if(tvec[0] > out[2]) out[2] = tvec[0]; //maxx
 		if(tvec[1] < out[1]) out[1] = tvec[1]; //miny
-		if(tvec[1] > out[3]) out[3] = tvec[1]; //maxy
+		else if(tvec[1] > out[3]) out[3] = tvec[1]; //maxy
 	}
 	scissor[0] = (out[0] +1.0f)/2.0f;
 	scissor[1] = (out[1] +1.0f)/2.0f;
