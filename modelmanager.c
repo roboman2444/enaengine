@@ -31,7 +31,33 @@ hashbucket_t modelhashtable[MAXHASHBUCKETS];
 
 char *statictypes[] = {".obj"}; //todo filesys
 char *animtypes[] = {".iqm"}; //todo filesys //todo
+/*
+int model_makeAnyModel(const char * name, GLfloat * verts, GLuint * faces, GLuint numfaces, GLuint numverts){ //todo have a way for different attirbutes and whatnot
+	model_t m;
+	m.type = 1;
+	m.name = malloc(strlen("name")+1);
+	strcpy(m.name, name);
+	vbo_t * myvbo = createAndAddVBORPOINT(m.name, 1);
+	if(!myvbo) return FALSE; // todo free and error handle
+	m.vbo = myvbo->myid;
 
+
+	states_bindBuffer(GL_ARRAY_BUFFER, myvbo->vboid);
+	glBufferData(GL_ARRAY_BUFFER, numverts * 3 * sizeof(GLfloat), verts, GL_STATIC_DRAW);
+	myvbo->numverts = numverts;
+//	m.interleaveddata = points;
+
+	glEnableVertexAttribArray(POSATTRIBLOC);
+	glVertexAttribPointer(POSATTRIBLOC, 3, GL_FLOAT, GL_FALSE, 3*sizeof(GLfloat), 0);
+//	setUpVBOStride(myvbo, 3, 3, 2, 0);
+
+	states_bindBuffer(GL_ELEMENT_ARRAY_BUFFER,myvbo->indicesid);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, numfaces * 3 *sizeof(GLuint), faces, GL_STATIC_DRAW);
+	myvbo->numfaces = numfaces;
+//	m.tris = tris;
+	return model_addRINT(m);
+}
+*/
 int makeCubeModel(void){
 	model_t m;// = malloc(sizeof(model_T));
 //	memset(m, 0, sizeof(model_t));

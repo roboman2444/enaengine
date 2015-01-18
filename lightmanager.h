@@ -22,6 +22,7 @@ typedef struct light_s {
 	int needsupdate;
 
 	vec_t bboxp[24];
+//	vec_t bboxp[27]; 9 for spot octa
 	vec_t bbox[6];
 
 	unsigned char treedepth;
@@ -116,4 +117,6 @@ void pruneLightList(void);
 int lightLoop(void);
 
 lightrenderout_t readyLightsForRender(viewport_t *v, const unsigned int max, const unsigned int maxshadowed);
+//todo move this to a seperate file... like lightdeferred.c/h
+//int lights_addToRenderQueue(viewport_t *v, renderqueue_t *q, unsigned int numsamples);
 #endif

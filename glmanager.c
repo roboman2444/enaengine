@@ -26,6 +26,9 @@
 #include <tgmath.h> //for sin and cos
 #include "cvarmanager.h"
 
+
+extern int lights_addToRenderQueue(viewport_t *v, renderqueue_t *q, unsigned int numsamples);
+
 float degnumber;
 
 //state rendering stuff
@@ -35,15 +38,12 @@ char currentMatNeeds = 0;
 unsigned long totalface, totalcount, totalvert;
 int camid = 0;
 int wireshaderid = 0; //todo redo
-int lightshaderid = 0;
 viewport_t * cam = 0;
 GLuint instancevbo = 0;
 GLuint instancevbo2 = 0;
 int textvbo = 0; //temporary
 int textshaderid = 0; // temporary
 int fsblendshaderid = 0; // temporary
-int cubeModel = 0; // todo move this as well as the other primitives into modelmanager
-int sphereModel = 0; //todo move this
 unsigned int currentflags = 0;
 //GLfloat fsquadpoints[12] = {-1.0, -1.0, 	1.0, -1.0, 	 1.0, 1.0,
 //			    -1.0, -1.0, 	1.0,  1.0, 	-1.0, 1.0};
@@ -222,7 +222,6 @@ int glInit(void){
 	screenWidth = 800;
 	screenHeight = 600;
 
-	lightshaderid = shader_createAndAddRINT("deferredlight");
 	glGenBuffers(1, &instancevbo);
 	glGenBuffers(1, &instancevbo2);
 
@@ -231,8 +230,6 @@ int glInit(void){
 	textvbo = tvbo->myid;
 	textshaderid = shader_createAndAddRINT("text");
 	fsblendshaderid = shader_createAndAddRINT("fsblend");
-	cubeModel = model_findByNameRINT("cube");
-	sphereModel = model_createAndAddRINT("sphere");
 	fsquadmodel = model_findByNameRINT("fsquad");
 
 	readyRenderQueueBuffers();
@@ -719,252 +716,6 @@ GLuint tris[36] = {
 	};
 
 
-typedef struct pLightPUBOStruct_s {
-	GLfloat pos[3];
-	GLfloat size;
-} pLightUBOStruct_t;
-
-typedef struct renderPLightCallbackData_s {
-	//todo?
-	GLuint shaderprogram;
-	unsigned int shaderid;
-	unsigned int shaderperm;
-	shaderpermutation_t * perm;
-	unsigned char numsamples;
-	unsigned int modelid;
-	unsigned int ubodataoffset;
-	viewport_t *v;
-	pLightUBOStruct_t light;
-} renderPLightCallbackData_t;
-
-
-void drawPLightOCallback(renderlistitem_t * ilist, unsigned int count){
-//	printf("added!\n");
-
-	renderPLightCallbackData_t *d = ilist->data;
-	shaderpermutation_t * perm = d->perm;
-	if(shader_bindPerm(perm) == 2){
-	//TODODODODODO
-		viewport_t *v = d->v;
-		//also have to set some basic uniforms?
-	//	framebuffer_t *df = returnFramebufferById(v->dfbid);
-		framebuffer_t *of = returnFramebufferById(v->outfbid);
-
-		GLfloat mout[16];	//todo calc MOUT per viewport in viewport update
-		Matrix4x4_ToArrayFloatGL(&v->viewproj, mout);
-		glUniformMatrix4fv(perm->unimat40, 1, GL_FALSE, mout);
-		Matrix4x4_ToArrayFloatGL(&v->view, mout);
-		glUniformMatrix4fv(perm->unimat41, 1, GL_FALSE, mout);
-		glUniform2f(perm->uniscreensizefix, 1.0/of->width, 1.0/of->height);
-		float far = v->far;
-		float near = v->near;
-		glUniform2f(perm->uniscreentodepth, far/(far-near),far*near/(near-far));
-		unsigned char numsamples = d->numsamples;
-		if(numsamples) glUniform1i(perm->uniint0, numsamples);
-	}
-
-	model_t *m = model_returnById(d->modelid);
-	vbo_t *v = returnVBOById(m->vbo);
-
-//	states_bindVertexArray(v->vaoid);
-	unsigned int mysize = ((count * sizeof(pLightUBOStruct_t)));
-//	states_bindBufferRange(GL_UNIFORM_BUFFER, 0, renderqueueuboid, d->ubodataoffset, mysize);
-	glstate_t s = {STATESENABLECULLFACE | STATESENABLEBLEND, GL_ONE, GL_ONE, GL_LESS, GL_FRONT, GL_FALSE, GL_LESS, 0.0, v->vaoid, renderqueueuboid, GL_UNIFORM_BUFFER, 0, d->ubodataoffset, mysize, perm->id};
-	states_setState(s);
-	//states_cullFace(GL_FRONT);
-	CHECKGLERROR
-	glDrawElementsInstanced(GL_TRIANGLES, v->numfaces * 3, GL_UNSIGNED_INT, 0, count);
-
-	//todo
-}
-void setupPLightOCallback(renderlistitem_t * ilist, unsigned int count){
-	if(count > 1){
-		pLightUBOStruct_t ubodata[MAXINSTANCESIZE];
-		unsigned int i = 0;
-		while(i < count){
-			renderPLightCallbackData_t *d = ilist[i].data;
-			unsigned int counter = 0;
-			ubodata[0] = d[0].light;
-			unsigned int max = count-i;
-			if(max > MAXINSTANCESIZE) max = MAXINSTANCESIZE;
-			for(counter = 1; counter < max; counter++){
-				ubodata[counter] = d[counter].light;
-			}
-			int t = pushDataToUBOCache(counter * sizeof(pLightUBOStruct_t), ubodata);
-			d->ubodataoffset = t;
-			ilist[i].counter = counter; // reset counter, likely wont be needed in this case;
-			i+=counter;
-		}
-	} else if(count == 1){
-		renderPLightCallbackData_t *d = ilist->data;
-		int t = pushDataToUBOCache(sizeof(pLightUBOStruct_t), &d->light);
-		d->ubodataoffset = t;
-	} else {
-		console_printf("ERROR: PLIGHT SETUP CALLBACK WITH 0 AS COUNT!\n");
-	}
-}
-void drawPLightICallback(renderlistitem_t * ilist, unsigned int count){
-	renderPLightCallbackData_t *d = ilist->data;
-	shaderpermutation_t * perm = d->perm;
-	if(shader_bindPerm(perm) == 2){
-	//TODODODODODO
-		viewport_t *v = d->v;
-		//also have to set some basic uniforms?
-	//	framebuffer_t *df = returnFramebufferById(v->dfbid);
-		framebuffer_t *of = returnFramebufferById(v->outfbid);
-
-		GLfloat mout[16];
-		Matrix4x4_ToArrayFloatGL(&v->viewproj, mout);
-		glUniformMatrix4fv(perm->unimat40, 1, GL_FALSE, mout);
-		Matrix4x4_ToArrayFloatGL(&v->view, mout);
-		glUniformMatrix4fv(perm->unimat41, 1, GL_FALSE, mout);
-		glUniform2f(perm->uniscreensizefix, 1.0/of->width, 1.0/of->height);
-		float far = v->far;
-		float near = v->near;
-		glUniform2f(perm->uniscreentodepth, far/(far-near),far*near/(near-far));
-		unsigned char numsamples = d->numsamples;
-		if(numsamples) glUniform1i(perm->uniint0, numsamples);
-	}
-
-	model_t *m = model_returnById(d->modelid);
-	vbo_t *v = returnVBOById(m->vbo);
-
-//	states_bindVertexArray(v->vaoid);
-	unsigned int mysize = ((count * sizeof(pLightUBOStruct_t)));
-//	states_bindBufferRange(GL_UNIFORM_BUFFER, 0, renderqueueuboid, d->ubodataoffset, mysize);
-	glstate_t s = {STATESENABLECULLFACE | STATESENABLEBLEND, GL_ONE, GL_ONE, GL_LESS, GL_BACK, GL_FALSE, GL_LESS, 0.0, v->vaoid, renderqueueuboid, GL_UNIFORM_BUFFER, 0, d->ubodataoffset, mysize, perm->id};
-	states_setState(s);
-//	states_cullFace(GL_BACK);
-	CHECKGLERROR
-	glDrawElementsInstanced(GL_TRIANGLES, v->numfaces * 3, GL_UNSIGNED_INT, 0, count);
-
-	//todo
-
-}
-void setupPLightICallback(renderlistitem_t * ilist, unsigned int count){
-	if(count > 1){
-		pLightUBOStruct_t ubodata[MAXINSTANCESIZE];
-		unsigned int i = 0;
-		while(i < count){
-			renderPLightCallbackData_t *d = ilist[i].data;
-			unsigned int counter = 0;
-			ubodata[0] = d[0].light;
-			unsigned int max = count-i;
-			if(max > MAXINSTANCESIZE) max = MAXINSTANCESIZE;
-			for(counter = 1; counter < max; counter++){
-				ubodata[counter] = d[counter].light;
-			}
-			int t = pushDataToUBOCache(counter * sizeof(pLightUBOStruct_t), ubodata);
-			d->ubodataoffset = t;
-			ilist[i].counter = counter; // reset counter, likely wont be needed in this case;
-			i+=counter;
-		}
-	} else if(count == 1){
-		renderPLightCallbackData_t *d = ilist->data;
-		int t = pushDataToUBOCache(sizeof(pLightUBOStruct_t), &d->light);
-		d->ubodataoffset = t;
-	} else {
-		console_printf("ERROR: PLIGHT SETUP CALLBACK WITH 0 AS COUNT!\n");
-	}
-}
-
-int glAddLightsToQueue(viewport_t *v, renderqueue_t * q, unsigned int numsamples){
-	shaderprogram_t * shader = shader_returnById(lightshaderid);
-	unsigned int permutation = 0;
-	shaderpermutation_t * perm;
-
-//	framebuffer_t *df = returnFramebufferById(v->dfbid);
-//	framebuffer_t *of = returnFramebufferById(v->outfbid);
-//	if(!df || !of) return FALSE;
-
-//	unsigned int numsamples = df->rbflags & FRAMEBUFFERRBFLAGSMSCOUNT;
-
-	if(numsamples){
-//		numsamples = 1<<numsamples;
-//		resolveMultisampleFramebuffer(df); //only resolves if multisampled
-//		resolveMultisampleFramebufferSpecify(df, 4);
-		permutation = 2;
-	}
-	perm = shader_addPermutationToProgram(shader, permutation);
-
-	lightrenderout_t out = readyLightsForRender(v, 50, 0);
-	if(!out.lin.count && !out.lout.count) return FALSE;
-//	out.lout.count = 0;
-//	if(out.lin.count) out.lin.count = 1;
-	int i;
-	for(i = 0; i < out.lin.count; i++){
-		renderPLightCallbackData_t pl;
-		pl.light.size = out.lin.list[i]->scale;
-		pl.light.pos[0] = out.lin.list[i]->pos[0];
-		pl.light.pos[1] = out.lin.list[i]->pos[1];
-		pl.light.pos[2] = out.lin.list[i]->pos[2];
-		pl.modelid = sphereModel;
-		pl.shaderid = lightshaderid;
-		pl.shaderperm = permutation;
-		pl.perm = perm;
-		pl.numsamples = numsamples;
-		pl.shaderprogram = perm->id;
-		pl.v = v;
-
-		renderlistitem_t r;
-		r.sort[0] = 0; //first to be drawn in this queue
-		r.sort[1] = 0;
-		r.sort[2] = 0;
-		r.sort[3] = 0;
-		r.sort[4] = (pl.shaderprogram >> 0) & 0xFF;
-		r.sort[5] = (pl.shaderprogram >> 8) & 0xFF;
-		r.sort[6] = (pl.shaderprogram >> 16) & 0xFF;
-		r.sort[7] = (pl.shaderprogram >> 24) & 0xFF;
-		r.sort[8] = (pl.modelid >> 0) & 0xFF;
-		r.sort[9] = (pl.modelid >> 8) & 0xFF;
-		r.setup = setupPLightICallback;
-		r.draw = drawPLightICallback;
-		r.flags = 2 | 4; //copyable, instanceable
-		r.datasize = sizeof(renderPLightCallbackData_t);
-		r.data = &pl;
-		addRenderlistitem(q, r);
-	}
-	for(i = 0; i < out.lout.count; i++){
-		renderPLightCallbackData_t pl;
-		pl.light.size = out.lout.list[i]->scale;
-		pl.light.pos[0] = out.lout.list[i]->pos[0];
-		pl.light.pos[1] = out.lout.list[i]->pos[1];
-		pl.light.pos[2] = out.lout.list[i]->pos[2];
-		pl.modelid = sphereModel;
-		pl.shaderid = lightshaderid;
-		pl.shaderperm = permutation;
-		pl.perm = perm;
-		pl.shaderprogram = perm->id;
-		pl.v = v;
-		pl.numsamples = numsamples;
-
-
-		renderlistitem_t r;
-		r.sort[0] = 1; //second to be drawn in this queue
-		r.sort[1] = 0;
-		r.sort[2] = 0;
-		r.sort[3] = 0;
-		r.sort[4] = (pl.shaderprogram >> 0) & 0xFF;
-		r.sort[5] = (pl.shaderprogram >> 8) & 0xFF;
-		r.sort[6] = (pl.shaderprogram >> 16) & 0xFF;
-		r.sort[7] = (pl.shaderprogram >> 24) & 0xFF;
-		r.sort[8] = (pl.modelid >> 0) & 0xFF;
-		r.sort[9] = (pl.modelid >> 8) & 0xFF;
-
-		r.setup = setupPLightOCallback;
-		r.draw = drawPLightOCallback;
-		r.flags = 2 | 4; //copyable, instanceable
-		r.datasize = sizeof(renderPLightCallbackData_t);
-		r.data = &pl;
-		addRenderlistitem(q, r);
-	}
-
-	//todo
-	//gotta free the list!
-	if(out.lout.list) free(out.lout.list);
-	if(out.lin.list) free(out.lin.list);
-	return TRUE;
-}
 int glDeferredLighting(viewport_t *v, renderqueue_t * q){
 	framebuffer_t *df = returnFramebufferById(v->dfbid);
 	framebuffer_t *of = returnFramebufferById(v->outfbid);
@@ -993,7 +744,8 @@ int glDeferredLighting(viewport_t *v, renderqueue_t * q){
 		states_bindActiveTexture(2, GL_TEXTURE_2D, df->textures[2].id);
 	}
 //	lighttile_addToRenderQueue(v, q, 16, 16);
-	glAddLightsToQueue(v, q, numsamples);
+	//glAddLightsToQueue(v, q, numsamples);
+	lights_addToRenderQueue(v, q, numsamples);
 //	lighttile_addToRenderQueue(v, q, 64, 64);
 //	lighttile_addToRenderQueue(v, q, 800, 600);
 //	lighttile_addToRenderQueue(v, q, 2, 2);
@@ -1004,6 +756,7 @@ int glDeferredLighting(viewport_t *v, renderqueue_t * q){
 	return TRUE;
 }
 //deprecated
+/*
 int glDrawLights(viewport_t *v){
 	lightrenderout_t out = readyLightsForRender(v, 50, 0);
 	if(!out.lin.count && !out.lout.count) return FALSE;
@@ -1083,11 +836,11 @@ int glDrawLights(viewport_t *v){
 	states_bindBuffer(GL_ARRAY_BUFFER, instancevbo);
 
 
-/*
-	glEnableVertexAttribArray(INSTANCEATTRIBLOC); //tell the location
-	glVertexAttribPointer( INSTANCEATTRIBLOC, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), 0 ); //tell other data
-	glVertexAttribDivisor( INSTANCEATTRIBLOC, 1 ); //is it instanced?
-*/
+
+//	glEnableVertexAttribArray(INSTANCEATTRIBLOC); //tell the location
+//	glVertexAttribPointer( INSTANCEATTRIBLOC, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), 0 ); //tell other data
+//	glVertexAttribDivisor( INSTANCEATTRIBLOC, 1 ); //is it instanced?
+
 //	console_printf("lcount is %i:%i\n", out.lin.count, out.lout.count);
 	unsigned int iPerUBOBlock = maxUBOSize / (4*sizeof(GLfloat));
 
@@ -1177,6 +930,7 @@ int glDrawLights(viewport_t *v){
 	states_disable(GL_BLEND);
 	return TRUE;
 }
+*/
 int glDrawViewport(viewport_t *v){
 
 	framebuffer_t *df = returnFramebufferById(v->dfbid);
