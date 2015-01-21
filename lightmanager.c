@@ -602,8 +602,9 @@ lightrenderout_t readyLightsForRender(viewport_t *v, const unsigned int max, con
 
 typedef struct sLightPUBOStruct_s {
 	GLfloat mvp[16];
-	GLfloat mv[16];
+	GLfloat mv[16]; //needed?
 	GLfloat size; //needed?
+	GLfloat x, y, z; //padding for struct
 } sLightUBOStruct_t;
 typedef struct renderSLightCallbackData_s {
 	//todo?
@@ -614,9 +615,11 @@ typedef struct renderSLightCallbackData_s {
 	unsigned char numsamples;
 	unsigned int modelid;
 	unsigned int ubodataoffset;
+//	unsigned int vbodataoffset;//?
 	viewport_t *v;
 	sLightUBOStruct_t light;
 } renderSLightCallbackData_t;
+
 
 void drawSLightOCallback(renderlistitem_t * ilist, unsigned int count){
 //	printf("added!\n");
@@ -686,6 +689,7 @@ void drawSLightICallback(renderlistitem_t * ilist, unsigned int count){
 
 	//todo
 }
+
 void setupSLightCallback(renderlistitem_t * ilist, unsigned int count){
 	if(count > 1){
 		sLightUBOStruct_t ubodata[MAXINSTANCESIZE];
@@ -842,7 +846,7 @@ void setupPLightCallback(renderlistitem_t * ilist, unsigned int count){
 int lights_addToRenderQueue(viewport_t *v, renderqueue_t * q, unsigned int numsamples){
 	shaderprogram_t * shader = shader_returnById(lightshaderid);
 	unsigned int permutation = 0;
-	shaderpermutation_t * perm;
+	shaderpermutation_t * perm, *spotperm;
 
 //	framebuffer_t *df = returnFramebufferById(v->dfbid);
 //	framebuffer_t *of = returnFramebufferById(v->outfbid);
@@ -857,13 +861,14 @@ int lights_addToRenderQueue(viewport_t *v, renderqueue_t * q, unsigned int numsa
 		permutation = 2;
 	}
 	perm = shader_addPermutationToProgram(shader, permutation);
+	spotperm = shader_addPermutationToProgram(shader, permutation|4);
 
 	lightrenderout_t out = readyLightsForRender(v, 50, 0);
 	if(!out.lin.count && !out.lout.count) return FALSE;
 //	out.lout.count = 0;
 //	if(out.lin.count) out.lin.count = 1;
 	int i;
-	renderPLightCallbackData_t pl; //i cant do this unless the data is copyable
+	renderPLightCallbackData_t pl; //i can do this because the data is copied
 	pl.modelid = sphereModel;
 	pl.shaderid = lightshaderid;
 	pl.shaderperm = permutation;
@@ -871,6 +876,15 @@ int lights_addToRenderQueue(viewport_t *v, renderqueue_t * q, unsigned int numsa
 	pl.numsamples = numsamples;
 	pl.shaderprogram = perm->id;
 	pl.v = v;
+	renderSLightCallbackData_t sl; //i can do this because the data is copied
+	sl.modelid = lightconeModel;
+	sl.shaderid = lightshaderid;
+	sl.shaderperm = permutation|4;
+	sl.perm = spotperm;
+	sl.numsamples = numsamples;
+	sl.shaderprogram = spotperm->id;
+	sl.v = v;
+
 	renderlistitem_t r;
 	r.sort[0] = 0; //first to be drawn in this queue
 	r.sort[1] = 0;
@@ -882,25 +896,56 @@ int lights_addToRenderQueue(viewport_t *v, renderqueue_t * q, unsigned int numsa
 	r.sort[7] = (pl.shaderprogram >> 24) & 0xFF;
 	r.sort[8] = (pl.modelid >> 0) & 0xFF;
 	r.sort[9] = (pl.modelid >> 8) & 0xFF;
-	r.setup = setupPLightCallback;
 	r.flags = 2 | 4; //copyable, instanceable
-	r.datasize = sizeof(renderPLightCallbackData_t);
-	r.data = &pl;
 	for(i = 0; i < out.lin.count; i++){
-		pl.light.size = out.lin.list[i]->scale;
-		pl.light.pos[0] = out.lin.list[i]->pos[0];
-		pl.light.pos[1] = out.lin.list[i]->pos[1];
-		pl.light.pos[2] = out.lin.list[i]->pos[2];
+		//check if its spot or not
+		if(out.lin.list[i]->type ==2){
+			matrix4x4_t ct;
+			Matrix4x4_Concat(&ct, &v->viewproj, &out.lin.list[i]->camproj);
+			Matrix4x4_ToArrayFloatGL(&ct, sl.light.mvp);
+			sl.light.size = out.lin.list[i]->scale;
+			Matrix4x4_Concat(&ct, &v->view, &out.lin.list[i]->camproj);
+			Matrix4x4_ToArrayFloatGL(&ct, sl.light.mv);
+			r.draw = drawSLightICallback;
+			r.setup = setupSLightCallback;
+			r.datasize = sizeof(renderSLightCallbackData_t);
+			r.data = &sl;
 
-		r.draw = drawPLightICallback;
+		} else {
+			pl.light.size = out.lin.list[i]->scale;
+			pl.light.pos[0] = out.lin.list[i]->pos[0];
+			pl.light.pos[1] = out.lin.list[i]->pos[1];
+			pl.light.pos[2] = out.lin.list[i]->pos[2];
+			r.draw = drawPLightICallback;
+			r.setup = setupPLightCallback;
+			r.datasize = sizeof(renderPLightCallbackData_t);
+			r.data = &pl;
+		}
 		addRenderlistitem(q, r);
 	}
 	for(i = 0; i < out.lout.count; i++){
-		pl.light.size = out.lout.list[i]->scale;
-		pl.light.pos[0] = out.lout.list[i]->pos[0];
-		pl.light.pos[1] = out.lout.list[i]->pos[1];
-		pl.light.pos[2] = out.lout.list[i]->pos[2];
-		r.draw = drawPLightOCallback;
+		//check if its spot or not
+		if(out.lout.list[i]->type ==2){
+			matrix4x4_t ct;
+			Matrix4x4_Concat(&ct, &v->viewproj, &out.lout.list[i]->camproj);
+			Matrix4x4_ToArrayFloatGL(&ct, sl.light.mvp);
+			sl.light.size = out.lout.list[i]->scale;
+			Matrix4x4_Concat(&ct, &v->view, &out.lout.list[i]->camproj);
+			Matrix4x4_ToArrayFloatGL(&ct, sl.light.mv);
+			r.draw = drawSLightOCallback;
+			r.setup = setupSLightCallback;
+			r.datasize = sizeof(renderSLightCallbackData_t);
+			r.data = &sl;
+		} else {
+			pl.light.size = out.lout.list[i]->scale;
+			pl.light.pos[0] = out.lout.list[i]->pos[0];
+			pl.light.pos[1] = out.lout.list[i]->pos[1];
+			pl.light.pos[2] = out.lout.list[i]->pos[2];
+			r.draw = drawPLightOCallback;
+			r.setup = setupPLightCallback;
+			r.datasize = sizeof(renderPLightCallbackData_t);
+			r.data = &pl;
+		}
 		addRenderlistitem(q, r);
 	}
 

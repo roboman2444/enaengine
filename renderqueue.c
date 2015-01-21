@@ -489,7 +489,8 @@ char flushVertCacheToBuffers(void){
 }
 
 
-//returns the offset into the indices array, in number of floats
+//returns the offset into the indices array, in number of ints
+//todo rewrite so you use glDrawElements(Instanced)BaseVertex instead
 int pushDataToVertCache(const unsigned int vertcount, const unsigned int facecount, const unsigned int * face, const float * posdata, const float * normdata, const float * tcdata, const float * tangentdata, const unsigned int * blendidata, const unsigned int *blendwdata){
 	if(!vertcount || !facecount || !face) return -1;
 
