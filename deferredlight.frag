@@ -5,10 +5,13 @@
 //uniform vec2 uniscreentodepth;
 in vec3 mvpos;
 #ifdef DIRECTIONAL
-in vec3 lightnormal;
+	flat in vec3 lightnormal;
 #else
-	in float lsize;
-	in vec3 lpos; //viewspace of light
+	#ifdef SPOT
+	#else
+		flat in float lsize;
+		flat in vec3 lpos; //viewspace of light
+	#endif
 #endif
 #ifdef MULTISAMPLE
 	#define numsamples uniint0
@@ -23,12 +26,16 @@ in vec3 lightnormal;
 	uniform sampler2D texture2;
 	uniform sampler2D texture3;
 #endif
+
 uniform vec2 uniscreensizefix;
 
 out vec4 fragColor;
 
 void main(){
-	fragColor.rgba = vec4(0.0f, 0.0f, 0.0f, 1.0f);
+	fragColor = vec4(0.0f, 0.0f, 0.0f, 1.0f);
+	#ifdef SPOT
+		fragColor = vec4(1.0);
+	#else
 	#ifdef MULTISAMPLE
 	#ifdef VOLUMETRIC
 		float avgz = 0.0f;
@@ -135,6 +142,7 @@ void main(){
 		}
 
 #endif
-//	fragColor.rgb = vec3(0.1);
+#endif
+//			fragColor = vec4(0.1);
 
 }

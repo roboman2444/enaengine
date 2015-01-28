@@ -40,7 +40,7 @@ int lightconeModel = 0; //todo move this
 int lightshaderid = 0;
 
 GLuint spotfaces[39]={	0,2,1, 0,3,2, 0,4,3, 0,5,4, //side faces
-			0,6,5, 0,7,6, 0,8,7,	    //side faces
+			0,6,5, 0,7,6, 0,1,7,	    //side faces
 			1,2,3, 1,3,4, 1,4,5, 1,5,6, //cap faces
 			1,6,7, 1,7,8,}; //cap faces
 vec_t spotverts[24] = {0.0};
@@ -113,6 +113,7 @@ int recheckLightLeaf(light_t *l){
 	return TRUE;
 }
 void recalcLightViewMats(light_t *l){
+//	printf("updatin");
 	//todo if it is attached, just grab the attached matrix (same as entities do it)
 	Matrix4x4_CreateRotate(&l->view, l->angle[2], 0.0f, 0.0f, 1.0f);
 	Matrix4x4_ConcatRotate(&l->view, l->angle[0], 1.0f, 0.0f, 0.0f);
@@ -169,6 +170,7 @@ int lightLoop(void){
 		entity_t *e = entity_returnById(l->attachmentid);
 		if(e){
 			//todo something for non point lights to check and set angle as well
+			//todo check if the light actually moved relative to E as well
 //			vec3_t tvec;
 //			Matrix4x4_OriginFromMatrix(&e->mat, tvec);
 			if(e->needsmatupdate || e->needsbboxupdate){
@@ -176,8 +178,9 @@ int lightLoop(void){
 //				l->pos[0] = tvec[0];
 //				l->pos[1] = tvec[1];
 //				l->pos[2] = tvec[2];
+				l->needsupdate = 1; //temporrary hack
 				Matrix4x4_OriginFromMatrix(&e->mat, l->pos);
-				//recalcLightMats(l);
+				if(l->type ==2)recalcLightMats(l);
 				recalcLightBBox(l);
 				recheckLightLeaf(l);
 				count++;
@@ -185,7 +188,7 @@ int lightLoop(void){
 //	console_printf("updated light\n");
 			}
 		} else if(l->needsupdate){
-				//recalcLightMats(l);
+				if(l->type ==2)recalcLightMats(l);
 				recalcLightBBox(l);
 				recheckLightLeaf(l);
 				count++;
@@ -603,8 +606,8 @@ lightrenderout_t readyLightsForRender(viewport_t *v, const unsigned int max, con
 typedef struct sLightPUBOStruct_s {
 	GLfloat mvp[16];
 	GLfloat mv[16]; //needed?
+	GLfloat pos[3]; //padding for struct
 	GLfloat size; //needed?
-	GLfloat x, y, z; //padding for struct
 } sLightUBOStruct_t;
 typedef struct renderSLightCallbackData_s {
 	//todo?
@@ -632,7 +635,6 @@ void drawSLightOCallback(renderlistitem_t * ilist, unsigned int count){
 		//also have to set some basic uniforms?
 	//	framebuffer_t *df = returnFramebufferById(v->dfbid);
 		framebuffer_t *of = returnFramebufferById(v->outfbid);
-
 		glUniform2f(perm->uniscreensizefix, 1.0/of->width, 1.0/of->height);
 //		float far = v->far;
 //		float near = v->near;
@@ -666,7 +668,6 @@ void drawSLightICallback(renderlistitem_t * ilist, unsigned int count){
 		//also have to set some basic uniforms?
 	//	framebuffer_t *df = returnFramebufferById(v->dfbid);
 		framebuffer_t *of = returnFramebufferById(v->outfbid);
-
 		glUniform2f(perm->uniscreensizefix, 1.0/of->width, 1.0/of->height);
 //		float far = v->far;
 //		float near = v->near;
@@ -906,6 +907,10 @@ int lights_addToRenderQueue(viewport_t *v, renderqueue_t * q, unsigned int numsa
 			sl.light.size = out.lin.list[i]->scale;
 			Matrix4x4_Concat(&ct, &v->view, &out.lin.list[i]->camproj);
 			Matrix4x4_ToArrayFloatGL(&ct, sl.light.mv);
+			sl.light.pos[0] = out.lin.list[i]->pos[0];
+			sl.light.pos[1] = out.lin.list[i]->pos[1];
+			sl.light.pos[2] = out.lin.list[i]->pos[2];
+
 			r.draw = drawSLightICallback;
 			r.setup = setupSLightCallback;
 			r.datasize = sizeof(renderSLightCallbackData_t);
@@ -932,6 +937,10 @@ int lights_addToRenderQueue(viewport_t *v, renderqueue_t * q, unsigned int numsa
 			sl.light.size = out.lout.list[i]->scale;
 			Matrix4x4_Concat(&ct, &v->view, &out.lout.list[i]->camproj);
 			Matrix4x4_ToArrayFloatGL(&ct, sl.light.mv);
+			sl.light.pos[0] = out.lout.list[i]->pos[0];
+			sl.light.pos[1] = out.lout.list[i]->pos[1];
+			sl.light.pos[2] = out.lout.list[i]->pos[2];
+
 			r.draw = drawSLightOCallback;
 			r.setup = setupSLightCallback;
 			r.datasize = sizeof(renderSLightCallbackData_t);

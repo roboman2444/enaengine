@@ -57,12 +57,23 @@ int initgame(void){
 		entlightoffset->attachmentid = tempid;
 	tempid = entlightoffset->myid;
 
+	light_t * splight = ec->light_addRPOINT("spot");
+		splight->type = 2;
+		splight->attachmentid = tempid;
+		splight->needsupdate = 3;
+		splight->scale = 10.0f;
+		splight->fovx = 90;
+		splight->fovy = 90;
+		splight->near = 0.1;
+		splight->far = 10.0;
+/*
+
 	light_t * light = ec->light_addRPOINT("light");
 		light->type = 1;
 		light->attachmentid = tempid;
 		light->needsupdate = 1;
 		light->scale = 20.0f;
-
+*/
 	entity_t * enttinydragon = ec->entity_addRPOINT("tinydragon");
 		enttinydragon->type = 2;
 		enttinydragon->pos[1] = 3.0f;
@@ -140,6 +151,17 @@ int initgame(void){
 		light->scale = 5.0f;
 
 	}
+	light_t * slight = ec->light_addRPOINT("spot");
+		slight->type = 2;
+		slight->needsupdate = 3;
+		slight->scale = 10.0f;
+		slight->fovx = 90;
+		slight->fovy = 90;
+		slight->near = 0.1;
+		slight->far = 10.0;
+
+
+
 #ifdef EXTRALIGHTS
 	srand(103010);
 	for(i = 0; i < 2000; i++){

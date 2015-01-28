@@ -8,38 +8,55 @@ uniform mat4 unimat41; // mv
 
 
 in vec3 posattrib;
+#ifdef SPOT
+#define N 256
+struct lightdata {
+	mat4 mvp;
+	mat4 mv;
+	vec3 pos;
+	float size;
+};
+#else
+#define N 4096
 struct lightdata {
 	vec3 pos;
 	float size;
 };
+#endif
 
-#define N 4096
 layout (std140) uniform uniblock0 {
-	vec4 ldata[N]; //todo
+	lightdata ldata[N]; //todo
 } uniblock0_t;
 
 out vec3 mvpos; // vertex position in viewspace
 
 #ifdef DIRECTIONAL
-	out vec3 lightdirection;
+	flat out vec3 lightdirection;
 #else
-	out vec3 lpos; // light position in viewspace
-	out float lsize; // size of light
+	#ifdef SPOT
+	#else
+		flat out vec3 lpos; // light position in viewspace
+		flat out float lsize; // size of light
+	#endif
 #endif
 
 
 
 void main(){
-	vec4 instanceattrib = uniblock0_t.ldata[gl_InstanceID];
+	lightdata l = uniblock0_t.ldata[gl_InstanceID];
 	#ifdef DIRECTIONAL
-		lightdirection = (unimat41 * vec4(instanceattrib.xyz, 0.0)).xyz;
-		//todo figure out a method to get a FSQUAD that also works with the mvpos angle setup
+		lightdirection = (unimat41 * vec4(l.pos, 0.0)).xyz;
 	#else
-		vec3 translated = (posattrib * instanceattrib.a) + instanceattrib.rgb;
-		lsize = instanceattrib.a;
-		lpos = (unimat41 * vec4(instanceattrib.xyz, 1.0)).xyz; // viewspace of light
-		//lpos = instanceattrib.xyz;
-		mvpos = (unimat41 * vec4(translated, 1.0)).xyz; //viewspace of the mvpos
-		gl_Position = unimat40 * vec4(translated, 1.0);
+		#ifdef SPOT
+			gl_Position = l.mvp * vec4(posattrib, 1.0);
+//			vec3 translated = (posattrib * l.size) + l.pos;
+//			gl_Position = unimat40 * vec4(translated, 1.0);
+		#else
+			vec3 translated = (posattrib * l.size) + l.pos;
+			lsize = l.size;
+			lpos = (unimat41 * vec4(l.pos, 1.0)).xyz; // viewspace of light
+			mvpos = (unimat41 * vec4(translated, 1.0)).xyz; //viewspace of the mvpos
+			gl_Position = unimat40 * vec4(translated, 1.0);
+		#endif
 	#endif
 }

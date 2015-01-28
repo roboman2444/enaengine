@@ -31,7 +31,7 @@ typedef struct light_s {
 	float fovx;
 	float fovy;
 	float near;
-	float far;
+	float far; //todo remove this... should be the same as scale
 	plane_t frustum[6];
 	matrix4x4_t projection;
 	matrix4x4_t view;
