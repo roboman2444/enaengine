@@ -12,8 +12,8 @@ uniform mat4 unimat40; //mvp
 uniform mat4 unimat41; // mv
 
 uniform vec2 univec20; //size of tile
-uniform vec2 univec21; //for fixing viewstuff
-uniform vec2 uniscreentodepth;
+//uniform vec2 univec21; //for fixing viewstuff
+uniform vec2 uniscreentodepth; //for fixing viewstuff
 
 uniform sampler2D texture0;
 uniform sampler2D texture1;
@@ -43,7 +43,7 @@ void main(){
 
 	vec3 pos;
 	pos.z = normaldist.b;
-	pos.xy = -screenpos * (pos.z * univec21);
+	pos.xy = -screenpos * (pos.z * uniscreentodepth);
 	vec3 eyenormal = -normalize(pos);
 	vec3 surfnormal = vec3(normaldist.rg, sqrt(1.0f-dot(normaldist.rg, normaldist.rg)));
 	vec3 diffout = vec3(0.0);

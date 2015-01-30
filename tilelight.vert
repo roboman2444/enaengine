@@ -20,9 +20,9 @@ uniform mat4 unimat40; //mvp
 uniform mat4 unimat41; // mv
 
 uniform vec2 univec20; //size of tile
-uniform vec2 univec21; //for calc worldpos stuff
+//uniform vec2 univec21; //for calc worldpos stuff
 
-//uniform vec2 uniscreentodepth;
+uniform vec2 uniscreentodepth; // for calc worldpos stuff
 
 
 in vec3 posattrib;

@@ -42,7 +42,7 @@ int lightshaderid = 0;
 GLuint spotfaces[39]={	0,2,1, 0,3,2, 0,4,3, 0,5,4, //side faces
 			0,6,5, 0,7,6, 0,1,7,	    //side faces
 			1,2,3, 1,3,4, 1,4,5, 1,5,6, //cap faces
-			1,6,7, 1,7,8,}; //cap faces
+			1,6,7, 1,7,2,}; //cap faces
 vec_t spotverts[24] = {0.0};
 
 void recalcLightBBox(light_t *l){
@@ -139,14 +139,15 @@ void recalcLightProjMats(light_t *l){
 
 	l->projection.m[0][0] = cotangentx;
 	l->projection.m[1][1] = cotangenty;
-	l->projection.m[2][2] = -(l->far + l->near) / deltaZ;
+	l->projection.m[2][2] = -(l->scale + l->near) / deltaZ;
 	l->projection.m[2][3] = -1.0;
-	l->projection.m[3][2] = -2.0 * l->near * l->far / deltaZ;
+	l->projection.m[3][2] = -2.0 * l->near * l->scale / deltaZ;
 	l->projection.m[3][3] = 0;
 
-	l->fixproj.m[0][0] = 1.0;//TODO
-	l->fixproj.m[1][1] = 1.0;//TODO
-	l->fixproj.m[2][2] = l->far;
+	l->fixproj.m[0][0] = 1.0/cotangentx;//TODO?
+	l->fixproj.m[1][1] = 1.0/cotangenty;//TODO?
+	l->fixproj.m[2][2] = 1.0;
+	l->fixproj.m[3][3] = 1.0;
 /*
 	l->fixproj.m[0][0] = 1.0/cotangentx;
 	l->fixproj.m[1][1] = 1.0/cotangenty;
@@ -178,7 +179,7 @@ int lightLoop(void){
 //				l->pos[0] = tvec[0];
 //				l->pos[1] = tvec[1];
 //				l->pos[2] = tvec[2];
-				l->needsupdate = 1; //temporrary hack
+				l->needsupdate = l->needsupdate|1; //temporrary hack
 				Matrix4x4_OriginFromMatrix(&e->mat, l->pos);
 				if(l->type ==2)recalcLightMats(l);
 				recalcLightBBox(l);
@@ -635,10 +636,11 @@ void drawSLightOCallback(renderlistitem_t * ilist, unsigned int count){
 		//also have to set some basic uniforms?
 	//	framebuffer_t *df = returnFramebufferById(v->dfbid);
 		framebuffer_t *of = returnFramebufferById(v->outfbid);
+		GLfloat mout[16];
+		Matrix4x4_ToArrayFloatGL(&v->view, mout);
+		glUniformMatrix4fv(perm->unimat41, 1, GL_FALSE, mout);
 		glUniform2f(perm->uniscreensizefix, 1.0/of->width, 1.0/of->height);
-//		float far = v->far;
-//		float near = v->near;
-//		glUniform2f(perm->uniscreentodepth, far/(far-near),far*near/(near-far));
+		glUniform2f(perm->uniscreentodepth, v->projection.m[0][0], v->projection.m[1][1]);
 		unsigned char numsamples = d->numsamples;
 		if(numsamples) glUniform1i(perm->uniint0, numsamples);
 	}
@@ -668,10 +670,11 @@ void drawSLightICallback(renderlistitem_t * ilist, unsigned int count){
 		//also have to set some basic uniforms?
 	//	framebuffer_t *df = returnFramebufferById(v->dfbid);
 		framebuffer_t *of = returnFramebufferById(v->outfbid);
+		GLfloat mout[16];
+		Matrix4x4_ToArrayFloatGL(&v->view, mout);
+		glUniformMatrix4fv(perm->unimat41, 1, GL_FALSE, mout);
 		glUniform2f(perm->uniscreensizefix, 1.0/of->width, 1.0/of->height);
-//		float far = v->far;
-//		float near = v->near;
-//		glUniform2f(perm->uniscreentodepth, far/(far-near),far*near/(near-far));
+		glUniform2f(perm->uniscreentodepth, v->projection.m[0][0], v->projection.m[1][1]);
 		unsigned char numsamples = d->numsamples;
 		if(numsamples) glUniform1i(perm->uniint0, numsamples);
 	}
@@ -758,9 +761,10 @@ void drawPLightOCallback(renderlistitem_t * ilist, unsigned int count){
 		Matrix4x4_ToArrayFloatGL(&v->view, mout);
 		glUniformMatrix4fv(perm->unimat41, 1, GL_FALSE, mout);
 		glUniform2f(perm->uniscreensizefix, 1.0/of->width, 1.0/of->height);
-		float far = v->far;
-		float near = v->near;
-		glUniform2f(perm->uniscreentodepth, far/(far-near),far*near/(near-far));
+//		float far = v->far;
+//		float near = v->near;
+//		glUniform2f(perm->uniscreentodepth, far/(far-near),far*near/(near-far));
+		glUniform2f(perm->uniscreentodepth, v->projection.m[0][0], v->projection.m[1][1]);
 		unsigned char numsamples = d->numsamples;
 		if(numsamples) glUniform1i(perm->uniint0, numsamples);
 	}
@@ -795,9 +799,10 @@ void drawPLightICallback(renderlistitem_t * ilist, unsigned int count){
 		Matrix4x4_ToArrayFloatGL(&v->view, mout);
 		glUniformMatrix4fv(perm->unimat41, 1, GL_FALSE, mout);
 		glUniform2f(perm->uniscreensizefix, 1.0/of->width, 1.0/of->height);
-		float far = v->far;
-		float near = v->near;
-		glUniform2f(perm->uniscreentodepth, far/(far-near),far*near/(near-far));
+//		float far = v->far;
+//		float near = v->near;
+//		glUniform2f(perm->uniscreentodepth, far/(far-near),far*near/(near-far));
+		glUniform2f(perm->uniscreentodepth, v->projection.m[0][0], v->projection.m[1][1]);
 		unsigned char numsamples = d->numsamples;
 		if(numsamples) glUniform1i(perm->uniint0, numsamples);
 	}

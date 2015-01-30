@@ -189,10 +189,10 @@ void drawTileCallback(renderlistitem_t *ilist, unsigned int count){
 		Matrix4x4_ToArrayFloatGL(&v->view, mout);
 		glUniformMatrix4fv(perm->unimat41, 1, GL_FALSE, mout);
 		glUniform2f(perm->uniscreensizefix, 1.0/of->width, 1.0/of->height);
-		glUniform2f(perm->univec21, v->projection.m[0][0], v->projection.m[1][1]);
-		float far = v->far;
-		float near = v->near;
-		glUniform2f(perm->uniscreentodepth, far/(far-near),far*near/(near-far));
+		glUniform2f(perm->uniscreentodepth, v->projection.m[0][0], v->projection.m[1][1]);
+//		float far = v->far;
+//		float near = v->near;
+//		glUniform2f(perm->uniscreentodepth, far/(far-near),far*near/(near-far));
 //		glUniform2i(perm->univec20, d->totalwidth, d->totalheight);
 		glUniform2f(perm->univec20, d->totalwidth, d->totalheight);
 		unsigned char numsamples = d->numsamples;

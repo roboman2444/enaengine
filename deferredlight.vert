@@ -29,11 +29,14 @@ layout (std140) uniform uniblock0 {
 } uniblock0_t;
 
 out vec3 mvpos; // vertex position in viewspace
+out vec2 screenpos;
 
 #ifdef DIRECTIONAL
 	flat out vec3 lightdirection;
 #else
 	#ifdef SPOT
+		flat out vec3 lpos; // light position in viewspace
+		flat out float lsize; // size of light
 	#else
 		flat out vec3 lpos; // light position in viewspace
 		flat out float lsize; // size of light
@@ -46,9 +49,12 @@ void main(){
 	lightdata l = uniblock0_t.ldata[gl_InstanceID];
 	#ifdef DIRECTIONAL
 		lightdirection = (unimat41 * vec4(l.pos, 0.0)).xyz;
+		gl_Position = vec4(posattrib, 1.0);
 	#else
 		#ifdef SPOT
 			gl_Position = l.mvp * vec4(posattrib, 1.0);
+			lpos = (unimat41 * vec4(l.pos, 1.0)).xyz; // viewspace of light
+			mvpos = (l.mv* vec4(posattrib, 1.0)).xyz; //viewspace of the mvpos
 //			vec3 translated = (posattrib * l.size) + l.pos;
 //			gl_Position = unimat40 * vec4(translated, 1.0);
 		#else
@@ -59,4 +65,5 @@ void main(){
 			gl_Position = unimat40 * vec4(translated, 1.0);
 		#endif
 	#endif
+	screenpos = gl_Position.xy;
 }

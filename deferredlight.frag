@@ -1,9 +1,6 @@
 //#define VOLUMETRIC
-
-//uniform mat4 unimat40;
-//vec2(Far / (Far - Near), Far * Near / (Near - Far));
-//uniform vec2 uniscreentodepth;
 in vec3 mvpos;
+in vec2 screenpos;
 #ifdef DIRECTIONAL
 	flat in vec3 lightnormal;
 #else
@@ -28,7 +25,7 @@ in vec3 mvpos;
 #endif
 
 uniform vec2 uniscreensizefix;
-
+uniform vec2 uniscreentodepth;
 out vec4 fragColor;
 
 void main(){
@@ -57,10 +54,12 @@ void main(){
 		vec3 pos;
 		pos.z = normaldist.b;
 		pos.xy = mvpos.xy * (pos.z / mvpos.z);
+//		vec2 screen2pos = (tc *2.0) - vec2(1.0);
+//		pos.xy = -screen2pos * (pos.z * uniscreentodepth);
 		#ifndef DIRECTIONAL
 			vec3 lightdelta = lpos-pos;
 			float lightdist = length(lightdelta);
-			if(lightdist > lsize) discard;
+//			if(lightdist > lsize) discard;
 			vec3 lightnormal = lightdelta/lightdist;
 		#endif
 		#ifdef MULTISAMPLE
