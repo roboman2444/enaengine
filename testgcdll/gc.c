@@ -61,10 +61,11 @@ int initgame(void){
 		splight->type = 2;
 		splight->attachmentid = tempid;
 		splight->needsupdate = 3;
-		splight->scale = 10.0f;
-		splight->fovx = 20;
-		splight->fovy = 50;
+		splight->scale = 20.0f;
+		splight->fovx = 60;
+		splight->fovy = 60;
 		splight->near = 0.1;
+		splight->angle[0] = 45.0;
 /*
 
 	light_t * light = ec->light_addRPOINT("light");

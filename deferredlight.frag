@@ -5,11 +5,11 @@ in vec2 screenpos;
 	flat in vec3 lightnormal;
 #else
 	#ifdef SPOT
-	#else
-		flat in float lsize;
-		flat in vec3 lpos; //viewspace of light
+		flat in mat4 lmv;
 	#endif
-#endif
+	flat in float lsize;
+	flat in vec3 lpos; //viewspace of light
+#endif //DIRECTIONAL
 #ifdef MULTISAMPLE
 	#define numsamples uniint0
 	uniform int numsamples;
@@ -22,7 +22,7 @@ in vec2 screenpos;
 	uniform sampler2D texture1;
 	uniform sampler2D texture2;
 	uniform sampler2D texture3;
-#endif
+#endif //MULTISAMPLE
 
 uniform vec2 uniscreensizefix;
 uniform vec2 uniscreentodepth;
@@ -30,43 +30,47 @@ out vec4 fragColor;
 
 void main(){
 	fragColor = vec4(0.0f, 0.0f, 0.0f, 1.0f);
-	#ifdef SPOT
-		fragColor = vec4(1.0);
-	#else
 	#ifdef MULTISAMPLE
 	#ifdef VOLUMETRIC
 		float avgz = 0.0f;
 		vec3 avgeye = vec3(0.0f);
-	#endif
+	#endif //VOLUMETRIC
 		ivec2 tc = ivec2(gl_FragCoord.xy);
 		int i;
 		for(i = 0; i < numsamples; i++){
 	#else
 		vec2 tc = gl_FragCoord.xy * uniscreensizefix;
-	#endif
+	#endif //MULTISAMPLE
 	//calculate viewspace pixel position
 		//get the geometry information (depth, normal, etc)
 		#ifdef MULTISAMPLE
 			vec4 normaldist = texelFetch(texture1, tc, i);
 		#else
 			vec4 normaldist = texture(texture1, tc);
-		#endif
+		#endif	//MULTISAMPLE
 		vec3 pos;
 		pos.z = normaldist.b;
 		pos.xy = mvpos.xy * (pos.z / mvpos.z);
 //		vec2 screen2pos = (tc *2.0) - vec2(1.0);
 //		pos.xy = -screen2pos * (pos.z * uniscreentodepth);
+		#ifdef SPOT
+			vec4 mtpos = lmv * vec4(pos,1.0);
+			vec3 mfpos = mtpos.xyz / mtpos.w;
+			float mtlen = length(mfpos.xy);
+	//		if(mtlen > 1.0) discard;
+		#endif
+
 		#ifndef DIRECTIONAL
 			vec3 lightdelta = lpos-pos;
 			float lightdist = length(lightdelta);
 //			if(lightdist > lsize) discard;
 			vec3 lightnormal = lightdelta/lightdist;
-		#endif
+		#endif //DIRECTIONAL
 		#ifdef MULTISAMPLE
 			vec4 difftex = texelFetch(texture0, tc, i);
 		#else
 			vec4 difftex = texture(texture0, tc);
-		#endif
+		#endif //MULTISAMPLE
 		vec3 eyenormal = -normalize(pos);
 		vec3 diffuse = difftex.rgb;
 		vec2 gloss = vec2(difftex.a, normaldist.a);
@@ -83,26 +87,28 @@ void main(){
 			float attenuation = 1.0f;
 		#else
 			float attenuation = clamp(1.0f - lightdist*lightdist/(lsize*lsize), 0.0f, 1.0f); attenuation *= attenuation;
-		#endif
+			#ifdef SPOT
+				attenuation *= clamp(1.0f - mtlen * mtlen,0.0f, 1.0f);
+			#endif
+		#endif //DIRECTIONAL
 
 
 		fragColor.rgb += ((clamp(dot(surfnormal, lightnormal), 0.0f, 1.0f) * diffuse)
 		 + vec3(clamp(pow(dot(surfnormal,vhalf), gloss.y), 0.0f, 1.0f) * gloss.x) )* attenuation;
 //		fragColor.rgb = pos/16.0;
 
-
 	#ifdef MULTISAMPLE
 		#ifdef VOLUMETRIC
 			avgz += pos.z;
 			avgeye +=eyenormal;
-		#endif
+		#endif //VOLUMETRIC
 		}
 		#ifdef VOLUMETRIC
 			avgz /=numsamples;
 			avgeye /= numsamples;
-		#endif
+		#endif //VOLUMETRIC
 		fragColor.rgb /= numsamples;
-	#endif
+	#endif  //MULTISAMPLE
 
 
 
@@ -118,7 +124,7 @@ void main(){
 			vec3 eyenormal = avgeye;
 			vec3 pos;
 			pos.z = avgz;
-		#endif
+		#endif //MULTISAMPLE
 		if(lpos.z - lsize > pos.z || pos.z ==0.0)
 			pos.z = lpos.z - lsize;
 
@@ -140,8 +146,10 @@ void main(){
 			fragColor.rgb += attenuation * exponent * 0.2;
 		}
 
-#endif
-#endif
+#endif //VOLUMETRIC
 //			fragColor = vec4(0.1);
 
+	#ifdef SPOT
+		fragColor += vec4(0.1);
+	#endif
 }

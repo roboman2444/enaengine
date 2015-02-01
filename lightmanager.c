@@ -42,7 +42,7 @@ int lightshaderid = 0;
 GLuint spotfaces[39]={	0,2,1, 0,3,2, 0,4,3, 0,5,4, //side faces
 			0,6,5, 0,7,6, 0,1,7,	    //side faces
 			1,2,3, 1,3,4, 1,4,5, 1,5,6, //cap faces
-			1,6,7, 1,7,2,}; //cap faces
+			1,6,7, 1,2,7,}; //cap faces
 vec_t spotverts[24] = {0.0};
 
 void recalcLightBBox(light_t *l){
@@ -161,7 +161,7 @@ void recalcLightProjMats(light_t *l){
 void recalcLightMats(light_t *l){
 	if(l->needsupdate & 1)recalcLightViewMats(l);
 	if(l->needsupdate & 2)recalcLightProjMats(l);
-	Matrix4x4_Concat(&l->viewproj, &l->projection, &l->view);
+	Matrix4x4_Concat(&l->viewproj, &l->projection, &l->view); //todo gotta fix this thing!
 	Matrix4x4_Concat(&l->camproj, &l->cam, &l->fixproj);
 }
 int lightLoop(void){
@@ -607,7 +607,8 @@ lightrenderout_t readyLightsForRender(viewport_t *v, const unsigned int max, con
 typedef struct sLightPUBOStruct_s {
 	GLfloat mvp[16];
 	GLfloat mv[16]; //needed?
-	GLfloat pos[3]; //padding for struct
+	GLfloat lmv[16];
+	GLfloat pos[3]; //padding for struct/other
 	GLfloat size; //needed?
 } sLightUBOStruct_t;
 typedef struct renderSLightCallbackData_s {
@@ -912,6 +913,7 @@ int lights_addToRenderQueue(viewport_t *v, renderqueue_t * q, unsigned int numsa
 			sl.light.size = out.lin.list[i]->scale;
 			Matrix4x4_Concat(&ct, &v->view, &out.lin.list[i]->camproj);
 			Matrix4x4_ToArrayFloatGL(&ct, sl.light.mv);
+			Matrix4x4_ToArrayFloatGL(&out.lin.list[i]->viewproj, sl.light.lmv);
 			sl.light.pos[0] = out.lin.list[i]->pos[0];
 			sl.light.pos[1] = out.lin.list[i]->pos[1];
 			sl.light.pos[2] = out.lin.list[i]->pos[2];
@@ -942,6 +944,7 @@ int lights_addToRenderQueue(viewport_t *v, renderqueue_t * q, unsigned int numsa
 			sl.light.size = out.lout.list[i]->scale;
 			Matrix4x4_Concat(&ct, &v->view, &out.lout.list[i]->camproj);
 			Matrix4x4_ToArrayFloatGL(&ct, sl.light.mv);
+			Matrix4x4_ToArrayFloatGL(&out.lout.list[i]->viewproj, sl.light.lmv);
 			sl.light.pos[0] = out.lout.list[i]->pos[0];
 			sl.light.pos[1] = out.lout.list[i]->pos[1];
 			sl.light.pos[2] = out.lout.list[i]->pos[2];
