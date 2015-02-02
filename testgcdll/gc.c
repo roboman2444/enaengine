@@ -154,11 +154,12 @@ int initgame(void){
 	light_t * slight = ec->light_addRPOINT("spot");
 		slight->type = 2;
 		slight->needsupdate = 3;
-		slight->scale = 10.0f;
+		slight->scale = 20.0f;
 		slight->fovx = 90;
 		slight->fovy = 90;
 		slight->near = 0.1;
-		slight->far = 10.0;
+		slight->far = 20.0;
+		slight->pos[2] = -10.0;
 
 
 

@@ -57,7 +57,7 @@ void main(){
 			vec4 mtpos = lmv * vec4(pos,1.0);
 			vec3 mfpos = mtpos.xyz / mtpos.w;
 			float mtlen = length(mfpos.xy);
-	//		if(mtlen > 1.0) discard;
+			if(mtlen > 1.0) discard;
 		#endif
 
 		#ifndef DIRECTIONAL
@@ -88,7 +88,8 @@ void main(){
 		#else
 			float attenuation = clamp(1.0f - lightdist*lightdist/(lsize*lsize), 0.0f, 1.0f); attenuation *= attenuation;
 			#ifdef SPOT
-				attenuation *= clamp(1.0f - mtlen * mtlen,0.0f, 1.0f);
+//				attenuation *= clamp(1.0f - mtlen * mtlen,0.0f, 1.0f);
+//				attenuation *= 1.0f;
 			#endif
 		#endif //DIRECTIONAL
 
@@ -150,6 +151,6 @@ void main(){
 //			fragColor = vec4(0.1);
 
 	#ifdef SPOT
-		fragColor += vec4(0.1);
+//		fragColor += vec4(0.1);
 	#endif
 }

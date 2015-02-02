@@ -120,7 +120,9 @@ void recalcLightViewMats(light_t *l){
 	Matrix4x4_ConcatRotate(&l->view, l->angle[1], 0.0f, 1.0f, 0.0f);
 	Matrix4x4_ConcatTranslate(&l->view, -l->pos[0], -l->pos[1], -l->pos[2]);
 //	Matrix4x4_CreateFromQuakeEntity(&l->cam, l->pos[0], l->pos[1], l->pos[2], l->angle[2], l->angle[1], l->angle[0], 1.0);
-	Matrix4x4_CreateFromQuakeEntity(&l->cam, l->pos[0], l->pos[1], l->pos[2], l->angle[2], l->angle[1], l->angle[0], l->scale);
+//	Matrix4x4_CreateFromQuakeEntity(&l->cam, l->pos[0], l->pos[1], l->pos[2], l->angle[2], l->angle[1], l->angle[0], l->scale);
+	Matrix4x4_Invert_Simple(&l->cam, &l->view); //temp? hack
+
 }
 void recalcLightProjMats(light_t *l){
 	//todo do i really need the whole seperate x and y cotangent radians sines, etc?
@@ -144,9 +146,9 @@ void recalcLightProjMats(light_t *l){
 	l->projection.m[3][2] = -2.0 * l->near * l->scale / deltaZ;
 	l->projection.m[3][3] = 0;
 
-	l->fixproj.m[0][0] = 1.0/cotangentx;//TODO?
-	l->fixproj.m[1][1] = 1.0/cotangenty;//TODO?
-	l->fixproj.m[2][2] = 1.0;
+	l->fixproj.m[0][0] = l->scale/cotangentx;//TODO?
+	l->fixproj.m[1][1] = l->scale/cotangenty;//TODO?
+	l->fixproj.m[2][2] = l->scale;
 	l->fixproj.m[3][3] = 1.0;
 /*
 	l->fixproj.m[0][0] = 1.0/cotangentx;

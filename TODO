@@ -2,11 +2,15 @@ Text
 	Manage old text and remove it
 	Make a dynamic fps/object/draw call counter (like crysis)
 Lights
-	Non point lights
+	
 	Experiment with the lightloop with entities attaching lights to themselves, not lights attaching to entities
 	Experiment with optimizing static lights (no need to lightloop them)
 	Global lights (rendered as FSquad/alltiles no matter what). For sun or whatever.
 	Maybe put into quadtree (more info in entities section)
+
+	Lights need to do non-hackey way of getting matricies
+	Lights need to have attachments be offsets
+
 Console
 	get it rendering text with the renderqueue system
 	make it not shitty
@@ -18,7 +22,7 @@ World
 	Basic SPHERE->AABB collision detection
 	Basic SPHERE->SPHERE collision detection
 Deferred
-	add tiled defferred lighting (see tiled deferred section)
+	fix tiled deferred lighting?
 	finish directional light shading
 Forward
 	add forward pipeline
