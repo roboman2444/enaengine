@@ -1,8 +1,7 @@
 Text
-	Manage old text and remove it
+	Manage old text and remove it?
 	Make a dynamic fps/object/draw call counter (like crysis)
 Lights
-	
 	Experiment with the lightloop with entities attaching lights to themselves, not lights attaching to entities
 	Experiment with optimizing static lights (no need to lightloop them)
 	Global lights (rendered as FSquad/alltiles no matter what). For sun or whatever.
@@ -10,17 +9,16 @@ Lights
 
 	Lights need to do non-hackey way of getting matricies
 	Lights need to have attachments be offsets
-
 Console
 	get it rendering text with the renderqueue system
 	make it not shitty
 World
 	Use a queue system to figure out of tree leafs need bbox recalculation
+	Implement BBOX smallerizing
 	Disable depth testing to see weather or not my little ordering method helps
 		-attempted, not enough of a change to tell
 	Basic AABB->AABB collision detection
 	Basic SPHERE->AABB collision detection
-	Basic SPHERE->SPHERE collision detection
 Deferred
 	fix tiled deferred lighting?
 	finish directional light shading
@@ -34,7 +32,6 @@ Gamecode
 States
 	have states track framebuffers, different masks, and do a glclear thing
 Tiled Deferred
-	Implement a basic tiled deferred render
 	optimize tiled deferred render
 		screen quadtree method
 		frustums

@@ -9,6 +9,7 @@ void getBBoxPFromBBox(const vec_t * bbox, vec_t *bboxp){
 		bboxp[(i*3)+1] = bbox[((i&2)>>1)+2];
 		bboxp[(i*3)+2] = bbox[((i&4)>>2)+4];
 	}
+
 }
 unsigned char checkBBoxPInBBox(const vec_t *bbox, const vec_t *bboxp){
 	unsigned int j;
@@ -88,3 +89,7 @@ void vec4norm2(vec4_t a, const vec4_t b){
 }
 
 
+unsigned char checkSphereInSphere(const vec3_t sphere1, const vec_t size1, const vec3_t sphere2, const vec_t size2){
+	vec_t tots = size1+size2;
+	return(vec3distvec(sphere1, sphere2) < tots);
+}
