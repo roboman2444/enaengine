@@ -9,6 +9,7 @@
 
 #include "hashtables.h"
 #include "console.h"
+#include "stringlib.h"
 
 
 #define STB_TRUETYPE_IMPLEMENTATION  // force following include to generate implementation

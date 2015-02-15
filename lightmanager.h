@@ -49,7 +49,8 @@ typedef struct light_s {
 	matrix4x4_t fixproj;
 	matrix4x4_t camproj; //used for transferring a unit cube(or unit cylinder) to the shape of the light
 	matrix4x4_t samplemat;
-
+	GLuint shadowtexid;
+	GLuint shadowsize;
 } light_t;
 
 /*

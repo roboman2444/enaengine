@@ -11,6 +11,7 @@
 #include "texturemanager.h"
 #include "framebuffermanager.h"
 #include "mathlib.h"
+#include "stringlib.h"
 int viewport_ok = 0;
 int viewportcount = 0;
 int viewportArrayFirstOpen = 0;

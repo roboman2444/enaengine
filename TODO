@@ -11,6 +11,7 @@ Lights
 
 	Lights need to do non-hackey way of getting matricies
 	Lights need to have attachments be offsets
+	non hackey sphere thing
 Console
 	get it rendering text with the renderqueue system
 	make it not shitty
@@ -65,3 +66,5 @@ Misc
 	-Mass Code cleanup
 Renderqueue
 	-add many buffers that can be "triggered" for update
+		may be part of the VAO manager, add a "trigger" flag and a method for renderqueue to keep track of that
+	-add many more UBOs that can be bound an unbound, trigger updates, etc
