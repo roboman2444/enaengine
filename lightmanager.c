@@ -11,6 +11,7 @@
 #include "viewportmanager.h"
 #include "lightmanager.h"
 #include "console.h"
+#include "stringlib.h"
 #include "mathlib.h"
 
 #include "renderqueue.h"
@@ -26,9 +27,15 @@ int lightcount = 0;
 int lightArrayFirstOpen = 0;
 int lightArrayLastTaken = -1;
 int lightArraySize = 0;
+int globallightcount = 0;
+int globallightArrayFirstOpen = 0;
+int globallightArrayLastTaken = -1;
+int globallightArraySize = 0;
 int light_ok = 0;
 light_t *lightlist;
+globallight_t *globallightlist;
 hashbucket_t lighthashtable[MAXHASHBUCKETS];
+hashbucket_t globallighthashtable[MAXHASHBUCKETS];
 
 vec_t unitbox[24] = {
 	-1.0, -1.0, -1.0,	1.0, -1.0, -1.0,	-1.0, 1.0, -1.0,	1.0, 1.0, -1.0,
@@ -204,8 +211,11 @@ int lightLoop(void){
 
 int light_init(void){
 	memset(lighthashtable, 0, MAXHASHBUCKETS * sizeof(hashbucket_t));
+	memset(globallighthashtable, 0, MAXHASHBUCKETS * sizeof(hashbucket_t));
 	if(lightlist) free(lightlist);
+	if(globallightlist) free(globallightlist);
 	lightlist = 0;
+	globallightlist = 0;
 //	lightlist = malloc(lightcount * sizeof(light_t));
 //	if(!lightlist) memset(lightlist, 0 , lightcount * sizeof(light_t));
 //	light_addRINT("default");
@@ -246,7 +256,7 @@ lightlistpoint_t findLightsByNameRPOINT(const char * name){
 	hashbucket_t * hb = &lighthashtable[hash];
 	if(!hb->name) return ret;
         for(; hb; hb = hb->next){
-		if(strcmp(hb->name, name)==0){
+		if(string_testEqual(hb->name, name)){
 //			return returnLightById(hb->id);
 			ret.count++;
 			ret.list = realloc(ret.list, ret.count * sizeof(light_t *));
@@ -261,7 +271,7 @@ lightlistint_t findLightsByNameRINT(const char * name){
 	hashbucket_t * hb = &lighthashtable[hash];
 	if(!hb->name) return ret;
         for(; hb; hb = hb->next){
-		if(strcmp(hb->name, name)==0){
+		if(string_testEqual(hb->name, name)){
 //			return returnLightById(hb->id);
 			ret.count++;
 			ret.list = realloc(ret.list, ret.count * sizeof(int));
@@ -271,11 +281,18 @@ lightlistint_t findLightsByNameRINT(const char * name){
 	return ret;
 }
 
-light_t * findLightByNameRPOINT(const char * name){ //todo write a function that can find ALL entities with name
+light_t * findLightByNameRPOINT(const char * name){
 	return returnLightById(findByNameRINT(name, lighthashtable));
 }
 int findLightByNameRINT(const char * name){
 	return findByNameRINT(name, lighthashtable);
+}
+
+globallight_t * findGlobalLightByNameRPOINT(const char * name){
+	return returnGlobalLightById(findByNameRINT(name, globallighthashtable));
+}
+int findGlobalLightByNameRINT(const char * name){
+	return findByNameRINT(name, globallighthashtable);
 }
 
 int deleteLight(const int id){
@@ -286,18 +303,34 @@ int deleteLight(const int id){
 	deleteFromHashTable(ent->name, id, lighthashtable);
 	free(ent->name);
 	memset(ent, 0, sizeof(light_t));
-//	ent->type = 0;
-//	ent->model = 0;
-//	ent->name = 0;
-//	ent->myid = 0;
 	if(lightindex < lightArrayFirstOpen) lightArrayFirstOpen = lightindex;
 	for(; lightArrayLastTaken > 0 && !lightlist[lightArrayLastTaken].type; lightArrayLastTaken--);
+	return TRUE;
+}
+int deleteGlobalLight(const int id){
+	int lightindex = (id & 0xFFFF);
+	globallight_t * ent = &globallightlist[lightindex];
+	if(ent->myid != id) return FALSE;
+	if(!ent->name) return FALSE;
+	deleteFromHashTable(ent->name, id, globallighthashtable);
+	free(ent->name);
+	memset(ent, 0, sizeof(globallight_t));
+	if(lightindex < globallightArrayFirstOpen) globallightArrayFirstOpen = lightindex;
+	for(; globallightArrayLastTaken > 0 && !lightlist[globallightArrayLastTaken].type; globallightArrayLastTaken--);
 	return TRUE;
 }
 light_t * returnLightById(const int id){
 //	int lightspawncount = (id >> 16);
 	int lightindex = (id & 0xFFFF);
 	light_t * ent = &lightlist[lightindex];
+	if(!ent->type) return FALSE;
+	if(ent->myid == id) return ent;
+	return FALSE;
+}
+globallight_t * returnGlobalLightById(const int id){
+//	int lightspawncount = (id >> 16);
+	int lightindex = (id & 0xFFFF);
+	globallight_t * ent = &globallightlist[lightindex];
 	if(!ent->type) return FALSE;
 	if(ent->myid == id) return ent;
 	return FALSE;
@@ -314,6 +347,15 @@ light_t createLight(const char * name){
 //	Matrix4x4_CreateIdentity(&newlight.cam);
 //	Matrix4x4_CreateIdentity(&newlight.fixproj);
 	newlight.needsupdate = 3;
+	return newlight;
+//todo
+}
+globallight_t createGlobalLight(const char * name){
+	globallight_t newlight;
+	memset(&newlight, 0, sizeof(globallight_t));
+	newlight.type = 1;
+	newlight.name = malloc(strlen(name)+1); // todo maybe put this somewhere else...
+	strcpy(newlight.name, name);
 	return newlight;
 //todo
 }
@@ -355,12 +397,53 @@ light_t * light_addRPOINT(const char * name){
 	return &lightlist[lightArrayFirstOpen];
 
 }
+int globallight_addRINT(const char * name){
+	globallightcount++;
+	for(; globallightArrayFirstOpen < globallightArraySize && globallightlist[globallightArrayFirstOpen].type; globallightArrayFirstOpen++);
+	if(globallightArrayFirstOpen == globallightArraySize){	//resize
+		globallightArraySize++;
+		globallightlist = realloc(globallightlist, globallightArraySize * sizeof(globallight_t));
+	}
+	globallightlist[globallightArrayFirstOpen] = createGlobalLight(name);
+	int returnid = (globallightcount << 16) | globallightArrayFirstOpen;
+	globallightlist[globallightArrayFirstOpen].myid = returnid;
+
+	addToHashTable(globallightlist[globallightArrayFirstOpen].name, returnid, globallighthashtable);
+	if(globallightArrayLastTaken < globallightArrayFirstOpen) globallightArrayLastTaken = globallightArrayFirstOpen; //todo redo
+	return returnid;
+}
+globallight_t * globallight_addRPOINT(const char * name){
+	globallightcount++;
+	for(; globallightArrayFirstOpen < globallightArraySize && globallightlist[globallightArrayFirstOpen].type; globallightArrayFirstOpen++);
+	if(globallightArrayFirstOpen == globallightArraySize){	//resize
+		globallightArraySize++;
+		globallightlist = realloc(globallightlist, globallightArraySize * sizeof(globallight_t));
+	}
+	globallightlist[globallightArrayFirstOpen] = createGlobalLight(name);
+	int returnid = (globallightcount << 16) | globallightArrayFirstOpen;
+	globallightlist[globallightArrayFirstOpen].myid = returnid;
+
+	addToHashTable(globallightlist[globallightArrayFirstOpen].name, returnid, globallighthashtable);
+	//todo maybe have globallight have a hash variable, so i dont have to calculate it again if i want to delete... maybe
+	if(globallightArrayLastTaken < globallightArrayFirstOpen) globallightArrayLastTaken = globallightArrayFirstOpen;
+//	printf("globallightarraysize = %i\n", globallightArraySize);
+//	printf("globallightcount = %i\n", globallightcount);
+
+	return &globallightlist[globallightArrayFirstOpen];
+
+}
 
 
 void pruneLightList(void){
 	if(lightArraySize == lightArrayLastTaken+1) return;
 	lightArraySize = lightArrayLastTaken+1;
 	lightlist = realloc(lightlist, lightArraySize * sizeof(light_t));
+}
+
+void pruneGlobalLightList(void){
+	if(globallightArraySize == globallightArrayLastTaken+1) return;
+	globallightArraySize = globallightArrayLastTaken+1;
+	globallightlist = realloc(globallightlist, globallightArraySize * sizeof(globallight_t));
 }
 
 

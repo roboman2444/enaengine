@@ -86,7 +86,7 @@ void cvar_pset(cvar_t *c, const char *value){
 	if(!c) return;
 
 	//make sure we actually set it to something different
-	if(c->valuestringlength && strcmp(value, c->valuestring) == 0) return;
+	if(c->valuestringlength && string_testEqual(value, c->valuestring)) return;
 
 	//make sure size is right
 	unsigned int inlength = strlen(value)+1;
@@ -101,7 +101,7 @@ void cvar_pset(cvar_t *c, const char *value){
 	c->valuefloat = vf;
 	string_toVec(value, c->valuevector, 3);
 
-	c->notdefault = !(strcmp(value, c->defaultstring) == 0);
+	c->notdefault = !string_testEqual(value, c->defaultstring);
 	if(c->onchange)c->onchange(c);
 }
 

@@ -6,6 +6,7 @@
 #include "hashtables.h"
 #include "matrixlib.h"
 #include "entitymanager.h"
+#include "stringlib.h"
 
 int entity_count = 0;
 int entity_arrayfirstopen = 0;
@@ -32,7 +33,7 @@ entitylistpoint_t entity_findAllByNameRPOINT(const char * name){
 	hashbucket_t * hb = &entityhashtable[hash];
 	if(!hb->name) return ret;
         for(; hb; hb = hb->next){
-		if(strcmp(hb->name, name)==0){
+		if(string_testEqual(hb->name, name)){
 //			return entity_returnById(hb->id);
 			ret.count++;
 			ret.list = realloc(ret.list, ret.count * sizeof(entity_t *));
@@ -47,7 +48,7 @@ entitylistint_t entity_findAllByNameRINT(const char * name){
 	hashbucket_t * hb = &entityhashtable[hash];
 	if(!hb->name) return ret;
         for(; hb; hb = hb->next){
-		if(strcmp(hb->name, name)==0){
+		if(string_testEqual(hb->name, name)){
 //			return entity_returnById(hb->id);
 			ret.count++;
 			ret.list = realloc(ret.list, ret.count * sizeof(int));

@@ -1,6 +1,15 @@
 #ifndef LIGHTMANAGERHEADER
 #define LIGHTMANAGERHEADER
 
+typedef struct globallight_s {
+	char * name;
+	int myid;
+	char type;
+
+	vec3_t angle;
+	float brightness;
+} globallight_t;
+
 typedef struct light_s {
 	char * name;
 	int myid;
@@ -95,23 +104,39 @@ int lightArraySize;
 int lightArrayLastTaken;
 int light_ok;
 
+
+int globallightcount;
+int globallightArraySize;
+int globallightArrayLastTaken;
+
 int maxVisLights;
 int maxShadowLights;
 
 //returns first light it finds with name
 light_t * findLightByNameRPOINT(const char * nam);
 int findLightByNameRINT(const char * name);
+//returns first globallight it finds with name
+globallight_t * findGlobalLightByNameRPOINT(const char * nam);
+int findGlobalLightByNameRINT(const char * name);
 //returns a list of all entities with name
 lightlistpoint_t findLightsByNameRPOINT(const char * nam);
 lightlistint_t findLightsByNameRINT(const char * name);
 //returns pointer by light id
 light_t * returnLightById(const int id);
+//returns pointer by light id
+globallight_t * returnGlobalLightById(const int id);
 //creates and adds light to listwith name
 light_t * light_addRPOINT(const char * name);
 int light_addRINT(const char * name);
+//creates and adds global light to listwith name
+globallight_t * globalLight_addRPOINT(const char * name);
+int globalLight_addRINT(const char * name);
 //deletes light, only id is accepted
 int deleteLight(const int id);
 void pruneLightList(void);
+//deletes global light, only id is accepted
+int deleteGlobalLight(const int id);
+void pruneGlobalLightList(void);
 
 
 int lightLoop(void);

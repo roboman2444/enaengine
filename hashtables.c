@@ -1,5 +1,6 @@
 #include "globaldefs.h"
 #include "hashtables.h"
+#include "stringlib.h"
 
 int getHash(const char * string){
 	unsigned long rethash = 0;
@@ -51,7 +52,7 @@ int findByNameRINT(const char * name, hashbucket_t *ht){
 	hashbucket_t * hb = &ht[hash];
 	if(!hb->name) return 0;
         for(; hb; hb = hb->next){
-		if(strcmp(hb->name, name)==0){
+		if(string_testEqual(hb->name, name)){
 			return hb->id;
 		}
         }

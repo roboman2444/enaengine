@@ -66,7 +66,7 @@ textlistpoint_t findTextsByNameRPOINT(const char * name){
 	hashbucket_t * hb = &texthashtable[hash];
 	if(!hb->name) return ret;
 	for(; hb; hb = hb->next){
-		if(strcmp(hb->name, name)==0){
+		if(string_testEqual(hb->name, name)){
 			ret.count++;
 			ret.list = realloc(ret.list, ret.count * sizeof(text_t *));
 			ret.list[ret.count-1] = returnTextById(hb->id);
@@ -80,7 +80,7 @@ textlistint_t findTextsByNameRINT(const char * name){
 	hashbucket_t * hb = &texthashtable[hash];
 	if(!hb->name) return ret;
 	for(; hb; hb = hb->next){
-		if(strcmp(hb->name, name)==0){
+		if(string_testEqual(hb->name, name)){
 			ret.count++;
 			ret.list = realloc(ret.list, ret.count * sizeof(int));
 			ret.list[ret.count-1] = hb->id;
@@ -104,7 +104,7 @@ fontlistpoint_t findFontsByNameRPOINT(const char * name){
 	hashbucket_t * hb = &fonthashtable[hash];
 	if(!hb->name) return ret;
 	for(; hb; hb = hb->next){
-		if(strcmp(hb->name, name)==0){
+		if(string_testEqual(hb->name, name)){
 			ret.count++;
 			ret.list = realloc(ret.list, ret.count * sizeof(font_t *));
 			ret.list[ret.count-1] = returnFontById(hb->id);
@@ -118,7 +118,7 @@ fontlistint_t findFontsByNameRINT(const char * name){
 	hashbucket_t * hb = &fonthashtable[hash];
 	if(!hb->name) return ret;
 	for(; hb; hb = hb->next){
-		if(strcmp(hb->name, name)==0){
+		if(string_testEqual(hb->name, name)){
 			ret.count++;
 			ret.list = realloc(ret.list, ret.count * sizeof(int));
 			ret.list[ret.count-1] = hb->id;

@@ -7,6 +7,7 @@
 #include "hashtables.h"
 #include "texturemanager.h"
 #include "framebuffermanager.h"
+#include "stringlib.h"
 
 int framebuffer_ok = 0;
 int framebuffer_count = 0;
@@ -52,7 +53,7 @@ framebufferlistpoint_t findFramebuffersByNameRPOINT(char * name){
 	hashbucket_t * hb = &framebufferhashtable[hash];
 	if(!hb->name) return ret;
         for(; hb; hb = hb->next){
-		if(strcmp(hb->name, name)==0){
+		if(string_testEqual(hb->name, name)){
 //			return returnById(hb->id);
 			ret.count++;
 			ret.list = realloc(ret.list, ret.count * sizeof(framebuffer_t *));
@@ -67,7 +68,7 @@ framebufferlistint_t findFramebuffersByNameRINT(char * name){
 	hashbucket_t * hb = &framebufferhashtable[hash];
 	if(!hb->name) return ret;
         for(; hb; hb = hb->next){
-		if(strcmp(hb->name, name)==0){
+		if(string_testEqual(hb->name, name)){
 //			return returnById(hb->id);
 			ret.count++;
 			ret.list = realloc(ret.list, ret.count * sizeof(int));

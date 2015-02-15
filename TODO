@@ -1,11 +1,13 @@
+  - at the beginning means im currently workin on it
+
 Text
 	Manage old text and remove it?
 	Make a dynamic fps/object/draw call counter (like crysis)
 Lights
 	Experiment with the lightloop with entities attaching lights to themselves, not lights attaching to entities
 	Experiment with optimizing static lights (no need to lightloop them)
-	Global lights (rendered as FSquad/alltiles no matter what). For sun or whatever.
-	Maybe put into quadtree (more info in entities section)
+	-Global lights (rendered as FSquad/alltiles no matter what). For sun or whatever.
+	-Maybe put into quadtree (more info in entities section)
 
 	Lights need to do non-hackey way of getting matricies
 	Lights need to have attachments be offsets
@@ -15,23 +17,24 @@ Console
 World
 	Use a queue system to figure out of tree leafs need bbox recalculation
 	Implement BBOX smallerizing
-	Disable depth testing to see weather or not my little ordering method helps
+	-Disable depth testing to see weather or not my little ordering method helps
 		-attempted, not enough of a change to tell
 	Basic AABB->AABB collision detection
 	Basic SPHERE->AABB collision detection
 Deferred
 	fix tiled deferred lighting?
-	finish directional light shading
+	-finish directional light shading
 Forward
 	add forward pipeline
 Entities
 	change quadtree check algorithm to add all entities if the entire quadtree bbox checks out, dont bother checking ent bboxes
-		-maybe
+		maybe
 Gamecode
-	Finish Figuring it out
+	-Finish Figuring it out
 States
 	have states track framebuffers, different masks, and do a glclear thing
 Tiled Deferred
+	-fix pixeldepth->viewpos method
 	optimize tiled deferred render
 		screen quadtree method
 		frustums
@@ -43,10 +46,22 @@ Animations
 	Figure it out
 Textures
 	Experiment with packing whole texturegroups into one texturearray
-		-most textures in a texturegroup are gonna be same size anyway
-		- or experiment with packing texturegroups of the same size into texture arrays
+		most textures in a texturegroup are gonna be same size anyway
+		 or experiment with packing texturegroups of the same size into texture arrays
 	Add basic procedural texture functions
 	Add basic texture manipulation functions (mirror, scale, invert, combine, etc)
 Multithread
 	Figure it out
 	A ways down the road
+Terrain
+	do it shittily
+	then add physics or someshit
+	then do it betterly
+	then make editorly
+	then make reactive?
+List stuff
+	memsetting on delete may be redundant. possibly remove it
+Misc
+	-Mass Code cleanup
+Renderqueue
+	-add many buffers that can be "triggered" for update

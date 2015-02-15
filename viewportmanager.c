@@ -37,7 +37,7 @@ viewportlistpoint_t findViewportsByNameRPOINT(char * name){
 	hashbucket_t * hb = &viewporthashtable[hash];
 	if(!hb->name) return ret;
         for(; hb; hb = hb->next){
-		if(strcmp(hb->name, name)==0){
+		if(string_testEqual(hb->name, name)){
 //			return returnById(hb->id);
 			ret.count++;
 			ret.list = realloc(ret.list, ret.count * sizeof(viewport_t *));
@@ -52,7 +52,7 @@ viewportlistint_t findViewportsByNameRINT(char * name){
 	hashbucket_t * hb = &viewporthashtable[hash];
 	if(!hb->name) return ret;
         for(; hb; hb = hb->next){
-		if(strcmp(hb->name, name)==0){
+		if(string_testEqual(hb->name, name)){
 //			return returnById(hb->id);
 			ret.count++;
 			ret.list = realloc(ret.list, ret.count * sizeof(int));
