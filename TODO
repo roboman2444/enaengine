@@ -25,6 +25,7 @@ World
 Deferred
 	fix tiled deferred lighting?
 	-finish directional light shading
+	PBR support
 Forward
 	add forward pipeline
 Entities

@@ -25,6 +25,8 @@ int string_testEqual(const char * one, const char * two){
 	char * m2 = (char *)two;
 	//i dont test both in the while because checking weather they are equal does it for me
 	while(*m1) if(*m1++ != *m2++) return FALSE;
+	//now check if m1 stopped early and m2 still goes
+	if(*m2) return FALSE;
 	return TRUE;
 }
 

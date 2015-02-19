@@ -42,7 +42,7 @@ void main(){
 
 	fragColor = vec4(dcolor, scolor.r);
 	normColor = vec4(ncolor.rg, depth, scolor.g);
-	
+
 
 
 
