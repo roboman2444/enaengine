@@ -296,7 +296,6 @@ void drawModelCallback(renderlistitem_t * ilist, unsigned int count){
 //	printf("Rendered %i\n", count);
 }
 void setupModelCallback(renderlistitem_t * ilist, unsigned int count){
-
 	if(count > 1){
 		//TODO alloc to max size that it can be, slow, but i may have a resizeablebuffer or a fixed size (MAXINSTANCECOUNT)
 //		modelUBOStruct_t * ubodata = malloc(count * sizeof(modelUBOStruct_t));

@@ -2,6 +2,10 @@
 #include "particlemanager.h"
 
 
+
+
+
+
 /*
 //#include "texturemanager.h" //todo
 particlesystem_t *particlesyslist;
