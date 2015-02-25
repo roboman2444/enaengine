@@ -69,3 +69,7 @@ Renderqueue
 	-add many buffers that can be "triggered" for update
 		may be part of the VAO manager, add a "trigger" flag and a method for renderqueue to keep track of that
 	-add many more UBOs that can be bound an unbound, trigger updates, etc
+Model rendering
+	-optimize the callback functions slightly
+	-finish depth-only model rendering
+	-add forward methods

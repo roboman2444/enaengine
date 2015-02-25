@@ -114,7 +114,7 @@ int maxVisLights;
 int maxShadowLights;
 
 //returns first light it finds with name
-light_t * findLightByNameRPOINT(const char * nam);
+light_t * findLightByNameRPOINT(const char * name);
 int findLightByNameRINT(const char * name);
 //returns first globallight it finds with name
 globallight_t * findGlobalLightByNameRPOINT(const char * nam);

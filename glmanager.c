@@ -24,6 +24,8 @@
 #include "animmanager.h"
 #include "mathlib.h"
 #include <tgmath.h> //for sin and cos
+
+#include "rendermodel.h" // for model callbacks
 #include "cvarmanager.h"
 
 
@@ -111,7 +113,7 @@ void GL_PrintError(int errornumber, const char *filename, int linenumber){
 }
 
 
-extern void drawModelSetMax(void);
+//extern void drawModelSetMax(void);
 int glInit(void){
 	cvar_register(&cvar_gl_MSAA_Samples);
 	cvar_pset(&cvar_gl_MSAA_Samples, "0");
@@ -185,6 +187,8 @@ int glInit(void){
 		//todo call some sort of shutdown of everything
 		return FALSE;
 	}
+	rendermodel_init();
+	//todo errorcheck
 
 	states_enableForce(GL_MULTISAMPLE);
 	glClearDepth(1.0);
@@ -234,115 +238,10 @@ int glInit(void){
 
 	readyRenderQueueBuffers();
 
-	drawModelSetMax();
 
 
 	return TRUE; // so far so good
 }
-//todo move this junk
-typedef struct renderModelCallbackData_s {
-	unsigned int modelid;
-	unsigned int shaderid; //do i need this?
-	GLuint shaderprogram;
-	unsigned int shaderperm; //todo do i need these, or can i change to a pointer?
-	unsigned int texturegroupid;
-	unsigned int ubodataoffset;
-	matrix4x4_t mvp;
-	matrix4x4_t mv;
-} renderModelCallbackData_t;
-typedef struct modelUBOStruct_s {
-	GLfloat mvp[16];
-	GLfloat mv[16];
-} modelUBOStruct_t;
-modelUBOStruct_t * modelUBOData;
-unsigned int modelMaxSize = 0;
-
-void drawModelSetMax(void){
-	modelMaxSize = maxUBOSize / sizeof(modelUBOStruct_t);
-	console_printf("Max model instance count is %i\n", modelMaxSize);
-	modelUBOData = malloc(modelMaxSize * sizeof(modelUBOStruct_t));
-}
-
-void drawModelCallback(renderlistitem_t * ilist, unsigned int count){
-
-	renderModelCallbackData_t *d = ilist->data;
-	model_t *m = model_returnById(d->modelid);
-	vbo_t *v = returnVBOById(m->vbo);
-	unsigned int mysize = (count * sizeof(modelUBOStruct_t));
-	glstate_t s = {STATESENABLEDEPTH|STATESENABLECULLFACE, GL_ONE, GL_ONE, GL_LESS, GL_BACK, GL_TRUE, GL_LESS, 0.0, v->vaoid, renderqueueuboid, GL_UNIFORM_BUFFER, 0, d->ubodataoffset, mysize, d->shaderprogram};
-//	glstate_t s = {STATESENABLECULLFACE|STATESENABLEBLEND|STATESENABLEDEPTH, GL_ONE, GL_ONE, GL_LESS, GL_BACK, GL_TRUE, GL_LESS, 0.0, v->vaoid, renderqueueuboid, GL_UNIFORM_BUFFER, 0, d->ubodataoffset, mysize, d->shaderprogram};
-//	states_setState(s);
-	texturegroup_t *t = returnTexturegroupById(d->texturegroupid);
-	if(t){
-		unsigned int total = t->num;
-		unsigned int i;
-		texture_t *texturespointer = t->textures;
-		if(texturespointer){
-			for(i = 0; i < total; i++){
-				int type = texturespointer[i].type - 1;
-				if(type > -1){
-					s.enabledtextures = s.enabledtextures | 1<<type;
-					s.textureunitid[type] = texturespointer[i].id;
-					s.textureunittarget[type] = GL_TEXTURE_2D;
-				}
-			}
-		}
-	}
-//	bindTexturegroup(t);
-	states_setState(s);
-	CHECKGLERROR
-
-	glDrawElementsInstanced(GL_TRIANGLES, v->numfaces * 3, GL_UNSIGNED_INT, 0, count);
-//	printf("Rendered %i\n", count);
-}
-void setupModelCallback(renderlistitem_t * ilist, unsigned int count){
-	if(count > 1){
-		//TODO alloc to max size that it can be, slow, but i may have a resizeablebuffer or a fixed size (MAXINSTANCECOUNT)
-//		modelUBOStruct_t * ubodata = malloc(count * sizeof(modelUBOStruct_t));
-//		modelUBOStruct_t ubodata[MAXINSTANCESIZE]; //TODO figure out per=callback max object sizes
-	//todo get max per shader ubodata max size
-		unsigned int i = 0;
-		while(i < count){
-			renderModelCallbackData_t *d = ilist[i].data;
-
-			unsigned int counter = 0;
-			Matrix4x4_ToArrayFloatGL(&d->mvp, modelUBOData->mvp);
-			Matrix4x4_ToArrayFloatGL(&d->mv,  modelUBOData->mv);
-
-			unsigned int max = count-i;
-			if(max > modelMaxSize) max = modelMaxSize;
-			unsigned int currentmodelid = d->modelid;
-			unsigned int currentshaderprogram = d->shaderprogram;
-			unsigned int currenttexturegroupid = d->texturegroupid;
-			for(counter = 1; counter < max; counter++){
-				renderModelCallbackData_t *dl = ilist[i+counter].data;
-				if(currentmodelid != dl->modelid || currentshaderprogram != dl->shaderprogram || currenttexturegroupid != dl->texturegroupid) break;
-				Matrix4x4_ToArrayFloatGL(&dl->mvp, modelUBOData[counter].mvp);
-				Matrix4x4_ToArrayFloatGL(&dl->mv,  modelUBOData[counter].mv);
-			}
-			int t = pushDataToUBOCache(counter * sizeof(modelUBOStruct_t), modelUBOData);
-			if(t < 0) printf("BAAAD\n");
-			d->ubodataoffset = t;
-
-
-			ilist[i].counter = counter;//reset instance size to whats right
-			i+=counter;
-		}
-//		free(ubodata);
-	} else if (count == 1){
-		renderModelCallbackData_t *d = ilist->data;
-
-		modelUBOStruct_t ubodata;
-		Matrix4x4_ToArrayFloatGL(&d->mvp, ubodata.mvp);
-		Matrix4x4_ToArrayFloatGL(&d->mv,  ubodata.mv);
-		int t = pushDataToUBOCache(sizeof(modelUBOStruct_t), &ubodata);
-		d->ubodataoffset = t;
-	} else {
-		console_printf("ERROR: MODEL SETUP CALLBACK WITH 0 AS COUNT!\n");
-	}
-//	console_printf("Setup %i\n", count);
-}
-
 void addObjectToRenderqueue(const worldobject_t *o, renderqueue_t * q, const viewport_t * v){
 	renderlistitem_t r;
 	unsigned int shaderperm = o->shaderperm;
@@ -372,8 +271,8 @@ void addObjectToRenderqueue(const worldobject_t *o, renderqueue_t * q, const vie
 	r.sort[7] = (texturegroupid >> 8) & 0xFF;
 	r.sort[8] = 0; //could be distance data in here...
 	r.sort[9] = 0;
-	r.setup = setupModelCallback;
-	r.draw = drawModelCallback;
+	r.setup = rendermodel_setupMCallback;
+	r.draw = rendermodel_drawMCallback;
 
 	r.datasize = sizeof(renderModelCallbackData_t);
 	r.flags = 2 | 4; //copyable, instanceable
@@ -415,8 +314,8 @@ void addEntityToRenderqueue(const entity_t *e, renderqueue_t * q, const viewport
 	r.sort[7] = (texturegroupid >> 8) & 0xFF;
 	r.sort[8] = 0;
 	r.sort[9] = 0;
-	r.setup = setupModelCallback;
-	r.draw = drawModelCallback;
+	r.setup = rendermodel_setupMCallback;
+	r.draw = rendermodel_drawMCallback;
 
 
 	r.datasize = sizeof(renderModelCallbackData_t);

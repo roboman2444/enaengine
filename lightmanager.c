@@ -689,69 +689,6 @@ lightrenderout_t readyLightsForRender(viewport_t *v, const unsigned int max, con
 }
 
 
-/*
-	//TODO move this into a per-file thing modelDepth
-	//when rendering shadows call thingDepth
-	//when rendering anything depth-only call thingDepth
-modelShadowUBOStruct_t * modelShadowUBOData;
-unsigned int modelShadowMaxSize = 0;
-
-void drawModelShadowSetMax(void){
-	modelShadowMaxSize = maxUBOSize / sizeof(modelShadowUBOStruct_t);
-	console_printf("Max modelshadow instance count is %i\n", modelMaxSize);
-	modelUBOData = malloc(modelShadowMaxSize * sizeof(modelShadowUBOStruct_t));
-}
-void drawModelShadowCallback(renderlistitem_t * ilist, unsigned int count){
-	renderModelShadowCallbackData_t *d = ilist->data;
-	model_t *m = model_returnById(d->modelid);
-	vbo_t *v = returnVBOById(m->vbo);
-	unsigned int mysize = count * sizeof(modelShadowUBOStruct_t));
-	glstate_t s = {0};
-	states_setState(s);
-	glDrawElementsInstanced(GL_TRIANGLES, v->numfaces * 3, GL_UNSIGNED_INT, 0, count);
-}
-void setupModelShadowCallback(renderlistitem_t *ilist, unsigned int count){
-	if(count > 1){
-		unsigned int i = 0;
-		while(i < count){
-			renderModelShadowCallbackData_t *d = ilist[i].data;
-
-			unsigned int counter = 0;
-			Matrix4x4_ToArrayFloatGL(&d->mvp, modelShadowUBOData->mvp);
-			Matrix4x4_ToArrayFloatGL(&d->mv,  modelShadowUBOData->mv);
-
-			unsigned int max = count-i;
-			if(max > modelShadowMaxSize) max = modelShadowMaxSize;
-			unsigned int currentmodelid = d->modeid;
-			unsigned int currentshaderprogram = d->shaderprogram;
-
-			for(counter = 1; counter < max; counter++){
-				renderModelShadowCallbackData_t *dl = ilist[i+counter].data;
-				if(currentmodelid != dl->modelid || currentshaderprogram != dl->shaderprogram) break;
-				Matrix4x4_ToArrayFloatGL(&d->mvp, modelShadowUBOData[counter].mvp);
-				Matrix4x4_ToArrayFloatGL(&d->mv,  modelShadowUBOData[counter].mv);
-			}
-			int t = pushDataToUBOCache(counter * sizeof(modelShadowUBOStruct_t), modelShadowUBOData);
-			if(t < 0) printf("BAAAD\n");
-			d->ubodataoffset = t;
-
-
-			ilist[i].counter = counter; //reset instance size fo what is right
-			i+=counter;
-		}
-	} else if (count ==1){
-		renderModelCallbackData_t *d = ilist->data;
-
-		modelShadowUBOStruct_t ubodata;
-		Matrix4x4_ToArrayFloatGL(&d->mvp, ubodata->mvp);
-		Matrix4x4_ToArrayFloatGL(&d->mv,  ubodata->mv);
-		int t = pushDataToUBOCACHE(sizeof(modelShadowUBOStruct_t), &ubodata);
-		d->ubodataoffset = t;
-	} else {
-		console_printf("ERROR: MODEL SHADOW SETUP CALLBACK WITH 0 AS COUNT!\n");
-	}
-}
-*/
 typedef struct sLightPUBOStruct_s {
 	GLfloat mvp[16];
 	GLfloat mv[16]; //needed?

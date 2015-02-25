@@ -1,7 +1,7 @@
 CC = gcc
 LDFLAGS = -lGL -lGLU -lGLEW `sdl-config --libs` -lm -ldl
 CFLAGS = -Wall -O3 `sdl-config --cflags` -fstrict-aliasing -fprofile-use
-OBJECTS = enaengine.o matrixlib.o shadermanager.o filemanager.o glmanager.o sdlmanager.o particlemanager.o framebuffermanager.o texturemanager.o modelmanager.o vbomanager.o console.o viewportmanager.o entitymanager.o gamecodemanager.o hashtables.o renderqueue.o worldmanager.o mathlib.o lightmanager.o textmanager.o ubomanager.o glstates.o animmanager.o cvarmanager.o stringlib.o lighttile.o
+OBJECTS = enaengine.o matrixlib.o shadermanager.o filemanager.o glmanager.o sdlmanager.o particlemanager.o framebuffermanager.o texturemanager.o modelmanager.o vbomanager.o console.o viewportmanager.o entitymanager.o gamecodemanager.o hashtables.o renderqueue.o worldmanager.o mathlib.o lightmanager.o textmanager.o ubomanager.o glstates.o animmanager.o cvarmanager.o stringlib.o lighttile.o rendermodel.o
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c -o $@ $<
