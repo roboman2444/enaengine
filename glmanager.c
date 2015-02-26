@@ -40,6 +40,7 @@ char currentMatNeeds = 0;
 unsigned long totalface, totalcount, totalvert;
 int camid = 0;
 int wireshaderid = 0; //todo redo
+int depthonlyid = 0; //todo get rid of this
 viewport_t * cam = 0;
 GLuint instancevbo = 0;
 GLuint instancevbo2 = 0;
@@ -234,6 +235,7 @@ int glInit(void){
 	textvbo = tvbo->myid;
 	textshaderid = shader_createAndAddRINT("text");
 	fsblendshaderid = shader_createAndAddRINT("fsblend");
+	depthonlyid = shader_createAndAddRINT("depthmodel");
 	fsquadmodel = model_findByNameRINT("fsquad");
 
 	readyRenderQueueBuffers();
@@ -280,6 +282,54 @@ void addObjectToRenderqueue(const worldobject_t *o, renderqueue_t * q, const vie
 	r.data = &d;
 
 
+
+	addRenderlistitem(q, r);
+//	console_printf("ADDED\n");
+}
+
+//test to do depth only
+void addEntityDepthToRenderqueue(const entity_t *e, renderqueue_t * q, const viewport_t * v){
+	renderlistitem_t r;
+	unsigned int shaderperm = 0;
+	unsigned int shaderid = depthonlyid;
+	unsigned int modelid = e->modelid;
+//	unsigned int texturegroupid = e->texturegroupid;
+	renderModelDepthCallbackData_t d;
+	d.shaderperm = shaderperm;
+	d.shaderid = shaderid;
+	d.modelid = modelid;
+//	d.texturegroupid = texturegroupid;
+	d.ubodataoffset = 0;
+	shaderprogram_t *s = shader_returnById(shaderid);
+//	shaderpermutation_t * sp = findShaderPermutation(s, d->shaderperm);
+//	printf("%i, %i, %i\n", shaderperm, shaderid, s);
+	shaderpermutation_t * sp = shader_addPermutationToProgram(s, shaderperm);
+	d.shaderprogram = sp->id;
+
+	Matrix4x4_Concat(&d.mvp, &v->viewproj, &e->mat);
+//	Matrix4x4_Concat(&d.mv, &v->view, &e->mat);
+	r.sort[0] = (d.shaderprogram >> 0) & 0xFF;
+	r.sort[1] = (d.shaderprogram >> 8) & 0xFF;
+	r.sort[2] = (d.shaderprogram >> 16) & 0xFF;
+	r.sort[3] = (d.shaderprogram >> 24) & 0xFF;
+	r.sort[4] = (modelid >> 0) & 0xFF;
+	r.sort[5] = (modelid >> 8) & 0xFF;
+//	r.sort[6] = (texturegroupid >> 0) & 0xFF;
+//	r.sort[7] = (texturegroupid >> 8) & 0xFF;
+	r.sort[6] = 0;
+	r.sort[7] = 0;
+	r.sort[8] = 0;
+	r.sort[9] = 0;
+	r.setup = rendermodel_setupMDCallback;
+	r.draw = rendermodel_drawMDCallback;
+
+
+	r.datasize = sizeof(renderModelDepthCallbackData_t);
+	r.flags = 2 | 4; //copyable, instanceable
+//	r.flags = 1; //freeable
+//	r.data = malloc(r.datasize);
+//	memcpy(r.data, &d, r.datasize);
+	r.data = &d;
 
 	addRenderlistitem(q, r);
 //	console_printf("ADDED\n");
@@ -472,6 +522,7 @@ int loadLeafIntoQueue(worldleaf_t * l, renderqueue_t * queue, viewport_t *v){
 	//		if(checkBBoxPInBBox(list[i].bbox, v->bboxp)){
 			if(testBBoxPInFrustum(v, e->bboxp)){
 				addEntityToRenderqueue(e, queue, v);
+//				addEntityDepthToRenderqueue(e, queue, v);
 				mynum++;
 			}
 		}
@@ -842,6 +893,7 @@ int glDrawViewport(viewport_t *v){
 //	glBindFramebuffer(GL_FRAMEBUFFER, of->id);
 	states_depthMask(GL_TRUE);//needs this to be true to clear it
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT| GL_STENCIL_BUFFER_BIT);//todo set OF to use the same renderbuffer for depth as DF
+//	glClear( GL_STENCIL_BUFFER_BIT);//todo set OF to use the same renderbuffer for depth as DF
 //	glViewport(0, 0, df->width, df->height);
 
 //	glStencilFunc(GL_ALWAYS, 1, 0xFF);

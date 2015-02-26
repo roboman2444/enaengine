@@ -204,6 +204,74 @@ void states_setState(const glstate_t s){
 }
 
 
+
+void states_forceState(const glstate_t s){
+	(s.enabledstates & STATESENABLEDEPTH) ? glEnable(GL_DEPTH_TEST) : glDisable(GL_DEPTH_TEST);
+	(s.enabledstates & STATESENABLEBLEND) ? glEnable(GL_BLEND) : glDisable(GL_BLEND);
+	(s.enabledstates & STATESENABLECULLFACE) ? glEnable(GL_CULL_FACE) : glDisable(GL_CULL_FACE);
+	(s.enabledstates & STATESENABLEMULTISAMPLE) ? glEnable(GL_MULTISAMPLE) : glDisable(GL_MULTISAMPLE);
+	(s.enabledstates & STATESENABLEALPHATEST) ? glEnable(GL_ALPHA_TEST) : glDisable(GL_ALPHA_TEST);
+		//todo add more
+	state.enabledstates = s.enabledstates;
+	glBlendFunc(s.blendsource, s.blenddest);
+	state.blendsource = s.blendsource;
+	state.blenddest = s.blenddest;
+
+	glAlphaFunc(s.alphafunc, s.alpharef);
+	state.alphafunc = s.alphafunc;
+	state.alpharef = s.alpharef;
+
+	glDepthFunc(s.depthfunc);
+	state.depthfunc = s.depthfunc;
+
+	glCullFace(s.cullface);
+	state.cullface = s.cullface;
+
+	glDepthMask(s.depthmask);
+	state.depthmask = s.depthmask;
+
+	glBindVertexArray(s.vaoid);
+	state.vaoid = s.vaoid;
+
+	glUseProgram(s.shaderid);
+	state.shaderid = s.shaderid;
+
+	if(s.vboranges){
+		glBindBufferRange(s.vbotype, s.vborangei, s.vboid, s.vborangeo, s.vboranges);
+		state.vbotype = s.vbotype;
+		state.vborangei = s.vborangei;
+		state.vboid = s.vboid;
+		state.vborangeo = s.vborangeo;
+		state.vboranges = s.vboranges;
+	} else {
+		glBindBuffer(s.vbotype, s.vboid);
+		state.vbotype = s.vbotype;
+		state.vborangei = 0;
+		state.vboid = s.vboid;
+		state.vborangeo = 0;
+		state.vboranges = 0;
+	}
+
+	unsigned int i;
+	for(i = 0; i < STATESTEXTUREUNITCOUNT; i++){
+		if(s.enabledtextures & (1 << i)){
+			GLuint id = s.textureunitid[i];
+			GLenum target = s.textureunittarget[i];
+//			if(id != state.textureunitid[i] ||target != state.textureunittarget[i]){
+				//if(i != state.activetexture){
+					glActiveTexture(GL_TEXTURE0 + i);
+					state.activetexture = i;
+				//}
+				glBindTexture(target, id);
+				state.textureunitid[i] = id;
+				state.textureunittarget[i] = target;
+//			}
+		}
+	}
+	//todo set up callbacks for if each thing changes... useful for shaders, viewports/framebuffers, etc
+}
+
+
 void states_enable(const GLenum en){
 	switch(en){
 		case GL_DEPTH_TEST:

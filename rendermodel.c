@@ -34,7 +34,10 @@ modelDepthUBOStruct_t * modelDepthUBOData;
 unsigned int modelDepthMaxSize = 0;
 
 
+
+
 void rendermodel_drawMDCallback(renderlistitem_t * ilist, unsigned int count){
+
 	renderModelDepthCallbackData_t *d = ilist->data;
 	model_t *m = model_returnById(d->modelid);
 	vbo_t *v = returnVBOById(m->vbo);
@@ -44,8 +47,12 @@ void rendermodel_drawMDCallback(renderlistitem_t * ilist, unsigned int count){
 //	glstate_t s = {STATESENABLECULLFACE|STATESENABLEBLEND|STATESENABLEDEPTH, GL_ONE, GL_ONE, GL_LESS, GL_BACK, GL_TRUE, GL_LESS, 0.0, v->vaoid, renderqueueuboid, GL_UNIFORM_BUFFER, 0, d->ubodataoffset, mysize, d->shaderprogram};
 //	states_setState(s);
 	states_setState(s);
+	//temporary hack until mask bits are in states
+	glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
 	CHECKGLERROR
 	glDrawElementsInstanced(GL_TRIANGLES, v->numfaces * 3, GL_UNSIGNED_INT, 0, count);
+	//temporary hack until mask bits are in states
+	glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 }
 void rendermodel_setupMDCallback(renderlistitem_t * ilist, unsigned int count){
 	if(count > 1){
@@ -137,8 +144,7 @@ void rendermodel_setupMCallback(renderlistitem_t * ilist, unsigned int count){
 		while(i < count){
 			renderModelCallbackData_t *d = ilist[i].data;
 
-			unsigned int counter = 0;
-			Matrix4x4_ToArrayFloatGL(&d->mvp, modelUBOData->mvp);
+			unsigned int counter = 0;			Matrix4x4_ToArrayFloatGL(&d->mvp, modelUBOData->mvp);
 			Matrix4x4_ToArrayFloatGL(&d->mv,  modelUBOData->mv);
 
 			unsigned int max = count-i;
@@ -172,11 +178,6 @@ void rendermodel_setupMCallback(renderlistitem_t * ilist, unsigned int count){
 		console_printf("ERROR: MODEL SETUP CALLBACK WITH 0 AS COUNT!\n");
 	}
 }
-
-
-
-
-
 
 void rendermodel_init(void){
 	modelMaxSize = maxUBOSize / sizeof(modelUBOStruct_t);

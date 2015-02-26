@@ -65,6 +65,7 @@ void states_bindTexture(const GLenum target, const GLuint id);
 void states_bindActiveTexture(const unsigned char activetexture, const GLenum target, const GLuint id);
 
 void states_setState(const glstate_t s);
+void states_forceState(const glstate_t s);
 
 void states_enableForce(const GLenum en);
 void states_enable(const GLenum en);
