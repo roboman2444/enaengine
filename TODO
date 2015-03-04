@@ -27,7 +27,7 @@ Deferred
 	-finish directional light shading
 	PBR support
 Forward
-	add forward pipeline
+	-add forward pipeline
 Entities
 	change quadtree check algorithm to add all entities if the entire quadtree bbox checks out, dont bother checking ent bboxes
 		maybe
@@ -71,5 +71,6 @@ Renderqueue
 	-add many more UBOs that can be bound an unbound, trigger updates, etc
 Model rendering
 	-optimize the callback functions slightly
-	-finish depth-only model rendering
+	-optimize depth-only rendering
 	-add forward methods
+	-add alpha blending rendering for models (addative or alpha)
