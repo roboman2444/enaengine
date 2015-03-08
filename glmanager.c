@@ -378,6 +378,50 @@ void addEntityToRenderqueue(const entity_t *e, renderqueue_t * q, const viewport
 	addRenderlistitem(q, r);
 //	console_printf("ADDED\n");
 }
+void addEntityAToRenderqueue(const entity_t *e, renderqueue_t * q, const viewport_t * v){
+	renderlistitem_t r;
+	unsigned int shaderperm = e->shaderperm;
+	unsigned int shaderid = e->shaderid;
+	unsigned int modelid = e->modelid;
+	unsigned int texturegroupid = e->texturegroupid;
+	renderModelCallbackData_t d;
+	d.shaderperm = shaderperm;
+	d.shaderid = shaderid;
+	d.modelid = modelid;
+	d.texturegroupid = texturegroupid;
+	d.ubodataoffset = 0;
+	shaderprogram_t *s = shader_returnById(shaderid);
+//	shaderpermutation_t * sp = findShaderPermutation(s, d->shaderperm);
+//	printf("%i, %i, %i\n", shaderperm, shaderid, s);
+	shaderpermutation_t * sp = shader_addPermutationToProgram(s, shaderperm);
+	d.shaderprogram = sp->id;
+
+	Matrix4x4_Concat(&d.mvp, &v->viewproj, &e->mat);
+	Matrix4x4_Concat(&d.mv, &v->view, &e->mat);
+	r.sort[0] = (d.shaderprogram >> 0) & 0xFF;
+	r.sort[1] = (d.shaderprogram >> 8) & 0xFF;
+	r.sort[2] = (d.shaderprogram >> 16) & 0xFF;
+	r.sort[3] = (d.shaderprogram >> 24) & 0xFF;
+	r.sort[4] = (modelid >> 0) & 0xFF;
+	r.sort[5] = (modelid >> 8) & 0xFF;
+	r.sort[6] = (texturegroupid >> 0) & 0xFF;
+	r.sort[7] = (texturegroupid >> 8) & 0xFF;
+	r.sort[8] = 0;
+	r.sort[9] = 0;
+	r.setup = rendermodel_setupMACallback;
+	r.draw = rendermodel_drawMACallback;
+
+
+	r.datasize = sizeof(renderModelCallbackData_t);
+	r.flags = 2 | 4; //copyable, instanceable
+//	r.flags = 1; //freeable
+//	r.data = malloc(r.datasize);
+//	memcpy(r.data, &d, r.datasize);
+	r.data = &d;
+
+	addRenderlistitem(q, r);
+//	console_printf("ADDED\n");
+}
 
 
 int addAllChildrenLeafIntoQueues(worldleaf_t *l, renderqueue_t * forwardqueue, renderqueue_t * deferredqueue, viewport_t *v){
@@ -665,6 +709,7 @@ GLuint tris[36] = {
 	};
 
 
+
 int glDeferredLighting(viewport_t *v, renderqueue_t * q){
 	framebuffer_t *df = returnFramebufferById(v->dfbid);
 	framebuffer_t *of = returnFramebufferById(v->outfbid);
@@ -915,6 +960,10 @@ int glDrawViewport(viewport_t *v){
 
 
 	glDeferredLighting(v, &forward);
+
+	renderqueueRadixSort(&forward);
+	renderqueueSetup(&forward);
+	renderqueueDraw(&forward);
 
 
 
