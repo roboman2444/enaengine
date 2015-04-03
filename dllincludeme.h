@@ -4,6 +4,11 @@
 #include "globaldefs.h"
 #include "matrixlib.h"
 
+
+
+#define DEFERREDFLAG 1
+#define FORWARDFLAG 2
+
 //cvar
 struct cvar_s;
 typedef void (* cvarcallback_t)(struct cvar_s * c);

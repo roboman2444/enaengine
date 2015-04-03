@@ -334,6 +334,7 @@ void addEntityDepthToRenderqueue(const entity_t *e, renderqueue_t * q, const vie
 	addRenderlistitem(q, r);
 //	console_printf("ADDED\n");
 }
+
 void addEntityToRenderqueue(const entity_t *e, renderqueue_t * q, const viewport_t * v){
 	renderlistitem_t r;
 	unsigned int shaderperm = e->shaderperm;
@@ -378,6 +379,7 @@ void addEntityToRenderqueue(const entity_t *e, renderqueue_t * q, const viewport
 	addRenderlistitem(q, r);
 //	console_printf("ADDED\n");
 }
+
 void addEntityAToRenderqueue(const entity_t *e, renderqueue_t * q, const viewport_t * v){
 	renderlistitem_t r;
 	unsigned int shaderperm = e->shaderperm;
@@ -406,10 +408,10 @@ void addEntityAToRenderqueue(const entity_t *e, renderqueue_t * q, const viewpor
 	r.sort[5] = (modelid >> 8) & 0xFF;
 	r.sort[6] = (texturegroupid >> 0) & 0xFF;
 	r.sort[7] = (texturegroupid >> 8) & 0xFF;
-	r.sort[8] = 0;
-	r.sort[9] = 0;
-	r.setup = rendermodel_setupMACallback;
-	r.draw = rendermodel_drawMACallback;
+	r.sort[8] = 0; //todo
+	r.sort[9] = 0; //todo
+	r.setup = rendermodel_setupMCallback;
+	r.draw = rendermodel_drawMCallback;
 
 
 	r.datasize = sizeof(renderModelCallbackData_t);
@@ -440,7 +442,7 @@ int addAllChildrenLeafIntoQueues(worldleaf_t *l, renderqueue_t * forwardqueue, r
 		}
 	}
 	if(l->myincludes & WORLDTREEENTITY){
-		printf("i got here!\n");
+//		printf("i got here!\n");
 		unsigned int num = l->entityarraylasttaken + 1;
 		int * list = l->entlist;
 		unsigned int i;
@@ -448,7 +450,7 @@ int addAllChildrenLeafIntoQueues(worldleaf_t *l, renderqueue_t * forwardqueue, r
 			entity_t * e = entity_returnById(list[i]);
 			if(!e) continue;
 //			if(!(e->flags & DEFERREDFLAG)) //todo WHY is this a !?
-			if(e->flags & DEFERREDFLAG) //todo WHY is this a !?
+//			if(e->flags & DEFERREDFLAG) //todo WHY is this a !?
 				addEntityToRenderqueue(e, deferredqueue, v);
 //			if(!(e->flags & FORWARDFLAG))
 			if(e->flags & FORWARDFLAG)
@@ -477,7 +479,7 @@ int loadLeafIntoQueues(worldleaf_t * l, renderqueue_t * forwardqueue, renderqueu
 			if(!list[i].leaf) continue;
 	//		if(checkBBoxPInBBox(list[i].bbox, v->bboxp)){
 			if(testBBoxPInFrustum(v, list[i].bboxp)){
-				if(list[i].flags & DEFERREDFLAG)
+//				if(list[i].flags & DEFERREDFLAG)
 					addObjectToRenderqueue(&list[i], deferredqueue, v);
 				if(list[i].flags & FORWARDFLAG)
 					addObjectToRenderqueue(&list[i], forwardqueue, v);
@@ -486,7 +488,7 @@ int loadLeafIntoQueues(worldleaf_t * l, renderqueue_t * forwardqueue, renderqueu
 		}
 	}
 	if(l->myincludes & WORLDTREEENTITY){
-		printf("i got here!\n");
+//		printf("i got here!\n");
 		unsigned int num = l->entityarraylasttaken + 1;
 		int * list = l->entlist;
 		for(i = 0; i < num; i++){
@@ -495,7 +497,7 @@ int loadLeafIntoQueues(worldleaf_t * l, renderqueue_t * forwardqueue, renderqueu
 	//		if(checkBBoxPInBBox(list[i].bbox, v->bboxp)){
 			if(testBBoxPInFrustum(v, e->bboxp)){
 //				if(!(e->flags & DEFERREDFLAG)) //TODO why is this a !?
-				if(e->flags & DEFERREDFLAG) //TODO why is this a !?
+//				if(e->flags & DEFERREDFLAG) //TODO why is this a !?
 					addEntityToRenderqueue(e, deferredqueue, v);
 //				if(!(e->flags & FORWARDFLAG))
 				if(e->flags & FORWARDFLAG)
@@ -950,9 +952,9 @@ int glDrawViewport(viewport_t *v){
 //	memset(&b, 0, sizeof(renderbatche_t));
 
 //	loadEntitiesIntoQueues(&forward, &deferred, v);
-//	loadWorldIntoQueues(&forward, &deferred, v);
+	loadWorldIntoQueues(&forward, &deferred, v);
 //	loadEntitiesIntoQueue(&deferred, v);
-	loadWorldIntoQueue(&deferred, v);
+//	loadWorldIntoQueue(&deferred, v);
 	renderqueueRadixSort(&deferred);
 	renderqueueSetup(&deferred);
 	renderqueueDraw(&deferred);

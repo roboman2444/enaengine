@@ -33,6 +33,8 @@ int initgame(void){
 		enthat->modelid = ec->model_createAndAddRINT("teapot");
 		enthat->shaderid = ec->shader_createAndAddRINT("deferredmodel");
 		enthat->texturegroupid = 0;
+		enthat->flags = DEFERREDFLAG;
+
 	entity_t * entcoil = ec->entity_addRPOINT("coil");
 		entcoil->type = 2;
 		entcoil->pos[2] = 10.0;
@@ -40,6 +42,8 @@ int initgame(void){
 		entcoil->needsmatupdate = TRUE;
 		entcoil->shaderid = ec->shader_createAndAddRINT("deferredmodel");
 		entcoil->modelid = ec->model_createAndAddRINT("bunny");
+		entcoil->flags = FORWARDFLAG;
+
 //		entcoil->scale = 0.1;
 		entcoil->modelid = ec->model_createAndAddRINT("coil");
 		entcoil->texturegroupid = ec->texture_createAndAddGroupRINT("coil");
@@ -86,6 +90,7 @@ int initgame(void){
 		enttinydragon->attachmentid = ec->entity_findByNameRINT("coil");
 
 	enttinydragon = ec->entity_addRPOINT("tinydragon");
+		enttinydragon->flags = DEFERREDFLAG;
 		enttinydragon->type = 2;
 		enttinydragon->pos[1] = -3.0f;
 		enttinydragon->angle[2] = 180.0f;
@@ -99,6 +104,7 @@ int initgame(void){
 		enttinydragon->texturegroupid = 1;
 
 	enttinydragon = ec->entity_addRPOINT("tinydragon");
+		enttinydragon->flags = DEFERREDFLAG;
 		enttinydragon->type = 2;
 		enttinydragon->pos[2] = 3.0f;
 		enttinydragon->angle[2] = 90.0f;
@@ -112,6 +118,7 @@ int initgame(void){
 		enttinydragon->shaderperm = 0;
 
 	enttinydragon = ec->entity_addRPOINT("tinydragon");
+		enttinydragon->flags = DEFERREDFLAG;
 		enttinydragon->type = 2;
 		enttinydragon->pos[2] = -3.0f;
 		enttinydragon->angle[2] = -90.0f;
@@ -128,20 +135,21 @@ int initgame(void){
 	tempid = 0;
 	for(i = 0; i < 100; i++){
 		enttinydragon = ec->entity_addRPOINT("bunny");
-		enttinydragon->type = 2;
-		enttinydragon->pos[0] = 5.0f;
-		enttinydragon->pos[2] = -2.0f;
-		enttinydragon->anglevel[1] = 20.0f;
-		enttinydragon->scale = 1.0f;
-		enttinydragon->needsmatupdate = TRUE;
-		enttinydragon->modelid = ec->model_createAndAddRINT("cube2");
-//		enttinydragon->modelid = model_createAndAddRINT("bunny2");
-//		enttinydragon->modelid = model_createAndAddRINT("coil");
-		enttinydragon->shaderid = ec->shader_createAndAddRINT("deferredmodel");
-		enttinydragon->texturegroupid = ec->texture_createAndAddGroupRINT("bunny");
-		enttinydragon->shaderperm = 1;
-		enttinydragon->attachmentid = tempid;
-		tempid = enttinydragon->myid;
+			enttinydragon->flags = DEFERREDFLAG;
+			enttinydragon->type = 2;
+			enttinydragon->pos[0] = 5.0f;
+			enttinydragon->pos[2] = -2.0f;
+			enttinydragon->anglevel[1] = 20.0f;
+			enttinydragon->scale = 1.0f;
+			enttinydragon->needsmatupdate = TRUE;
+			enttinydragon->modelid = ec->model_createAndAddRINT("cube2");
+//			enttinydragon->modelid = model_createAndAddRINT("bunny2");
+//			enttinydragon->modelid = model_createAndAddRINT("coil");
+			enttinydragon->shaderid = ec->shader_createAndAddRINT("deferredmodel");
+			enttinydragon->texturegroupid = ec->texture_createAndAddGroupRINT("bunny");
+			enttinydragon->shaderperm = 1;
+			enttinydragon->attachmentid = tempid;
+			tempid = enttinydragon->myid;
 
 
 	light_t * light = ec->light_addRPOINT("light");

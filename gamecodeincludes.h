@@ -4,6 +4,9 @@
 
 #define GAMECODEINCLUDEVERSION 1
 
+#define DEFERREDFLAG 1
+#define FORWARDFLAG 2
+
 	typedef struct ecallheader_s {
 		//console
 		int (*console_printf)(const char *fmt, ...);
