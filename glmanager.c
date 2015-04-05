@@ -45,6 +45,7 @@ viewport_t * cam = 0;
 GLuint instancevbo = 0;
 GLuint instancevbo2 = 0;
 int textvbo = 0; //temporary
+int forwardmodelid = 0; //temporary
 int textshaderid = 0; // temporary
 int fsblendshaderid = 0; // temporary
 unsigned int currentflags = 0;
@@ -236,6 +237,7 @@ int glInit(void){
 	textshaderid = shader_createAndAddRINT("text");
 	fsblendshaderid = shader_createAndAddRINT("fsblend");
 	depthonlyid = shader_createAndAddRINT("depthmodel");
+	forwardmodelid = shader_createAndAddRINT("forwardmodel");
 	fsquadmodel = model_findByNameRINT("fsquad");
 
 	readyRenderQueueBuffers();
@@ -383,7 +385,7 @@ void addEntityToRenderqueue(const entity_t *e, renderqueue_t * q, const viewport
 void addEntityAToRenderqueue(const entity_t *e, renderqueue_t * q, const viewport_t * v){
 	renderlistitem_t r;
 	unsigned int shaderperm = e->shaderperm;
-	unsigned int shaderid = e->shaderid;
+	unsigned int shaderid = forwardmodelid;
 	unsigned int modelid = e->modelid;
 	unsigned int texturegroupid = e->texturegroupid;
 	renderModelCallbackData_t d;
@@ -451,10 +453,10 @@ int addAllChildrenLeafIntoQueues(worldleaf_t *l, renderqueue_t * forwardqueue, r
 			if(!e) continue;
 //			if(!(e->flags & DEFERREDFLAG)) //todo WHY is this a !?
 //			if(e->flags & DEFERREDFLAG) //todo WHY is this a !?
-				addEntityToRenderqueue(e, deferredqueue, v);
+//				addEntityToRenderqueue(e, deferredqueue, v);
 //			if(!(e->flags & FORWARDFLAG))
-			if(e->flags & FORWARDFLAG)
-				addEntityToRenderqueue(e, forwardqueue, v);
+//			if(e->flags & FORWARDFLAG)
+				addEntityAToRenderqueue(e, forwardqueue, v);
 			mynum++;
 		}
 	}
@@ -498,9 +500,9 @@ int loadLeafIntoQueues(worldleaf_t * l, renderqueue_t * forwardqueue, renderqueu
 			if(testBBoxPInFrustum(v, e->bboxp)){
 //				if(!(e->flags & DEFERREDFLAG)) //TODO why is this a !?
 //				if(e->flags & DEFERREDFLAG) //TODO why is this a !?
-					addEntityToRenderqueue(e, deferredqueue, v);
+//					addEntityToRenderqueue(e, deferredqueue, v);
 //				if(!(e->flags & FORWARDFLAG))
-				if(e->flags & FORWARDFLAG)
+//				if(e->flags & FORWARDFLAG)
 					addEntityToRenderqueue(e, forwardqueue, v);
 				mynum++;
 			}
