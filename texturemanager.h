@@ -98,4 +98,3 @@ texture_t createTextureFlagsSizeMultisample(char flags, unsigned int width, unsi
 char resizeTextureMultisample(texture_t *t, unsigned int width, unsigned int height, unsigned char samples);
 
 #endif
-

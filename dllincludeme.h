@@ -131,5 +131,4 @@ typedef struct entitylistint_s {
 
 #include "gamecodeincludes.h"
 
-
 #endif

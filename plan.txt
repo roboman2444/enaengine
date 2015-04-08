@@ -186,17 +186,6 @@ order of me doing things (not in explicit order)
 
 
 
-
-
-
-
-
-
-
-
-
-
-
 misc notes
 
 Shader permutations has to take into account things with only diffuse maps or etc.

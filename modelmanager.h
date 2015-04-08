@@ -65,4 +65,3 @@ int model_createAndAddRINT(const char * name);
 //int model_makeAnyModel(const char * name, GLfloat * verts, GLuint * faces, GLuint numfaces, GLuint numverts);
 
 #endif
-

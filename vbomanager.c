@@ -162,6 +162,3 @@ int setUpVBOStride(vbo_t * vbo, unsigned char posstride, unsigned char normstrid
 
 	return totalstride;
 }
-
-//states stuff
-

@@ -273,5 +273,3 @@ void rendermodel_init(void){
 	modelDepthUBOData = malloc(modelDepthMaxSize * sizeof(modelDepthUBOStruct_t));
 
 }
-
-

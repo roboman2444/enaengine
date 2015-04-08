@@ -1310,4 +1310,3 @@ model_t * model_createAndAddRPOINT(const char * name){
 	return model_addRPOINT(createAndLoadModel(name));
 //	return &model_list[addModelToList(createAndLoadModel(name))];
 }
-

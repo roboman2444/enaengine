@@ -1825,4 +1825,3 @@ void Matrix4x4_Abs (matrix4x4_t *out)
 	out->m[2][1] = fabs(out->m[2][1]);
 	out->m[2][2] = fabs(out->m[2][2]);
 }
-

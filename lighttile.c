@@ -277,12 +277,7 @@ unsigned int lighttile_addToRenderQueue(viewport_t *v, renderqueue_t *q, const u
 
 	return retval;
 }
-
-
-
 //REDOOOOO
-
-
 //recieve light list
 //allocate lighttilebuffer if needed
 //get bbox of each light, add to tilebuffer

@@ -35,5 +35,4 @@ int lighttile_ok;
 int lighttile_init(void);
 unsigned int lighttile_addToRenderQueue(viewport_t *v, renderqueue_t *q, const unsigned int width, const unsigned int height);
 
-
 #endif

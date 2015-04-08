@@ -54,4 +54,3 @@ int anim_createAndAddRINT(char * name);
 anim_t * anim_returnById(const int id);
 
 #endif
-

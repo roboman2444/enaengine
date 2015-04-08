@@ -60,6 +60,4 @@ generic funcs
 */
 void rendermodel_init(void);
 
-
-
 #endif

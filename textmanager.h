@@ -112,6 +112,4 @@ font_t * returnFontById(const int id);
 //int deleteAllText(void);
 int deleteAllFont(void);
 
-
 #endif
-

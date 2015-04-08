@@ -662,4 +662,3 @@ int shader_reloadAllPrograms(void){
 	}
 	return count;
 }
-

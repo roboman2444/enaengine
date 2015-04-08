@@ -372,6 +372,3 @@ void states_disable(const GLenum en){
 		break;
 	}
 }
-
-
-

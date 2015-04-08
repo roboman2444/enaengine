@@ -56,4 +56,3 @@ int deleteVBO(int vboid);
 int setUpVBO(vbo_t * vbo, unsigned char posstride, unsigned char normstride, unsigned char tcstride);
 */
 #endif
-

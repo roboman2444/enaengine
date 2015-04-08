@@ -93,5 +93,4 @@ unsigned int renderqueueCleanup(renderqueue_t * queue);
 
 void renderqueueRadixSort(const renderqueue_t * queue);
 
-
 #endif
