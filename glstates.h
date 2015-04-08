@@ -40,8 +40,8 @@ typedef struct glstate_s {
 //	GLenum activetexture;
 	unsigned char activetexture;
 	//todo i only need one array... textureid. If different and not 0, change
-	 //IF I CHANGE STATESTEXTUREUNITCOUNT, I HAVE TO MAKE THIS BIGGER
-	STATESTENABLEDTRACK enabledtextures; //only used when applying a whole state
+	//IF I CHANGE STATESTEXTUREUNITCOUNT, I HAVE TO MAKE THIS BIGGER
+//	STATESTENABLEDTRACK enabledtextures; //only used when applying a whole state
 	GLuint textureunitid[STATESTEXTUREUNITCOUNT];
 	GLenum textureunittarget[STATESTEXTUREUNITCOUNT];
 } glstate_t;

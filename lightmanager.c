@@ -731,6 +731,9 @@ void drawSLightOCallback(renderlistitem_t * ilist, unsigned int count){
 		if(numsamples) glUniform1i(perm->uniint0, numsamples);
 	}
 
+
+
+
 	model_t *m = model_returnById(d->modelid);
 	vbo_t *v = returnVBOById(m->vbo);
 
@@ -764,6 +767,7 @@ void drawSLightICallback(renderlistitem_t * ilist, unsigned int count){
 		unsigned char numsamples = d->numsamples;
 		if(numsamples) glUniform1i(perm->uniint0, numsamples);
 	}
+
 
 	model_t *m = model_returnById(d->modelid);
 	vbo_t *v = returnVBOById(m->vbo);

@@ -3,6 +3,9 @@
 
 #include "glstates.h"
 
+
+#include "console.h"
+
 glstate_t state;
 
 void states_blendFunc(const GLenum source, const GLenum dest){
@@ -186,11 +189,11 @@ void states_setState(const glstate_t s){
 
 	unsigned int i;
 	for(i = 0; i < STATESTEXTUREUNITCOUNT; i++){
-		if(s.enabledtextures & (1 << i)){
-			GLuint id = s.textureunitid[i];
+		GLuint id = s.textureunitid[i];
+		if(id){
 			GLenum target = s.textureunittarget[i];
-			if(id != state.textureunitid[i] ||target != state.textureunittarget[i]){
-				//if(i != state.activetexture){
+			if(id != state.textureunitid[i] || target != state.textureunittarget[i]){
+				//if(i != state.activetexture){ // after the first one in this loop it will always hit, so dont bother checking
 					glActiveTexture(GL_TEXTURE0 + i);
 					state.activetexture = i;
 				//}
@@ -254,18 +257,16 @@ void states_forceState(const glstate_t s){
 
 	unsigned int i;
 	for(i = 0; i < STATESTEXTUREUNITCOUNT; i++){
-		if(s.enabledtextures & (1 << i)){
-			GLuint id = s.textureunitid[i];
+		GLuint id = s.textureunitid[i];
+		if(id){
 			GLenum target = s.textureunittarget[i];
-//			if(id != state.textureunitid[i] ||target != state.textureunittarget[i]){
-				//if(i != state.activetexture){
-					glActiveTexture(GL_TEXTURE0 + i);
-					state.activetexture = i;
-				//}
-				glBindTexture(target, id);
-				state.textureunitid[i] = id;
-				state.textureunittarget[i] = target;
-//			}
+			//if(i != state.activetexture){
+				glActiveTexture(GL_TEXTURE0 + i);
+				state.activetexture = i;
+			//}
+			glBindTexture(target, id);
+			state.textureunitid[i] = id;
+			state.textureunittarget[i] = target;
 		}
 	}
 	//todo set up callbacks for if each thing changes... useful for shaders, viewports/framebuffers, etc

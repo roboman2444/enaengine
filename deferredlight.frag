@@ -71,6 +71,9 @@ void main(){
 		#else
 			vec4 difftex = texture(texture0, tc);
 		#endif //MULTISAMPLE
+
+
+
 		vec3 eyenormal = -normalize(pos);
 		vec3 diffuse = difftex.rgb;
 		vec2 gloss = vec2(difftex.a, normaldist.a);
