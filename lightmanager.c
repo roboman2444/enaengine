@@ -688,14 +688,6 @@ lightrenderout_t readyLightsForRender(viewport_t *v, const unsigned int max, con
 	return out;
 }
 
-
-typedef struct sLightPUBOStruct_s {
-	GLfloat mvp[16];
-	GLfloat mv[16]; //needed?
-	GLfloat lmv[16];
-	GLfloat pos[3]; //padding for struct/other
-	GLfloat size; //needed?
-} sLightUBOStruct_t;
 typedef struct renderSLightCallbackData_s {
 	//todo?
 	GLuint shaderprogram;
@@ -812,12 +804,6 @@ void setupSLightCallback(renderlistitem_t * ilist, unsigned int count){
 }
 
 
-
-
-typedef struct pLightPUBOStruct_s {
-	GLfloat pos[3];
-	GLfloat size;
-} pLightUBOStruct_t;
 
 typedef struct renderPLightCallbackData_s {
 	//todo?

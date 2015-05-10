@@ -1,17 +1,24 @@
-  - at the beginning means im currently workin on it
+  - at the beginning means im currently workin on it or thinking about it
 
 Text
-	Manage old text and remove it?
-	Make a dynamic fps/object/draw call counter (like crysis)
+	Make a dynamic fps/object/draw call counter (like crysis/minecraft)
 Lights
+	-put into quadtree
 	Experiment with the lightloop with entities attaching lights to themselves, not lights attaching to entities
 	Experiment with optimizing static lights (no need to lightloop them)
 	-Global lights (rendered as FSquad/alltiles no matter what). For sun or whatever.
-	-Maybe put into quadtree (more info in entities section)
+	shadows
 
 	Lights need to do non-hackey way of getting matricies
 	Lights need to have attachments be offsets
 	non hackey sphere thing
+
+	- (visible) Lights to use a seperate UBO for all their data. Updated on change/ per frame.
+		- Visible meaning any light data i will need for that frame... visible to any viewport that will be rendered
+	- Deferred lights can just instance through this UBO
+	- Forward rendering can have a per-object list of these lights (calculated per frame as bounding box intersection or whatever), lookup in vert shader or something
+	- Tiled rendering might also abuse this
+
 Console
 	get it rendering text with the renderqueue system
 	make it not shitty
@@ -22,12 +29,11 @@ World
 		-attempted, not enough of a change to tell
 	Basic AABB->AABB collision detection
 	Basic SPHERE->AABB collision detection
+	Raycast through world, multiple styles
 Deferred
 	fix tiled deferred lighting?
 	-finish directional light shading
 	PBR support
-Forward
-	-add forward pipeline
 Entities
 	change quadtree check algorithm to add all entities if the entire quadtree bbox checks out, dont bother checking ent bboxes
 		maybe
@@ -35,8 +41,9 @@ Gamecode
 	-Finish Figuring it out
 States
 	have states track framebuffers, different masks, and do a glclear thing
+	-fix that texture bug
 Tiled Deferred
-	-fix pixeldepth->viewpos method
+	fix pixeldepth->viewpos method
 	optimize tiled deferred render
 		screen quadtree method
 		frustums
@@ -47,7 +54,7 @@ Models
 Animations
 	Figure it out
 Textures
-	Experiment with packing whole texturegroups into one texturearray
+	Experiment with packing whole texturegroups into one texturearray, or multiple texturegroups into one arraytexture
 		most textures in a texturegroup are gonna be same size anyway
 		 or experiment with packing texturegroups of the same size into texture arrays
 	Add basic procedural texture functions
@@ -55,12 +62,24 @@ Textures
 Multithread
 	Figure it out
 	A ways down the road
+	push a lot of things to multithreaded
+		frustum checking, sorting, etc
+Physics
+	Bullet physics or something
+	Figure it out
+Audio
+	Openal
+	Figure it out
+Networking
+	Enet
+	figure it out
 Terrain
 	do it shittily
-	then add physics or someshit
+	then add physics
 	then do it betterly
 	then make editorly
 	then make reactive?
+	tesselation + offset maps on terrain for extra coolness + overhangs
 List stuff
 	memsetting on delete may be redundant. possibly remove it
 Misc
@@ -72,5 +91,14 @@ Renderqueue
 Model rendering
 	-optimize the callback functions slightly
 	-optimize depth-only rendering
-	-add forward methods
-	-add alpha blending rendering for models (addative or alpha)
+Debug
+	add wireframe/normals/bbox/aabb rendering methods
+Shaders
+	-have entities handle their shaders/materials better
+	-replace crap with layout stuff
+	make define system a little more robust and less hacky
+Particles
+	do it right
+	soft particles
+	lit particles
+		fake bump map for nice looking shading

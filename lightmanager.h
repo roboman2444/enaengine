@@ -98,6 +98,21 @@ typedef struct lightrenderout_s {
 	lightlistpoint_t lshadowin;
 } lightrenderout_t;
 
+
+typedef struct sLightPUBOStruct_s {
+        GLfloat mvp[16];
+        GLfloat mv[16]; //needed?
+        GLfloat lmv[16];
+        GLfloat pos[3]; //padding for struct/other
+        GLfloat size; //needed?
+} sLightUBOStruct_t;
+
+
+typedef struct pLightPUBOStruct_s {
+        GLfloat pos[3];
+        GLfloat size;
+} pLightUBOStruct_t;
+
 light_t *lightlist;
 int light_init(void);
 int lightcount;
