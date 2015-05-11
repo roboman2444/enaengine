@@ -54,6 +54,7 @@ GLubyte * ubodata = 0;
 //GLbyte * ubodata = 0;
 //unsigned char * ubodata = 0;
 GLuint renderqueueuboid = 0;
+char renderqueueubostate = 0;
 
 
 unsigned int ubo2datasize = 0; //in bytes
@@ -326,10 +327,18 @@ char createAndAddRenderlistitem(renderqueue_t * queue, const void * data, const 
 char flushUBOCacheToBuffers(void){
 	if(!ubodataplace) return FALSE;
 	//glBindBuffer(GL_ARRAY_BUFFER, renderqueueuboid);
-	states_bindBuffer(GL_ARRAY_BUFFER, renderqueueuboid);
-	glBufferData(GL_ARRAY_BUFFER, ubodataplace, ubodata, GL_DYNAMIC_DRAW);
+	states_bindBuffer(GL_UNIFORM_BUFFER, renderqueueuboid);
+	glBufferData(GL_UNIFORM_BUFFER, ubodataplace, ubodata, GL_DYNAMIC_DRAW);
 	ubodataplace = 0;
 	return TRUE;
+
+/*
+	ubodataplace = 0;
+	if(!ubodata) return FALSE;
+	ubodata = 0;
+	states_bindBuffer(GL_UNIFORM_BUFFER, renderqueueuboid);
+	return glUnmapBuffer(GL_UNIFORM_BUFFER);
+*/
 }
 char flushUBO2CacheToBuffers(void){
 	if(!ubo2dataplace) return FALSE;
@@ -342,6 +351,7 @@ char flushUBO2CacheToBuffers(void){
 
 //returns the offset, in bytes
 int pushDataToUBOCache(const unsigned int size, const void * data){
+
 	if(!size || !data) return -1;
 	unsigned int mysize = (size + uboAlignment-1) & ~(uboAlignment-1);
 //	mysize = size;
@@ -359,6 +369,31 @@ int pushDataToUBOCache(const unsigned int size, const void * data){
 	int ubodataoldplace = ubodataplace;
 	ubodataplace += mysize;
 	return ubodataoldplace;
+
+/*
+	if(!size || !data) return -1;
+	unsigned int mysize = (size + uboAlignment-1) & ~(uboAlignment-1);
+	//check if it needs a resize
+	unsigned int ubodatanewsize = ubodataplace + mysize;
+	if(ubodatanewsize > ubodatasize){
+		states_bindBuffer(GL_UNIFORM_BUFFER, renderqueueuboid);
+		ubodatasize = ubodatanewsize;
+		glUnmapBuffer(GL_UNIFORM_BUFFER);
+		glBufferData(GL_UNIFORM_BUFFER, ubodatasize, NULL, GL_DYNAMIC_DRAW);
+		ubodata = glMapBuffer(GL_UNIFORM_BUFFER, GL_WRITE_ONLY);
+	}
+	if(!ubodata){
+		states_bindBuffer(GL_ARRAY_BUFFER, renderqueueuboid);
+		ubodata = glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
+		if(!ubodata) printf("i fail!\n");
+	}
+
+	memcpy(ubodata + ubodataplace, data, size);
+	int ubodataoldplace = ubodataplace;
+	ubodataplace += mysize;
+//	printf("got here\n");
+	return ubodataoldplace;
+*/
 }
 
 //returns the offset, in bytes

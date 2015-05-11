@@ -5,6 +5,7 @@
 #include "ubomanager.h"
 #include "hashtables.h"
 #include "console.h"
+#include "glstates.h"
 
 GLint maxUBOSize;
 GLint uboAlignment;
@@ -30,6 +31,48 @@ int ubo_init(void){
 
 	ubo_ok = TRUE;
 	return TRUE;
+}
+char ubo_flushData(ubo_t * u){
+	unsigned int place = u->place;
+	if(!place) return FALSE;
+	states_bindBuffer(GL_ARRAY_BUFFER, u->id);
+	glBufferData(GL_ARRAY_BUFFER, place, u->data, GL_DYNAMIC_DRAW);
+//	u->oldplace = place;
+	u->place = 0;
+	return TRUE;
+}
+
+//returns offset in bytes
+int ubo_pushData(ubo_t * u, const unsigned int size, const void * data){
+	if(!size || !data) return -1;
+	unsigned int mysize = (size + uboAlignment-1) & ~(uboAlignment-1);
+	unsigned int place = u->place;
+	unsigned int newsize = place + mysize;
+	if(newsize > u->size){
+		u->data = realloc(u->data, newsize);
+		u->size = newsize;
+	}
+	memcpy(u->data + place, data, size);
+	u->place = place + mysize;
+	return place;
+}
+
+unsigned int ubo_halfData(ubo_t *u){
+	unsigned int newsize = u->size/2;
+	u->size = newsize;
+	u->data = realloc(u->data, newsize);
+	return newsize;
+}
+unsigned int ubo_sizeData(ubo_t *u, const unsigned int newsize){
+	u->size = newsize;
+	u->data = realloc(u->data, newsize);
+	return newsize;
+}
+unsigned int ubo_pruneData(ubo_t *u){
+	unsigned int newsize = u->place;
+	u->size = newsize;
+	u->data = realloc(u->data, newsize);
+	return newsize;
 }
 
 /*
