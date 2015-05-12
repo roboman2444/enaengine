@@ -52,6 +52,7 @@ void states_bindBuffer(const GLenum type, const GLuint id){
 	}
 }
 void states_bindBufferRange(const GLenum type, const GLuint index, const GLuint id, const GLintptr offset, const GLsizeiptr size){
+	//todo redo to correctly handle index
 	if(type != state.vbotype || index != state.vborangei||id != state.vboid || offset != state.vborangeo || size != state.vboranges){
 		glBindBufferRange(type, index, id, offset, size);
 		state.vbotype = type;

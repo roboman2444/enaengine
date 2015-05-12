@@ -7,26 +7,25 @@
 #include "console.h"
 #include "glstates.h"
 
-GLint maxUBOSize;
-GLint uboAlignment;
-int ubo_ok = 0;
-//int ubocount = 0;
-//int uboArrayFirstOpen = 0;
-//int uboArrayLastTaken = -1;
-//int uboArraySize = 0;
-//ubo_t *ubolist;
+GLint ubo_maxsize;
+GLint ubo_alignment;
 
-//hashbucket_t vbohashtable[MAXHASHBUCKETS];
+int ubo_ok = 0;
+int ubo_count = 0;
+int ubo_arrayfirstopen = 0;
+int ubo_arraylasttaken = -1;
+int ubo_arraysize = 0;
+ubo_t *ubo_list;
+
 
 int ubo_init(void){
-//	memset(vbohashtable, 0, MAXHASHBUCKETS*sizeof(hashbucket_t));
-//	if(vbolist) free(vbolist);
-//	vbolist = 0;
+	if(ubo_list) free(ubo_list);
+	ubo_list = 0;
 
-	glGetIntegerv(GL_MAX_UNIFORM_BLOCK_SIZE, &maxUBOSize);
-	console_printf("max uniform size is %i\n", maxUBOSize);
-	glGetIntegerv(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT, &uboAlignment);
-	console_printf("uniform alignment size is %i\n", uboAlignment);
+	glGetIntegerv(GL_MAX_UNIFORM_BLOCK_SIZE, &ubo_maxsize);
+	console_printf("max uniform size is %i\n", ubo_maxsize);
+	glGetIntegerv(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT, &ubo_alignment);
+	console_printf("uniform alignment size is %i\n", ubo_alignment);
 
 
 	ubo_ok = TRUE;
@@ -35,8 +34,8 @@ int ubo_init(void){
 char ubo_flushData(ubo_t * u){
 	unsigned int place = u->place;
 	if(!place) return FALSE;
-	states_bindBuffer(GL_ARRAY_BUFFER, u->id);
-	glBufferData(GL_ARRAY_BUFFER, place, u->data, GL_DYNAMIC_DRAW);
+	states_bindBuffer(GL_UNIFORM_BUFFER, u->id);
+	glBufferData(GL_UNIFORM_BUFFER, place, u->data, GL_DYNAMIC_DRAW);
 //	u->oldplace = place;
 	u->place = 0;
 	return TRUE;
@@ -45,7 +44,7 @@ char ubo_flushData(ubo_t * u){
 //returns offset in bytes
 int ubo_pushData(ubo_t * u, const unsigned int size, const void * data){
 	if(!size || !data) return -1;
-	unsigned int mysize = (size + uboAlignment-1) & ~(uboAlignment-1);
+	unsigned int mysize = (size + ubo_alignment-1) & ~(ubo_alignment-1);
 	unsigned int place = u->place;
 	unsigned int newsize = place + mysize;
 	if(newsize > u->size){
@@ -75,118 +74,74 @@ unsigned int ubo_pruneData(ubo_t *u){
 	return newsize;
 }
 
-/*
-vbo_t * findVBOByNameRPOINT(char * name){
-	return returnVBOById(findByNameRINT(name, vbohashtable));
-}
-int findVBOByNameRINT(char * name){
-	return findByNameRINT(name, vbohashtable);
-}
 
-int deleteVBO(int id){
-	int vboindex = (id & 0xFFFF);
-	vbo_t * vbo = &vbolist[vboindex];
-	if(vbo->myid != id) return FALSE;
-	if(!vbo->name) return FALSE;
-	deleteFromHashTable(vbo->name, id, vbohashtable);
-	free(vbo->name);
-	glDeleteBuffers(2, &vbo->vboid); //deletes both
-	glDeleteVertexArrays(1, &vbo->vaoid);
+int ubo_delete(const int id){
+	int index = (id & 0xFFFF);
+	ubo_t * ubo = &ubo_list[index];
+	if(ubo->myid != id) return FALSE;
 
-	memset(vbo,0, sizeof(vbo_t));
-	if(vboindex < vboArrayFirstOpen) vboArrayFirstOpen = vboindex;
-	for(; vboArrayLastTaken > 0 && !vbolist[vboArrayLastTaken].type; vboArrayLastTaken--);
+	glDeleteBuffers(1, &ubo->id);
+
+	memset(ubo, 0, sizeof(ubo_t));
+	if(index < ubo_arrayfirstopen) ubo_arrayfirstopen = index;
+	for(; ubo_arraylasttaken > 0 && !ubo_list[ubo_arraylasttaken].type; ubo_arraylasttaken--);
 	return TRUE;
 }
 
-vbo_t * returnVBOById(int id){
-	int vboindex = (id & 0xFFFF);
-	vbo_t * vbo = &vbolist[vboindex];
-	if(!vbo->type) return FALSE;
-	if(vbo->myid == id) return vbo;
+ubo_t * ubo_returnById(int id){
+	int index = (id & 0xFFFF);
+	ubo_t * ubo = &ubo_list[index];
+	if(!ubo->type) return FALSE;
+	if(ubo->myid == id) return ubo;
 	return FALSE;
 }
-vbo_t createVBO(char * name, char type){
-	vbo_t v;
-	v.type = 0;
-	glGenVertexArrays(1, &v.vaoid);	if(!v.vaoid) return v;
-	states_bindVertexArray(v.vaoid);
-	glGenBuffers(1, &v.vboid);	if(!v.vboid) return v;
-	glGenBuffers(1, &v.indicesid);	if(!v.indicesid) return v;
-	v.name = malloc(strlen(name)+1);
-	v.setup =0;
-	strcpy(v.name, name);
-//	v.type = type; //todo type stuff
-	v.type = 2;
-	return v;
+ubo_t ubo_create(void){
+	ubo_t u = {0, 0, 0, 0, 0,0};
+	glGenBuffers(1, &u.id);	if(!u.id) return u;
+	u.type = 1;
+	return u;
 }
 
-int addVBORINT(vbo_t vbo){
-	vbocount++;
-	for(; vboArrayFirstOpen < vboArraySize && vbolist[vboArrayFirstOpen].type; vboArrayFirstOpen++);
-	if(vboArrayFirstOpen == vboArraySize){	//resize
-		vboArraySize++;
-		vbolist = realloc(vbolist, vboArraySize * sizeof(vbo_t));
+int ubo_addRINT(ubo_t ubo){
+	ubo_count++;
+	for(; ubo_arrayfirstopen < ubo_arraysize && ubo_list[ubo_arrayfirstopen].type; ubo_arrayfirstopen++);
+	if(ubo_arrayfirstopen == ubo_arraysize){	//resize
+		ubo_arraysize++;
+		ubo_list = realloc(ubo_list, ubo_arraysize * sizeof(ubo_t));
 	}
-	vbolist[vboArrayFirstOpen] = vbo;
-	int returnid = (vbocount << 16) | vboArrayFirstOpen;
-	vbolist[vboArrayFirstOpen].myid = returnid;
+	ubo_list[ubo_arrayfirstopen] = ubo;
+	int returnid = (ubo_count << 16) | ubo_arrayfirstopen;
+	ubo_list[ubo_arrayfirstopen].myid = returnid;
 
-	addToHashTable(vbolist[vboArrayFirstOpen].name, returnid, vbohashtable);
-	if(vboArrayLastTaken < vboArrayFirstOpen) vboArrayLastTaken = vboArrayFirstOpen; //todo redo
+	if(ubo_arraylasttaken < ubo_arrayfirstopen) ubo_arraylasttaken = ubo_arrayfirstopen; //todo redo
 	return returnid;
 }
-vbo_t * addVBORPOINT(vbo_t vbo){
-	vbocount++;
-	for(; vboArrayFirstOpen < vboArraySize && vbolist[vboArrayFirstOpen].type; vboArrayFirstOpen++);
-	if(vboArrayFirstOpen == vboArraySize){	//resize
-		vboArraySize++;
-		vbolist = realloc(vbolist, vboArraySize * sizeof(vbo_t));
+ubo_t * ubo_addRPOINT(ubo_t ubo){
+	ubo_count++;
+	for(; ubo_arrayfirstopen < ubo_arraysize && ubo_list[ubo_arrayfirstopen].type; ubo_arrayfirstopen++);
+	if(ubo_arrayfirstopen == ubo_arraysize){	//resize
+		ubo_arraysize++;
+		ubo_list = realloc(ubo_list, ubo_arraysize * sizeof(ubo_t));
 	}
-	vbolist[vboArrayFirstOpen] = vbo;
-	int returnid = (vbocount << 16) | vboArrayFirstOpen;
-	vbolist[vboArrayFirstOpen].myid = returnid;
+	ubo_list[ubo_arrayfirstopen] = ubo;
+	int returnid = (ubo_count << 16) | ubo_arrayfirstopen;
+	ubo_list[ubo_arrayfirstopen].myid = returnid;
 
-	addToHashTable(vbolist[vboArrayFirstOpen].name, returnid, vbohashtable);
-	if(vboArrayLastTaken < vboArrayFirstOpen) vboArrayLastTaken = vboArrayFirstOpen; //todo redo
-	return &vbolist[vboArrayFirstOpen];
+	if(ubo_arraylasttaken < ubo_arrayfirstopen) ubo_arraylasttaken = ubo_arrayfirstopen; //todo redo
+	return &ubo_list[ubo_arrayfirstopen];
 }
 
-vbo_t * createAndAddVBORPOINT(char * name, char type){
-	return addVBORPOINT(createVBO(name, type));
+ubo_t * ubo_createAndAddRPOINT(void){
+	return ubo_addRPOINT(ubo_create());
 }
-int createAndAddVBORINT(char * name, char type){
-	return addVBORINT(createVBO(name, type));
+int ubo_createAndAddRINT(void){
+	return ubo_addRINT(ubo_create());
 }
-int setUpVBO(vbo_t * vbo, unsigned char posstride, unsigned char normstride, unsigned char tcstride){
-	GLuint totalstride = (posstride + tcstride + normstride);
-	if(!totalstride) return FALSE;
-	if(!vbo) return FALSE;
-	states_bindVertexArray(vbo->vaoid);
-	states_bindBuffer(GL_ARRAY_BUFFER, vbo->vboid);
-	GLuint curstride = 0;
-	GLuint totalstridesize = totalstride * sizeof(GLfloat);
-	if(posstride){
-		glEnableVertexAttribArray(POSATTRIBLOC);
-		glVertexAttribPointer(POSATTRIBLOC, posstride, GL_FLOAT, GL_FALSE, totalstridesize, (void*)&curstride);
-		curstride += posstride * sizeof(GLfloat);
-	}
-	if(normstride){
-		glEnableVertexAttribArray(NORMATTRIBLOC);
-		glVertexAttribPointer(NORMATTRIBLOC, normstride, GL_FLOAT, GL_FALSE, totalstridesize, (void*)&curstride);
-		curstride += normstride * sizeof(GLfloat);
-	}
-	if(tcstride){
-		glEnableVertexAttribArray(TCATTRIBLOC);
-		glVertexAttribPointer(TCATTRIBLOC, tcstride, GL_FLOAT, GL_FALSE, totalstridesize, (void*)&curstride);
-		curstride += tcstride * sizeof(GLfloat);
-	}
-	vbo->setup = TRUE;
-	vbo->posstride = posstride;
-	vbo->normstride = normstride;
-	vbo->tcstride = tcstride;
-	vbo->totalstride = totalstride;
 
-	return totalstride;
+
+
+void ubo_pruneList(void){
+	if(ubo_arraysize == ubo_arraylasttaken+1) return;
+	ubo_arraysize = ubo_arraylasttaken+1;
+	ubo_list = realloc(ubo_list, ubo_arraysize * sizeof(ubo_t));
 }
-*/

@@ -25,8 +25,8 @@ typedef struct renderbatche_s {
 	//int something;
 }renderbatche_t; // the e stands for entity
 */
-
-GLuint renderqueueuboid;//need this
+//ubo_t renderqueue_ubo1;
+GLuint renderqueueuboid;//need this?
 GLuint renderqueueubo2id;//need this
 
 #define RADIXSORTSIZE 10 // 4 for shader, 2 for modelid/vboid (if any, ones with 0 probably use the vert data method, have to check), 2 for texture id, 1 for depth, 1 for misc flags (such as alpha blending or not)
@@ -66,9 +66,9 @@ char flushVertCacheToBuffers(void);
 
 
 //returns -1 on failure, returns offset into ubo buffer in bytes
+
 int pushDataToUBOCache(const unsigned int size, const void * data);
 char flushUBOCacheToBuffers(void);
-
 int pushDataToUBO2Cache(const unsigned int size, const void * data);
 char flushUBO2CacheToBuffers(void);
 
@@ -83,8 +83,6 @@ unsigned int renderqueueHalfQueue(renderqueue_t * queue);
 unsigned int renderqueuePruneQueue(renderqueue_t * queue);
 unsigned int renderqueueHalfData(renderqueue_t * queue);
 unsigned int renderqueuePruneData(renderqueue_t * queue);
-unsigned int renderqueuePruneUBO(void);
-unsigned int renderqueueHalfUBO(void);
 unsigned int renderqueuePruneUBO2(void);
 unsigned int renderqueueHalfUBO2(void);
 void renderqueueHalfVBO(void);

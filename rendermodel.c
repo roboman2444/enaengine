@@ -264,11 +264,11 @@ void rendermodel_setupMACallback(renderlistitem_t * ilist, unsigned int count){
 }
 
 void rendermodel_init(void){
-	modelMaxSize = maxUBOSize / sizeof(modelUBOStruct_t);
+	modelMaxSize = ubo_maxsize / sizeof(modelUBOStruct_t);
 	console_printf("rendermodel : Max model instance count is %i\n", modelMaxSize);
 	modelUBOData = malloc(modelMaxSize * sizeof(modelUBOStruct_t));
 
-	modelDepthMaxSize = maxUBOSize / sizeof(modelDepthUBOStruct_t);
+	modelDepthMaxSize = ubo_maxsize / sizeof(modelDepthUBOStruct_t);
 	console_printf("rendermodel : Max modeldepth instance count is %i\n", modelDepthMaxSize);
 	modelDepthUBOData = malloc(modelDepthMaxSize * sizeof(modelDepthUBOStruct_t));
 

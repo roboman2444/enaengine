@@ -47,22 +47,12 @@ GLuint * facedata = 0;
 
 //UNIFORM BUFFER STUFF
 
+ubo_t renderqueue_ubo1;
+ubo_t renderqueue_ubo2;
 
-unsigned int ubodatasize = 0; //in bytes
-unsigned int ubodataplace = 0; // in bytes
-GLubyte * ubodata = 0;
-//GLbyte * ubodata = 0;
-//unsigned char * ubodata = 0;
-GLuint renderqueueuboid = 0;
-char renderqueueubostate = 0;
+GLuint renderqueueuboid;
+GLuint renderqueueubo2id;
 
-
-unsigned int ubo2datasize = 0; //in bytes
-unsigned int ubo2dataplace = 0; // in bytes
-GLubyte * ubo2data = 0;
-//GLbyte * ubodata = 0;
-//unsigned char * ubodata = 0;
-GLuint renderqueueubo2id = 0;
 
 // RENDERQUEUE STUFF
 //unsigned int renderqueuesize = 0;
@@ -88,8 +78,8 @@ unsigned int renderqueueCleanup(renderqueue_t *queue){
 		}
 	}
 //	printf("place=%i\n",place);
-	printf("ubodatasize=%i\n", ubodatasize);
-	printf("ubo2datasize=%i\n", ubo2datasize);
+	printf("ubodatasize=%i\n", renderqueue_ubo1.size);
+	printf("ubo2datasize=%i\n", renderqueue_ubo2.size);
 	printf("queuesize=%i\n", queue->size);
 	free(queue->list);
 	free(queue->data);
@@ -118,26 +108,6 @@ unsigned int renderqueuePruneData(renderqueue_t *queue){
 	queue->datasize = queue->dataplace;
 	queue->data = realloc(queue->data, queue->datasize);
 	return queue->datasize;
-}
-unsigned int renderqueueHalfUBO(void){
-	ubodatasize = ubodatasize/2;
-	ubodata = realloc(ubodata, ubodatasize);
-	return ubodatasize;
-}
-unsigned int renderqueuePruneUBO(void){
-	ubodatasize = ubodataplace;
-	ubodata = realloc(ubodata, ubodatasize);
-	return ubodatasize;
-}
-unsigned int renderqueueHalfUBO2(void){
-	ubo2datasize = ubo2datasize/2;
-	ubo2data = realloc(ubo2data, ubo2datasize);
-	return ubo2datasize;
-}
-unsigned int renderqueuePruneUBO2(void){
-	ubo2datasize = ubo2dataplace;
-	ubo2data = realloc(ubo2data, ubo2datasize);
-	return ubo2datasize;
 }
 void renderqueueHalfVBO(void){
 	facedatasize = facedatasize/2;
@@ -227,8 +197,10 @@ void renderqueueSetup(const renderqueue_t * queue){
 		}
 	}
 	flushVertCacheToBuffers();
-	flushUBOCacheToBuffers();
-	flushUBO2CacheToBuffers();
+//	flushUBOCacheToBuffers();
+//	flushUBO2CacheToBuffers();
+	ubo_flushData(&renderqueue_ubo1);
+	ubo_flushData(&renderqueue_ubo2);
 }
 
 
@@ -325,97 +297,20 @@ char createAndAddRenderlistitem(renderqueue_t * queue, const void * data, const 
 }
 
 char flushUBOCacheToBuffers(void){
-	if(!ubodataplace) return FALSE;
-	//glBindBuffer(GL_ARRAY_BUFFER, renderqueueuboid);
-	states_bindBuffer(GL_UNIFORM_BUFFER, renderqueueuboid);
-	glBufferData(GL_UNIFORM_BUFFER, ubodataplace, ubodata, GL_DYNAMIC_DRAW);
-	ubodataplace = 0;
-	return TRUE;
-
-/*
-	ubodataplace = 0;
-	if(!ubodata) return FALSE;
-	ubodata = 0;
-	states_bindBuffer(GL_UNIFORM_BUFFER, renderqueueuboid);
-	return glUnmapBuffer(GL_UNIFORM_BUFFER);
-*/
+	return ubo_flushData(&renderqueue_ubo1);
 }
 char flushUBO2CacheToBuffers(void){
-	if(!ubo2dataplace) return FALSE;
-	//glBindBuffer(GL_ARRAY_BUFFER, renderqueueubo2id);
-	states_bindBuffer(GL_ARRAY_BUFFER, renderqueueubo2id);
-	glBufferData(GL_ARRAY_BUFFER, ubo2dataplace, ubo2data, GL_DYNAMIC_DRAW);
-	ubo2dataplace = 0;
-	return TRUE;
+	return ubo_flushData(&renderqueue_ubo2);
 }
 
 //returns the offset, in bytes
 int pushDataToUBOCache(const unsigned int size, const void * data){
-
-	if(!size || !data) return -1;
-	unsigned int mysize = (size + uboAlignment-1) & ~(uboAlignment-1);
-//	mysize = size;
-	//check if it needs a resize
-	unsigned int ubodatanewsize = ubodataplace + mysize;
-	if(ubodatanewsize > ubodatasize){
-		ubodata = realloc(ubodata, ubodatanewsize);
-		ubodatasize = ubodatanewsize;
-	}
-	memcpy(ubodata + ubodataplace, data, size);
-//	int dif = mysize-size;
-//	if(dif > 0) printf ("ubodif: %i\n", dif);
-//	memset(ubodata + ubodataplace + size, 0, dif);
-//	printf("size: %i mysize: %i\n", size, mysize);
-	int ubodataoldplace = ubodataplace;
-	ubodataplace += mysize;
-	return ubodataoldplace;
-
-/*
-	if(!size || !data) return -1;
-	unsigned int mysize = (size + uboAlignment-1) & ~(uboAlignment-1);
-	//check if it needs a resize
-	unsigned int ubodatanewsize = ubodataplace + mysize;
-	if(ubodatanewsize > ubodatasize){
-		states_bindBuffer(GL_UNIFORM_BUFFER, renderqueueuboid);
-		ubodatasize = ubodatanewsize;
-		glUnmapBuffer(GL_UNIFORM_BUFFER);
-		glBufferData(GL_UNIFORM_BUFFER, ubodatasize, NULL, GL_DYNAMIC_DRAW);
-		ubodata = glMapBuffer(GL_UNIFORM_BUFFER, GL_WRITE_ONLY);
-	}
-	if(!ubodata){
-		states_bindBuffer(GL_ARRAY_BUFFER, renderqueueuboid);
-		ubodata = glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
-		if(!ubodata) printf("i fail!\n");
-	}
-
-	memcpy(ubodata + ubodataplace, data, size);
-	int ubodataoldplace = ubodataplace;
-	ubodataplace += mysize;
-//	printf("got here\n");
-	return ubodataoldplace;
-*/
+	return ubo_pushData(&renderqueue_ubo1, size, data);
+}
+int pushDataToUBOCache2(const unsigned int size, const void * data){
+	return ubo_pushData(&renderqueue_ubo2, size, data);
 }
 
-//returns the offset, in bytes
-int pushDataToUBO2Cache(const unsigned int size, const void * data){
-	if(!size || !data) return -1;
-	unsigned int mysize = (size + uboAlignment-1) & ~(uboAlignment-1);
-//	mysize = size;
-	//check if it needs a resize
-	unsigned int ubo2datanewsize = ubo2dataplace + mysize;
-	if(ubo2datanewsize > ubo2datasize){
-		ubo2data = realloc(ubo2data, ubo2datanewsize);
-		ubo2datasize = ubo2datanewsize;
-	}
-	memcpy(ubo2data + ubo2dataplace, data, size);
-//	int dif = mysize-size;
-//	if(dif > 0) printf ("ubodif: %i\n", dif);
-//	memset(ubo2data + ubo2dataplace + size, 0, dif);
-//	printf("size: %i mysize: %i\n", size, mysize);
-	int ubo2dataoldplace = ubo2dataplace;
-	ubo2dataplace += mysize;
-	return ubo2dataoldplace;
-}
 
 char flushVertCacheToBuffers(void){
 	if(!facedataplace) return FALSE;
@@ -675,8 +570,11 @@ int readyRenderQueueBuffers(void){
 		glEnableVertexAttribArray(BLENDWATTRIBLOC);
 		glVertexAttribPointer(BLENDWATTRIBLOC, 1, GL_UNSIGNED_BYTE, GL_TRUE, 1, 0);
 
-	glGenBuffers(1, &renderqueueuboid);
-	glGenBuffers(1, &renderqueueubo2id);
+//	glGenBuffers(1, &renderqueueuboid);
+	renderqueue_ubo1 = ubo_create();
+	renderqueueuboid = renderqueue_ubo1.id;
+	renderqueue_ubo2 = ubo_create();
+	renderqueueubo2id = renderqueue_ubo2.id;
 
 	return TRUE;
 }

@@ -42,6 +42,7 @@ Gamecode
 States
 	have states track framebuffers, different masks, and do a glclear thing
 	-fix that texture bug
+	redo bindbufferrange to correctly handle indexes
 Tiled Deferred
 	fix pixeldepth->viewpos method
 	optimize tiled deferred render
