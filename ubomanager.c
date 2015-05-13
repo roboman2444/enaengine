@@ -34,7 +34,12 @@ int ubo_init(void){
 char ubo_flushData(ubo_t * u){
 	unsigned int place = u->place;
 	if(!place) return FALSE;
+#if UBOPINGPONG > 1
+	unsigned int pingplace = u->pingplace = (u->pingplace + 1) % UBOPINGPONG;
+	states_bindBuffer(GL_UNIFORM_BUFFER, u->id[pingplace]);
+#else
 	states_bindBuffer(GL_UNIFORM_BUFFER, u->id);
+#endif
 	glBufferData(GL_UNIFORM_BUFFER, place, u->data, GL_DYNAMIC_DRAW);
 //	u->oldplace = place;
 	u->place = 0;
@@ -79,8 +84,11 @@ int ubo_delete(const int id){
 	int index = (id & 0xFFFF);
 	ubo_t * ubo = &ubo_list[index];
 	if(ubo->myid != id) return FALSE;
-
+#if UBOPINGPONG > 1
+	glDeleteBuffers(UBOPINGPONG, ubo->id);
+#else
 	glDeleteBuffers(1, &ubo->id);
+#endif
 
 	memset(ubo, 0, sizeof(ubo_t));
 	if(index < ubo_arrayfirstopen) ubo_arrayfirstopen = index;
@@ -96,8 +104,13 @@ ubo_t * ubo_returnById(int id){
 	return FALSE;
 }
 ubo_t ubo_create(void){
-	ubo_t u = {0, 0, 0, 0, 0,0};
-	glGenBuffers(1, &u.id);	if(!u.id) return u;
+#if UBOPINGPONG > 1
+	ubo_t u = {0, 0, 0, 0, 0, 0, {0}};
+	glGenBuffers(UBOPINGPONG, u.id);	if(!u.id[0]) return u;
+#else
+	ubo_t u = {0, 0, 0, 0, 0, 0};
+	glGenBuffers(1, &u.id);			if(!u.id) return u;
+#endif
 	u.type = 1;
 	return u;
 }

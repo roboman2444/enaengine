@@ -199,8 +199,17 @@ void renderqueueSetup(const renderqueue_t * queue){
 	flushVertCacheToBuffers();
 //	flushUBOCacheToBuffers();
 //	flushUBO2CacheToBuffers();
+
+#if UBOPINGPONG > 1
+	ubo_flushData(&renderqueue_ubo1);
+	renderqueueuboid = renderqueue_ubo1.id[renderqueue_ubo1.pingplace];
+	ubo_flushData(&renderqueue_ubo2);
+	renderqueueubo2id = renderqueue_ubo2.id[renderqueue_ubo2.pingplace];
+#else
 	ubo_flushData(&renderqueue_ubo1);
 	ubo_flushData(&renderqueue_ubo2);
+#endif
+
 }
 
 
@@ -297,10 +306,18 @@ char createAndAddRenderlistitem(renderqueue_t * queue, const void * data, const 
 }
 
 char flushUBOCacheToBuffers(void){
-	return ubo_flushData(&renderqueue_ubo1);
+	char ret = ubo_flushData(&renderqueue_ubo1);
+#if UBOPINGPONG > 1
+	renderqueueuboid = renderqueue_ubo1.id[renderqueue_ubo1.pingplace];
+#endif
+	return ret;
 }
 char flushUBO2CacheToBuffers(void){
-	return ubo_flushData(&renderqueue_ubo2);
+	char ret = ubo_flushData(&renderqueue_ubo2);
+#if UBOPINGPONG > 1
+	renderqueueubo2id = renderqueue_ubo2.id[renderqueue_ubo2.pingplace];
+#endif
+	return ret;
 }
 
 //returns the offset, in bytes
@@ -570,11 +587,16 @@ int readyRenderQueueBuffers(void){
 		glEnableVertexAttribArray(BLENDWATTRIBLOC);
 		glVertexAttribPointer(BLENDWATTRIBLOC, 1, GL_UNSIGNED_BYTE, GL_TRUE, 1, 0);
 
-//	glGenBuffers(1, &renderqueueuboid);
 	renderqueue_ubo1 = ubo_create();
-	renderqueueuboid = renderqueue_ubo1.id;
 	renderqueue_ubo2 = ubo_create();
+
+#if UBOPINGPONG > 1
+	renderqueueuboid = renderqueue_ubo1.id[0];
+	renderqueueubo2id = renderqueue_ubo2.id[0];
+#else
+	renderqueueuboid = renderqueue_ubo1.id;
 	renderqueueubo2id = renderqueue_ubo2.id;
+#endif
 
 	return TRUE;
 }

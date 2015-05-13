@@ -1,15 +1,22 @@
 #ifndef UBOMANAGERHEADER
 #define UBOMANAGERHEADER
 
+#define UBOPINGPONG 1
+
 #define UBOBLOCKLOC 0
 typedef struct ubo_s {
 	int myid;
-	GLuint id;
 	unsigned int place;
 //	unsigned int oldplace;
 	unsigned int size;
 	GLubyte *data;
 	char type;
+#if UBOPINGPONG > 1
+	unsigned int pingplace;
+	GLuint id[UBOPINGPONG];
+#else
+	GLuint id;
+#endif
 } ubo_t;
 
 GLint ubo_maxsize;
