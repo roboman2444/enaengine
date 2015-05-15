@@ -9,6 +9,7 @@
 
 
 #define STATESTEXTUREUNITCOUNT 8
+#define STATESUBOBLOCKCOUNT 2
 #define STATESTENABLEDTRACK char
 //todo add more
 
@@ -44,6 +45,10 @@ typedef struct glstate_s {
 //	STATESTENABLEDTRACK enabledtextures; //only used when applying a whole state
 	GLuint textureunitid[STATESTEXTUREUNITCOUNT];
 	GLenum textureunittarget[STATESTEXTUREUNITCOUNT];
+
+	GLuint uboblockid[STATESUBOBLOCKCOUNT];
+	GLintptr uboblockrangeo[STATESUBOBLOCKCOUNT];
+	GLsizeiptr uboblockranges[STATESUBOBLOCKCOUNT];
 } glstate_t;
 
 void states_blendFunc(const GLenum source, const GLenum dest);

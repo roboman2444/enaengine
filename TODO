@@ -42,7 +42,9 @@ Gamecode
 States
 	have states track framebuffers, different masks, and do a glclear thing
 	-fix that texture bug
-	redo bindbufferrange to correctly handle indexes
+	-redo bindbufferrange to correctly handle indexes - kinda done
+		make the two things, ubo and vbo, same system
+		- i know vbo wont really use the block thing, but you gotta do it right
 Tiled Deferred
 	fix pixeldepth->viewpos method
 	optimize tiled deferred render
@@ -97,6 +99,7 @@ Debug
 Shaders
 	-have entities handle their shaders/materials better
 	-replace crap with layout stuff
+	uniform block bindings other than 2... make namable
 	make define system a little more robust and less hacky
 Particles
 	do it right

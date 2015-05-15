@@ -204,6 +204,25 @@ void states_setState(const glstate_t s){
 			}
 		}
 	}
+	for(i = 0; i < STATESUBOBLOCKCOUNT; i++){
+		GLuint id =s.uboblockid[i];
+		if(id){ //doesnt matter if the id is 0... may change
+			GLuint rangeo = s.uboblockrangeo[i];
+			GLuint ranges = s.uboblockranges[i];
+			if(id != state.uboblockid[i] || ranges != state.uboblockrangeo[i] || rangeo != state.uboblockranges[i]){
+				state.uboblockid[i] = id;
+				if(ranges){
+					state.uboblockrangeo[i] = rangeo;
+					state.uboblockranges[i] = ranges;
+					glBindBufferRange(GL_UNIFORM_BUFFER, i, id, rangeo, ranges);
+				} else {
+					state.uboblockrangeo[i] = 0;
+					state.uboblockranges[i] = 0;
+					glBindBufferBase(GL_UNIFORM_BUFFER, i, id);
+				}
+			}
+		}
+	}
 	//todo set up callbacks for if each thing changes... useful for shaders, viewports/framebuffers, etc
 }
 
@@ -268,6 +287,21 @@ void states_forceState(const glstate_t s){
 			glBindTexture(target, id);
 			state.textureunitid[i] = id;
 			state.textureunittarget[i] = target;
+		}
+	}
+	for(i = 0; i < STATESUBOBLOCKCOUNT; i++){
+		GLuint id =s.uboblockid[i];
+		GLuint rangeo = s.uboblockrangeo[i];
+		GLuint ranges = s.uboblockranges[i];
+		state.uboblockid[i] = id;
+		if(ranges){
+			state.uboblockrangeo[i] = rangeo;
+			state.uboblockranges[i] = ranges;
+			glBindBufferRange(GL_UNIFORM_BUFFER, i, id, rangeo, ranges);
+		} else {
+			state.uboblockrangeo[i] = 0;
+			state.uboblockranges[i] = 0;
+			glBindBufferBase(GL_UNIFORM_BUFFER, i, id);
 		}
 	}
 	//todo set up callbacks for if each thing changes... useful for shaders, viewports/framebuffers, etc
