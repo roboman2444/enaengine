@@ -168,6 +168,7 @@ void states_setState(const glstate_t s){
 		glUseProgram(s.shaderid);
 		state.shaderid = s.shaderid;
 	}
+/*
 	if(s.vboranges){
 		if(s.vbotype != state.vbotype || s.vborangei != state.vborangei||s.vboid != state.vboid || s.vborangeo != state.vborangeo || s.vboranges != state.vboranges){
 			glBindBufferRange(s.vbotype, s.vborangei, s.vboid, s.vborangeo, s.vboranges);
@@ -187,7 +188,7 @@ void states_setState(const glstate_t s){
 			state.vboranges = 0;
 		}
 	}
-
+*/
 	unsigned int i;
 	for(i = 0; i < STATESTEXTUREUNITCOUNT; i++){
 		GLuint id = s.textureunitid[i];
@@ -258,7 +259,7 @@ void states_forceState(const glstate_t s){
 
 	glUseProgram(s.shaderid);
 	state.shaderid = s.shaderid;
-
+/*
 	if(s.vboranges){
 		glBindBufferRange(s.vbotype, s.vborangei, s.vboid, s.vborangeo, s.vboranges);
 		state.vbotype = s.vbotype;
@@ -274,7 +275,7 @@ void states_forceState(const glstate_t s){
 		state.vborangeo = 0;
 		state.vboranges = 0;
 	}
-
+*/
 	unsigned int i;
 	for(i = 0; i < STATESTEXTUREUNITCOUNT; i++){
 		GLuint id = s.textureunitid[i];

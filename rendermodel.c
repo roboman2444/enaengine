@@ -43,8 +43,8 @@ void rendermodel_drawMDCallback(renderlistitem_t * ilist, unsigned int count){
 	vbo_t *v = returnVBOById(m->vbo);
 	unsigned int mysize = (count * sizeof(modelDepthUBOStruct_t));
 	//todo finish the state
-	glstate_t s = {STATESENABLEDEPTH|STATESENABLECULLFACE, GL_ONE, GL_ONE, GL_LESS, GL_BACK, GL_TRUE, GL_LESS, 0.0, v->vaoid, renderqueueuboid, GL_UNIFORM_BUFFER, 0, d->ubodataoffset, mysize, d->shaderprogram};
-//	glstate_t s = {STATESENABLECULLFACE|STATESENABLEBLEND|STATESENABLEDEPTH, GL_ONE, GL_ONE, GL_LESS, GL_BACK, GL_TRUE, GL_LESS, 0.0, v->vaoid, renderqueueuboid, GL_UNIFORM_BUFFER, 0, d->ubodataoffset, mysize, d->shaderprogram};
+	glstate_t s = {STATESENABLEDEPTH|STATESENABLECULLFACE, GL_ONE, GL_ONE, GL_LESS, GL_BACK, GL_TRUE, GL_LESS, 0.0, v->vaoid, 0, 0, 0, 0, 0, d->shaderprogram, 0, {0}, {0}, {renderqueueuboid, 0}, {d->ubodataoffset, 0}, {mysize, 0}};
+//	glstate_t s = {STATESENABLEDEPTH|STATESENABLECULLFACE, GL_ONE, GL_ONE, GL_LESS, GL_BACK, GL_TRUE, GL_LESS, 0.0, v->vaoid, renderqueueuboid, GL_UNIFORM_BUFFER, 0, d->ubodataoffset, mysize, d->shaderprogram};
 //	states_setState(s);
 	states_setState(s);
 	//temporary hack until mask bits are in states
@@ -115,8 +115,8 @@ void rendermodel_drawMCallback(renderlistitem_t * ilist, unsigned int count){
 	model_t *m = model_returnById(d->modelid);
 	vbo_t *v = returnVBOById(m->vbo);
 	unsigned int mysize = (count * sizeof(modelUBOStruct_t));
-	glstate_t s = {STATESENABLEDEPTH|STATESENABLECULLFACE, GL_ONE, GL_ONE, GL_LESS, GL_BACK, GL_TRUE, GL_LESS, 0.0, v->vaoid, renderqueueuboid, GL_UNIFORM_BUFFER, 0, d->ubodataoffset, mysize, d->shaderprogram};
-//	glstate_t s = {STATESENABLECULLFACE|STATESENABLEBLEND|STATESENABLEDEPTH, GL_ONE, GL_ONE, GL_LESS, GL_BACK, GL_TRUE, GL_LESS, 0.0, v->vaoid, renderqueueuboid, GL_UNIFORM_BUFFER, 0, d->ubodataoffset, mysize, d->shaderprogram};
+//	glstate_t s = {STATESENABLEDEPTH|STATESENABLECULLFACE, GL_ONE, GL_ONE, GL_LESS, GL_BACK, GL_TRUE, GL_LESS, 0.0, v->vaoid, renderqueueuboid, GL_UNIFORM_BUFFER, 0, d->ubodataoffset, mysize, d->shaderprogram};
+	glstate_t s = {STATESENABLEDEPTH|STATESENABLECULLFACE, GL_ONE, GL_ONE, GL_LESS, GL_BACK, GL_TRUE, GL_LESS, 0.0, v->vaoid, 0, 0, 0, 0, 0, d->shaderprogram, 0, {0}, {0}, {renderqueueuboid, 0}, {d->ubodataoffset, 0}, {mysize, 0}};
 //	states_setState(s);
 	texturegroup_t *t = returnTexturegroupById(d->texturegroupid);
 	if(t){
@@ -196,7 +196,8 @@ void rendermodel_drawMACallback(renderlistitem_t * ilist, unsigned int count){
 	model_t *m = model_returnById(d->modelid);
 	vbo_t *v = returnVBOById(m->vbo);
 	unsigned int mysize = (count * sizeof(modelUBOStruct_t));
-	glstate_t s = {STATESENABLEDEPTH|STATESENABLECULLFACE|STATESENABLEBLEND, d->blendsource, d->blenddest, GL_LESS, GL_BACK, GL_FALSE, GL_LESS, 0.0, v->vaoid, renderqueueuboid, GL_UNIFORM_BUFFER, 0, d->ubodataoffset, mysize, d->shaderprogram};
+	glstate_t s = {STATESENABLEDEPTH|STATESENABLECULLFACE|STATESENABLEBLEND, d->blendsource, d->blenddest, GL_LESS, GL_BACK, GL_FALSE, GL_LESS, 0.0, v->vaoid, 0, 0, 0, 0, 0, d->shaderprogram, 0, {0}, {0}, {renderqueueuboid, 0}, {d->ubodataoffset, 0}, {mysize, 0}};
+//	glstate_t s = {STATESENABLEDEPTH|STATESENABLECULLFACE|STATESENABLEBLEND, d->blendsource, d->blenddest, GL_LESS, GL_BACK, GL_FALSE, GL_LESS, 0.0, v->vaoid, renderqueueuboid, GL_UNIFORM_BUFFER, 0, d->ubodataoffset, mysize, d->shaderprogram};
 //	states_setState(s);
 	texturegroup_t *t = returnTexturegroupById(d->texturegroupid);
 	if(t){

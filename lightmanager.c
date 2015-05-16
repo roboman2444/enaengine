@@ -732,7 +732,8 @@ void drawSLightOCallback(renderlistitem_t * ilist, unsigned int count){
 //	states_bindVertexArray(v->vaoid);
 	unsigned int mysize = ((count * sizeof(sLightUBOStruct_t)));
 //	states_bindBufferRange(GL_UNIFORM_BUFFER, 0, renderqueueuboid, d->ubodataoffset, mysize);
-	glstate_t s = {STATESENABLECULLFACE | STATESENABLEBLEND, GL_ONE, GL_ONE, GL_LESS, GL_FRONT, GL_FALSE, GL_LESS, 0.0, v->vaoid, renderqueueuboid, GL_UNIFORM_BUFFER, 0, d->ubodataoffset, mysize, perm->id};
+	glstate_t s = {STATESENABLECULLFACE | STATESENABLEBLEND, GL_ONE, GL_ONE, GL_LESS, GL_FRONT, GL_FALSE, GL_LESS, 0.0, v->vaoid, 0, 0, 0, 0, 0, perm->id, 0, {0}, {0}, {renderqueueuboid,0},{d->ubodataoffset,0}, {mysize, 0}};
+//	glstate_t s = {STATESENABLECULLFACE | STATESENABLEBLEND, GL_ONE, GL_ONE, GL_LESS, GL_FRONT, GL_FALSE, GL_LESS, 0.0, v->vaoid, renderqueueuboid, GL_UNIFORM_BUFFER, 0, d->ubodataoffset, mysize, perm->id};
 	states_setState(s);
 	//states_cullFace(GL_FRONT);
 	CHECKGLERROR
@@ -767,7 +768,8 @@ void drawSLightICallback(renderlistitem_t * ilist, unsigned int count){
 //	states_bindVertexArray(v->vaoid);
 	unsigned int mysize = ((count * sizeof(sLightUBOStruct_t)));
 //	states_bindBufferRange(GL_UNIFORM_BUFFER, 0, renderqueueuboid, d->ubodataoffset, mysize);
-	glstate_t s = {STATESENABLECULLFACE | STATESENABLEBLEND, GL_ONE, GL_ONE, GL_LESS, GL_BACK, GL_FALSE, GL_LESS, 0.0, v->vaoid, renderqueueuboid, GL_UNIFORM_BUFFER, 0, d->ubodataoffset, mysize, perm->id};
+	glstate_t s = {STATESENABLECULLFACE | STATESENABLEBLEND, GL_ONE, GL_ONE, GL_LESS, GL_BACK, GL_FALSE, GL_LESS, 0.0, v->vaoid, 0, 0, 0, 0, 0, perm->id, 0, {0}, {0}, {renderqueueuboid,0},{d->ubodataoffset,0}, {mysize, 0}};
+//	glstate_t s = {STATESENABLECULLFACE | STATESENABLEBLEND, GL_ONE, GL_ONE, GL_LESS, GL_BACK, GL_FALSE, GL_LESS, 0.0, v->vaoid, renderqueueuboid, GL_UNIFORM_BUFFER, 0, d->ubodataoffset, mysize, perm->id};
 	states_setState(s);
 	//states_cullFace(GL_FRONT);
 	CHECKGLERROR
@@ -851,7 +853,8 @@ void drawPLightOCallback(renderlistitem_t * ilist, unsigned int count){
 //	states_bindVertexArray(v->vaoid);
 	unsigned int mysize = ((count * sizeof(pLightUBOStruct_t)));
 //	states_bindBufferRange(GL_UNIFORM_BUFFER, 0, renderqueueuboid, d->ubodataoffset, mysize);
-	glstate_t s = {STATESENABLECULLFACE | STATESENABLEBLEND, GL_ONE, GL_ONE, GL_LESS, GL_FRONT, GL_FALSE, GL_LESS, 0.0, v->vaoid, renderqueueuboid, GL_UNIFORM_BUFFER, 0, d->ubodataoffset, mysize, perm->id};
+//	glstate_t s = {STATESENABLECULLFACE | STATESENABLEBLEND, GL_ONE, GL_ONE, GL_LESS, GL_FRONT, GL_FALSE, GL_LESS, 0.0, v->vaoid, renderqueueuboid, GL_UNIFORM_BUFFER, 0, d->ubodataoffset, mysize, perm->id};
+	glstate_t s = {STATESENABLECULLFACE | STATESENABLEBLEND, GL_ONE, GL_ONE, GL_LESS, GL_FRONT, GL_FALSE, GL_LESS, 0.0, v->vaoid, 0, 0, 0, 0, 0, perm->id, 0, {0}, {0}, {renderqueueuboid, 0},{d->ubodataoffset, 0}, {mysize, 0}};
 	states_setState(s);
 	//states_cullFace(GL_FRONT);
 	CHECKGLERROR
@@ -889,7 +892,8 @@ void drawPLightICallback(renderlistitem_t * ilist, unsigned int count){
 //	states_bindVertexArray(v->vaoid);
 	unsigned int mysize = ((count * sizeof(pLightUBOStruct_t)));
 //	states_bindBufferRange(GL_UNIFORM_BUFFER, 0, renderqueueuboid, d->ubodataoffset, mysize);
-	glstate_t s = {STATESENABLECULLFACE | STATESENABLEBLEND, GL_ONE, GL_ONE, GL_LESS, GL_BACK, GL_FALSE, GL_LESS, 0.0, v->vaoid, renderqueueuboid, GL_UNIFORM_BUFFER, 0, d->ubodataoffset, mysize, perm->id};
+//	glstate_t s = {STATESENABLECULLFACE | STATESENABLEBLEND, GL_ONE, GL_ONE, GL_LESS, GL_BACK, GL_FALSE, GL_LESS, 0.0, v->vaoid, renderqueueuboid, GL_UNIFORM_BUFFER, 0, d->ubodataoffset, mysize, perm->id};
+	glstate_t s = {STATESENABLECULLFACE | STATESENABLEBLEND, GL_ONE, GL_ONE, GL_LESS, GL_BACK, GL_FALSE, GL_LESS, 0.0, v->vaoid, 0, 0, 0, 0, 0, perm->id, 0, {0}, {0}, {renderqueueuboid,0},{d->ubodataoffset,0}, {mysize, 0}};
 	states_setState(s);
 //	states_cullFace(GL_BACK);
 	CHECKGLERROR

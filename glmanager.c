@@ -802,7 +802,8 @@ int glDrawViewport(viewport_t *v){
 	model_t * m = model_returnById(fsquadmodel);
 	vbo_t * tvbo = returnVBOById(m->vbo);
 
-	glstate_t s = {STATESENABLEBLEND, GL_ONE, GL_ONE_MINUS_SRC_ALPHA, GL_LESS, GL_BACK, GL_FALSE, GL_LESS, 0.0, tvbo->vaoid, renderqueueuboid, GL_UNIFORM_BUFFER, 0, 0, 0, perm->id};
+//	glstate_t s = {STATESENABLEBLEND, GL_ONE, GL_ONE_MINUS_SRC_ALPHA, GL_LESS, GL_BACK, GL_FALSE, GL_LESS, 0.0, tvbo->vaoid, renderqueueuboid, GL_UNIFORM_BUFFER, 0, 0, 0, perm->id};
+	glstate_t s = {STATESENABLEBLEND, GL_ONE, GL_ONE_MINUS_SRC_ALPHA, GL_LESS, GL_BACK, GL_FALSE, GL_LESS, 0.0, tvbo->vaoid, 0, 0, 0, 0, 0, perm->id, 0, {0}, {0}, {renderqueueuboid, 0}, {0}, {0}};
 
 	states_setState(s);
 
@@ -834,7 +835,7 @@ int glDrawConsole(void){
 	shaderpermutation_t * perm = shader_addPermutationToProgram(shader, 0);
 
 
-	glstate_t s = {STATESENABLEBLEND, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_LESS, GL_BACK, GL_FALSE, GL_LESS, 0.0, consoleVBO->vaoid, 0, GL_UNIFORM_BUFFER, 0, 0, 0, perm->id};
+	glstate_t s = {STATESENABLEBLEND, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_LESS, GL_BACK, GL_FALSE, GL_LESS, 0.0, consoleVBO->vaoid, 0, 0, 0, 0, 0, perm->id};
 	states_setState(s);
 
 	states_bindActiveTexture(0, GL_TEXTURE_2D, console_texttracker.textureid);
