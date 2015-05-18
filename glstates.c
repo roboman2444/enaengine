@@ -214,7 +214,7 @@ void states_setState(const glstate_t s){
 */
 
 //#define CANBINDTEXTURES
-//DONT USE YET, has a weird bug i cant figure out
+//this does not have a noticable improvement in performance on my laptop (hd 6400 something)
 	unsigned int i;
 #ifdef CANBINDTEXTURES
 	//compress front
@@ -229,9 +229,8 @@ void states_setState(const glstate_t s){
 		if(id && id != state.textureunitid[k-1]) break;
 	}
 	if(k > i){
-		//bind
-		glBindTextures(i, k-i, &s.textureunitid[i]);
 		//update state
+		unsigned int j = i;
 		for(; i < k; i++){
 			GLuint id = s.textureunitid[i];
 			if(id){
@@ -240,6 +239,8 @@ void states_setState(const glstate_t s){
 			}
 
 		}
+		//bind
+		glBindTextures(j, k-j, &state.textureunitid[j]);
 	}
 #else
 	for(i = 0; i < STATESTEXTUREUNITCOUNT; i++){
