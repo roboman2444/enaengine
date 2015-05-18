@@ -103,6 +103,29 @@ void states_bindActiveTexture(const unsigned char activetexture, const GLenum ta
 		state.textureunittarget[activetexture] = target;
 	}
 }
+void states_bindTextures(const GLuint first, const GLsizei count, const GLuint * textures){
+	GLsizei fixedcount = (first + count > STATESTEXTUREUNITCOUNT)? STATESTEXTUREUNITCOUNT - first : count;
+//	GLsizei mycount;
+//	unsigned int myfirst = first;
+//	unsigned int myend = first + mycount;
+	//compress front
+	//TODO compress back too
+	unsigned int i;
+//	unsigned int k;
+	for(i = 0; i < fixedcount; i++){
+		if(textures[i] && state.textureunitid[first + i] != textures[i]) break;
+	}
+	//didnt make it all the way to the end.. need to update some texture binds
+	if(i != fixedcount){
+//		myfirst = first + i;
+//		mycount = fixedcount - i;
+		glBindTextures(first + i, fixedcount - i, textures + i);
+		//update state
+		for(; i < fixedcount; i++){
+			state.textureunitid[first + i] = textures[i];
+		}
+	}
+}
 
 
 void states_enableForce(const GLenum en){
@@ -189,7 +212,36 @@ void states_setState(const glstate_t s){
 		}
 	}
 */
+
+//#define CANBINDTEXTURES
+//DONT USE YET, has a weird bug i cant figure out
 	unsigned int i;
+#ifdef CANBINDTEXTURES
+	//compress front
+	for( i = 0; i < STATESTEXTUREUNITCOUNT; i++){
+		GLuint id = s.textureunitid[i];
+		if(id && id != state.textureunitid[i]) break;
+	}
+	unsigned int k;
+	//compress back
+	for( k = STATESTEXTUREUNITCOUNT; k > i; k--){
+		GLuint id = s.textureunitid[k-1];
+		if(id && id != state.textureunitid[k-1]) break;
+	}
+	if(k > i){
+		//bind
+		glBindTextures(i, k-i, &s.textureunitid[i]);
+		//update state
+		for(; i < k; i++){
+			GLuint id = s.textureunitid[i];
+			if(id){
+				state.textureunitid[i] = id;
+				state.textureunittarget[i] = s.textureunittarget[i]; //TODO do i need this?
+			}
+
+		}
+	}
+#else
 	for(i = 0; i < STATESTEXTUREUNITCOUNT; i++){
 		GLuint id = s.textureunitid[i];
 		if(id){
@@ -205,6 +257,7 @@ void states_setState(const glstate_t s){
 			}
 		}
 	}
+#endif
 	for(i = 0; i < STATESUBOBLOCKCOUNT; i++){
 		GLuint id =s.uboblockid[i];
 		if(id){ //doesnt matter if the id is 0... may change
