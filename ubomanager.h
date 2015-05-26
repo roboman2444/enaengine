@@ -32,6 +32,8 @@ int ubo_arraylasttaken;
 int ubo_init(void);
 char ubo_flushData(ubo_t *u);
 int ubo_pushData(ubo_t *u, const unsigned int size, const void * data);
+int ubo_pushDataNoAlign(ubo_t *u, const unsigned int size, const void * data);
+unsigned int ubo_alignData(ubo_t *u);
 
 unsigned int ubo_halfData(ubo_t * u);
 unsigned int ubo_sizeData(ubo_t * u, const unsigned int newsize);

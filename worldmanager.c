@@ -69,7 +69,7 @@ typedef struct worldFileEntity_s {
 	unsigned int shaderindice;
 	int shaderperm;
 	char flags;
-	//todo
+	//TODO
 }worldFileEntity_t;
 typedef struct worldFileLight_s {
 	matrix4x4_t mat;
@@ -78,10 +78,13 @@ typedef struct worldFileLight_s {
 	unsigned int shaderindice;
 	int shaderperm;
 	char flags;
-	//todo
+	//TODO
 }worldFileLight_t;
 
-//todo gotta fix the list gettin!
+
+
+
+//TODO gotta fix the list gettin!
 int saveWorldPopList(unsigned int * count, worldobject_t ** outlist, const worldleaf_t * leaf){
 
 	if(!leaf) return FALSE;
@@ -153,7 +156,7 @@ int saveWorld(const char * filename){
 	unsigned int *shaderlist = 0;
 	unsigned int *texturelist = 0;
 	unsigned int i = 0;
-	//todo copy this for lights and entities as well
+	//TODO copy this for lights and entities as well
 	for(i = 0; i < objcount; i++){
 //		console_printf("objcount: %i i: %i\n", objcount, i);
 
@@ -405,10 +408,10 @@ int loadWorld(const char * filename){
 
 	//newbuf is now the start of the actual object list
 
-	//todo copy this for lights and entities
+	//TODO copy this for lights and entities
 	worldFileObject_t * objbuf = (worldFileObject_t *)newbuf;
 	worldobject_t * obj = malloc(sizeof(worldobject_t));
-	//todo different version handling here
+	//TODO different version handling here
 
 	unsigned int i;
 	for(i = 0; i < header.objectlistcount; i++){
@@ -476,12 +479,12 @@ worldleaf_t * createWorldLeaf(const int depth, const vec2_t center){
 	leaf->lightarraylasttaken = -1;
 
 	getBBoxPFromBBox(leaf->bbox, leaf->bboxp);
-	//todo?
+	//TODO?
 	return leaf;
 }
 
 int initWorldSystem(void){
-//todo?
+//TODO?
 	vec2_t center = {0.0, 0.0};
 	worldroot = createWorldLeaf(0, center);
 	if(!worldroot) return FALSE;
@@ -517,7 +520,7 @@ int deleteWorld(void){
 }
 //maybe going to redo
 int addObjectToLeaf(worldobject_t * o, worldleaf_t *l){
-	//todo?
+	//TODO?
 	//if first object in, set anyway
 	if(!l->numobjects && !l->numents){
 		l->bbox[2] = o->bbox[2];
@@ -526,7 +529,7 @@ int addObjectToLeaf(worldobject_t * o, worldleaf_t *l){
 		if(o->bbox[2] > l->bbox[2])l->bbox[2] = o->bbox[2];
 		if(o->bbox[3] < l->bbox[3])l->bbox[3] = o->bbox[3];
 	}
-	getBBoxPFromBBox(l->bbox, l->bboxp);	//todo i can optimize this... only gotta update corner verticals... put into the if up there
+	getBBoxPFromBBox(l->bbox, l->bboxp);	//TODO i can optimize this... only gotta update corner verticals... put into the if up there
 	o->treedepth = l->treedepth;
 	o->leafpos = l->numobjects;
 	o->leaf = l;
@@ -569,7 +572,7 @@ int walkAndAddObject(worldobject_t * o, worldleaf_t * l){
 		if((o->bbox[5] > l->center[1]) != yspace) nofits = TRUE;
 	}
 	if(nofits){
-		//todo?
+		//TODO?
 		return addObjectToLeaf(o, l);
 	} else {
 		int intspace = xspace + 2*yspace;
@@ -588,14 +591,14 @@ int walkAndAddObject(worldobject_t * o, worldleaf_t * l){
 		if(l->bbox[3] > l->children[intspace]->bbox[3]) l->bbox[3] = l->children[intspace]->bbox[3];
 		//should recalc bboxp now
 		getBBoxPFromBBox(l->bbox, l->bboxp);
-		//todo i can make a more efficient way of doing this, only updating the y values of the points. put it in the if above
+		//TODO i can make a more efficient way of doing this, only updating the y values of the points. put it in the if above
 		return 2;
 	}
 	return FALSE; // should never hit
 }
 //maybe going to redo
 int addObjectToWorld(worldobject_t * o){
-	model_t * m = model_returnById(o->modelid); //todo maybe i should remove the need for VBOs so i can add "empty" objects... only for collision
+	model_t * m = model_returnById(o->modelid); //TODO maybe i should remove the need for VBOs so i can add "empty" objects... only for collision
 	if(!m) return FALSE;
 	if(!m->vbo) return FALSE;
 	//walk tree and add
@@ -603,7 +606,7 @@ int addObjectToWorld(worldobject_t * o){
 }
 //maybe going to redo
 int addEntityToLeaf(entity_t * e, worldleaf_t *l){
-	//todo
+	//TODO
 	//if first object in, set anyway
 	if(!l->numobjects && !l->numents){
 		l->bbox[2] = e->bbox[2];
@@ -687,7 +690,7 @@ int walkAndAddEntity(entity_t * e, worldleaf_t * l){
 		if((e->bbox[5] > l->center[1]) != yspace) nofits = TRUE;
 	}
 	if(nofits){
-		//todo?
+		//TODO?
 		return addEntityToLeaf(e, l);
 	} else {
 		int intspace = xspace + 2*yspace;
@@ -706,7 +709,7 @@ int walkAndAddEntity(entity_t * e, worldleaf_t * l){
 		if(l->bbox[3] > l->children[intspace]->bbox[3]) l->bbox[3] = l->children[intspace]->bbox[3];
 		//should recalc bboxp now
 		getBBoxPFromBBox(l->bbox, l->bboxp);
-		//todo i can make a more efficient way of doing this, only updating the y values of the points
+		//TODO i can make a more efficient way of doing this, only updating the y values of the points
 		return 2;
 	}
 	return FALSE; // should never hit
@@ -714,7 +717,7 @@ int walkAndAddEntity(entity_t * e, worldleaf_t * l){
 int addEntityToWorld(void * e){
 	return walkAndAddEntity((entity_t *)e, worldroot);
 }
-//todo i really should rename this to avoid confusion...
+//TODO i really should rename this to avoid confusion...
 int addEntityToWorldOBJ(const int entityid){
 	entity_t *e = entity_returnById(entityid);
 	if(!e) return FALSE;
@@ -741,9 +744,26 @@ int addEntityToWorldOBJ(const int entityid){
 	return returnval;
 //	return TRUE;
 }
+/*
+unsigned int worldsmallqueuesize = 0;
+unsigned int worldsmallqueueplace = 0;
+worldleaf_t ** worldsmallqueue = 0;
+//TODO make this whole tuing faster
+int addSmallQueue(worldleaf_t * l){
+	//search for leaf already in queue
+	//TODO make this fast
 
+	//linear search
 
+	unsigned int i;
+	for(i = 0; i < worldsmallqueueplace && worldsmallqueue[i] != l; i++);
+	if(i < worldsmallqueueplace) return 0; //already in
 
+	//add all parent leafs
+	//TODO figure out when we can stop going up
+}
+
+*/
 //will return 0 if not moved, currently doesn't
 //NOT FULLY FINISHED
 int moveEntInWorld(void * ep){
@@ -823,7 +843,7 @@ int moveEntInWorld(void * ep){
 					worldleaf_t *dll = dl->parent;
 					int dli;
 					//match up
-					//todo can i optimize this (with a goto?)
+					//TODO can i optimize this (with a goto?)
 					for(dli=0; dli < 4 && dll->children[dli] != dl; dli++);
 					if(dli ==4) console_printf("Leaf removal error: child to delete not found!\n");
 					else {
@@ -866,7 +886,7 @@ int moveEntInWorld(void * ep){
 		if(e->bbox[3] < boxxer->bbox[3]){ boxxer->bbox[3] = e->bbox[3]; nofits = TRUE;}
 		if(!nofits) break;
 //		printf("^");
-		//todo debug this... with no smallering/deleting happening, this should eventually reach a place where it makes no leafs bigger
+		//TODO debug this... with no smallering/deleting happening, this should eventually reach a place where it makes no leafs bigger
 		//unsure of if it does or not
 	}
 //	if(boxxer !=l)printf("\n");
@@ -874,21 +894,43 @@ int moveEntInWorld(void * ep){
 /*
 	//climb up from l1 as long as you make smaller
 	for(boxxer = l1; boxxer; boxxer = boxxer->parent){
-		int smaller = TRUE;
-		if(e->bbox[2] == boxxer->bbox[2])smaller = FALSE;
-		if(e->bbox[3] == boxxer->bbox[3])smaller = FALSE;
-
+		vec2_t maxs;
+		unsigned int i;
+		//check if i previously made bigger because of this ent
+//		int smaller = TRUE;
+		if(e->bbox[2] == boxxer->bbox[2])break;
+		if(e->bbox[3] == boxxer->bbox[3])break;
+		maxs[0] = e->bbox[2];
+		maxs[1] = e->bbox[3];
+		//loop through all bbox chillen, check if can get smaller
+		for(i = 0; i < 4; i++){
+			worldleaf_t * chil = boxxer->children[i];
+			if(!chil) continue;
+			if(chil->bbox[2] == boxxer->bbox[2]) break;
+			if(chil->bbox[3] == boxxer->bbox[3]) break;
+			if(chil->bbox[2] > maxs[0]) maxs[0] = chil->bbox[2];
+			if(chil->bbox[3] < maxs[1]) maxs[1] = chil->bbox[3];
+		}
+		//loop through all other entities (slow ugh)
+		for(i = 0; i < boxxer->entityarraylasttaken; i++){
+			entity_t *ient = entity_returnById(boxxer->entlist[i]);
+			if(ient->bbox[2] == boxxer->bbox[2])break;
+			if(ient->bbox[3] == boxxer->bbox[3])break;
+			if(ient->bbox[2] > maxs[0]) maxs[0] = ient->bbox[2];
+			if(ient->bbox[3] < maxs[1]) maxs[1] = ient->bbox[3];
+		}
 		//TODO
-		//todo
-		if(!smaller) break;
+		boxxer->bbox[2] = maxs[0];
+		boxxer->bbox[3] = maxs[1];
 		printf("v");
 	}
+
 	if(boxxer !=l)printf("\n");
 */
 
-	//todo keep track of individual bbox for ents, lights, objects, so its easier to check
-	//todo have some check for l1 == l so i dont try to climb up twice...
-	//todo put into some sorta queue for speed
-	//todo sort for speed?
+	//TODO keep track of individual bbox for ents, lights, objects, so its easier to check
+	//TODO have some check for l1 == l so i dont try to climb up twice...
+	//TODO put into some sorta queue for speed
+	//TODO sort for speed?
 	return TRUE;
 }

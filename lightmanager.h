@@ -99,7 +99,7 @@ typedef struct lightrenderout_s {
 } lightrenderout_t;
 
 
-typedef struct sLightPUBOStruct_s {
+typedef struct sLightUBOStruct_s {
         GLfloat mvp[16];
         GLfloat mv[16]; //needed?
         GLfloat lmv[16];
@@ -107,8 +107,13 @@ typedef struct sLightPUBOStruct_s {
         GLfloat size; //needed?
 } sLightUBOStruct_t;
 
+typedef struct aLightUBOStruct_s {
+	GLfloat lmv[16];
+	GLfloat pos[3];
+	GLfloat size;
+} aLightUBOStruct_t;
 
-typedef struct pLightPUBOStruct_s {
+typedef struct pLightUBOStruct_s {
         GLfloat pos[3];
         GLfloat size;
 } pLightUBOStruct_t;
@@ -127,6 +132,8 @@ int globallightArrayLastTaken;
 
 int maxVisLights;
 int maxShadowLights;
+
+GLuint light_uboid;
 
 //returns first light it finds with name
 light_t * findLightByNameRPOINT(const char * name);

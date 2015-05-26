@@ -104,6 +104,7 @@ void states_bindActiveTexture(const unsigned char activetexture, const GLenum ta
 	}
 }
 void states_bindTextures(const GLuint first, const GLsizei count, const GLuint * textures){
+	//TODO REDO
 	GLsizei fixedcount = (first + count > STATESTEXTUREUNITCOUNT)? STATESTEXTUREUNITCOUNT - first : count;
 //	GLsizei mycount;
 //	unsigned int myfirst = first;

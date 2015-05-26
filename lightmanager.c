@@ -15,6 +15,7 @@
 #include "mathlib.h"
 
 #include "renderqueue.h"
+#include "ubomanager.h"
 #include "shadermanager.h"
 #include "texturemanager.h"
 #include "framebuffermanager.h"
@@ -51,6 +52,9 @@ GLuint spotfaces[39]={	0,2,1, 0,3,2, 0,4,3, 0,5,4, //side faces
 			1,2,3, 1,3,4, 1,4,5, 1,5,6, //cap faces
 			1,6,7, 1,2,7,}; //cap faces
 vec_t spotverts[24] = {0.0};
+
+GLuint light_uboid;
+ubo_t lightubo;
 
 void recalcLightBBox(light_t *l){
 	//spot light
@@ -247,6 +251,15 @@ int light_init(void){
 	states_bindBuffer(GL_ELEMENT_ARRAY_BUFFER, cvbo->indicesid);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, 39 *sizeof(GLuint), spotfaces, GL_STATIC_DRAW);
 	cvbo->numfaces = 13;
+
+	lightubo = ubo_create();
+
+	#if UBOPINGPONG > 1
+		light_uboid = lightubo.id[0];
+	#else
+		light_uboid = lightubo.id;
+	#endif
+
 	light_ok = TRUE;
 	return TRUE; // todo error check
 }
@@ -673,8 +686,16 @@ lightrenderout_t readyLightsForRender(viewport_t *v, const unsigned int max, con
 
 		//fill my output buffer with the lights
 		for(i = 0; i < ltcount; i++){
-			if(llist.infrustum[i]) out.lin.list[out.lin.count++] = llist.list[i];
-			else out.lout.list[out.lout.count++] = llist.list[i];
+			light_t *tl = llist.list[i];
+			if(llist.infrustum[i]) out.lin.list[out.lin.count++] = tl;
+			else out.lout.list[out.lout.count++] = tl;
+			/*
+			//also push light data to ubo
+			aLightUBOStruct_t ldata = {{0}, {l->pos[0], l->pos[1], l->pos[2]}, l->size};
+			Matrix4x4_ToArrayFloatGL(tl->viewproj, ldata.lmv);
+			ubo_pushDataNoSize
+			int t = ubo_PushDataNoSize(&lightubo, sizeof(aLightUBOStruct_t), &ldata);
+			*/
 		}
 		//resize back down for a perfect fit, no moving of mem needed
 		if(out.lin.count != ltcount) out.lin.list = realloc(out.lin.list, out.lin.count * sizeof(light_t *));

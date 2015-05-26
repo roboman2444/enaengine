@@ -57,9 +57,33 @@ int ubo_pushData(ubo_t * u, const unsigned int size, const void * data){
 		u->size = newsize;
 	}
 	memcpy(u->data + place, data, size);
-	u->place = place + mysize;
+	u->place = newsize;
 	return place;
 }
+//returns offset in bytes
+int ubo_pushDataNoAlign(ubo_t * u, const unsigned int size, const void * data){
+	if(!size || !data) return -1;
+	unsigned int place = u->place;
+	unsigned int newsize = place + size;
+	if(newsize > u->size){
+		u->data = realloc(u->data, newsize);
+		u->size = newsize;
+	}
+	memcpy(u->data + place, data, size);
+	u->place = newsize;
+	return place;
+}
+//returns offset in bytes
+unsigned int ubo_alignData(ubo_t * u){
+	unsigned int mysize = (u->place + ubo_alignment-1) & ~(ubo_alignment-1);
+	if(mysize > u->size){
+		u->data = realloc(u->data, mysize);
+		u->size = mysize;
+	}
+	u->place = mysize;
+	return mysize;
+}
+
 
 unsigned int ubo_halfData(ubo_t *u){
 	unsigned int newsize = u->size/2;
