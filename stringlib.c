@@ -29,6 +29,21 @@ int string_testEqual(const char * one, const char * two){
 	if(*m2) return FALSE;
 	return TRUE;
 }
+//same as above except case insensitive
+int string_testEqualCI(const char * one, const char * two){
+	if(!one || !two) return FALSE;
+	char * m1 = (char *)one;
+	char * m2 = (char *)two;
+	//i dont test both in the while because checking weather they are equal does it for me
+	while(*m1){
+		if(TOLOWER(*m1) != TOLOWER(*m2)) return FALSE;
+		m1++;
+		m2++;
+	}
+	//now check if m1 stopped early and m2 still goes
+	if(*m2) return FALSE;
+	return TRUE;
+}
 
 //returns TRUE if both strings are equal, false otherwise. tests only first n characters
 //suitable replacement for !strcmp() if you only want to check if they are the same
@@ -40,6 +55,16 @@ int string_testEqualN(const char * one, const char * two, const unsigned int n){
 	unsigned int i;
 	//i dont test both in the while because checking weather they are equal does it for me
 	for(i = 0; i < n && *m1; i++) if(*m1++ != *m2++) return FALSE;
+	return TRUE;
+}
+//same as above but case insensitive
+int string_testEqualNCI(const char * one, const char * two, const unsigned int n){
+	if(!one || !two) return FALSE;
+	char * m1 = (char *)one;
+	char * m2 = (char *)two;
+	unsigned int i;
+	//i dont test both in the while because checking weather they are equal does it for me
+	for(i = 0; i < n && *m1; i++, m1++, m2++)if(TOLOWER(*m1) != TOLOWER(*m2)) return FALSE;
 	return TRUE;
 }
 
@@ -59,7 +84,7 @@ unsigned int string_toVec(const char *s, vec_t *v, const unsigned int maxdem){
 
 unsigned int string_countWords(const char *s){
 	unsigned int i = 0;
-	char * mystr = (char * s);
+	char * mystr = (char *) s;
 	while(*mystr){
 		while(*mystr && ISWHITESPACE(*mystr)) mystr++;
 		if(*mystr && !ISWHITESPACE(*mystr)) i++, mystr++;

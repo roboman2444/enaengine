@@ -10,6 +10,14 @@ int getHash(const char * string){
 	}
 	return rethash%MAXHASHBUCKETS;
 }
+int getHashCI(const char * string){
+	unsigned long rethash = 0;
+	while(*string){
+		rethash = rethash * 31 + TOLOWER(*string);
+		string++;
+	}
+	return rethash%MAXHASHBUCKETS;
+}
 
 int addToHashTable(const char * name, int id, hashbucket_t * ht){
 	int hash = getHash(name);
