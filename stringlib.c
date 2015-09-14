@@ -56,3 +56,14 @@ unsigned int string_toVec(const char *s, vec_t *v, const unsigned int maxdem){
 	for(j = i; j < maxdem; j++) v[j] = 0.0;
 	return j;
 }
+
+unsigned int string_countWords(const char *s){
+	unsigned int i = 0;
+	char * mystr = (char * s);
+	while(*mystr){
+		while(*mystr && ISWHITESPACE(*mystr)) mystr++;
+		if(*mystr && !ISWHITESPACE(*mystr)) i++, mystr++;
+		while(*mystr && !ISWHITESPACE(*mystr)) mystr++;
+	}
+	return i;
+}

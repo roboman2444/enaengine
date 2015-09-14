@@ -8,6 +8,7 @@
 #include "vbomanager.h"
 #include "modelmanager.h"
 #include "shadermanager.h"
+#include "physics.h"
 #include "entitymanager.h"
 #include "worldmanager.h"
 #include "viewportmanager.h"
@@ -115,6 +116,7 @@ extern int recalcEntBBox(entity_t *e);
 
 int initGameCodeSystem(void){
 	entity_init();
+	physics_init();
 	if(!entity_ok){
 		gamecodeOK = FALSE;
 		return FALSE;
@@ -289,17 +291,21 @@ void gameCodeTick(void){ //todo maybe change to float in seconds
 	for(i = 0; i <= entity_arraylasttaken; i++){
 		entity_t * e = &entity_list[i];
 		if(!e->type) continue;
-		if(e->vel[0] || e->vel[1] || e->vel[2]){
-			e->pos[0] += e->vel[0] * GCTIMESTEPSECONDS;
-			e->pos[1] += e->vel[1] * GCTIMESTEPSECONDS;
-			e->pos[2] += e->vel[2] * GCTIMESTEPSECONDS;
-			e->needsmatupdate = TRUE;
-		}
-		if(e->anglevel[0] || e->anglevel[1] || e->anglevel[2]){
-			e->angle[0] += e->anglevel[0] * GCTIMESTEPSECONDS;
-			e->angle[1] += e->anglevel[1] * GCTIMESTEPSECONDS;
-			e->angle[2] += e->anglevel[2] * GCTIMESTEPSECONDS;
-			e->needsmatupdate = TRUE;
+		if(e->phys.movetype == ODEDYNAMIC){
+			if(physics_getEntD(e)) e->needsmatupdate = TRUE;
+		} else {
+			if(e->vel[0] || e->vel[1] || e->vel[2]){
+				e->pos[0] += e->vel[0] * GCTIMESTEPSECONDS;
+				e->pos[1] += e->vel[1] * GCTIMESTEPSECONDS;
+				e->pos[2] += e->vel[2] * GCTIMESTEPSECONDS;
+				e->needsmatupdate = TRUE;
+			}
+			if(e->anglevel[0] || e->anglevel[1] || e->anglevel[2]){
+				e->angle[0] += e->anglevel[0] * GCTIMESTEPSECONDS;
+				e->angle[1] += e->anglevel[1] * GCTIMESTEPSECONDS;
+				e->angle[2] += e->anglevel[2] * GCTIMESTEPSECONDS;
+				e->needsmatupdate = TRUE;
+			}
 		}
 	}
 	for(i = 0; i <= entity_arraylasttaken; i++){

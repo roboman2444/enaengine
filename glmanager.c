@@ -13,8 +13,11 @@
 #include "particlemanager.h"
 #include "console.h"
 #include "viewportmanager.h"
+
+#include "physics.h"
 #include "entitymanager.h"
 #include "worldmanager.h"
+
 #include "renderqueue.h"
 #include "lightmanager.h"
 #include "lighttile.h"

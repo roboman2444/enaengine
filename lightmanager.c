@@ -6,6 +6,7 @@
 #include "globaldefs.h"
 #include "hashtables.h"
 #include "matrixlib.h"
+#include "physics.h"
 #include "entitymanager.h"
 #include "mathlib.h"
 #include "viewportmanager.h"

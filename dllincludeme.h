@@ -78,6 +78,16 @@ typedef struct light_s {
 	unsigned int shadowsize;
 } light_t;
 
+//phys
+typedef struct phystype_s {
+	enum {STATIC, FLY, DYNAMIC, ODEFLY, ODEDYNAMIC} movetype;
+	enum {NONE, AABB, ODESPHERE, ODEBOX, ODECYLINDER, ODECAPSULE} collidetype;
+	float mass;
+	void * gid;
+	void * bid;
+} phystype_t;
+
+
 //ent
 typedef struct entity_s {
 	char * name;
@@ -103,6 +113,7 @@ typedef struct entity_s {
 	int texturegroupid;	//second priority
 	int modelid;		//third priority
 
+	phystype_t phys;
 	int needsbboxupdate;
 
 	vec_t bboxp[24];

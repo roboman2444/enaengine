@@ -31,6 +31,7 @@ typedef struct entity_s {
 	int texturegroupid;	//second priority
 	int modelid;		//third priority
 
+	phystype_t phys;
 
 	int needsbboxupdate;
 

@@ -6,6 +6,7 @@
 #include "worldmanager.h"
 #include "modelmanager.h"
 #include "mathlib.h"
+#include "physics.h"
 #include "entitymanager.h"
 #include "console.h"
 
