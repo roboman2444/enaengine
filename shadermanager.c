@@ -186,6 +186,8 @@ shaderpermutation_t createPermutation(shaderprogram_t * shader, unsigned int per
 	if(!(shader->type & 2)) return perm;
 	GLuint vertid = glCreateShader(GL_VERTEX_SHADER);
 	GLuint fragid = glCreateShader(GL_FRAGMENT_SHADER);
+	GLuint geomid = 0;
+	if(shader->geomstring) geomid = glCreateShader(GL_GEOMETRY_SHADER);
 
 	unsigned char linebounce = 1;
 	unsigned char arraysize = shader->numdefines + 4;
@@ -237,6 +239,10 @@ shaderpermutation_t createPermutation(shaderprogram_t * shader, unsigned int per
 	glShaderSource(vertid, arraysize, (const GLchar **) sstring, 0);
 	sstring[arraysize-1] = shader->fragstring;
 	glShaderSource(fragid, arraysize, (const GLchar **) sstring, 0);
+	if(geomid){
+		sstring[arraysize-1] = shader->geomstring;
+		glShaderSource(geomid, arraysize, (const GLchar **) sstring, 0);
+	}
 	//if i set shadersource length to null, it does it by null char looking
 	//todo geom shader
 
@@ -248,6 +254,7 @@ shaderpermutation_t createPermutation(shaderprogram_t * shader, unsigned int per
 
 	glCompileShader(vertid);
 	glCompileShader(fragid);
+	if(geomid) glCompileShader(geomid);
 	int fail = 0;
 	int status;
 
@@ -256,10 +263,12 @@ shaderpermutation_t createPermutation(shaderprogram_t * shader, unsigned int per
 			console_printf("Shader %s vertex shader compile failed\n", shader->name);
 			fail = 1;
 	}
-	glGetShaderiv(vertid, GL_COMPILE_STATUS, &status);
-	if(shader_printShaderLogStatus(vertid) || status == GL_FALSE){
-			console_printf("Shader %s fragment shader compile failed\n", shader->name);
-			fail = 1;
+	if(geomid){
+		glGetShaderiv(geomid, GL_COMPILE_STATUS, &status);
+		if(shader_printShaderLogStatus(geomid) || status == GL_FALSE){
+				console_printf("Shader %s geometry shader compile failed\n", shader->name);
+				fail = 1;
+		}
 	}
 
 	//todo geom shader
@@ -267,6 +276,7 @@ shaderpermutation_t createPermutation(shaderprogram_t * shader, unsigned int per
 	//TODO errorcheck
 	glAttachShader(programid, vertid);
 	glAttachShader(programid, fragid);
+	if(shader->geomstring) glAttachShader(programid, geomid);
 	glBindFragDataLocation(programid, 0, "fragColor"); //todo move this
 	glBindFragDataLocation(programid, 1, "normColor"); //todo move this
 	glBindFragDataLocation(programid, 2, "specColor"); //todo move this
@@ -291,6 +301,7 @@ shaderpermutation_t createPermutation(shaderprogram_t * shader, unsigned int per
 
 	glDeleteShader(vertid);
 	glDeleteShader(fragid); //get rid of unused shader stuffs
+	if(geomid) glDeleteShader(geomid);
 
 	//TODO errorcheck
 	glGetProgramiv(programid, GL_LINK_STATUS, &status);
