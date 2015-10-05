@@ -26,6 +26,8 @@ model_t *model_list;
 hashbucket_t modelhashtable[MAXHASHBUCKETS];
 //hashbucket_t * modelhashtable;
 //model_t * defaultModel;
+
+//TODO change the numstatic and whatnot to do the null string trick that dp uses
 #define NUMSTATIC 1
 #define NUMANIM 1
 
