@@ -18,6 +18,12 @@
 #define vec4length(a) sqrt(vec4dot((a),(a)))
 //#define vec4norm(a,b) {float dontusel = vec4length((b));(a)[0] = (b)[0]/dontusel;(a)[1] = (b)[1]/dontusel;(a)[2] = (b)[2]/dontusel;}
 
+//compare two vectors (are they equal)
+#define vec2compare(a,b) ((a)[0] == b[0] && (a)[1] == (b)[1])
+#define vec3compare(a,b) (vec2compare((a),((b)) && (a)[2] == (b)[2])
+#define vec4compare(a,b) (vec3compare((a),((b)) && (a)[3] == (b)[3])
+
+
 //add a vector to a vector
 #define vec1addvec(a,b,c) (a)[0] = (b)[0] + (c)[0];
 #define vec2addvec(a,b,c) vec1addvec((a),(b),(c)) (a)[1] = (b)[1] + (c)[1];
