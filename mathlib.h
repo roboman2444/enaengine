@@ -19,9 +19,14 @@
 //#define vec4norm(a,b) {float dontusel = vec4length((b));(a)[0] = (b)[0]/dontusel;(a)[1] = (b)[1]/dontusel;(a)[2] = (b)[2]/dontusel;}
 
 //compare two vectors (are they equal)
-#define vec2compare(a,b) ((a)[0] == b[0] && (a)[1] == (b)[1])
-#define vec3compare(a,b) (vec2compare((a),((b)) && (a)[2] == (b)[2])
-#define vec4compare(a,b) (vec3compare((a),((b)) && (a)[3] == (b)[3])
+#define vec2compare(a,b) ((a)[0] == (b)[0] && (a)[1] == (b)[1])
+#define vec3compare(a,b) (vec2compare((a),(b)) && (a)[2] == (b)[2])
+#define vec4compare(a,b) (vec3compare((a),(b)) && (a)[3] == (b)[3])
+
+//copy a vector
+#define vec2copy(a,b) (a)[0] = (b)[0]; (a)[1] = (b)[1]
+#define vec3copy(a,b) vec2copy((a),(b)); (a)[2] = (b)[2]
+#define vec4copy(a,b) vec3copy((a),(b)); (a)[3] = (b)[3]
 
 
 //add a vector to a vector
