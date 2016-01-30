@@ -2,6 +2,7 @@
 
 #include "globaldefs.h"
 #include "console.h"
+#include "matrixlib.h"
 #include "physics.h"
 #include "entitymanager.h"
 
@@ -51,13 +52,14 @@ void physics_addPhystype(phystype_t *phy){
 	dGeomID geom;
 	dMass m;
 	switch(phy->collidetype){
+		default:
 		case ODESPHERE:
 			geom = dCreateSphere(0, 1.0);
 			dMassSetSphereTotal(&m, phy->mass, 1.0);
 		break;
 		case ODEBOX:
 			geom = dCreateBox(0, 1.0, 1.0, 1.0);
-			dMassSetBoxTotal(&m, phy->mass, 1.0,, 1.0, 1.0);
+			dMassSetBoxTotal(&m, phy->mass, 1.0, 1.0, 1.0);
 		break;
 		case ODECYLINDER:
 			geom = dCreateCylinder(0, 1.0, 1.0);
@@ -67,7 +69,6 @@ void physics_addPhystype(phystype_t *phy){
 			geom = dCreateCapsule(0, 1.0, 1.0);
 			dMassSetCapsuleTotal(&m, phy->mass, 0, 1.0, 1.0);
 		break;
-		default:
 	}
 	dBodySetMass(body, &m);
 	dGeomSetBody(geom, body);
@@ -85,13 +86,14 @@ void physics_addEntity(entity_t *e){
 	dGeomID geom;
 	dMass m;
 	switch(phy->collidetype){
+		default:
 		case ODESPHERE:
 			geom = dCreateSphere(0, 1.0);
-			dMassSetSphereTotal(&m, phy->mass, e->);
+			dMassSetSphereTotal(&m, phy->mass, e->scale);
 		break;
 		case ODEBOX:
 			geom = dCreateBox(0, 1.0, 1.0, 1.0);
-			dMassSetBoxTotal(&m, phy->mass, 1.0,, 1.0, 1.0);
+			dMassSetBoxTotal(&m, phy->mass, 1.0, 1.0, 1.0);
 		break;
 		case ODECYLINDER:
 			geom = dCreateCylinder(0, 1.0, 1.0);
@@ -101,23 +103,25 @@ void physics_addEntity(entity_t *e){
 			geom = dCreateCapsule(0, 1.0, 1.0);
 			dMassSetCapsuleTotal(&m, phy->mass, 0, 1.0, 1.0);
 		break;
-		default:
 	}
 	dBodySetMass(body, &m);
 	dGeomSetBody(geom, body);
 	dBodySetPosition(body, e->pos[0], e->pos[1], e->pos[2]);
 	dBodySetLinearVel(body, e->vel[0], e->vel[1], e->vel[2]);
 }
-int physics_getEntD(entity_t *e){
+int physics_getEntD(void *ve){
+	entity_t *e = (entity_t *) ve;
 	int ret = FALSE;
-	vec3_t epos = e->pos;
-	vec3_t npos = dGeomGetPosition((dGeomID)e->phys->gid);
+	vec3_t epos = {e->pos[0], e->pos[1], e->pos[2]};
+	/*
+//	vec3_t npos = dGeomGetPosition((dGeomID)e->phys.gid);
 	if(epos[0] != npos[0] || epos[1] != npos[1] || epos[2] != npos[2]){
 		e->pos[0] = npos[0];
 		e->pos[1] = npos[1];
 		e->pos[2] = npos[2];
 		ret = TRUE;
 	}
+	*/
 	return ret;
 }
 
