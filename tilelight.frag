@@ -73,4 +73,5 @@ void main(){
 	float specmap = difftex.a;
 	fragColor.rgb = (specout * specmap) + (diffout * diffuse);
 	fragColor.a = 0.0;
+	fragColor.rgba = vec4(0.5);
 }

@@ -25,7 +25,8 @@ Console
 	get it rendering text with the renderqueue system
 	make it not shitty
 World
-	Use a queue system to figure out of tree leafs need bbox recalculation
+	Use a queue system to figure out of tree leafs need bbox recalculation?
+	Implement dual sorted linked list  in each leaf.
 	Implement BBOX smallerizing
 	-Disable depth testing to see weather or not my little ordering method helps
 		-attempted, not enough of a change to tell
