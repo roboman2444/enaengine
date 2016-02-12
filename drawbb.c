@@ -45,13 +45,15 @@ GLuint bboxpfaces[24] = {0, 1, 1, 2, 1, 3, 2, 3,
 
 
 void drawbb_drawCallback(renderlistitem_t *ilist, unsigned int count){
-	printf("draw\n");
+//	printf("draw %i %i\n", renderqueuevbo.vaoid, count);
 	renderBBCallbackData_t *d = ilist->data;
 	unsigned int mysize = count * sizeof(wireframeUBOStruct_t);
 	glstate_t s = {STATESENABLEDEPTH|STATESENABLECULLFACE|STATESENABLEBLEND, GL_ONE, GL_ONE, GL_LESS, GL_BACK, GL_FALSE, GL_LESS, 0.0, renderqueuevbo.vaoid, 0, 0, 0, 0, 0, d->shaderprogram, 0, {0}, {0}, {renderqueueuboid, 0}, {d->ubodataoffset, 0}, {mysize, 0}};
+//	glstate_t s = {STATESENABLEDEPTH|STATESENABLECULLFACE|STATESENABLEBLEND, GL_ONE, GL_ONE, GL_LESS, GL_BACK, GL_FALSE, GL_LESS, 0.0, renderqueuevbo.vaoid, 0, 0, 0, 0, 0, d->shaderprogram, 0, {0}, {0}, {renderqueueuboid, 0}, {d->ubodataoffset, 0}, {mysize, 0}};
 	states_setState(s);
+//	states_useProgram(d->shaderprogram);
 	CHECKGLERROR
-	glDrawElements(GL_LINES, 24 * count, GL_UNSIGNED_INT, (const void *) (d->startf * sizeof(GLuint)));
+//	glDrawElements(GL_LINES, 24 * count, GL_UNSIGNED_INT, (const void *) (d->startf * sizeof(GLuint)));
 //	glDrawElements(GL_LINES, 24 * count, GL_UNSIGNED_INT, 0);
 }
 void drawbb_setupCallback(renderlistitem_t *ilist, unsigned int count){

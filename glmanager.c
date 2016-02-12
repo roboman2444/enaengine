@@ -9,7 +9,8 @@
 #include "framebuffermanager.h"
 #include "vbomanager.h"
 #include "modelmanager.h"
-#include "sdlmanager.h"
+//#include "sdlmanager.h"
+#include "glfwmanager.h"
 #include "particlemanager.h"
 #include "console.h"
 #include "viewportmanager.h"
@@ -127,6 +128,7 @@ int glInit(void){
 //	console_printf("cvar id is %i\n", cvar_gl_MSAA_Samples.myid);
 //	console_printf("cvar name is %s\n", cvar_gl_MSAA_Samples.name);
 //	console_printf("cvar value is %s\n", cvar_gl_MSAA_Samples.valuestring);
+	glewExperimental = TRUE;
 	GLenum glewError = glewInit();
 	if(glewError != GLEW_OK){
 		console_printf("ERROR with the glew: %s\n", glewGetErrorString(glewError));
@@ -902,7 +904,8 @@ int glMainDraw(void){
 
 
 //	glDrawFSQuad();
-	swapBuffers();
+//	swapBuffers();
+	glfw_swapBuffers();
 //	console_printf("Faces: %li Verts: %li Objects: %li\n", totalface, totalvert, totalcount);
 	return TRUE;
 }

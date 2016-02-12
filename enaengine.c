@@ -4,7 +4,8 @@
 #include "globaldefs.h"
 #include "enaengine.h"
 #include "glmanager.h"
-#include "sdlmanager.h"
+//#include "sdlmanager.h"
+#include "glfwmanager.h"
 #include "console.h"
 #include "gamecodemanager.h"
 #include "cvarmanager.h"
@@ -13,10 +14,11 @@ extern int initWorldSystem(void);
 extern int worldOK;
 
 //main
-
-extern int SDL_GetTicks(); //will remove later todo
+extern double glfwGetTime(void);
+//extern int SDL_GetTicks(); //will remove later todo
 int main(int argc, char *argv[]){
-	unsigned int to, t;
+	double to, t;
+//	unsigned int to, t;
 	unsigned int framecount = 0;
 	cvar_init();
 	if(!cvar_ok){
@@ -27,7 +29,8 @@ int main(int argc, char *argv[]){
 		printf("Cvar system has initialized correctly\n");
 	}
 	console_init();
-	sdlInit(800, 600, 24, 1);
+//	sdlInit(800, 600, 24, 1);
+	glfw_init(800, 600, 24,1);
 	if(glInit()){
 		console_printf("opengl has initailized correctly\n");
 	}
@@ -43,14 +46,19 @@ int main(int argc, char *argv[]){
 		console_printf("gamecode has failed to load\n");
 	}
 //	printConsoleBackwards();
-	to = SDL_GetTicks();
+//	to = SDL_GetTicks();
+	to = glfwGetTime();
 
 
-	unsigned int timesincelastfpsupdate = 0;
-	unsigned int accum = 0;
+//	unsigned int timesincelastfpsupdate = 0;
+//	unsigned int accum = 0;
+	double timesincelastfpsupdate = 0;
+	double accum = 0;
 	while(TRUE){
-		t = SDL_GetTicks();
-		unsigned int delta = t-to;
+//		t = SDL_GetTicks();
+		t = glfwGetTime();
+//		unsigned int delta = t-to;
+		double delta = t-to;
 		to = t;
 		timesincelastfpsupdate += delta;
 	/*
@@ -60,21 +68,27 @@ int main(int argc, char *argv[]){
 			framecount = 0;
 		}
 	*/
-		if(timesincelastfpsupdate > 10000){
-			console_printf("%f fps\n", (float)framecount*1000.0/(float)timesincelastfpsupdate);
-			timesincelastfpsupdate -= 10000;
+//		if(timesincelastfpsupdate > 10000){
+		if(timesincelastfpsupdate > 10.000){
+//			console_printf("%f fps\n", (float)framecount*1000.0/(float)timesincelastfpsupdate);
+			console_printf("%f fps\n", (double)framecount/timesincelastfpsupdate);
+//			timesincelastfpsupdate -= 10000;
+			timesincelastfpsupdate -=10.0;
 			framecount = 0;
 		}
 
 		accum+= delta;
-		sdlCheckEvent();
+//		sdlCheckEvent();
+		glfw_checkEvent();
 #ifdef DEBUGTIMESTEP
 		gameCodeTick();
 		accum = 0;
 #else
-		while(accum>GCTIMESTEP){
+//		while(accum>GCTIMESTEP){
+		while(accum*1000.0>GCTIMESTEP){
 			gameCodeTick();
-			accum-=GCTIMESTEP;
+//			accum-=GCTIMESTEP;
+			accum-=(double)GCTIMESTEP/1000.0;
 		}
 #endif
 		glMainDraw();
