@@ -26,6 +26,8 @@
 #include "glstates.h"
 #include "animmanager.h"
 #include "mathlib.h"
+#include "drawbb.h"
+
 #include <tgmath.h> //for sin and cos
 
 #include "rendermodel.h" // for model callbacks
@@ -193,6 +195,8 @@ int glInit(void){
 		return FALSE;
 	}
 	rendermodel_init();
+	//todo errorcheck
+	drawbb_init();
 	//todo errorcheck
 
 	states_enableForce(GL_MULTISAMPLE);
@@ -507,6 +511,7 @@ int loadLeafIntoQueues(worldleaf_t * l, renderqueue_t * forwardqueue, renderqueu
 //				if(!(e->flags & FORWARDFLAG))
 //				if(e->flags & FORWARDFLAG)
 					addEntityToRenderqueue(e, forwardqueue, v);
+					drawbb_addToRenderQueue(v, forwardqueue, e->bboxp);
 				mynum++;
 			}
 		}

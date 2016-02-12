@@ -332,8 +332,9 @@ int pushDataToUBOCache2(const unsigned int size, const void * data){
 char flushVertCacheToBuffers(void){
 	if(!facedataplace) return FALSE;
 	//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, renderqueuevbo.indicesid);
+	states_bindVertexArray(renderqueuevbo.vaoid);
 	states_bindBuffer(GL_ELEMENT_ARRAY_BUFFER, renderqueuevbo.indicesid);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, facedatasize * 3 * sizeof(GLuint), facedata, GL_DYNAMIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, facedatasize *  sizeof(GLuint), facedata, GL_DYNAMIC_DRAW);
 
 	//check if its actually used
 	if(vertposdataplace){
@@ -438,11 +439,12 @@ char flushVertCacheToBuffers(void){
 
 //returns the offset into the indices array, in number of ints
 //todo rewrite so you use glDrawElements(Instanced)BaseVertex instead
-int pushDataToVertCache(const unsigned int vertcount, const unsigned int facecount, const unsigned int * face, const float * posdata, const float * normdata, const float * tcdata, const float * tangentdata, const unsigned int * blendidata, const unsigned int *blendwdata){
-	if(!vertcount || !facecount || !face) return -1;
+int pushDataToVertCache(const unsigned int vertcount, const unsigned int faceinsize, const unsigned int * face, const float * posdata, const float * normdata, const float * tcdata, const float * tangentdata, const unsigned int * blendidata, const unsigned int *blendwdata){
+//	if(!vertcount || !facecount || !face) return -1;
+	if(!vertcount || !faceinsize || !face) return -1;
 
 	//push vert stuff
-	unsigned int faceinsize = facecount*3;
+//	unsigned int faceinsize = facecount*3;
 	//todo do i need this +1? (change all others if not as well)
 	unsigned int facedatanewsize = facedataplace + faceinsize;
 	if(facedatanewsize > facedatasize){

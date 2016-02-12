@@ -61,7 +61,7 @@ typedef struct renderqueue_s {
 int readyRenderQueueBuffers(void);
 
 //returns -1 on failure, returns offset into facebuffer (per int, not per face)
-int pushDataToVertCache(const unsigned int vertcount, const unsigned int facecount, const unsigned int * face, const float * posdata, const float * normdata, const float * tcdata, const float * tangentdata, const unsigned int * blendidata, const unsigned int * blendwdata);
+int pushDataToVertCache(const unsigned int vertcount, const unsigned int faceinsize, const unsigned int * face, const float * posdata, const float * normdata, const float * tcdata, const float * tangentdata, const unsigned int * blendidata, const unsigned int * blendwdata);
 char flushVertCacheToBuffers(void);
 
 
