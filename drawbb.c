@@ -53,7 +53,7 @@ void drawbb_drawCallback(renderlistitem_t *ilist, unsigned int count){
 	states_setState(s);
 //	states_useProgram(d->shaderprogram);
 	CHECKGLERROR
-//	glDrawElements(GL_LINES, 24 * count, GL_UNSIGNED_INT, (const void *) (d->startf * sizeof(GLuint)));
+	glDrawElements(GL_LINES, 24 * count, GL_UNSIGNED_INT, (const void *) (d->startf * sizeof(GLuint)));
 //	glDrawElements(GL_LINES, 24 * count, GL_UNSIGNED_INT, 0);
 }
 void drawbb_setupCallback(renderlistitem_t *ilist, unsigned int count){

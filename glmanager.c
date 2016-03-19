@@ -130,41 +130,49 @@ int glInit(void){
 //	console_printf("cvar value is %s\n", cvar_gl_MSAA_Samples.valuestring);
 	glewExperimental = TRUE;
 	GLenum glewError = glewInit();
+	CHECKGLERROR
 	if(glewError != GLEW_OK){
 		console_printf("ERROR with the glew: %s\n", glewGetErrorString(glewError));
 		return FALSE;
 	}
 	shader_init();
+	CHECKGLERROR
 	if(!shader_ok){
 		//todo call some sort of shutdown of everything
 		 return FALSE;
 	}
 	texture_init();
+	CHECKGLERROR
 	if(!texture_ok){
 		//todo call some sort of shutdown of everything
 		 return FALSE;
 	}
 	framebuffer_init();
+	CHECKGLERROR
 	if(!framebuffer_ok){
 		//todo call some sort of shutdown of everything
 		 return FALSE;
 	}
 	vbo_init();
+	CHECKGLERROR
 	if(!vbo_ok){
 		return FALSE;
 		//todo call some sort of shutdown of everything
 	}
 	ubo_init();
+	CHECKGLERROR
 	if(!ubo_ok){
 		return FALSE;
 		//todo call some sort of shutdown of everything
 	}
 	anim_init();
+	CHECKGLERROR
 	if(!anim_ok){
 		//todo call some sort of shutdown of everything
 		return FALSE;
 	}
 	model_init();
+	CHECKGLERROR
 	if(!model_ok){
 		//todo call some sort of shutdown of everything
 		 return FALSE;
@@ -177,35 +185,43 @@ int glInit(void){
 	}
 */
 	light_init();
+	CHECKGLERROR
 	if(!light_ok){
 		//todo call some sort of shutdown of everything
 		return FALSE;
 	}
 	lighttile_init();
+	CHECKGLERROR
 	if(!lighttile_ok){
 		//todo call some sort of shutdown of everything
 		return FALSE;
 	}
 	viewport_init();
+	CHECKGLERROR
 	if(!viewport_ok){
 		//todo call some sort of shutdown of everything
 		return FALSE;
 	}
 	text_init();
+	CHECKGLERROR
 	if(!text_ok){
 		//todo call some sort of shutdown of everything
 		return FALSE;
 	}
 	rendermodel_init();
+	CHECKGLERROR
 	//todo errorcheck
 	drawbb_init();
+	CHECKGLERROR
 	//todo errorcheck
 
 	states_enableForce(GL_MULTISAMPLE);
 	glClearDepth(1.0);
 	glClearColor(0.0, 0.0, 0.0, 0.0);
-	states_disableForce(GL_FOG);
+	CHECKGLERROR
+//	states_disableForce(GL_FOG);
 	states_enableForce(GL_DEPTH_TEST);
+	CHECKGLERROR
 //	glDepthFunc(GL_LESS);
 	states_depthFunc(GL_LESS);
 	states_enableForce(GL_CULL_FACE);
@@ -241,6 +257,7 @@ int glInit(void){
 	glGenBuffers(1, &instancevbo2);
 
 	//temporary
+	CHECKGLERROR
 	vbo_t * tvbo = createAndAddVBORPOINT("text", 2);
 	textvbo = tvbo->myid;
 	textshaderid = shader_createAndAddRINT("text");

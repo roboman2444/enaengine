@@ -5,6 +5,13 @@
 
 
 #include "console.h"
+#define TRUE 1
+#define FALSE 0
+
+#define STATESDEBUG
+#ifdef STATESDEBUG
+#include "glmanager.h"
+#endif
 
 glstate_t state;
 
@@ -13,32 +20,51 @@ void states_blendFunc(const GLenum source, const GLenum dest){
 	glBlendFunc(source, dest);
 	state.blendsource = source;
 	state.blenddest = dest;
+	#ifdef STATESDEBUG
+	CHECKGLERROR
+	#endif
 }
 void states_alpha(const GLenum func, const GLclampf ref){
 	if(func == state.alphafunc && ref == state.alpharef)return;
 	glAlphaFunc(func, ref);
 	state.alphafunc = func;
 	state.alpharef = ref;
+	#ifdef STATESDEBUG
+	CHECKGLERROR
+	#endif
 }
 void states_depthFunc(const GLenum dfunc){
 	if(dfunc == state.depthfunc) return;
 	glDepthFunc(dfunc);
 	state.depthfunc = dfunc;
+	#ifdef STATESDEBUG
+	CHECKGLERROR
+	#endif
 }
 void states_cullFace(const GLenum face){
 	if(face == state.cullface) return;
 	glCullFace(face);
 	state.cullface = face;
+	#ifdef STATESDEBUG
+	CHECKGLERROR
+	#endif
 }
 void states_depthMask(const GLboolean mask){
 	if(mask == state.depthmask) return;
 	glDepthMask(mask);
 	state.depthmask = mask;
+	#ifdef STATESDEBUG
+	CHECKGLERROR
+	#endif
 }
 void states_bindVertexArray(const GLuint id){
+//		printf("Id is %i\n", id);
 	if(id != state.vaoid){
 		glBindVertexArray(id);
 		state.vaoid = id;
+		#ifdef STATESDEBUG
+		CHECKGLERROR
+		#endif
 	}
 }
 void states_bindBuffer(const GLenum type, const GLuint id){
@@ -49,6 +75,9 @@ void states_bindBuffer(const GLenum type, const GLuint id){
 		state.vboid = id;
 		state.vborangeo = 0;
 		state.vboranges = 0;
+		#ifdef STATESDEBUG
+		CHECKGLERROR
+		#endif
 	}
 }
 void states_bindBufferRange(const GLenum type, const GLuint index, const GLuint id, const GLintptr offset, const GLsizeiptr size){
@@ -60,12 +89,18 @@ void states_bindBufferRange(const GLenum type, const GLuint index, const GLuint 
 		state.vboid = id;
 		state.vborangeo = offset;
 		state.vboranges = size;
+		#ifdef STATESDEBUG
+		CHECKGLERROR
+		#endif
 	}
 }
 char states_useProgram(const GLuint shaderid){
 	if(shaderid != state.shaderid){
 		glUseProgram(shaderid);
 		state.shaderid = shaderid;
+		#ifdef STATESDEBUG
+		CHECKGLERROR
+		#endif
 		return 2;
 	}
 	return 1;
@@ -83,6 +118,9 @@ void states_activeTexture(const unsigned char activetexture){
 	if(activetexture != state.activetexture){
 		glActiveTexture(GL_TEXTURE0 + activetexture);
 		state.activetexture = activetexture;
+		#ifdef STATESDEBUG
+		CHECKGLERROR
+		#endif
 	}
 }
 void states_bindTexture(const GLenum target, const GLuint id){
@@ -90,6 +128,9 @@ void states_bindTexture(const GLenum target, const GLuint id){
 		glBindTexture(target, id);
 		state.textureunitid[state.activetexture] = id;
 		state.textureunittarget[state.activetexture] = target;
+		#ifdef STATESDEBUG
+		CHECKGLERROR
+		#endif
 	}
 }
 void states_bindActiveTexture(const unsigned char activetexture, const GLenum target, const GLuint id){
@@ -101,6 +142,9 @@ void states_bindActiveTexture(const unsigned char activetexture, const GLenum ta
 		glBindTexture(target, id);
 		state.textureunitid[activetexture] = id;
 		state.textureunittarget[activetexture] = target;
+		#ifdef STATESDEBUG
+		CHECKGLERROR
+		#endif
 	}
 }
 void states_bindTextures(const GLuint first, const GLsizei count, const GLuint * textures){
@@ -161,36 +205,60 @@ void states_setState(const glstate_t s){
 		if(teststates & STATESENABLEALPHATEST) (s.enabledstates & STATESENABLEALPHATEST) ? glEnable(GL_ALPHA_TEST) : glDisable(GL_ALPHA_TEST);
 		//todo add more
 		state.enabledstates = s.enabledstates;
+		#ifdef STATESDEBUG
+		CHECKGLERROR
+		#endif
 	}
 	if((s.enabledstates & STATESENABLEBLEND) && (s.blendsource != state.blendsource || s.blenddest != state.blenddest)){
 		glBlendFunc(s.blendsource, s.blenddest);
 		state.blendsource = s.blendsource;
 		state.blenddest = s.blenddest;
+		#ifdef STATESDEBUG
+		CHECKGLERROR
+		#endif
 	}
 	if((s.enabledstates & STATESENABLEALPHATEST) && (s.alphafunc != state.alphafunc || s.alpharef != state.alpharef)){
 		glAlphaFunc(s.alphafunc, s.alpharef);
 		state.alphafunc = s.alphafunc;
 		state.alpharef = s.alpharef;
+		#ifdef STATESDEBUG
+		CHECKGLERROR
+		#endif
 	}
 	if((s.enabledstates & STATESENABLEDEPTH) && (s.depthfunc != state.depthfunc) ){
 		glDepthFunc(s.depthfunc);
 		state.depthfunc = s.depthfunc;
+		#ifdef STATESDEBUG
+		CHECKGLERROR
+		#endif
 	}
 	if((s.enabledstates & STATESENABLECULLFACE) && (s.cullface != state.cullface) ){
 		glCullFace(s.cullface);
 		state.cullface = s.cullface;
+		#ifdef STATESDEBUG
+		CHECKGLERROR
+		#endif
 	}
 	if(s.depthmask != state.depthmask){
 		glDepthMask(s.depthmask);
 		state.depthmask = s.depthmask;
+		#ifdef STATESDEBUG
+		CHECKGLERROR
+		#endif
 	}
 	if(s.vaoid != state.vaoid){
 		glBindVertexArray(s.vaoid);
 		state.vaoid = s.vaoid;
+		#ifdef STATESDEBUG
+		CHECKGLERROR
+		#endif
 	}
 	if(s.shaderid != state.shaderid){
 		glUseProgram(s.shaderid);
 		state.shaderid = s.shaderid;
+		#ifdef STATESDEBUG
+		CHECKGLERROR
+		#endif
 	}
 /*
 	if(s.vboranges){
@@ -256,6 +324,9 @@ void states_setState(const glstate_t s){
 				glBindTexture(target, id);
 				state.textureunitid[i] = id;
 				state.textureunittarget[i] = target;
+		#ifdef STATESDEBUG
+		CHECKGLERROR
+		#endif
 			}
 		}
 	}
@@ -271,10 +342,16 @@ void states_setState(const glstate_t s){
 					state.uboblockrangeo[i] = rangeo;
 					state.uboblockranges[i] = ranges;
 					glBindBufferRange(GL_UNIFORM_BUFFER, i, id, rangeo, ranges);
+		#ifdef STATESDEBUG
+		CHECKGLERROR
+		#endif
 				} else {
 					state.uboblockrangeo[i] = 0;
 					state.uboblockranges[i] = 0;
 					glBindBufferBase(GL_UNIFORM_BUFFER, i, id);
+		#ifdef STATESDEBUG
+		CHECKGLERROR
+		#endif
 				}
 			}
 		}

@@ -567,6 +567,7 @@ int readyRenderQueueBuffers(void){
 	renderqueuevbo.name = malloc(strlen(name)+1);
 	renderqueuevbo.setup = 0;
 	strcpy(renderqueuevbo.name, name);
+	console_printf("renderqueuevao id is %i\n", renderqueuevbo.vaoid);
 	//todo add more checks
 
 	states_bindBuffer(GL_ARRAY_BUFFER, renderqueuevbo.vboposid);

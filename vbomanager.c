@@ -6,6 +6,8 @@
 #include "hashtables.h"
 #include "glstates.h"
 
+#include "glmanager.h"
+
 int vbo_ok = 0;
 int vbocount = 0;
 int vboArrayFirstOpen = 0;
@@ -57,8 +59,7 @@ vbo_t * returnVBOById(const int id){
 	return FALSE;
 }
 vbo_t createVBO(char * name, char type){
-	vbo_t v;
-	v.type = 0;
+	vbo_t v = {0};
 	glGenVertexArrays(1, &v.vaoid);	if(!v.vaoid) return v;
 	states_bindVertexArray(v.vaoid);
 	glGenBuffers(1, &v.vboid);	if(!v.vboid) return v;

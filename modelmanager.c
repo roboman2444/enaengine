@@ -16,6 +16,8 @@
 #include "animmanager.h"
 #include "glstates.h"
 
+#include "glmanager.h"
+
 int model_count = 0;
 int model_arrayFirstOpen = 0;
 int model_arrayLastTaken = -1;
@@ -111,7 +113,9 @@ int makeCubeModel(void){
 				3, 6, 7
 	};
 
+	CHECKGLERROR
 	vbo_t * myvbo = createAndAddVBORPOINT(m.name, 1);
+
 	if(!myvbo) return FALSE; // todo free and error handle
 	m.vbo = myvbo->myid;
 
@@ -687,7 +691,6 @@ int loadiqmmeshes(model_t * m, const struct iqmheader hdr, unsigned char *buf){
 //	m->numverts = numverts;
 	getBBoxFromInterleavedMesh(interleavedbuffer, numverts, stride, m->bbox);
 	getBBoxPFromBBox(m->bbox, m->bboxp);
-
 
 
 

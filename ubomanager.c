@@ -6,6 +6,7 @@
 #include "hashtables.h"
 #include "console.h"
 #include "glstates.h"
+#include "glmanager.h"
 
 GLint ubo_maxsize;
 GLint ubo_alignment;
@@ -26,7 +27,6 @@ int ubo_init(void){
 	console_printf("max uniform size is %i\n", ubo_maxsize);
 	glGetIntegerv(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT, &ubo_alignment);
 	console_printf("uniform alignment size is %i\n", ubo_alignment);
-
 
 	ubo_ok = TRUE;
 	return TRUE;
