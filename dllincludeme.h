@@ -3,6 +3,7 @@
 
 #include "globaldefs.h"
 #include "matrixlib.h"
+#include "leaflink.h"
 
 
 
@@ -76,6 +77,9 @@ typedef struct light_s {
 
 	unsigned int shadowid;
 	unsigned int shadowsize;
+
+        //dual linked list shits
+	leaflinkitem_t ll;
 } light_t;
 
 //phys
@@ -123,6 +127,16 @@ typedef struct entity_s {
 	unsigned char treedepth;
 	unsigned int leafpos;
 	void * leaf;
+
+        //dual linked list shits
+        int leafitemupnext;
+        char leaftypeupnext;
+        int leafitemupprev;
+        char leaftypeupprev;
+        int leafitemdownnext;
+        char leaftypedownnext;
+        int leafitemdownprev;
+        char leaftypedownprev
 
 //	vec3_t maxs; //worldspace bounding box
 //	vec3_t mins;

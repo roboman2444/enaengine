@@ -1,3 +1,5 @@
+#include "leaflink.h"
+
 #ifndef LIGHTMANAGERHEADER
 #define LIGHTMANAGERHEADER
 
@@ -51,6 +53,9 @@ typedef struct light_s {
 	matrix4x4_t samplemat;
 	GLuint shadowtexid;
 	GLuint shadowsize;
+
+        //dual linked list shits
+	leaflinkitem_t ll;
 } light_t;
 
 /*

@@ -1,5 +1,8 @@
+#include "leaflink.h"
+
 #ifndef ENTITYMANAGERHEADER
 #define ENTITYMANAGERHEADER
+
 
 struct entity_s;
 struct entitylistpoint_s;
@@ -40,6 +43,8 @@ typedef struct entity_s {
 
 	unsigned int leafpos;
 	void * leaf;
+	//dual linked list shits
+	leaflinkitem_t ll;
 } entity_t;
 
 typedef struct entitylistpoint_s {

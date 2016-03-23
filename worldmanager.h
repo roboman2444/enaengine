@@ -1,3 +1,5 @@
+#include "leaflink.h"
+
 #ifndef WORLDMANAGERHEADER
 #define WORLDMANAGERHEADER
 
@@ -7,9 +9,14 @@
 //works out to be about smallest quadtree size is 64 meters by 64meters
 #define WORLDTREEDEPTH 8
 
+
+//bitwise
 #define WORLDTREEOBJECT 1
 #define WORLDTREEENTITY 2
 #define WORLDTREELIGHT  4
+
+
+
 typedef struct worldobject_s{
 //	int myid;
 	matrix4x4_t mat;
@@ -25,7 +32,8 @@ typedef struct worldobject_s{
 	unsigned int leafpos;
 	//note, i use this as a flag, if set to 0, it means "empty cell, able to be written over"
 	struct worldleaf_s * leaf;
-
+        //dual linked list shits
+	leaflinkitem_t ll;
 	char flags;
 } worldobject_t;
 typedef struct worldleaf_s{
@@ -56,6 +64,7 @@ typedef struct worldleaf_s{
 
 	char includes;
 	char myincludes;
+	leaflinkitem_t ends; //type 0, if followed will result in a circly linked list (dont do)
 } worldleaf_t;
 
 int worldOK;
