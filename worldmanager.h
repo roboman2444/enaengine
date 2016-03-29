@@ -65,6 +65,8 @@ typedef struct worldleaf_s{
 	char includes;
 	char myincludes;
 	leaflinkitem_t ends; //type 0, if followed will result in a circly linked list (dont do)
+	//leafarrlist_t ups;
+	//leafarrlist_t downs;
 } worldleaf_t;
 
 int worldOK;

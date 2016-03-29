@@ -26,13 +26,14 @@ Console
 	make it not shitty
 World
 	Use a queue system to figure out of tree leafs need bbox recalculation?
-	Implement dual sorted linked list  in each leaf.
+	-Implement dual sorted linked list  in each leaf.
 	Implement BBOX smallerizing
 	-Disable depth testing to see weather or not my little ordering method helps
 		-attempted, not enough of a change to tell
 	Basic AABB->AABB collision detection
 	Basic SPHERE->AABB collision detection
 	Raycast through world, multiple styles
+	implement worldthing wrapper?
 
 	REDESIGN/REWRITE
 Deferred
