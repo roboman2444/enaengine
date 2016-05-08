@@ -530,7 +530,7 @@ int loadLeafIntoQueues(worldleaf_t * l, renderqueue_t * forwardqueue, renderqueu
 //				if(!(e->flags & FORWARDFLAG))
 //				if(e->flags & FORWARDFLAG)
 					addEntityToRenderqueue(e, forwardqueue, v);
-					drawbb_addToRenderQueue(v, forwardqueue, e->bboxp);
+//					drawbb_addToRenderQueue(v, forwardqueue, e->bboxp);
 				mynum++;
 			}
 		}

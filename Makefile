@@ -1,9 +1,9 @@
 CC = gcc
 ##LDFLAGS = -lGL -lGLU -lGLEW `sdl-config --libs` -lm -ldl -lode
-LDFLAGS = -lGL -lGLU -lGLEW -lglfw -lm -ldl -lode
+LDFLAGS = -lGL -lGLU -lGLEW -lglfw -lm -ldl -lode -lvulkan
 CFLAGS = -Wall -Ofast `sdl-config --cflags` -fstrict-aliasing -fprofile-use -march=native
 ##OBJECTS = enaengine.o matrixlib.o shadermanager.o filemanager.o glmanager.o sdlmanager.o particlemanager.o framebuffermanager.o texturemanager.o modelmanager.o vbomanager.o console.o viewportmanager.o entitymanager.o gamecodemanager.o hashtables.o renderqueue.o worldmanager.o mathlib.o lightmanager.o textmanager.o ubomanager.o glstates.o animmanager.o cvarmanager.o stringlib.o lighttile.o rendermodel.o forwardlights.o physics.o drawbb.o glfwmanager.o
-OBJECTS = enaengine.o matrixlib.o shadermanager.o filemanager.o glmanager.o particlemanager.o framebuffermanager.o texturemanager.o modelmanager.o vbomanager.o console.o viewportmanager.o entitymanager.o gamecodemanager.o hashtables.o renderqueue.o worldmanager.o mathlib.o lightmanager.o textmanager.o ubomanager.o glstates.o animmanager.o cvarmanager.o stringlib.o lighttile.o rendermodel.o forwardlights.o physics.o drawbb.o glfwmanager.o
+OBJECTS = enaengine.o matrixlib.o shadermanager.o filemanager.o glmanager.o particlemanager.o framebuffermanager.o texturemanager.o modelmanager.o vbomanager.o console.o viewportmanager.o entitymanager.o gamecodemanager.o hashtables.o renderqueue.o worldmanager.o mathlib.o lightmanager.o textmanager.o ubomanager.o glstates.o animmanager.o cvarmanager.o stringlib.o lighttile.o rendermodel.o forwardlights.o physics.o drawbb.o glfwmanager.o vkmanager.o
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c -o $@ $<

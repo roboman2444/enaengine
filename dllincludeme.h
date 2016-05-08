@@ -136,7 +136,7 @@ typedef struct entity_s {
         int leafitemdownnext;
         char leaftypedownnext;
         int leafitemdownprev;
-        char leaftypedownprev
+        char leaftypedownprev;
 
 //	vec3_t maxs; //worldspace bounding box
 //	vec3_t mins;
