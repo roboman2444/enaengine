@@ -1,3 +1,5 @@
+#ifdef VULKAN_COMPILE
+
 #ifndef VKMANAGERHEADER
 #define VKMANAGERHEADER
 
@@ -7,5 +9,8 @@
 	unsigned int screenHeight;
 	unsigned int screenWidth;
 	unsigned int maxMSAASamples;
+
+#endif
+
 
 #endif

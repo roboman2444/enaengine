@@ -5,7 +5,6 @@
 #include "enaengine.h"
 #include "glmanager.h"
 
-
 #include "vkmanager.h"
 //#include "sdlmanager.h"
 #include "glfwmanager.h"
@@ -35,14 +34,24 @@ int main(int argc, char *argv[]){
 		printf("Cvar system has initialized correctly\n");
 	}
 	cvar_register(&cvar_gl_vulkan);
-        cvar_pset(&cvar_gl_vulkan, "0");
+        cvar_pset(&cvar_gl_vulkan, "1");
 	console_init();
 //	sdlInit(800, 600, 24, 1);
 	glfw_init(800, 600, 24,1);
+
+
 	if(cvar_gl_vulkan.valueint){
+#ifdef VULKAN_COMPILE
 		if(vk_init()){
 			console_printf("vulkan has initailized correctly\n");
 		}
+#else
+		printf("Compiled without vulkan support!, reverting to GL\n");
+        	cvar_pset(&cvar_gl_vulkan, "0");
+		if(glInit()){
+			console_printf("opengl has initailized correctly\n");
+		}
+#endif
 	} else {
 		if(glInit()){
 			console_printf("opengl has initailized correctly\n");
@@ -105,8 +114,13 @@ int main(int argc, char *argv[]){
 			accum-=(double)GCTIMESTEP/1000.0;
 		}
 #endif
+
+#ifdef VULKAN_COMPILE
 		if(cvar_gl_vulkan.valueint) vk_mainDraw();
 		else glMainDraw();
+#else
+	glMainDraw();
+#endif
 		framecount++;
 	}
 	return FALSE;

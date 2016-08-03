@@ -1,3 +1,5 @@
+#ifdef VULKAN_COMPILE
+
 #include <vulkan/vulkan.h>
 #include "globaldefs.h"
 #include "vkmanager.h"
@@ -113,3 +115,4 @@ int vk_mainDraw(){
 int vk_resizeViewports(int width, int height){
 	return TRUE;
 }
+#endif

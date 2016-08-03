@@ -1,5 +1,7 @@
+#ifdef VULKAN_COMPILE
 #define GLFW_INCLUDE_VULKAN
 #include <vulkan/vulkan.h>
+#endif
 #include <GLFW/glfw3.h>
 
 #include "globaldefs.h"
@@ -59,7 +61,7 @@ int glfw_init(int width, int height, int bpp, int debugmode){
 		console_printf("ERROR -- GLFW init failed\n");
 		return FALSE;
 	}
-
+#ifdef VULKAN_COMPILE
 //	if (glfwVulkanSupported()){
 	if (TRUE){
 	// Vulkan is available, at least for compute
@@ -67,6 +69,10 @@ int glfw_init(int width, int height, int bpp, int debugmode){
 	        cvar_register(&cvar_gl_vulkan_supported);
 	        cvar_pset(&cvar_gl_vulkan_supported, "1");
 	}
+#else
+	        cvar_register(&cvar_gl_vulkan_supported);
+	        cvar_pset(&cvar_gl_vulkan_supported, "0");
+#endif
 	if(cvar_gl_vulkan.valueint && cvar_gl_vulkan_supported.valueint){
 //		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 		glfwWindowHint(GLFW_CLIENT_API, 0);
@@ -74,7 +80,7 @@ int glfw_init(int width, int height, int bpp, int debugmode){
 		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 		glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-		glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+		glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, 1);
 	}
 	window = glfwCreateWindow(width, height, "enaengine", NULL, NULL);
 	if(!window){
