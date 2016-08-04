@@ -26,7 +26,7 @@
 #include <dlfcn.h> //todo move to sys
 
 int gamecodeOK;
-int tGameTime = 0;
+int gamecode_tGameTime = 0;
 
 gcallheader_t *gc = 0;
 static void * game_lib;
@@ -284,7 +284,7 @@ void entityCollideBBox(entity_t *e){
 }
 
 void gameCodeTick(void){ //todo maybe change to float in seconds
-	tGameTime+=GCTIMESTEP;
+	gamecode_tGameTime+=GCTIMESTEP;
 	int i;
 
 	//ent phys
@@ -322,7 +322,7 @@ void gameCodeTick(void){ //todo maybe change to float in seconds
 	}
 
 
-//		if(e->think && e->nextthink <= tGameTime){
+//		if(e->think && e->nextthink <= gamecode_tGameTime){
 //			e->think();
 //		}
 

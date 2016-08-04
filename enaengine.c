@@ -81,7 +81,7 @@ int main(int argc, char *argv[]){
 //		t = SDL_GetTicks();
 		t = glfwGetTime();
 //		unsigned int delta = t-to;
-		double delta = t-to;
+		double delta = (t-to);
 		to = t;
 		timesincelastfpsupdate += delta;
 	/*

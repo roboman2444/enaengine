@@ -27,6 +27,7 @@ int initgame(void){
 		enthat->pos[1] = 8.7;
 		enthat->pos[0] = -2.5;
 		enthat->scale = .5;
+		enthat->vel[1] = 0.1;
 		enthat->angle[1] = -45.0;
 		enthat->anglevel[0] = 45.0;
 		enthat->needsmatupdate = TRUE;
@@ -43,6 +44,7 @@ int initgame(void){
 		entcoil->shaderid = ec->shader_createAndAddRINT("deferredmodel");
 		entcoil->modelid = ec->model_createAndAddRINT("bunny");
 		entcoil->flags = FORWARDFLAG;
+//		entcoil->vel[0] = 1.0;
 
 //		entcoil->scale = 0.1;
 		entcoil->modelid = ec->model_createAndAddRINT("coil");

@@ -58,11 +58,11 @@ void states_depthMask(const GLboolean mask){
 	#endif
 }
 void states_bindVertexArray(const GLuint id){
-//		printf("Id is %i\n", id);
 	if(id != state.vaoid){
 		glBindVertexArray(id);
 		state.vaoid = id;
 		#ifdef STATESDEBUG
+//		printf("Id is %i\n", id);
 		CHECKGLERROR
 		#endif
 	}

@@ -29,6 +29,7 @@ int drawbb_init(void){
 }
 typedef struct wireframeUBOStruct_s {
 	GLfloat mvp[16];
+	GLfloat color[3];
 } wireframeUBOStruct_t;
 typedef struct renderBBCallbackData_s {
 	GLuint shaderprogram;
@@ -39,9 +40,10 @@ typedef struct renderBBCallbackData_s {
 } renderBBCallbackData_t;
 
 
-GLuint bboxpfaces[24] = {0, 1, 1, 2, 1, 3, 2, 3,
-			4, 5, 5, 6, 5, 7, 6, 7,
-			0, 4, 1, 5, 2, 6, 3, 7};
+GLuint bboxpfaces[24] = {0, 1, 0, 2, 1, 3, 2, 3,
+			 4, 5, 4, 6, 5, 7, 6, 7,
+			 0, 4, 1, 5, 2, 6, 3, 7};
+
 
 
 void drawbb_drawCallback(renderlistitem_t *ilist, unsigned int count){
@@ -51,8 +53,15 @@ void drawbb_drawCallback(renderlistitem_t *ilist, unsigned int count){
 	glstate_t s = {STATESENABLEDEPTH|STATESENABLECULLFACE|STATESENABLEBLEND, GL_ONE, GL_ONE, GL_LESS, GL_BACK, GL_FALSE, GL_LESS, 0.0, renderqueuevbo.vaoid, 0, 0, 0, 0, 0, d->shaderprogram, 0, {0}, {0}, {renderqueueuboid, 0}, {d->ubodataoffset, 0}, {mysize, 0}};
 //	glstate_t s = {STATESENABLEDEPTH|STATESENABLECULLFACE|STATESENABLEBLEND, GL_ONE, GL_ONE, GL_LESS, GL_BACK, GL_FALSE, GL_LESS, 0.0, renderqueuevbo.vaoid, 0, 0, 0, 0, 0, d->shaderprogram, 0, {0}, {0}, {renderqueueuboid, 0}, {d->ubodataoffset, 0}, {mysize, 0}};
 	states_setState(s);
+
+//	states_bindVertexArray(renderqueuevbo.vaoid);
+//	states_bindVertexArray(renderqueuevbo.0);
 //	states_useProgram(d->shaderprogram);
+//	states_bindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+//	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	CHECKGLERROR
+//	glDrawElements(GL_LINES, 24, GL_UNSIGNED_INT, bboxpfaces);
+//	glDrawElements(GL_LINES, 24 * count, GL_UNSIGNED_INT, bboxpfaces);
 	glDrawElements(GL_LINES, 24 * count, GL_UNSIGNED_INT, (const void *) (d->startf * sizeof(GLuint)));
 //	glDrawElements(GL_LINES, 24 * count, GL_UNSIGNED_INT, 0);
 }
@@ -86,7 +95,7 @@ void drawbb_setupCallback(renderlistitem_t *ilist, unsigned int count){
 }
 
 
-unsigned int drawbb_addToRenderQueue(viewport_t *v, renderqueue_t *q, const vec_t *bboxp){
+unsigned int drawbb_addToRenderQueue(viewport_t *v, renderqueue_t *q, const vec_t *bboxp, float colr, float colg, float colb){
 	renderlistitem_t r ={0};
 	renderBBCallbackData_t d;
 	shaderprogram_t *s = shader_returnById(drawbbshaderid);
@@ -94,6 +103,9 @@ unsigned int drawbb_addToRenderQueue(viewport_t *v, renderqueue_t *q, const vec_
 	d.shaderprogram = sp->id;
 	d.ubodataoffset = 0;
 	Matrix4x4_ToArrayFloatGL(&v->viewproj, d.ubo.mvp);
+	d.ubo.color[0] = colr;
+	d.ubo.color[1] = colg;
+	d.ubo.color[2] = colb;
 	memcpy(d.bboxp, bboxp, 24 * sizeof(vec_t));
 	r.sort[0] = (d.shaderprogram >> 0) && 0xFF;
 	r.sort[1] = (d.shaderprogram >> 8) && 0xFF;
@@ -104,6 +116,7 @@ unsigned int drawbb_addToRenderQueue(viewport_t *v, renderqueue_t *q, const vec_
 	r.draw = drawbb_drawCallback;
 	r.datasize = sizeof(renderBBCallbackData_t);
 	r.flags = 2 | 4; // copy data. instanceable
+//	r.flags = 2;// | 4; // copy data. instanceable
 	r.data = &d;
 
 	addRenderlistitem(q, r);

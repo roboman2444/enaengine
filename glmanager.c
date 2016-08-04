@@ -500,6 +500,7 @@ int addAllChildrenLeafIntoQueues(worldleaf_t *l, renderqueue_t * forwardqueue, r
 int loadLeafIntoQueues(worldleaf_t * l, renderqueue_t * forwardqueue, renderqueue_t * deferredqueue, viewport_t *v){
 	unsigned int i;
 	unsigned int mynum = 0;
+	drawbb_addToRenderQueue(v, forwardqueue, l->bboxp, 1.0, 0.0, 0.0);
 	if(l->myincludes & WORLDTREEOBJECT){
 		unsigned int num = l->objectarraylasttaken + 1;
 		worldobject_t * list = l->list;
@@ -507,6 +508,7 @@ int loadLeafIntoQueues(worldleaf_t * l, renderqueue_t * forwardqueue, renderqueu
 			if(!list[i].leaf) continue;
 	//		if(checkBBoxPInBBox(list[i].bbox, v->bboxp)){
 			if(testBBoxPInFrustum(v, list[i].bboxp)){
+				drawbb_addToRenderQueue(v, forwardqueue, list[i].bboxp, 0.0, 0.0, 1.0);
 //				if(list[i].flags & DEFERREDFLAG)
 					addObjectToRenderqueue(&list[i], deferredqueue, v);
 				if(list[i].flags & FORWARDFLAG)
@@ -530,7 +532,7 @@ int loadLeafIntoQueues(worldleaf_t * l, renderqueue_t * forwardqueue, renderqueu
 //				if(!(e->flags & FORWARDFLAG))
 //				if(e->flags & FORWARDFLAG)
 					addEntityToRenderqueue(e, forwardqueue, v);
-//					drawbb_addToRenderQueue(v, forwardqueue, e->bboxp);
+					drawbb_addToRenderQueue(v, forwardqueue, e->bboxp, 0.0, 1.0, 0.0);
 				mynum++;
 			}
 		}
@@ -839,17 +841,21 @@ int glDrawViewport(viewport_t *v){
 	return TRUE;
 }
 int glDrawConsole(void){
+CHECKGLERROR
+	if(!consoleVBO){
+CHECKGLERROR
+		consoleVBO = createAndAddVBORPOINT("console", 2);
+CHECKGLERROR
+		states_bindVertexArray(consoleVBO->vaoid);
+		states_bindBuffer(GL_ARRAY_BUFFER, consoleVBO->vboid);
+                glEnableVertexAttribArray(POSATTRIBLOC);
+                glVertexAttribPointer(POSATTRIBLOC, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), 0);
+                glEnableVertexAttribArray(TCATTRIBLOC);
+                glVertexAttribPointer(TCATTRIBLOC, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (void*)(3*sizeof(GLfloat)));
+	}
 	if(console_displayneedsupdate){
+CHECKGLERROR
 		console_updateText(console_offset, screenWidth, screenHeight);
-		if(!consoleVBO){
-			consoleVBO = createAndAddVBORPOINT("console", 2);
-			states_bindVertexArray(consoleVBO->vaoid);
-			states_bindBuffer(GL_ARRAY_BUFFER, consoleVBO->vboid);
-	                glEnableVertexAttribArray(POSATTRIBLOC);
-	                glVertexAttribPointer(POSATTRIBLOC, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), 0);
-	                glEnableVertexAttribArray(TCATTRIBLOC);
-	                glVertexAttribPointer(TCATTRIBLOC, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (void*)(3*sizeof(GLfloat)));
-		}
 
 		states_bindVertexArray(consoleVBO->vaoid);
 		states_bindBuffer(GL_ARRAY_BUFFER, consoleVBO->vboid);
@@ -884,14 +890,17 @@ int glDrawConsole(void){
 
 	return TRUE;
 }
+extern int gamecode_tGameTime;
 int glMainDraw(void){
+
+	CHECKGLERROR
 	totalface = 0;
 	totalcount = 0;
 	totalvert = 0;
 	//glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 //	degnumber = degnumber+0.01;
-	degnumber = degnumber+0.1;
-	if(degnumber>360.0) degnumber -=360.0;
+	degnumber = gamecode_tGameTime/100.0;
+	degnumber = fmod(degnumber, 360.0);
 	vec3_t pos = {0.0, 9.0, 15.0};
 	vec3_t angle = {30.0, 0.0, 0.0};
 	pos[0] = sin(degnumber *(-M_PI / 180.0))*15.0;
@@ -904,15 +913,19 @@ int glMainDraw(void){
 
 	recalcViewport(cam, pos, angle, 90.0, cam->aspect, 1.0, 1000.0);
 	glDrawViewport(cam);
+	CHECKGLERROR
 
 //temporary
 	//very temp
 	framebuffer_t * outfb = returnFramebufferById(cam->outfbid);
+	CHECKGLERROR
 //	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	bindFramebuffer(outfb);
+	CHECKGLERROR
 //	glViewport(0, 0, 800, 600);
 
-	glDrawConsole();
+//	glDrawConsole();
+	CHECKGLERROR
 
 
 

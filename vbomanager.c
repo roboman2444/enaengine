@@ -8,6 +8,9 @@
 
 #include "glmanager.h"
 
+
+#include "console.h"
+
 int vbo_ok = 0;
 int vbocount = 0;
 int vboArrayFirstOpen = 0;
@@ -62,6 +65,7 @@ vbo_t createVBO(char * name, char type){
 	vbo_t v = {0};
 	glGenVertexArrays(1, &v.vaoid);	if(!v.vaoid) return v;
 	states_bindVertexArray(v.vaoid);
+//	printf("VBO %s with vaoid %i\n", name, v.vaoid);
 	glGenBuffers(1, &v.vboid);	if(!v.vboid) return v;
 	glGenBuffers(1, &v.indicesid);	if(!v.indicesid) return v;
 	v.name = malloc(strlen(name)+1);

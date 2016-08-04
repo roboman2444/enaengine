@@ -6,4 +6,7 @@ void gameCodeTick(void);
 
 int gamecodeOK;
 
+
+int gamecode_tGameTime;
+
 #endif
