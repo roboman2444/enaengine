@@ -116,7 +116,9 @@ extern int recalcEntBBox(entity_t *e);
 
 int initGameCodeSystem(void){
 	entity_init();
+#ifdef ODE_COMPILE
 	physics_init();
+#endif
 	if(!entity_ok){
 		gamecodeOK = FALSE;
 		return FALSE;
@@ -292,7 +294,9 @@ void gameCodeTick(void){ //todo maybe change to float in seconds
 		entity_t * e = &entity_list[i];
 		if(!e->type) continue;
 		if(e->phys.movetype == ODEDYNAMIC){
+#ifdef ODE_COMPILE
 			if(physics_getEntD(e)) e->needsmatupdate = TRUE;
+#endif
 		} else {
 			if(e->vel[0] || e->vel[1] || e->vel[2]){
 				e->pos[0] += e->vel[0] * GCTIMESTEPSECONDS;
