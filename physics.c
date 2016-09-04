@@ -1,3 +1,5 @@
+#ifdef ODE_COMPILE
+
 #include <ode/ode.h>
 
 #include "globaldefs.h"
@@ -147,3 +149,4 @@ int physics_destroy(void){
 	dCloseODE();
 	return TRUE;
 }
+#endif
