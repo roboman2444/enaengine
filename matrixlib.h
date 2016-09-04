@@ -129,10 +129,14 @@ void Matrix4x4_Blend (matrix4x4_t *out, const matrix4x4_t *in1, const matrix4x4_
 
 // transforms a 3D vector through a matrix4x4
 void Matrix4x4_Transform (const matrix4x4_t *in, const vec_t v[3], vec_t out[3]);
+void Matrix4x4_Transformsimd (const matrix4x4_t *in, const vec_t v[3], vec_t out[3]);
+void Matrix4x4_Transformsimdu (const matrix4x4_t *in, const vec_t v[3], vec_t out[3]);
 // transforms a 4D vector through a matrix4x4
 // (warning: if you don't know why you would need this, you don't need it)
 // (warning: the 4th component of the vector should be 1.0)
 void Matrix4x4_Transform4 (const matrix4x4_t *in, const vec_t v[4], vec_t out[4]);
+void Matrix4x4_Transform4simd (const matrix4x4_t *in, const vec_t v[4], vec_t out[4]);
+void Matrix4x4_Transform4simdu (const matrix4x4_t *in, const vec_t v[4], vec_t out[4]);
 // reverse transforms a 3D vector through a matrix4x4, at least for *simple*
 // cases (rotation and translation *ONLY*), this attempts to undo the results
 // of Transform

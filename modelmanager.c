@@ -775,7 +775,7 @@ int loadiqmjoints(model_t * m, const struct iqmheader hdr, unsigned char *buf){
 }
 void setJointBBox(joint_t *j, float * vert){
 	vec3_t outvert;
-	Matrix4x4_Transform(&j->bbpinverse, vert, outvert);
+	Matrix4x4_Transformsimdu(&j->bbpinverse, vert, outvert);
 	vec_t *bbox = j->bbox;
 	if(!j->setbbox){
 		j->setbbox = TRUE;

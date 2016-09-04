@@ -1741,6 +1741,52 @@ void Matrix4x4_Transform (const matrix4x4_t *in, const float v[3], float out[3])
 	out[2] = v[0] * in->m[2][0] + v[1] * in->m[2][1] + v[2] * in->m[2][2] + in->m[2][3];
 #endif
 }
+void Matrix4x4_Transformsimd (const matrix4x4_t *in, const float v[3], float out[3])
+{
+#ifdef MATRIX4x4_OPENGLORIENTATION
+	vec4_t opor;
+	__m128 s0, s1, s2, o, f0, f1, f2, f3;
+	f0 = _mm_load_ps(in->m[0]);
+	f1 = _mm_load_ps(in->m[1]);
+	f2 = _mm_load_ps(in->m[2]);
+	f3 = _mm_load_ps(in->m[3]);
+	s0 = _mm_set1_ps(v[0]);
+	s1 = _mm_set1_ps(v[1]);
+	s2 = _mm_set1_ps(v[2]);
+	o = _mm_add_ps(_mm_add_ps(_mm_mul_ps(s0, f0), _mm_mul_ps(s1, f1)),_mm_add_ps(_mm_mul_ps(s2, f2), f3));
+	_mm_store_ps(opor, o);
+	out[0] = opor[0];
+	out[1] = opor[1];
+	out[2] = opor[2];
+#else
+	out[0] = v[0] * in->m[0][0] + v[1] * in->m[0][1] + v[2] * in->m[0][2] + in->m[0][3];
+	out[1] = v[0] * in->m[1][0] + v[1] * in->m[1][1] + v[2] * in->m[1][2] + in->m[1][3];
+	out[2] = v[0] * in->m[2][0] + v[1] * in->m[2][1] + v[2] * in->m[2][2] + in->m[2][3];
+#endif
+}
+void Matrix4x4_Transformsimdu (const matrix4x4_t *in, const float v[3], float out[3])
+{
+#ifdef MATRIX4x4_OPENGLORIENTATION
+	vec4_t opor;
+	__m128 s0, s1, s2, o, f0, f1, f2, f3;
+	f0 = _mm_loadu_ps(in->m[0]);
+	f1 = _mm_loadu_ps(in->m[1]);
+	f2 = _mm_loadu_ps(in->m[2]);
+	f3 = _mm_loadu_ps(in->m[3]);
+	s0 = _mm_set1_ps(v[0]);
+	s1 = _mm_set1_ps(v[1]);
+	s2 = _mm_set1_ps(v[2]);
+	o = _mm_add_ps(_mm_add_ps(_mm_mul_ps(s0, f0), _mm_mul_ps(s1, f1)),_mm_add_ps(_mm_mul_ps(s2, f2), f3));
+	_mm_store_ps(opor, o);
+	out[0] = opor[0];
+	out[1] = opor[1];
+	out[2] = opor[2];
+#else
+	out[0] = v[0] * in->m[0][0] + v[1] * in->m[0][1] + v[2] * in->m[0][2] + in->m[0][3];
+	out[1] = v[0] * in->m[1][0] + v[1] * in->m[1][1] + v[2] * in->m[1][2] + in->m[1][3];
+	out[2] = v[0] * in->m[2][0] + v[1] * in->m[2][1] + v[2] * in->m[2][2] + in->m[2][3];
+#endif
+}
 
 void Matrix4x4_Transform4 (const matrix4x4_t *in, const float v[4], float out[4])
 {
@@ -1749,6 +1795,48 @@ void Matrix4x4_Transform4 (const matrix4x4_t *in, const float v[4], float out[4]
 	out[1] = v[0] * in->m[0][1] + v[1] * in->m[1][1] + v[2] * in->m[2][1] + v[3] * in->m[3][1];
 	out[2] = v[0] * in->m[0][2] + v[1] * in->m[1][2] + v[2] * in->m[2][2] + v[3] * in->m[3][2];
 	out[3] = v[0] * in->m[0][3] + v[1] * in->m[1][3] + v[2] * in->m[2][3] + v[3] * in->m[3][3];
+#else
+	out[0] = v[0] * in->m[0][0] + v[1] * in->m[0][1] + v[2] * in->m[0][2] + v[3] * in->m[0][3];
+	out[1] = v[0] * in->m[1][0] + v[1] * in->m[1][1] + v[2] * in->m[1][2] + v[3] * in->m[1][3];
+	out[2] = v[0] * in->m[2][0] + v[1] * in->m[2][1] + v[2] * in->m[2][2] + v[3] * in->m[2][3];
+	out[3] = v[0] * in->m[3][0] + v[1] * in->m[3][1] + v[2] * in->m[3][2] + v[3] * in->m[3][3];
+#endif
+}
+void Matrix4x4_Transform4simd (const matrix4x4_t *in, const float v[4], float out[4])
+{
+#ifdef MATRIX4x4_OPENGLORIENTATION
+	__m128 s0, s1, s2, s3, o, f0, f1, f2, f3;
+	f0 = _mm_load_ps(in->m[0]);
+	f1 = _mm_load_ps(in->m[1]);
+	f2 = _mm_load_ps(in->m[2]);
+	f3 = _mm_load_ps(in->m[3]);
+	s0 = _mm_set1_ps(v[0]);
+	s1 = _mm_set1_ps(v[1]);
+	s2 = _mm_set1_ps(v[2]);
+	s3 = _mm_set1_ps(v[3]);
+	o = _mm_add_ps(_mm_add_ps(_mm_mul_ps(s0, f0), _mm_mul_ps(s1, f1)),_mm_add_ps(_mm_mul_ps(s2, f2), _mm_mul_ps(s3, f3)));
+	_mm_store_ps(out, o);
+#else
+	out[0] = v[0] * in->m[0][0] + v[1] * in->m[0][1] + v[2] * in->m[0][2] + v[3] * in->m[0][3];
+	out[1] = v[0] * in->m[1][0] + v[1] * in->m[1][1] + v[2] * in->m[1][2] + v[3] * in->m[1][3];
+	out[2] = v[0] * in->m[2][0] + v[1] * in->m[2][1] + v[2] * in->m[2][2] + v[3] * in->m[2][3];
+	out[3] = v[0] * in->m[3][0] + v[1] * in->m[3][1] + v[2] * in->m[3][2] + v[3] * in->m[3][3];
+#endif
+}
+void Matrix4x4_Transform4simdu (const matrix4x4_t *in, const float v[4], float out[4])
+{
+#ifdef MATRIX4x4_OPENGLORIENTATION
+	__m128 s0, s1, s2, s3, o, f0, f1, f2, f3;
+	f0 = _mm_loadu_ps(in->m[0]);
+	f1 = _mm_loadu_ps(in->m[1]);
+	f2 = _mm_loadu_ps(in->m[2]);
+	f3 = _mm_loadu_ps(in->m[3]);
+	s0 = _mm_set1_ps(v[0]);
+	s1 = _mm_set1_ps(v[1]);
+	s2 = _mm_set1_ps(v[2]);
+	s3 = _mm_set1_ps(v[3]);
+	o = _mm_add_ps(_mm_add_ps(_mm_mul_ps(s0, f0), _mm_mul_ps(s1, f1)),_mm_add_ps(_mm_mul_ps(s2, f2), _mm_mul_ps(s3, f3)));
+	_mm_storeu_ps(out, o);
 #else
 	out[0] = v[0] * in->m[0][0] + v[1] * in->m[0][1] + v[2] * in->m[0][2] + v[3] * in->m[0][3];
 	out[1] = v[0] * in->m[1][0] + v[1] * in->m[1][1] + v[2] * in->m[1][2] + v[3] * in->m[1][3];

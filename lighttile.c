@@ -99,7 +99,7 @@ unsigned int lighttile_tileLights(lighttilebuffer_t *b, const viewport_t *v, con
 		light_t *mylight = l.list[i];
 		//get light in viewspace
 		vec3_t vspace;
-		Matrix4x4_Transform(&v->view, mylight->pos, vspace);
+		Matrix4x4_Transformsimdu(&v->view, mylight->pos, vspace);
 		//get scissor r3kd
 		vec4_t scissor;
 		viewport_calcBBoxPScissor(v, mylight->bboxp, scissor);

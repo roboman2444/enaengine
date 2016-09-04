@@ -150,7 +150,7 @@ int recalcEntBBox(entity_t * e){
 
 	for(i = 0; i < 8; i++){
 		int oneplace = i*3;
-		Matrix4x4_Transform(&e->mat, &m->bboxp[oneplace], &e->bboxp[oneplace]);
+		Matrix4x4_Transformsimdu(&e->mat, &m->bboxp[oneplace], &e->bboxp[oneplace]);
 
 		if(e->bboxp[oneplace] > e->bbox[0]) e->bbox[0] = e->bboxp[oneplace];
 		else if(e->bboxp[oneplace] < e->bbox[1]) e->bbox[1] = e->bboxp[oneplace];

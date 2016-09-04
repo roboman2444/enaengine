@@ -321,7 +321,7 @@ int recalcObjBBox(worldobject_t *o){
 	o->bbox[5] = 3.4028e+38;
 	for(i = 0; i < 8; i++){
 		int oneplace = i*3;
-		Matrix4x4_Transform(&o->mat, &m->bboxp[oneplace], &o->bboxp[oneplace]);
+		Matrix4x4_Transformsimdu(&o->mat, &m->bboxp[oneplace], &o->bboxp[oneplace]);
 		if(o->bboxp[oneplace] > o->bbox[0]) o->bbox[0] = o->bboxp[oneplace];
 		else if(o->bboxp[oneplace] < o->bbox[1]) o->bbox[1] = o->bboxp[oneplace];
 		if(o->bboxp[oneplace+1] > o->bbox[2]) o->bbox[2] = o->bboxp[oneplace+1];

@@ -62,7 +62,7 @@ void recalcLightBBox(light_t *l){
 	if(l->type == 2){
 		//odl version
 		/*vec3_t t;
-		Matrix4x4_Transform(&l->camproj, unitbox, t);
+		Matrix4x4_Transformsimdu(&l->camproj, unitbox, t);
 		l->bboxp[0] = t[0];
 		l->bboxp[1] = t[1];
 		l->bboxp[2] = t[2];
@@ -74,7 +74,7 @@ void recalcLightBBox(light_t *l){
 		l->bbox[5] = t[2];
 		int i;
 		for(i = 1; i < 8; i++){
-			Matrix4x4_Transform(&l->camproj, &unitbox[i*3], t);
+			Matrix4x4_Transformsimdu(&l->camproj, &unitbox[i*3], t);
 			l->bboxp[i*3+0] = t[0];
 			l->bboxp[i*3+1] = t[1];
 			l->bboxp[i*3+2] = t[2];
@@ -98,7 +98,7 @@ void recalcLightBBox(light_t *l){
 		int i;
 		for(i = 1; i < 8; i++){
 			vec3_t t;
-			Matrix4x4_Transform(&l->camproj, &spotverts[i*3], t);
+			Matrix4x4_Transformsimdu(&l->camproj, &spotverts[i*3], t);
 			l->bboxp[i*3+0] = t[0];
 			l->bboxp[i*3+1] = t[1];
 			l->bboxp[i*3+2] = t[2];

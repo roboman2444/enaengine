@@ -173,9 +173,9 @@ void recalcViewMatrix(viewport_t * v){
 	Matrix4x4_ConcatRotate(&v->view, v->angle[0], 1.0f, 0.0f, 0.0f);
 	Matrix4x4_ConcatRotate(&v->view, v->angle[1], 0.0f, 1.0f, 0.0f);
 	//putting in vectors stuff here, because why not?
-	Matrix4x4_Transform(&v->view, stockv_forward, v->v_forward);
-	Matrix4x4_Transform(&v->view, stockv_up, v->v_up);
-	Matrix4x4_Transform(&v->view, stockv_right, v->v_right);
+	Matrix4x4_Transformsimdu(&v->view, stockv_forward, v->v_forward);
+	Matrix4x4_Transformsimdu(&v->view, stockv_up, v->v_up);
+	Matrix4x4_Transformsimdu(&v->view, stockv_right, v->v_right);
 	Matrix4x4_ConcatTranslate(&v->view, -v->pos[0], -v->pos[1], -v->pos[2]);
 }
 void recalcProjectionMatrix(viewport_t * v){
@@ -383,7 +383,7 @@ void recalcFrustumBBoxP(viewport_t *v){
 	prebboxp[23] = far;
 	int i;
 	for(i = 0; i < 8; i++){
-		Matrix4x4_Transform(&v->cam, &prebboxp[i*3], &v->bboxp[i*3]);
+		Matrix4x4_Transformsimdu(&v->cam, &prebboxp[i*3], &v->bboxp[i*3]);
 	}
 //or
 //transform a unit cube by the inverse VP matrix
@@ -573,7 +573,7 @@ void viewport_calcBBoxPScissor(const viewport_t *v, const vec_t *bboxp, vec4_t s
 	invec[1] = bboxp[1];
 	invec[2] = bboxp[2];
 	invec[3] = 1.0f;
-	Matrix4x4_Transform4(&v->viewproj, invec, tvec);
+	Matrix4x4_Transform4simdu(&v->viewproj, invec, tvec);
 	float iw = 1.0f / tvec[3];
 	tvec[0] *= iw;
 	tvec[1] *= iw;
@@ -589,7 +589,7 @@ void viewport_calcBBoxPScissor(const viewport_t *v, const vec_t *bboxp, vec4_t s
 		invec[1] = bboxp[i*3+1];
 		invec[2] = bboxp[i*3+2];
 		invec[3] = 1.0f;
-		Matrix4x4_Transform4(&v->viewproj, invec, tvec);
+		Matrix4x4_Transform4simdu(&v->viewproj, invec, tvec);
 		float iw = 1.0f / tvec[3];
 		tvec[0] *= iw;
 		tvec[1] *= iw;
