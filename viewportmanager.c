@@ -506,7 +506,7 @@ int recalcViewport(viewport_t * v, vec3_t pos, vec3_t angle, float fov, float as
 		recalcProjectionMatrix(v);
 	}
 	if(v->viewchanged){
-		Matrix4x4_Concat(&v->viewproj, &v->projection, &v->view);
+		Matrix4x4_Concatsimdu(&v->viewproj, &v->projection, &v->view);
 		recalcFrustum(v);
 		recalcFrustumBBoxP(v);
 	}
@@ -550,7 +550,7 @@ int resizeViewport(viewport_t *v, int width, int height){
 		v->aspect = aspect;
 //		recalcViewport(v, v->pos, v->angle, v->fov, aspect, v->near, v->far);
 		recalcProjectionMatrix(v);
-		Matrix4x4_Concat(&v->viewproj, &v->projection, &v->view);
+		Matrix4x4_Concatsimdu(&v->viewproj, &v->projection, &v->view);
 		recalcFrustum(v);
 
 //	}

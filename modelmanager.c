@@ -759,7 +759,7 @@ int loadiqmjoints(model_t * m, const struct iqmheader hdr, unsigned char *buf){
 		Matrix4x4_Invert_Simple(&relinvbase, &relbase);
 		if(myjoints[i].parent >=0){
 			Matrix4x4_FromArray12FloatD3D(&pinvbase, baseboneposeinverse + myjoints[i].parent * 12);
-			Matrix4x4_Concat(&invbase, &relinvbase, &pinvbase);
+			Matrix4x4_Concatsimdu(&invbase, &relinvbase, &pinvbase);
 			Matrix4x4_ToArray12FloatD3D(&invbase, baseboneposeinverse + 12*i);
 			Matrix4x4_Copy(&myjoints[i].bbpinverse, &invbase);
 		} else {

@@ -175,8 +175,8 @@ void recalcLightProjMats(light_t *l){
 void recalcLightMats(light_t *l){
 	if(l->needsupdate & 1)recalcLightViewMats(l);
 	if(l->needsupdate & 2)recalcLightProjMats(l);
-	Matrix4x4_Concat(&l->viewproj, &l->projection, &l->view); //todo gotta fix this thing!
-	Matrix4x4_Concat(&l->camproj, &l->cam, &l->fixproj);
+	Matrix4x4_Concatsimdu(&l->viewproj, &l->projection, &l->view); //todo gotta fix this thing!
+	Matrix4x4_Concatsimdu(&l->camproj, &l->cam, &l->fixproj);
 }
 int lightLoop(void){
 	int count = 0, i;
@@ -1009,10 +1009,10 @@ int lights_addToRenderQueue(viewport_t *v, renderqueue_t * q, unsigned int numsa
 		//check if its spot or not
 		if(out.lin.list[i]->type ==2){
 			matrix4x4_t ct;
-			Matrix4x4_Concat(&ct, &v->viewproj, &out.lin.list[i]->camproj);
+			Matrix4x4_Concatsimdu(&ct, &v->viewproj, &out.lin.list[i]->camproj);
 			Matrix4x4_ToArrayFloatGL(&ct, sl.light.mvp);
 			sl.light.size = out.lin.list[i]->scale;
-			Matrix4x4_Concat(&ct, &v->view, &out.lin.list[i]->camproj);
+			Matrix4x4_Concatsimdu(&ct, &v->view, &out.lin.list[i]->camproj);
 			Matrix4x4_ToArrayFloatGL(&ct, sl.light.mv);
 			Matrix4x4_ToArrayFloatGL(&out.lin.list[i]->viewproj, sl.light.lmv);
 			sl.light.pos[0] = out.lin.list[i]->pos[0];
@@ -1040,10 +1040,10 @@ int lights_addToRenderQueue(viewport_t *v, renderqueue_t * q, unsigned int numsa
 		//check if its spot or not
 		if(out.lout.list[i]->type ==2){
 			matrix4x4_t ct;
-			Matrix4x4_Concat(&ct, &v->viewproj, &out.lout.list[i]->camproj);
+			Matrix4x4_Concatsimdu(&ct, &v->viewproj, &out.lout.list[i]->camproj);
 			Matrix4x4_ToArrayFloatGL(&ct, sl.light.mvp);
 			sl.light.size = out.lout.list[i]->scale;
-			Matrix4x4_Concat(&ct, &v->view, &out.lout.list[i]->camproj);
+			Matrix4x4_Concatsimdu(&ct, &v->view, &out.lout.list[i]->camproj);
 			Matrix4x4_ToArrayFloatGL(&ct, sl.light.mv);
 			Matrix4x4_ToArrayFloatGL(&out.lout.list[i]->viewproj, sl.light.lmv);
 			sl.light.pos[0] = out.lout.list[i]->pos[0];

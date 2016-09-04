@@ -289,8 +289,8 @@ void addObjectToRenderqueue(const worldobject_t *o, renderqueue_t * q, const vie
 	d.modelid = modelid;
 	d.texturegroupid = texturegroupid;
 	d.ubodataoffset = 0;
-	Matrix4x4_Concat(&d.mvp, &v->viewproj, &o->mat);
-	Matrix4x4_Concat(&d.mv, &v->view, &o->mat);
+	Matrix4x4_Concatsimdu(&d.mvp, &v->viewproj, &o->mat);
+	Matrix4x4_Concatsimdu(&d.mv, &v->view, &o->mat);
 	r.sort[0] = (d.shaderprogram >> 0) & 0xFF;
 	r.sort[1] = (d.shaderprogram >> 8) & 0xFF;
 	r.sort[2] = (d.shaderprogram >> 16) & 0xFF;
@@ -334,8 +334,8 @@ void addEntityDepthToRenderqueue(const entity_t *e, renderqueue_t * q, const vie
 	shaderpermutation_t * sp = shader_addPermutationToProgram(s, shaderperm);
 	d.shaderprogram = sp->id;
 
-	Matrix4x4_Concat(&d.mvp, &v->viewproj, &e->mat);
-//	Matrix4x4_Concat(&d.mv, &v->view, &e->mat);
+	Matrix4x4_Concatsimdu(&d.mvp, &v->viewproj, &e->mat);
+//	Matrix4x4_Concatsimdu(&d.mv, &v->view, &e->mat);
 	r.sort[0] = (d.shaderprogram >> 0) & 0xFF;
 	r.sort[1] = (d.shaderprogram >> 8) & 0xFF;
 	r.sort[2] = (d.shaderprogram >> 16) & 0xFF;
@@ -381,8 +381,8 @@ void addEntityToRenderqueue(const entity_t *e, renderqueue_t * q, const viewport
 	shaderpermutation_t * sp = shader_addPermutationToProgram(s, shaderperm);
 	d.shaderprogram = sp->id;
 
-	Matrix4x4_Concat(&d.mvp, &v->viewproj, &e->mat);
-	Matrix4x4_Concat(&d.mv, &v->view, &e->mat);
+	Matrix4x4_Concatsimdu(&d.mvp, &v->viewproj, &e->mat);
+	Matrix4x4_Concatsimdu(&d.mv, &v->view, &e->mat);
 	r.sort[0] = (d.shaderprogram >> 0) & 0xFF;
 	r.sort[1] = (d.shaderprogram >> 8) & 0xFF;
 	r.sort[2] = (d.shaderprogram >> 16) & 0xFF;
@@ -426,8 +426,8 @@ void addEntityAToRenderqueue(const entity_t *e, renderqueue_t * q, const viewpor
 	shaderpermutation_t * sp = shader_addPermutationToProgram(s, shaderperm);
 	d.shaderprogram = sp->id;
 
-	Matrix4x4_Concat(&d.mvp, &v->viewproj, &e->mat);
-	Matrix4x4_Concat(&d.mv, &v->view, &e->mat);
+	Matrix4x4_Concatsimdu(&d.mvp, &v->viewproj, &e->mat);
+	Matrix4x4_Concatsimdu(&d.mv, &v->view, &e->mat);
 	r.sort[0] = (d.shaderprogram >> 0) & 0xFF;
 	r.sort[1] = (d.shaderprogram >> 8) & 0xFF;
 	r.sort[2] = (d.shaderprogram >> 16) & 0xFF;
@@ -479,10 +479,10 @@ int addAllChildrenLeafIntoQueues(worldleaf_t *l, renderqueue_t * forwardqueue, r
 			if(!e) continue;
 //			if(!(e->flags & DEFERREDFLAG)) //todo WHY is this a !?
 //			if(e->flags & DEFERREDFLAG) //todo WHY is this a !?
-//				addEntityToRenderqueue(e, deferredqueue, v);
+				addEntityToRenderqueue(e, deferredqueue, v);
 //			if(!(e->flags & FORWARDFLAG))
 //			if(e->flags & FORWARDFLAG)
-				addEntityAToRenderqueue(e, forwardqueue, v);
+//				addEntityAToRenderqueue(e, forwardqueue, v);
 			mynum++;
 		}
 	}
@@ -528,10 +528,10 @@ int loadLeafIntoQueues(worldleaf_t * l, renderqueue_t * forwardqueue, renderqueu
 			if(testBBoxPInFrustum(v, e->bboxp)){
 //				if(!(e->flags & DEFERREDFLAG)) //TODO why is this a !?
 //				if(e->flags & DEFERREDFLAG) //TODO why is this a !?
-//					addEntityToRenderqueue(e, deferredqueue, v);
+					addEntityToRenderqueue(e, deferredqueue, v);
 //				if(!(e->flags & FORWARDFLAG))
 //				if(e->flags & FORWARDFLAG)
-					addEntityToRenderqueue(e, forwardqueue, v);
+//					addEntityToRenderqueue(e, forwardqueue, v);
 					drawbb_addToRenderQueue(v, forwardqueue, e->bboxp, 0.0, 1.0, 0.0);
 				mynum++;
 			}

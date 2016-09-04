@@ -88,7 +88,6 @@ void vec4norm2(vec4_t a, const vec4_t b){
 	vec4div(a, b, length);
 }
 
-
 unsigned char checkSphereInSphere(const vec3_t sphere1, const vec_t size1, const vec3_t sphere2, const vec_t size2){
 	vec_t tots = size1+size2;
 	return(vec3distvec(sphere1, sphere2) < tots);

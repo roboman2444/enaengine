@@ -24,6 +24,8 @@ void Matrix4x4_CopyTranslateOnly (matrix4x4_t *out, const matrix4x4_t *in);
 // multiply two matrix4x4 together, combining their transformations
 // (warning: order matters - Concat(a, b, c) != Concat(a, c, b))
 void Matrix4x4_Concat (matrix4x4_t *out, const matrix4x4_t *in1, const matrix4x4_t *in2);
+void Matrix4x4_Concatsimd (matrix4x4_t *out, const matrix4x4_t *in1, const matrix4x4_t *in2);
+void Matrix4x4_Concatsimdu (matrix4x4_t *out, const matrix4x4_t *in1, const matrix4x4_t *in2);
 // swaps the rows and columns of the matrix
 // (is this useful for anything?)
 void Matrix4x4_Transpose (matrix4x4_t *out, const matrix4x4_t *in1);

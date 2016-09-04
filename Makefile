@@ -43,7 +43,7 @@ purge:
 	@rm -f enaengine-vulkan
 	@rm -f ./*.gcda
 	
-profile:	CFLAGS= -Wall -O3 -g `sdl-config --cflags` -fstrict-aliasing -fprofile-generate -march=native
+profile:	CFLAGS= -Wall -Ofast -g `sdl-config --cflags` -fstrict-aliasing -fprofile-generate -march=native
 profile: 	$(OBJECTS)
 	$(CC) $(CFLAGS) $(OBJECTS) -o enaengine-$@ $(LDFLAGS)
 	@echo

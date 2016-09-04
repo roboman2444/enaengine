@@ -1,5 +1,6 @@
 //#include "quakedef.h"
 #include "globaldefs.h"
+#include <xmmintrin.h>
 #include <math.h>
 #include "mathlib.h"
 #include "matrixlib.h"
@@ -104,6 +105,123 @@ void Matrix4x4_Concat (matrix4x4_t *out, const matrix4x4_t *in1, const matrix4x4
 	out->m[1][3] = in1->m[0][3] * in2->m[1][0] + in1->m[1][3] * in2->m[1][1] + in1->m[2][3] * in2->m[1][2] + in1->m[3][3] * in2->m[1][3];
 	out->m[2][3] = in1->m[0][3] * in2->m[2][0] + in1->m[1][3] * in2->m[2][1] + in1->m[2][3] * in2->m[2][2] + in1->m[3][3] * in2->m[2][3];
 	out->m[3][3] = in1->m[0][3] * in2->m[3][0] + in1->m[1][3] * in2->m[3][1] + in1->m[2][3] * in2->m[3][2] + in1->m[3][3] * in2->m[3][3];
+#else
+	out->m[0][0] = in1->m[0][0] * in2->m[0][0] + in1->m[0][1] * in2->m[1][0] + in1->m[0][2] * in2->m[2][0] + in1->m[0][3] * in2->m[3][0];
+	out->m[0][1] = in1->m[0][0] * in2->m[0][1] + in1->m[0][1] * in2->m[1][1] + in1->m[0][2] * in2->m[2][1] + in1->m[0][3] * in2->m[3][1];
+	out->m[0][2] = in1->m[0][0] * in2->m[0][2] + in1->m[0][1] * in2->m[1][2] + in1->m[0][2] * in2->m[2][2] + in1->m[0][3] * in2->m[3][2];
+	out->m[0][3] = in1->m[0][0] * in2->m[0][3] + in1->m[0][1] * in2->m[1][3] + in1->m[0][2] * in2->m[2][3] + in1->m[0][3] * in2->m[3][3];
+	out->m[1][0] = in1->m[1][0] * in2->m[0][0] + in1->m[1][1] * in2->m[1][0] + in1->m[1][2] * in2->m[2][0] + in1->m[1][3] * in2->m[3][0];
+	out->m[1][1] = in1->m[1][0] * in2->m[0][1] + in1->m[1][1] * in2->m[1][1] + in1->m[1][2] * in2->m[2][1] + in1->m[1][3] * in2->m[3][1];
+	out->m[1][2] = in1->m[1][0] * in2->m[0][2] + in1->m[1][1] * in2->m[1][2] + in1->m[1][2] * in2->m[2][2] + in1->m[1][3] * in2->m[3][2];
+	out->m[1][3] = in1->m[1][0] * in2->m[0][3] + in1->m[1][1] * in2->m[1][3] + in1->m[1][2] * in2->m[2][3] + in1->m[1][3] * in2->m[3][3];
+	out->m[2][0] = in1->m[2][0] * in2->m[0][0] + in1->m[2][1] * in2->m[1][0] + in1->m[2][2] * in2->m[2][0] + in1->m[2][3] * in2->m[3][0];
+	out->m[2][1] = in1->m[2][0] * in2->m[0][1] + in1->m[2][1] * in2->m[1][1] + in1->m[2][2] * in2->m[2][1] + in1->m[2][3] * in2->m[3][1];
+	out->m[2][2] = in1->m[2][0] * in2->m[0][2] + in1->m[2][1] * in2->m[1][2] + in1->m[2][2] * in2->m[2][2] + in1->m[2][3] * in2->m[3][2];
+	out->m[2][3] = in1->m[2][0] * in2->m[0][3] + in1->m[2][1] * in2->m[1][3] + in1->m[2][2] * in2->m[2][3] + in1->m[2][3] * in2->m[3][3];
+	out->m[3][0] = in1->m[3][0] * in2->m[0][0] + in1->m[3][1] * in2->m[1][0] + in1->m[3][2] * in2->m[2][0] + in1->m[3][3] * in2->m[3][0];
+	out->m[3][1] = in1->m[3][0] * in2->m[0][1] + in1->m[3][1] * in2->m[1][1] + in1->m[3][2] * in2->m[2][1] + in1->m[3][3] * in2->m[3][1];
+	out->m[3][2] = in1->m[3][0] * in2->m[0][2] + in1->m[3][1] * in2->m[1][2] + in1->m[3][2] * in2->m[2][2] + in1->m[3][3] * in2->m[3][2];
+	out->m[3][3] = in1->m[3][0] * in2->m[0][3] + in1->m[3][1] * in2->m[1][3] + in1->m[3][2] * in2->m[2][3] + in1->m[3][3] * in2->m[3][3];
+#endif
+}
+
+
+//uses https://stackoverflow.com/questions/18499971/efficient-4x4-matrix-multiplication-c-vs-assembly as a ref
+void Matrix4x4_Concatsimd (matrix4x4_t *out, const matrix4x4_t *in1, const matrix4x4_t *in2)
+{
+#ifdef MATRIX4x4_OPENGLORIENTATION
+
+	__m128 s0, s1, s2, s3, o;
+	__m128 f0 = _mm_load_ps(in1->m[0]);
+	__m128 f1 = _mm_load_ps(in1->m[1]);
+	__m128 f2 = _mm_load_ps(in1->m[2]);
+	__m128 f3 = _mm_load_ps(in1->m[3]);
+
+	s0 = _mm_set1_ps(in2->m[0][0]);
+	s1 = _mm_set1_ps(in2->m[0][1]);
+	s2 = _mm_set1_ps(in2->m[0][2]);
+	s3 = _mm_set1_ps(in2->m[0][3]);
+	o = _mm_add_ps(_mm_add_ps(_mm_mul_ps(s0, f0), _mm_mul_ps(s1, f1)),_mm_add_ps(_mm_mul_ps(s2, f2), _mm_mul_ps(s3, f3)));
+	_mm_store_ps(out->m[0], o);
+
+	s0 = _mm_set1_ps(in2->m[1][0]);
+	s1 = _mm_set1_ps(in2->m[1][1]);
+	s2 = _mm_set1_ps(in2->m[1][2]);
+	s3 = _mm_set1_ps(in2->m[1][3]);
+	o = _mm_add_ps(_mm_add_ps(_mm_mul_ps(s0, f0), _mm_mul_ps(s1, f1)),_mm_add_ps(_mm_mul_ps(s2, f2), _mm_mul_ps(s3, f3)));
+	_mm_store_ps(out->m[1], o);
+
+	s0 = _mm_set1_ps(in2->m[2][0]);
+	s1 = _mm_set1_ps(in2->m[2][1]);
+	s2 = _mm_set1_ps(in2->m[2][2]);
+	s3 = _mm_set1_ps(in2->m[2][3]);
+	o = _mm_add_ps(_mm_add_ps(_mm_mul_ps(s0, f0), _mm_mul_ps(s1, f1)),_mm_add_ps(_mm_mul_ps(s2, f2), _mm_mul_ps(s3, f3)));
+	_mm_store_ps(out->m[2], o);
+
+	s0 = _mm_set1_ps(in2->m[3][0]);
+	s1 = _mm_set1_ps(in2->m[3][1]);
+	s2 = _mm_set1_ps(in2->m[3][2]);
+	s3 = _mm_set1_ps(in2->m[3][3]);
+	o = _mm_add_ps(_mm_add_ps(_mm_mul_ps(s0, f0), _mm_mul_ps(s1, f1)),_mm_add_ps(_mm_mul_ps(s2, f2), _mm_mul_ps(s3, f3)));
+	_mm_store_ps(out->m[3], o);
+#else
+	out->m[0][0] = in1->m[0][0] * in2->m[0][0] + in1->m[0][1] * in2->m[1][0] + in1->m[0][2] * in2->m[2][0] + in1->m[0][3] * in2->m[3][0];
+	out->m[0][1] = in1->m[0][0] * in2->m[0][1] + in1->m[0][1] * in2->m[1][1] + in1->m[0][2] * in2->m[2][1] + in1->m[0][3] * in2->m[3][1];
+	out->m[0][2] = in1->m[0][0] * in2->m[0][2] + in1->m[0][1] * in2->m[1][2] + in1->m[0][2] * in2->m[2][2] + in1->m[0][3] * in2->m[3][2];
+	out->m[0][3] = in1->m[0][0] * in2->m[0][3] + in1->m[0][1] * in2->m[1][3] + in1->m[0][2] * in2->m[2][3] + in1->m[0][3] * in2->m[3][3];
+	out->m[1][0] = in1->m[1][0] * in2->m[0][0] + in1->m[1][1] * in2->m[1][0] + in1->m[1][2] * in2->m[2][0] + in1->m[1][3] * in2->m[3][0];
+	out->m[1][1] = in1->m[1][0] * in2->m[0][1] + in1->m[1][1] * in2->m[1][1] + in1->m[1][2] * in2->m[2][1] + in1->m[1][3] * in2->m[3][1];
+	out->m[1][2] = in1->m[1][0] * in2->m[0][2] + in1->m[1][1] * in2->m[1][2] + in1->m[1][2] * in2->m[2][2] + in1->m[1][3] * in2->m[3][2];
+	out->m[1][3] = in1->m[1][0] * in2->m[0][3] + in1->m[1][1] * in2->m[1][3] + in1->m[1][2] * in2->m[2][3] + in1->m[1][3] * in2->m[3][3];
+	out->m[2][0] = in1->m[2][0] * in2->m[0][0] + in1->m[2][1] * in2->m[1][0] + in1->m[2][2] * in2->m[2][0] + in1->m[2][3] * in2->m[3][0];
+	out->m[2][1] = in1->m[2][0] * in2->m[0][1] + in1->m[2][1] * in2->m[1][1] + in1->m[2][2] * in2->m[2][1] + in1->m[2][3] * in2->m[3][1];
+	out->m[2][2] = in1->m[2][0] * in2->m[0][2] + in1->m[2][1] * in2->m[1][2] + in1->m[2][2] * in2->m[2][2] + in1->m[2][3] * in2->m[3][2];
+	out->m[2][3] = in1->m[2][0] * in2->m[0][3] + in1->m[2][1] * in2->m[1][3] + in1->m[2][2] * in2->m[2][3] + in1->m[2][3] * in2->m[3][3];
+	out->m[3][0] = in1->m[3][0] * in2->m[0][0] + in1->m[3][1] * in2->m[1][0] + in1->m[3][2] * in2->m[2][0] + in1->m[3][3] * in2->m[3][0];
+	out->m[3][1] = in1->m[3][0] * in2->m[0][1] + in1->m[3][1] * in2->m[1][1] + in1->m[3][2] * in2->m[2][1] + in1->m[3][3] * in2->m[3][1];
+	out->m[3][2] = in1->m[3][0] * in2->m[0][2] + in1->m[3][1] * in2->m[1][2] + in1->m[3][2] * in2->m[2][2] + in1->m[3][3] * in2->m[3][2];
+	out->m[3][3] = in1->m[3][0] * in2->m[0][3] + in1->m[3][1] * in2->m[1][3] + in1->m[3][2] * in2->m[2][3] + in1->m[3][3] * in2->m[3][3];
+#endif
+}
+
+//uses https://stackoverflow.com/questions/18499971/efficient-4x4-matrix-multiplication-c-vs-assembly as a ref
+void Matrix4x4_Concatsimdu (matrix4x4_t *out, const matrix4x4_t *in1, const matrix4x4_t *in2)
+{
+#ifdef MATRIX4x4_OPENGLORIENTATION
+
+	__m128 s0, s1, s2, s3, o;
+	__m128 f0 = _mm_loadu_ps(in1->m[0]);
+	__m128 f1 = _mm_loadu_ps(in1->m[1]);
+	__m128 f2 = _mm_loadu_ps(in1->m[2]);
+	__m128 f3 = _mm_loadu_ps(in1->m[3]);
+
+	s0 = _mm_set1_ps(in2->m[0][0]);
+	s1 = _mm_set1_ps(in2->m[0][1]);
+	s2 = _mm_set1_ps(in2->m[0][2]);
+	s3 = _mm_set1_ps(in2->m[0][3]);
+	o = _mm_add_ps(_mm_add_ps(_mm_mul_ps(s0, f0), _mm_mul_ps(s1, f1)),_mm_add_ps(_mm_mul_ps(s2, f2), _mm_mul_ps(s3, f3)));
+	_mm_storeu_ps(out->m[0], o);
+
+	s0 = _mm_set1_ps(in2->m[1][0]);
+	s1 = _mm_set1_ps(in2->m[1][1]);
+	s2 = _mm_set1_ps(in2->m[1][2]);
+	s3 = _mm_set1_ps(in2->m[1][3]);
+	o = _mm_add_ps(_mm_add_ps(_mm_mul_ps(s0, f0), _mm_mul_ps(s1, f1)),_mm_add_ps(_mm_mul_ps(s2, f2), _mm_mul_ps(s3, f3)));
+	_mm_storeu_ps(out->m[1], o);
+
+	s0 = _mm_set1_ps(in2->m[2][0]);
+	s1 = _mm_set1_ps(in2->m[2][1]);
+	s2 = _mm_set1_ps(in2->m[2][2]);
+	s3 = _mm_set1_ps(in2->m[2][3]);
+	o = _mm_add_ps(_mm_add_ps(_mm_mul_ps(s0, f0), _mm_mul_ps(s1, f1)),_mm_add_ps(_mm_mul_ps(s2, f2), _mm_mul_ps(s3, f3)));
+	_mm_storeu_ps(out->m[2], o);
+
+	s0 = _mm_set1_ps(in2->m[3][0]);
+	s1 = _mm_set1_ps(in2->m[3][1]);
+	s2 = _mm_set1_ps(in2->m[3][2]);
+	s3 = _mm_set1_ps(in2->m[3][3]);
+	o = _mm_add_ps(_mm_add_ps(_mm_mul_ps(s0, f0), _mm_mul_ps(s1, f1)),_mm_add_ps(_mm_mul_ps(s2, f2), _mm_mul_ps(s3, f3)));
+	_mm_storeu_ps(out->m[3], o);
 #else
 	out->m[0][0] = in1->m[0][0] * in2->m[0][0] + in1->m[0][1] * in2->m[1][0] + in1->m[0][2] * in2->m[2][0] + in1->m[0][3] * in2->m[3][0];
 	out->m[0][1] = in1->m[0][0] * in2->m[0][1] + in1->m[0][1] * in2->m[1][1] + in1->m[0][2] * in2->m[2][1] + in1->m[0][3] * in2->m[3][1];

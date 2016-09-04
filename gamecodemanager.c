@@ -178,7 +178,7 @@ int calcEntAttachMat(entity_t * e){ //return value is weather e->mat got changed
 //			Matrix4x4_CreateFromQuakeEntity(&tempmat, e->pos[0], e->pos[1], e->pos[2], e->angle[0], e->angle[1], e->angle[2], e->scale/attacher->scale);
 			Matrix4x4_CreateFromQuakeEntity(&tempmat, e->pos[0]/attacher->scale, e->pos[1]/attacher->scale, e->pos[2]/attacher->scale, e->angle[0], e->angle[1], e->angle[2], e->scale/attacher->scale);
 
-			Matrix4x4_Concat(&e->mat, &attacher->mat, &tempmat);
+			Matrix4x4_Concatsimdu(&e->mat, &attacher->mat, &tempmat);
 			e->needsmatupdate = 2;
 			return TRUE;
 		}
@@ -191,7 +191,7 @@ int calcEntAttachMat(entity_t * e){ //return value is weather e->mat got changed
 	//			Matrix4x4_CreateFromQuakeEntity(&tempmat, e->pos[0], e->pos[1], e->pos[2], e->angle[0], e->angle[1], e->angle[2], e->scale);
 //				Matrix4x4_CreateFromQuakeEntity(&tempmat, e->pos[0], e->pos[1], e->pos[2], e->angle[0], e->angle[1], e->angle[2], e->scale/attacher->scale);
 				Matrix4x4_CreateFromQuakeEntity(&tempmat, e->pos[0]/attacher->scale, e->pos[1]/attacher->scale, e->pos[2]/attacher->scale, e->angle[0], e->angle[1], e->angle[2], e->scale/attacher->scale);
-				Matrix4x4_Concat(&e->mat, &attacher->mat, &tempmat);
+				Matrix4x4_Concatsimdu(&e->mat, &attacher->mat, &tempmat);
 
 				return TRUE;
 			} else {

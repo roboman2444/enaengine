@@ -27,7 +27,7 @@ int initgame(void){
 		enthat->pos[1] = 8.7;
 		enthat->pos[0] = -2.5;
 		enthat->scale = .5;
-		enthat->vel[1] = 0.1;
+//		enthat->vel[1] = 0.1;
 		enthat->angle[1] = -45.0;
 		enthat->anglevel[0] = 45.0;
 		enthat->needsmatupdate = TRUE;
@@ -72,14 +72,14 @@ int initgame(void){
 		splight->fovy = 60;
 		splight->near = 0.1;
 		splight->angle[0] = 45.0;
-/*
+
 
 	light_t * light = ec->light_addRPOINT("light");
 		light->type = 1;
 		light->attachmentid = tempid;
 		light->needsupdate = 1;
 		light->scale = 20.0f;
-*/
+
 	entity_t * enttinydragon = ec->entity_addRPOINT("tinydragon");
 		enttinydragon->type = 2;
 		enttinydragon->pos[1] = 3.0f;
