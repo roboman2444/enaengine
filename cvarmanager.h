@@ -1,5 +1,5 @@
 #ifndef CVARHEADER
-#define CVARHEDER
+#define CVARHEADER
 
 struct cvar_s;
 typedef void (* cvarcallback_t)(struct cvar_s * c);

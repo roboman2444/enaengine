@@ -16,7 +16,7 @@ place to put random string based functions
 
 
 int string_testEqual(const char *one, const char * two);
-int string_testEquaCIl(const char *one, const char * two);
+int string_testEqualCI(const char *one, const char * two);
 int string_testEqualN(const char *one, const char * two, const unsigned int n);
 int string_testEqualNCI(const char *one, const char * two, const unsigned int n);
 unsigned int string_toVec(const char *s, vec_t *v, const unsigned int maxdem);
