@@ -7,7 +7,7 @@
 #include "texturemanager.h"
 
 //#include "SDL_image.h"
-#include "SDL.h"
+//#include "SDL.h"
 #include "hashtables.h"
 #include "console.h"
 #define STB_IMAGE_IMPLEMENTATION
