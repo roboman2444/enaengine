@@ -1011,6 +1011,182 @@ void Matrix4x4_CreateFromQuakeEntity(matrix4x4_t *out, double x, double y, doubl
 	}
 }
 
+void Matrix4x4_CreateFromQuakeEntity3(matrix4x4_t *out, double x, double y, double z, double pitch, double yaw, double roll, double xscale, double yscale, double zscale)
+{
+	double angle, sr, sp, sy, cr, cp, cy;
+
+	if (roll)
+	{
+		angle = yaw * (M_PI*2 / 360);
+		sy = sin(angle);
+		cy = cos(angle);
+		angle = pitch * (M_PI*2 / 360);
+		sp = sin(angle);
+		cp = cos(angle);
+		angle = roll * (M_PI*2 / 360);
+		sr = sin(angle);
+		cr = cos(angle);
+#ifdef MATRIX4x4_OPENGLORIENTATION
+		out->m[0][0] = (cp*cy) * xscale;
+		out->m[1][0] = (sr*sp*cy+cr*-sy) * yscale;
+		out->m[2][0] = (cr*sp*cy+-sr*-sy) * zscale;
+		out->m[3][0] = x;
+		out->m[0][1] = (cp*sy) * xscale;
+		out->m[1][1] = (sr*sp*sy+cr*cy) * yscale;
+		out->m[2][1] = (cr*sp*sy+-sr*cy) * zscale;
+		out->m[3][1] = y;
+		out->m[0][2] = (-sp) * xscale;
+		out->m[1][2] = (sr*cp) * yscale;
+		out->m[2][2] = (cr*cp) * zscale;
+		out->m[3][2] = z;
+		out->m[0][3] = 0;
+		out->m[1][3] = 0;
+		out->m[2][3] = 0;
+		out->m[3][3] = 1;
+#else
+		out->m[0][0] = (cp*cy) * xscale;
+		out->m[0][1] = (sr*sp*cy+cr*-sy) * yscale;
+		out->m[0][2] = (cr*sp*cy+-sr*-sy) * zscale;
+		out->m[0][3] = x;
+		out->m[1][0] = (cp*sy) * xscale;
+		out->m[1][1] = (sr*sp*sy+cr*cy) * yscale;
+		out->m[1][2] = (cr*sp*sy+-sr*cy) * zscale;
+		out->m[1][3] = y;
+		out->m[2][0] = (-sp) * xscale;
+		out->m[2][1] = (sr*cp) * yscale;
+		out->m[2][2] = (cr*cp) * zscale;
+		out->m[2][3] = z;
+		out->m[3][0] = 0;
+		out->m[3][1] = 0;
+		out->m[3][2] = 0;
+		out->m[3][3] = 1;
+#endif
+	}
+	else if (pitch)
+	{
+		angle = yaw * (M_PI*2 / 360);
+		sy = sin(angle);
+		cy = cos(angle);
+		angle = pitch * (M_PI*2 / 360);
+		sp = sin(angle);
+		cp = cos(angle);
+#ifdef MATRIX4x4_OPENGLORIENTATION
+		out->m[0][0] = (cp*cy) * xscale;
+		out->m[1][0] = (-sy) * yscale;
+		out->m[2][0] = (sp*cy) * zscale;
+		out->m[3][0] = x;
+		out->m[0][1] = (cp*sy) * xscale;
+		out->m[1][1] = (cy) * yscale;
+		out->m[2][1] = (sp*sy) * zscale;
+		out->m[3][1] = y;
+		out->m[0][2] = (-sp) * xscale;
+		out->m[1][2] = 0;
+		out->m[2][2] = (cp) * zscale;
+		out->m[3][2] = z;
+		out->m[0][3] = 0;
+		out->m[1][3] = 0;
+		out->m[2][3] = 0;
+		out->m[3][3] = 1;
+#else
+		out->m[0][0] = (cp*cy) * xscale;
+		out->m[0][1] = (-sy) * yscale;
+		out->m[0][2] = (sp*cy) * zscale;
+		out->m[0][3] = x;
+		out->m[1][0] = (cp*sy) * xscale;
+		out->m[1][1] = (cy) * yscale;
+		out->m[1][2] = (sp*sy) * zscale;
+		out->m[1][3] = y;
+		out->m[2][0] = (-sp) * xscale;
+		out->m[2][1] = 0;
+		out->m[2][2] = (cp) * zscale;
+		out->m[2][3] = z;
+		out->m[3][0] = 0;
+		out->m[3][1] = 0;
+		out->m[3][2] = 0;
+		out->m[3][3] = 1;
+#endif
+	}
+	else if (yaw)
+	{
+		angle = yaw * (M_PI*2 / 360);
+		sy = sin(angle);
+		cy = cos(angle);
+#ifdef MATRIX4x4_OPENGLORIENTATION
+		out->m[0][0] = (cy) * xscale;
+		out->m[1][0] = (-sy) * yscale;
+		out->m[2][0] = 0;
+		out->m[3][0] = x;
+		out->m[0][1] = (sy) * xscale;
+		out->m[1][1] = (cy) * yscale;
+		out->m[2][1] = 0;
+		out->m[3][1] = y;
+		out->m[0][2] = 0;
+		out->m[1][2] = 0;
+		out->m[2][2] = zscale;
+		out->m[3][2] = z;
+		out->m[0][3] = 0;
+		out->m[1][3] = 0;
+		out->m[2][3] = 0;
+		out->m[3][3] = 1;
+#else
+		out->m[0][0] = (cy) * xscale;
+		out->m[0][1] = (-sy) * yscale;
+		out->m[0][2] = 0;
+		out->m[0][3] = x;
+		out->m[1][0] = (sy) * xscale;
+		out->m[1][1] = (cy) * yscale;
+		out->m[1][2] = 0;
+		out->m[1][3] = y;
+		out->m[2][0] = 0;
+		out->m[2][1] = 0;
+		out->m[2][2] = zscale;
+		out->m[2][3] = z;
+		out->m[3][0] = 0;
+		out->m[3][1] = 0;
+		out->m[3][2] = 0;
+		out->m[3][3] = 1;
+#endif
+	}
+	else
+	{
+#ifdef MATRIX4x4_OPENGLORIENTATION
+		out->m[0][0] = xscale;
+		out->m[1][0] = 0;
+		out->m[2][0] = 0;
+		out->m[3][0] = x;
+		out->m[0][1] = 0;
+		out->m[1][1] = yscale;
+		out->m[2][1] = 0;
+		out->m[3][1] = y;
+		out->m[0][2] = 0;
+		out->m[1][2] = 0;
+		out->m[2][2] = zscale;
+		out->m[3][2] = z;
+		out->m[0][3] = 0;
+		out->m[1][3] = 0;
+		out->m[2][3] = 0;
+		out->m[3][3] = 1;
+#else
+		out->m[0][0] = xscale;
+		out->m[0][1] = 0;
+		out->m[0][2] = 0;
+		out->m[0][3] = x;
+		out->m[1][0] = 0;
+		out->m[1][1] = yscale;
+		out->m[1][2] = 0;
+		out->m[1][3] = y;
+		out->m[2][0] = 0;
+		out->m[2][1] = 0;
+		out->m[2][2] = zscale;
+		out->m[2][3] = z;
+		out->m[3][0] = 0;
+		out->m[3][1] = 0;
+		out->m[3][2] = 0;
+		out->m[3][3] = 1;
+#endif
+	}
+}
+
 void Matrix4x4_ToVectors(const matrix4x4_t *in, float vx[3], float vy[3], float vz[3], float t[3])
 {
 #ifdef MATRIX4x4_OPENGLORIENTATION
