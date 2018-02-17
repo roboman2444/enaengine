@@ -37,9 +37,9 @@
 
 //subtract a vector from a vector
 #define vec1subvec(a,b,c) (a)[0] = (b)[0] - (c)[0];
-#define vec2subvec(a,b,c) vec1addvec((a),(b),(c)) (a)[1] = (b)[1] - (c)[1];
-#define vec3subvec(a,b,c) vec2addvec((a),(b),(c)) (a)[2] = (b)[2] - (c)[2];
-#define vec4subvec(a,b,c) vec3addvec((a),(b),(c)) (a)[3] = (b)[3] - (c)[3];
+#define vec2subvec(a,b,c) vec1subvec((a),(b),(c)) (a)[1] = (b)[1] - (c)[1];
+#define vec3subvec(a,b,c) vec2subvec((a),(b),(c)) (a)[2] = (b)[2] - (c)[2];
+#define vec4subvec(a,b,c) vec3subvec((a),(b),(c)) (a)[3] = (b)[3] - (c)[3];
 
 
 //add a scaler to a vector
